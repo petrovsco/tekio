@@ -16,10 +16,13 @@ an index must not.
 ## How to read it
 
 **State** uses the `/ground` Step 3 verdict vocabulary: `grounded` /
-`convention` / `unknown`. As of today **every row is `unknown`** — `grep -rn "##
-Grounding" docs/` returns nothing, so no number in this app has ever been
-checked. That is the headline, and it is why the column looks useless right now;
-it stops being uniform the moment the first scout run lands.
+`convention` / `unknown`.
+
+**Updated 2026-08-26 by the first scout runs** (#7(b), run 1): the nine adaptation
+targets in §1 are no longer `unknown` — four are `grounded`, five are
+`convention`, and row 1.6 (skill) is deliberately deferred. Every row outside §1
+is still `unknown`. The blocks live in
+[roadmap/adaptation-weekly-targets.md](roadmap/adaptation-weekly-targets.md).
 
 Rows marked **†** are ones I would *not* spend a scout run on — see
 [§13.2](#132-a-fourth-inventory-state).
@@ -57,17 +60,17 @@ weights").
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 1.1 | `3` | [adaptations.ts:81](../src/constants/adaptations.ts#L81) | Speed needs 3 weighted sets per muscle group per week | named | unknown | home-fused-reads **(due)** |
-| 1.2 | `4` | [adaptations.ts:100](../src/constants/adaptations.ts#L100) | Power needs 4 sets/muscle/week | named | unknown | home-fused-reads **(due)** |
-| 1.3 | `8` | [adaptations.ts:119](../src/constants/adaptations.ts#L119) | Strength needs 8 sets/muscle/week | named | unknown | home-fused-reads **(due)** |
-| 1.4 | `10` | [adaptations.ts:138](../src/constants/adaptations.ts#L138) | Hypertrophy needs 10 sets/muscle/week | named | unknown | home-fused-reads **(due)** |
-| 1.5 | `6` | [adaptations.ts:157](../src/constants/adaptations.ts#L157) | Muscular endurance needs 6 sets/muscle/week | named | unknown | home-fused-reads **(due)** |
+| 1.1 | `6` | [adaptations.ts:88](../src/constants/adaptations.ts#L88) | Speed needs 6 weighted sets per muscle group per week (was 3) | named | **convention** | adaptation-weekly-targets |
+| 1.2 | `6` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | Power needs 6 sets/muscle/week (was 4; deliberately identical to speed) | named | **convention** | adaptation-weekly-targets |
+| 1.3 | `6` | [adaptations.ts:145](../src/constants/adaptations.ts#L145) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
+| 1.4 | `10` | [adaptations.ts:173](../src/constants/adaptations.ts#L173) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
+| 1.5 | `6` | [adaptations.ts:199](../src/constants/adaptations.ts#L199) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
 | 1.6 | `3` | [adaptations.ts:63](../src/constants/adaptations.ts#L63) | Skill needs 3 sessions/week | named | unknown | skill-adaptation-data-source |
-| 1.7 | `1` | [adaptations.ts:177](../src/constants/adaptations.ts#L177) | Anaerobic capacity needs 1 session/week | named | unknown | home-fused-reads **(due)** |
-| 1.8 | `1` | [adaptations.ts:196](../src/constants/adaptations.ts#L196) | VO₂max needs 1 session/week | named | unknown | home-fused-reads **(due)** |
-| 1.9 | `2` | [adaptations.ts:215](../src/constants/adaptations.ts#L215) | Endurance needs 2 sessions/week | named | unknown | home-fused-reads **(due)** |
+| 1.7 | `1` | [adaptations.ts:226](../src/constants/adaptations.ts#L226) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets |
+| 1.8 | `1` | [adaptations.ts:257](../src/constants/adaptations.ts#L257) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
+| 1.9 | `2` | [adaptations.ts:288](../src/constants/adaptations.ts#L288) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets |
 | 1.10 | `0` ×9 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:263](../src/lib/adaptations.ts#L263) | ? | unknown † | — |
-| 1.11 | all 18, duplicated | `adaptation_targets` (DB), 9 rows | Identical values to 1.1–1.9, and **they win** — [lib/adaptations.ts:261-262](../src/lib/adaptations.ts#L261) prefers the DB row over the constant | named | unknown | home-fused-reads **(due)** |
+| 1.11 | all 18, duplicated | `adaptation_targets` (DB), 9 rows | Identical values to 1.1–1.9, and **they win** — [lib/adaptations.ts:261-262](../src/lib/adaptations.ts#L261) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
 
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
 > the user sees. The DB rows shadow every default, are currently byte-identical,
@@ -104,7 +107,7 @@ sharpest debt in the app because they read as settled fact.
 | 3.2 | Speed: 0–30% 1RM, 1–5 reps, 3–5 sets, 2–5 min | [adaptations.ts:83-90](../src/constants/adaptations.ts#L83) | Load band for velocity work | named | unknown | cross-adaptation-rep-ranges |
 | 3.3 | Power: 30–70% 1RM, 1–5, 3–5, 2–5 min | [adaptations.ts:102-109](../src/constants/adaptations.ts#L102) | Load band for ballistic work | named | unknown | cross-adaptation-rep-ranges |
 | 3.4 | Strength: 85–100% 1RM, 3–5, 3–5, 2–5 min, 1–2 RIR | [adaptations.ts:121-128](../src/constants/adaptations.ts#L121) | **Cue names "Galpin's 3–5 rule" as settled** — a `[single-practitioner position]` with no provenance ([adaptations.ts:127](../src/constants/adaptations.ts#L127)); the skill's own *Known debt* entry | named | unknown | cross-adaptation-rep-ranges |
-| 3.5 | Hypertrophy: 30–80% 1RM, 5–30 (≈8–15), 10–20 sets/muscle/wk, 30 s–2 min, 0–4 RIR | [adaptations.ts:140-147](../src/constants/adaptations.ts#L140) | **`sets: '10–20 / muscle / week'` contradicts row 1.4's `10`** — the card prescribes a range whose floor is the target | named | unknown | home-fused-reads **(due)** |
+| 3.5 | Hypertrophy: 30–80% 1RM, 5–30 (≈8–15), 10–20 sets/muscle/wk, 30 s–2 min, 0–4 RIR | [adaptations.ts:140-147](../src/constants/adaptations.ts#L140) | ~~contradicts row 1.4~~ **Resolved 2026-08-26**: not a contradiction. The target is the minimum-effective floor; the `rx` is the productive range *whose floor is that same number*. Both unchanged, now locked together in the source comment — neither moves without the other | named | **grounded** | adaptation-weekly-targets |
 | 3.6 | Musc. endurance: <50% 1RM, 15–40+, 2–4, <60 s | [adaptations.ts:159-166](../src/constants/adaptations.ts#L159) | Load ceiling and rest floor | named | unknown | cross-adaptation-rep-ranges |
 | 3.7 | Anaerobic: 20 s–2 min, 3–8 rounds, 1:2–1:4 rest | [adaptations.ts:178-185](../src/constants/adaptations.ts#L178) | Work:rest ratio | named | unknown | hr-zone-intensity-classification |
 | 3.8 | VO₂max: ~90–100% HRmax, 3–8 min, 4–6 sets, ≈1:1 | [adaptations.ts:197-204](../src/constants/adaptations.ts#L197) | **Cue ships the "classic 4×4 min at 90–95% HRmax" protocol** ([adaptations.ts:203](../src/constants/adaptations.ts#L203)) — a named protocol, unattributed. Same failure class as 3.4 | named | unknown | hr-zone-intensity-classification |
