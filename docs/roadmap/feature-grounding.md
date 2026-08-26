@@ -94,28 +94,26 @@ Decided 2026-08-26 while writing `docs/doctrine.md`; each needs its own brief.
 
 - Standing working agreement (2026-08-26): mutual pushback is expected in both
   directions -- see the `feedback_mutual_pushback_rule` memory.
-- **Local setup (2026-08-26, corrected same day):** Claude Code finds project
-  subagents by walking *up* from the working directory, and sessions run from
-  `tekio-workspace/` while the repo is `tekio/`. `tekio-workspace/.claude/agents`
-  is therefore a Windows directory junction onto `tekio/.claude/agents`, so the
-  repo stays the single source of truth. Recreate with:
-  `New-Item -ItemType Junction -Path .claude/agents -Target tekio/.claude/agents`
+- **Local setup (2026-08-26; superseded the same day by the flatten):** Claude
+  Code finds project subagents by walking *up* from the working directory, never
+  down. While the repo sat inside a `tekio-workspace/` wrapper, the repo's
+  `.claude/agents` was one level *below* the working directory and therefore
+  invisible, so the wrapper carried a Windows directory junction onto it. The
+  wrapper is gone — the repo is now the working directory itself, so
+  `.claude/agents` sits at its root and is found directly. No junction, no
+  duplication.
 
-  **The junction works.** An earlier note here recorded it as broken, because
-  `Agent(subagent_type: "science-scout")` failed with *"Agent type
-  'science-scout' not found"*. That diagnosis was wrong, and the real cause is
-  worth knowing because it will happen again:
+  **The durable finding, which cost a wrong diagnosis to learn:** a session's
+  list of subagents is built **once, when the session starts**. A junction
+  created at 16:03 *during* an already-running session produced *"Agent type
+  'science-scout' not found"* — not because the junction was broken, but because
+  that session began with no `.claude/agents` directory and so never looked
+  there. Any session started afterwards found the agent normally.
 
-  > **The list of subagents is built once, when the session starts.** The
-  > junction was created at 16:03 *during* a session that had already started.
-  > That session had no `.claude/agents` directory when it began, so it never
-  > looked there, and no amount of correct files would have helped. Any session
-  > started afterwards finds the agent normally.
-
-  **So the rule is: after you create a new `.claude/agents` or `.claude/skills`
-  directory, restart Claude Code.** Editing a file *inside* a directory that
-  already existed at startup is picked up without a restart; creating the
-  directory itself is not.
+  > **The rule: after you create a new `.claude/agents` or `.claude/skills`
+  > directory, restart Claude Code.** Editing a file *inside* a directory that
+  > already existed at startup is picked up without a restart; creating the
+  > directory itself is not.
 
   Both halves were checked directly on 2026-08-26, in a throwaway folder with no
   other agent files anywhere, rather than guessed from behaviour:
@@ -125,21 +123,17 @@ Decided 2026-08-26 while writing `docs/doctrine.md`; each needs its own brief.
   | Agent file reached only through a Windows junction | **found** |
   | Agent file in a nested sub-folder (`inner/.claude/agents/`), no junction | **not found** |
 
-  The second row is why the junction is not optional: a plain
-  `tekio/.claude/agents` is a *child* of the working directory, and discovery
-  only walks *up*, never down. Without the junction the agent is invisible.
+  The second row is why the wrapper needed a junction at all, and why deleting
+  the wrapper is the better fix: discovery only walks up, so a `.claude/` one
+  level *below* the working directory is invisible, while one *at* the working
+  directory is found with no trickery.
 - **Resolved 2026-08-26:** the roster's "Harris" is pinned in
   `science-scout.md` as Conor Harris (`@conorharris`) — biomechanics and
   movement, PRI-influenced, weighted to the Mobility surface and explicitly a
   coach, so he never grounds a number.
-- **Skill discovery (2026-08-26):** same junction trick as the agents dir, and
-  it behaves the same way — `tekio-workspace/.claude/skills` is a Windows
-  directory junction onto `tekio/.claude/skills`, so the repo stays the single
-  source of truth. Recreate with:
-  `New-Item -ItemType Junction -Path .claude/skills -Target tekio/.claude/skills`
-
-  Skills and agents are **not** different on this point. `/ground` appeared to
-  work while `science-scout` did not, which made the two look like they followed
-  different rules; they do not. Both are junctions, both are traversed, and both
-  are read at session start. The only difference was timing — which session each
-  junction was created in. See the corrected agents note above.
+- **Skill discovery (2026-08-26):** skills follow exactly the same rule as
+  agents. `/ground` appeared to work while `science-scout` did not, which made
+  the two look like they obeyed different rules; they do not. Both are read at
+  session start, and the only difference was timing — which session each was
+  created in. With the wrapper removed, `.claude/skills` is found directly at the
+  repo root, same as `.claude/agents`.

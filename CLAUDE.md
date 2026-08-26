@@ -87,7 +87,7 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 @~/.claude/modus/rules/direct-push.md
 @~/.claude/modus/rules/verify-in-browser.md
 
-Workspace specifics for those rules: the app repo is `tekio/` — run `npm run
-build` there; "main branch" means `master`; roadmap briefs go to
-`tekio/docs/roadmap/` (the context guard is pointed there via
+Repo specifics for those rules: this repo is the working directory, so all paths
+are repo-relative — run `npm run build` here; "main branch" means `master`;
+roadmap briefs go to `docs/roadmap/` (the context guard is pointed there via
 `CTX_GUARD_ROADMAP_DIR` in `.claude/settings.local.json`).

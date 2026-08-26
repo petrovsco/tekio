@@ -34,3 +34,9 @@ __pycache__/
 # Never commit Garmin tokens — they belong only in GitHub Actions secrets
 .garminconnect/
 garmin_tokens.json
+
+# Local Claude Code config — contains secrets (Supabase PAT), never commit.
+# .claude/ is otherwise tracked (agents + skills live there), so ignore by name.
+.mcp.json
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
