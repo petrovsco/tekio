@@ -80,11 +80,20 @@ current weekly-rollup weights is work that gets thrown away. Order:
 2. Decide this model.
 3. Do the weight surgery once, in whatever shape survives.
 
-## 6. Open questions
+## 6. Open questions (owners)
 
-- Does the systemic number gate the local read (grey out everything on a bad
-  recovery day), or sit alongside it as a separate signal?
-- Whole-body qualities: one combined read, or does each get its own state?
-- Does "chronically hammered" need a rolling window (ACWR-style), and if so does
-  that overlap with the Garmin acute-load work in
-  [garmin-recovery-load-axis.md](garmin-recovery-load-axis.md)?
+These are **this brief's** kickoff questions, not blockers on the `science-scout`
+work — that is tooling, and this brief is a consumer of it.
+
+- **Design, decide at kickoff:** does the systemic number *gate* the local read
+  (grey everything out on a bad recovery day), or sit alongside it as a separate
+  signal? Easier to answer with the fused state concrete than in the abstract.
+- **Design, decide at kickoff:** whole-body qualities — one combined read, or does
+  each get its own state?
+- **Resolved 2026-08-26 by P5:** systemic chronic load is Garmin's acute load —
+  consume `daily_metrics.acute_load` from
+  [garmin-recovery-load-axis.md](garmin-recovery-load-axis.md), do not recompute it
+  (that brief also rules it informational context, not a recovery-% input).
+  Per-muscle chronic load is a *different scope*, computed from logged sets, and
+  stays here. Whether it needs a rolling window at all — and what window — is the
+  only science-gated remainder.
