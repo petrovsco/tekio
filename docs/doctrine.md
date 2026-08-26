@@ -96,8 +96,10 @@ A roadmap brief in `docs/roadmap/` is not ready until it answers all five:
 4. **What's the honest shape of the data?** (P2 — spatial vs. not, per-session
    vs. rolled-up.)
 5. **Does it write a number claiming physiological meaning?** If yes, it needs a
-   `## Grounding` section before implementation — see
-   [roadmap/feature-grounding.md](roadmap/feature-grounding.md).
+   `## Grounding` section before implementation. Run `/ground`; its Step 0 is
+   the canonical trigger spec (including the three exemptions where a number
+   moves but no new claim is made) —
+   [.claude/skills/ground/SKILL.md](../.claude/skills/ground/SKILL.md).
 
 ## 5. Ledger
 
@@ -147,8 +149,10 @@ don't leave it blank.
 
 ## 7. What this doctrine does not cover
 
-- **Is the claim true?** → `/ground` + the `science-scout` subagent.
+- **Is the claim true?** → [`/ground`](../.claude/skills/ground/SKILL.md) + the
+  [`science-scout`](../.claude/agents/science-scout.md) subagent.
 - **Is the code clean?** → `/simplify`, `/code-review`.
 - **Did smoothness degrade?** → the measured perf budget.
 
-See [roadmap/feature-grounding.md](roadmap/feature-grounding.md) for all three.
+See [roadmap/feature-grounding.md](roadmap/feature-grounding.md) for how the
+three fit together.
