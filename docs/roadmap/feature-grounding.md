@@ -1,7 +1,7 @@
 # Roadmap: Feature grounding — doctrine, science-scout, and review lenses
 
 **Status:** in progress (2026-08-26) — design agreed; pushbacks 1–2 resolved (doctrine +
-science-scout shipped), 3–6 queued.
+science-scout shipped), 3–7 queued.
 **Kickoff:** this file is the brief. It carries the full decision log so a fresh
 session can resume without the original conversation.
 **Origin:** 2026-08-25 architecture session; redesigned 2026-08-26 after review.
@@ -44,9 +44,10 @@ Placement rule: doctrine and `science-scout` are tekio-specific and live in the
 repo. ESLint config and the perf-budget script are reusable -- promote to the
 modus catalog only after they prove out here.
 
-## The six pushbacks (work through in order)
+## The pushbacks (work through in order)
 
-Ordered by importance. **This is the working queue** -- keep the status column
+Ordered by importance, which is not always execution order — see each status
+cell. **This is the working queue** -- keep the status column
 current as each is resolved.
 
 | # | Pushback | Status |
@@ -57,6 +58,7 @@ current as each is resolved.
 | 4 | **Most of the maintainability reviewer already exists** (`/simplify`, `/code-review`); a third overlapping agent yields three inconsistent opinions. The genuine gap is mechanical: **no ESLint, no dead-code detection**, and files like `src/components/ui/EditModal.tsx` (862 lines) and `src/components/tabs/ProgramTab.tsx` (840 lines). Mechanize first, judge second; give `/code-review` a short tekio conventions file so its judgment is project-specific. | agreed, not started |
 | 5 | **"Nothing proceeds until all three grounds report" is unenforceable** and wrong at small sizes -- hard gates get bypassed exactly when moving fast. Replace with a crisp trigger: **the gate fires when a change writes a number into the app that claims physiological meaning** (weight, threshold, target, scoring coefficient). Gated: `RECOVERY_WEIGHTS`, `adaptation_targets`, FRS coefficients, rep-range boundaries. Not gated: chart colors, layout fixes, export fields. | agreed, not started |
 | 6 | **Grounding output must land in the repo, not just in a session.** In six months nobody knows why sleep weight is 0.45. Findings write to a `## Grounding` section in the roadmap brief *and* leave a source comment on the constant itself. Durable life-knowledge still flows to the user's own knowledge base for `/ingest` -> `wiki/health/`; the *why* behind a number stays next to the number. | agreed, not started |
+| 7 | **The gate is forward-only, so every number already in the app stays ungrounded forever.** Pushback #6's own example — `RECOVERY_WEIGHTS.sleep = 0.45` — ships today with a comment saying what it does and nothing about why. #5 lists it as "gated," but nothing fires unless someone changes it. **Sequencing:** #5 and #6 are not buildable items — they are the trigger spec and the output spec, and they ship *as* the `/ground` skill (deliverable 3); #3 and #4 are a separate post-build tooling track. So back-fill goes **after `/ground`** (which defines the output shape, so hand-rolling blocks first means writing them twice) and does **not** queue behind perf/lint. **Split in two:** (a) **an inventory** — ~30 min, no research, one table of every number claiming physiological meaning with value, claim, and grounded / convention / unknown; it doubles as the first real test of #5's trigger logic, against ~50 actual numbers instead of four examples. (b) **scout runs, opportunistic — not a sprint**: `RECOVERY_WEIGHTS` is already due for rewrite by the Habits reweight and the `adaptations.ts` weekly targets by the fused Home read, so both trip the #5 trigger naturally. Anything still `unknown` after one cycle (6 weeks) earns a deliberate run — reuse R2's expiry clock rather than building new machinery (R3). **Priority correction:** the 0.45 is memorable but low-stakes. `adaptations.ts` `weeklyMuscleTarget` / `weeklySessionTarget` (9×) decide what Home calls "missing," so the purpose sentence rests on them: a wrong weight tints a card, a wrong target makes the app confidently name the wrong gap. Ground the targets first. **Live case already in the code:** `src/constants/adaptations.ts:127` ships "Galpin's 3–5 rule" as a cue — a named `[single-practitioner position]` presented as settled, with no provenance. | agreed 2026-08-26, not started — **after deliverable 3 (`/ground`)**, not after #3–#6 |
 
 ## Consequences of the doctrine (not part of this brief)
 
