@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Pull Garmin Connect sleep data and upsert it into Supabase `sleep_logs`.
 
-Runs headless in CI (GitHub Actions daily cron). Auth is token-based: a base64
-garth token blob (generated once locally, where MFA can be answered) is passed
-via GARMIN_TOKENSTORE, so the job never needs a password or an MFA prompt.
+Runs headless in CI (GitHub Actions daily cron). Auth lives in garmin_auth.py —
+the token rotates on every run and is stored in Supabase, not in the GitHub
+secret, so the job never needs a password or an MFA prompt.
 
 Only objective columns are written (duration, score, HRV, resting HR, bed/wake
 times), with source='garmin'. Subjective `quality`/`notes` are never sent, so a
@@ -11,11 +11,10 @@ hand-logged night keeps its stars when Garmin enriches it. Upsert is idempotent
 on the (user_id, log_date) unique key, so re-running is safe.
 
 Env vars:
-  GARMIN_TOKENSTORE           base64 garth token blob (preferred, MFA-safe)
-  GARMIN_EMAIL / GARMIN_PASSWORD  local-only fallback (won't clear MFA in CI)
   SUPABASE_URL                e.g. https://xxxx.supabase.co
   SUPABASE_SERVICE_ROLE_KEY   service role key (server-side only — never ship to the browser)
   TEKIO_USER_ID               the single-user USER_ID rows are scoped to
+  GARMIN_TOKENSTORE           bootstrap / recovery token blob (see garmin_auth.py)
   SYNC_DAYS                   how many trailing days to sync (default 3; catches late watch syncs)
 """
 from __future__ import annotations
@@ -25,30 +24,8 @@ import sys
 from datetime import date, datetime, timedelta, timezone
 
 import requests
-from garminconnect import Garmin
 
-
-def _env(name: str, required: bool = True) -> str | None:
-    val = os.getenv(name)
-    if required and not val:
-        sys.exit(f"Missing required env var: {name}")
-    return val
-
-
-def login() -> Garmin:
-    """Resume from a base64 token blob (CI) or fall back to credentials (local)."""
-    tokenstore = os.getenv("GARMIN_TOKENSTORE")
-    if tokenstore:
-        client = Garmin()
-        client.login(tokenstore)  # >512 chars => treated as a base64 token blob
-        return client
-
-    email, password = os.getenv("GARMIN_EMAIL"), os.getenv("GARMIN_PASSWORD")
-    if not (email and password):
-        sys.exit("Provide GARMIN_TOKENSTORE, or GARMIN_EMAIL + GARMIN_PASSWORD.")
-    client = Garmin(email, password, prompt_mfa=lambda: input("MFA code: "))
-    client.login()
-    return client
+from garmin_auth import env, garmin_client
 
 
 def _time_of_day(epoch_ms_local: int | None) -> str | None:
@@ -92,8 +69,8 @@ def extract_row(user_id: str, raw: dict) -> dict | None:
 
 
 def upsert(rows: list[dict]) -> None:
-    base = _env("SUPABASE_URL").rstrip("/")
-    key = _env("SUPABASE_SERVICE_ROLE_KEY")
+    base = env("SUPABASE_URL").rstrip("/")
+    key = env("SUPABASE_SERVICE_ROLE_KEY")
     resp = requests.post(
         f"{base}/rest/v1/sleep_logs",
         params={"on_conflict": "user_id,log_date"},
@@ -111,20 +88,21 @@ def upsert(rows: list[dict]) -> None:
 
 
 def main() -> None:
-    user_id = _env("TEKIO_USER_ID")
+    user_id = env("TEKIO_USER_ID")
     days = int(os.getenv("SYNC_DAYS", "3"))
 
-    client = login()
-    print(f"Logged in as {client.display_name}")
-
     rows: list[dict] = []
-    for i in range(days):
-        cdate = (date.today() - timedelta(days=i)).isoformat()
-        row = extract_row(user_id, client.get_sleep_data(cdate))
-        if row:
-            score = row.get("sleep_score", "—")
-            print(f"  {row['log_date']}: {row['duration_hours']}h, score {score}")
-            rows.append(row)
+    # Everything needing Garmin happens inside the block; leaving it saves the
+    # rotated token, so a later Supabase failure can't cost us the credential.
+    with garmin_client() as client:
+        print(f"Logged in as {client.display_name}")
+        for i in range(days):
+            cdate = (date.today() - timedelta(days=i)).isoformat()
+            row = extract_row(user_id, client.get_sleep_data(cdate))
+            if row:
+                score = row.get("sleep_score", "—")
+                print(f"  {row['log_date']}: {row['duration_hours']}h, score {score}")
+                rows.append(row)
 
     if not rows:
         print("No sleep data to sync.")

@@ -11,12 +11,14 @@ Idempotent on the (user_id, garmin_activity_id) unique key, so re-running is saf
 NOTE: the Garmin activity name is written to `notes`, so a hand-edited note on a
 synced ride is overwritten if that ride is re-synced (only within SYNC_DAYS).
 
+Auth lives in garmin_auth.py — the token rotates on every run and is stored in
+Supabase, not in the GitHub secret.
+
 Env vars:
-  GARMIN_TOKENSTORE           base64 garth token blob (preferred, MFA-safe)
-  GARMIN_EMAIL / GARMIN_PASSWORD  local-only fallback (won't clear MFA in CI)
   SUPABASE_URL                e.g. https://xxxx.supabase.co
   SUPABASE_SERVICE_ROLE_KEY   service role key (server-side only — never ship to the browser)
   TEKIO_USER_ID               the single-user USER_ID rows are scoped to
+  GARMIN_TOKENSTORE           bootstrap / recovery token blob (see garmin_auth.py)
   SYNC_DAYS                   how many trailing days to sync (default 7)
 """
 from __future__ import annotations
@@ -26,7 +28,8 @@ import sys
 from datetime import date, timedelta
 
 import requests
-from garminconnect import Garmin
+
+from garmin_auth import env, garmin_client
 
 # Garmin activityType.typeKey -> the app's cardio_sessions.activity_type value.
 # Anything not listed here (tennis, strength_training, walking, …) is skipped.
@@ -44,29 +47,6 @@ CARDIO_TYPE_KEYS = {
     # rowing (app calls this "Indoor Rowing")
     "indoor_rowing": "rowing", "rowing": "rowing", "rowing_v2": "rowing",
 }
-
-
-def _env(name: str, required: bool = True) -> str | None:
-    val = os.getenv(name)
-    if required and not val:
-        sys.exit(f"Missing required env var: {name}")
-    return val
-
-
-def login() -> Garmin:
-    """Resume from a base64 token blob (CI) or fall back to credentials (local)."""
-    tokenstore = os.getenv("GARMIN_TOKENSTORE")
-    if tokenstore:
-        client = Garmin()
-        client.login(tokenstore)  # >512 chars => treated as a base64 token blob
-        return client
-
-    email, password = os.getenv("GARMIN_EMAIL"), os.getenv("GARMIN_PASSWORD")
-    if not (email and password):
-        sys.exit("Provide GARMIN_TOKENSTORE, or GARMIN_EMAIL + GARMIN_PASSWORD.")
-    client = Garmin(email, password, prompt_mfa=lambda: input("MFA code: "))
-    client.login()
-    return client
 
 
 def _as_int(v) -> int | None:
@@ -125,8 +105,8 @@ def extract_row(user_id: str, act: dict) -> dict | None:
 
 
 def upsert(rows: list[dict]) -> None:
-    base = _env("SUPABASE_URL").rstrip("/")
-    key = _env("SUPABASE_SERVICE_ROLE_KEY")
+    base = env("SUPABASE_URL").rstrip("/")
+    key = env("SUPABASE_SERVICE_ROLE_KEY")
     resp = requests.post(
         f"{base}/rest/v1/cardio_sessions",
         params={"on_conflict": "user_id,garmin_activity_id"},
@@ -144,15 +124,16 @@ def upsert(rows: list[dict]) -> None:
 
 
 def main() -> None:
-    user_id = _env("TEKIO_USER_ID")
+    user_id = env("TEKIO_USER_ID")
     days = int(os.getenv("SYNC_DAYS", "7"))
-
-    client = login()
-    print(f"Logged in as {client.display_name}")
 
     end = date.today()
     start = end - timedelta(days=days - 1)
-    activities = client.get_activities_by_date(start.isoformat(), end.isoformat()) or []
+    # Everything needing Garmin happens inside the block; leaving it saves the
+    # rotated token, so a later Supabase failure can't cost us the credential.
+    with garmin_client() as client:
+        print(f"Logged in as {client.display_name}")
+        activities = client.get_activities_by_date(start.isoformat(), end.isoformat()) or []
     print(f"Fetched {len(activities)} activity(ies) {start}..{end}")
 
     rows: list[dict] = []

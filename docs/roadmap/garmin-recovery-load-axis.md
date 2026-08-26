@@ -15,12 +15,11 @@ Training-Effect adaptation classifier) shipped 2026-07-13 — see
 [[project_tekio_garmin_cardio_sync]] and the two Garmin scripts under
 `scripts/garmin-sync/`.
 
-**Phase 1 remainder (user action, not blocking this brief):** the activity-sync
-workflow has never been run with a raised `SYNC_DAYS` to backfill history, so
-`cardio_sessions` only holds what the daily cron has picked up since it shipped.
-Actions tab → *Garmin activity sync* → *Run workflow*. Recorded here rather than
-in `scripts/garmin-sync/README.md`, which documents how the sync works, not what
-is outstanding.
+**Phase 1 remainder (user action, not blocking this brief):** the sync has in
+fact been failing since it shipped (a dead Garmin token — fixed 2026-08-26), so
+`cardio_sessions` is empty and the backfill still has not run. Both steps moved
+to [garmin-sync-token-restore.md](garmin-sync-token-restore.md). **Phase 2 needs
+a working Phase 1 pipeline, so do that one first.**
 
 ## Context (what exists today)
 

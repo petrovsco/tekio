@@ -1,2 +1,6 @@
-garminconnect>=0.2.25
+# Upper bound is load-bearing: 0.2.x auth was garth-based, 0.3.x replaced it with
+# a native client and a different token format. An unpinned ">=" silently crossed
+# that rewrite once already and broke the daily sync. Bump deliberately, and
+# re-run gen_token.py when the token format changes with it.
+garminconnect>=0.3.11,<0.4
 requests>=2.31
