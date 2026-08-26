@@ -5,12 +5,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Product doctrine
 
 **Tekiō tells me what's missing.** Before proposing, designing, or building
-any feature, apply [tekio/docs/doctrine.md](tekio/docs/doctrine.md) — it carries
+any feature, apply [docs/doctrine.md](docs/doctrine.md) — it carries
 the purpose statement, the principles, the hard caps (max 4 menu sections; the
 6-week shelf expiry), the five-question brief checklist, and the Core/Fold/Shelf
 ledger for every surface. It is imported below so it is always in context.
 
-@tekio/docs/doctrine.md
+@docs/doctrine.md
 
 ## Commands
 
