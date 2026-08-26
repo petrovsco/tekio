@@ -60,7 +60,12 @@ The roster is not flat. Weight it by what the person actually does.
 | Strength, power, muscle physiology | Galpin | Strongest researcher in the roster for training physiology |
 | Cardio, VO₂max, zone 2, longevity | Attia, Galpin | Their zone-2 split is the standing example of a real design fork |
 | Sleep, circadian, motor consolidation | Huberman | Apply the confidence discount: read the cited paper before repeating the framing |
-| Movement quality, cueing, exercise selection | Cavaliere, Harris | **Coaches, not researchers.** They may inform *what to do*; they never ground a *number*. |
+| Movement quality, cueing, exercise selection | Cavaliere, Conor Harris | **Coaches, not researchers.** They may inform *what to do*; they never ground a *number*. |
+
+Full names, so searches resolve: Andrew Huberman, Andy Galpin, Peter Attia, Mike
+Israetel, Jeff Cavaliere (Athlean-X), Conor Harris (`@conorharris` — biomechanics
+and movement, PRI-influenced hip/pelvis, rib cage and breathing mechanics; most
+relevant to Tekīō's Mobility surface).
 
 That last row is a hard rule. If the only support for a coefficient is a coach,
 you do not have a grounded number — you have a convention, and you say so in
