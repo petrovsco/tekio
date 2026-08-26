@@ -13,6 +13,21 @@ moment where that gets checked — before the brief becomes code.
 stops you shipping one *unlabelled*. `convention only` is a legitimate verdict
 that unblocks implementation immediately. Silence is not a verdict.
 
+**What it is not: a review panel.** This gate answers one question — *is this
+number defensible?* — at one moment, before the brief becomes code. Three
+neighbouring questions are deliberately out of scope, and keeping them out is
+the point:
+
+| Question | Whose job | Why not this skill's |
+|---|---|---|
+| Is the code clean and extendable? | `/simplify`, `/code-review`, plus the mechanical layer (ESLint, dead-code detection) | It mostly exists already; a third overlapping judge yields three inconsistent opinions |
+| Did smoothness degrade? | the measured perf budget | An LLM reading code and guessing at render cost produces plausible noise, not a finding |
+| Does the UI read well? | `frontend-design` | Craft, and it belongs after the diff exists |
+
+Growing `/ground` to cover those rebuilds the single all-purpose panel that
+[feature-grounding.md](../../../docs/roadmap/feature-grounding.md) was written
+to reject. Four concerns, two moments — don't re-merge them.
+
 Prerequisite: [docs/doctrine.md](../../../docs/doctrine.md) — §4 is the
 checklist this skill runs. It is imported from the workspace `CLAUDE.md`, so it
 should already be in context.
@@ -34,11 +49,20 @@ This is the canonical trigger spec. Doctrine §4.5 points here.
 |---|---|
 | [src/constants/app.ts](../../../src/constants/app.ts) | `RECOVERY_WEIGHTS`, `RECOVERY_TARGETS`, `CYCLE` |
 | [src/constants/adaptations.ts](../../../src/constants/adaptations.ts) | `weeklyMuscleTarget`, `weeklySessionTarget`, `repRange`, every `rx` field (load / reps / sets / rest / effort / **cue**) |
-| Nutrition FRS | the six sub-score weights and their cut-points |
+| `adaptation_targets` (DB) | seeded defaults and any migration that writes `weekly_muscle_target` / `weekly_session_target` |
+| [Nutrition FRS](../../../docs/roadmap/nutrition-food-recovery-score.md) | the six sub-score weights and their cut-points |
 | Local recovery | hours-since-stimulus thresholds, volume-load decay |
 | Deload | which week of the cycle deloads, and by how much |
 
 `rx.cue` is gated because prose states numbers too — see the known debt below.
+
+**Defaults, not runtime edits.** `adaptation_targets` overrides the
+`adaptations.ts` defaults per row and is editable from inside the app
+([src/lib/db/adaptationTargets.ts](../../../src/lib/db/adaptationTargets.ts)).
+The gate fires on the **default** — the constant, the seed row, the migration —
+and never on the user changing their own target in the UI. A gate that fired on
+runtime writes would be unenforceable, which is the precise failure mode this
+trigger was rewritten to avoid.
 
 ### Not gated
 
@@ -66,23 +90,37 @@ thoroughness — a gate that fires on everything is a gate nobody reads.
 
 ## Step 1 — Doctrine check
 
-Cheaper than a scout run, and it kills more features. Answer §4.1–4.4 for the
-change that carries this number:
+Cheaper than a scout run, and it kills more numbers. Answer §4.1–4.4 for the
+change that carries this one (§4.5 is the trigger, already answered in Step 0):
 
-1. Which existing read does this sharpen?
+1. Which existing read does this sharpen? — name the surface.
 2. What does it let me stop doing?
-3. Input or destination? (default: input)
-4. What's the honest shape of the data?
+3. Input or destination? (default: input — P3)
+4. What's the honest shape of the data? (P2)
 
-Plus the two that bite hardest here:
+Then the four doctrine rules that kill *numbers* specifically. Each is a stop,
+not a caveat:
 
 - **A number I can't act on doesn't get shown.** If the value could be anything
-  and nothing about what the user trains or how they recover would change, the
-  number does not ship — and it does not get grounded either. Stop.
-- **R1: at most 4 menu sections.** If the number needs a fifth, name the trade
-  before spending a scout run on it.
+  and nothing about what the user trains or how they recover would change, it
+  does not ship — and it does not get grounded either. The cheapest kill
+  available, and it comes before any search.
+- **P4 — configurability is not a decision.** "It's tunable" and "you can hide
+  it" are not defences for a number. With one user, a default that has to be
+  overridden to be right is simply a wrong default.
+- **P5 — one fact must not wear N costumes.** If the number is a global value
+  divided across N surfaces and presented as N per-surface facts, that is a P2
+  violation and the scout cannot rescue it. P5 hands number encodings to §4;
+  §4 hands this class back as a redesign, not a search.
+- **R1 / R3 — the caps.** If the number needs a fifth menu section, name the
+  trade before spending a scout run. If it needs new machinery to manage it,
+  R3 already answered.
 
-A number that fails Step 1 never reaches Step 2. Say which question it failed.
+Last, check the §5 ledger. Grounding a number on a surface marked **Fold** or
+**Shelf** is work with a delete-by date on it — ground the surface it folds
+*into* instead.
+
+A number that fails Step 1 never reaches Step 2. Say which rule it failed.
 
 ---
 
@@ -107,6 +145,24 @@ nine runs. Batching unrelated claims produces a block that grounds none of them.
 
 The scout is read-only by construction. It returns a markdown block; you paste
 it. Never ask it to edit the constant.
+
+### Check the block before you paste it
+
+The scout's rules are its own, but enforcing them on receipt is yours. A bad
+block pasted into a brief is worse than no block — it reads as grounded forever.
+Send it back if any of these fail:
+
+| Check | Why it matters |
+|---|---|
+| Every factual line carries exactly one provenance tag | An untagged line is the exact failure this layer exists to prevent: practitioner opinion reading as literature |
+| Every `[literature]` line has a URL, plus design, population and n | "A study showed" is not a citation |
+| A split is reported as a split, never averaged | The midpoint is a position nobody holds; the fork *is* the design decision, and the brief must record which side Tekiō took |
+| The number is no more precise than the evidence | 48–72 h is honest; 61 h is not |
+| **Coach-only support is called `convention only`** | Cavaliere and Harris are coaches, not researchers. They may inform *what to do*; they never ground a *number* |
+
+The roster is a practitioner layer, not an evidence tier — nobody is promoted a
+tier by being confident, credentialed or popular. That last row is the one that
+decides the verdict, and therefore what the source comment has to say in Step 3.
 
 ---
 
@@ -186,10 +242,15 @@ the clearest live example of what this gate exists to catch.
 
 ## Hard rules
 
+The checks on the *block* are in Step 2. These are the rules on the *run*:
+
 - The scout never edits a file. You paste its output.
-- Never resolve a practitioner split by averaging. The block reports both, and
-  the brief records which side Tekiō chose and why.
-- Never write a number more precise than the block supports.
-- A `[literature]` line without a URL is a bug — send it back.
+- **"No usable evidence" is a result, not a failure.** Verdict is
+  `convention only`, the number still ships, and the brief says what it is a
+  convention *for*. Re-running the scout hoping for a better answer is how a
+  gate turns into a ritual.
 - If the scout contradicts the value already shipped, that is a decision, not a
   find-and-replace. Record it in the brief before touching the constant.
+- Don't widen this skill past its one question. If the run turns up a code
+  smell, a slow render or a UI nit, note it and route it — see the scope table
+  at the top.
