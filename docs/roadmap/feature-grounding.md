@@ -1,6 +1,7 @@
 # Roadmap: Feature grounding — doctrine, science-scout, and review lenses
 
-**Status:** in progress (2026-08-26) — design agreed; pushback 1 resolved (doctrine shipped), 2–6 queued.
+**Status:** in progress (2026-08-26) — design agreed; pushbacks 1–2 resolved (doctrine +
+science-scout shipped), 3–6 queued.
 **Kickoff:** this file is the brief. It carries the full decision log so a fresh
 session can resume without the original conversation.
 **Origin:** 2026-08-25 architecture session; redesigned 2026-08-26 after review.
@@ -51,7 +52,7 @@ current as each is resolved.
 | # | Pushback | Status |
 |---|---|---|
 | 1 | **The stated problem is scope creep, but the proposal was a quality apparatus.** No reviewer fixes scope; reviewers judge how well an already-decided feature was built. The lever is one step earlier: a written product doctrine with real constraints, applied when the roadmap brief is written (e.g. a new Home card must absorb or replace one; a new tab requires retiring one; a number the user can't act on doesn't get shown). A document plus a checklist item, not an agent. | **DONE (2026-08-26)** — [docs/doctrine.md](../doctrine.md), imported from workspace `CLAUDE.md` |
-| 2 | **The six-scientist roster contradicts the evidence hierarchy in this very brief** (meta-analyses > RCTs > ... > expert opinion). Use them as a *practitioner layer*, never an evidence tier: (a) **disagreement surfacing** -- Attia vs Galpin on zone-2 volume, Israetel on volume landmarks / junk volume, Huberman's framing landing more confident than the papers; where they split is where a real design decision exists; (b) **provenance tags** on every claim: `[literature]` / `[practitioner consensus]` / `[single-practitioner position]`. Roster is not flat: Cavaliere and Harris are coaches (cueing, movement quality, biomechanics), not researchers -- weight per domain. Roster: Huberman, Galpin, Attia, Israetel, Cavaliere, Harris. | agreed, not started |
+| 2 | **The six-scientist roster contradicts the evidence hierarchy in this very brief** (meta-analyses > RCTs > ... > expert opinion). Use them as a *practitioner layer*, never an evidence tier: (a) **disagreement surfacing** -- Attia vs Galpin on zone-2 volume, Israetel on volume landmarks / junk volume, Huberman's framing landing more confident than the papers; where they split is where a real design decision exists; (b) **provenance tags** on every claim: `[literature]` / `[practitioner consensus]` / `[single-practitioner position]`. Roster is not flat: Cavaliere and Harris are coaches (cueing, movement quality, biomechanics), not researchers -- weight per domain. Roster: Huberman, Galpin, Attia, Israetel, Cavaliere, Harris. | **DONE (2026-08-26)** — [.claude/agents/science-scout.md](../../.claude/agents/science-scout.md) |
 | 3 | **A performance *reviewer* that reads code is the weakest link.** An LLM guessing at render cost yields plausible noise. Tekio's real risks are measurable: `bootstrap()` loading every domain at startup, one Zustand store holding all data, Recharts bundle weight. Build `scripts/perf-budget.mjs` (fails on bundle-size delta) + a Playwright startup/interaction timing run (Playwright MCP already wired); the agent interprets numbers, it does not guess. | agreed, not started |
 | 4 | **Most of the maintainability reviewer already exists** (`/simplify`, `/code-review`); a third overlapping agent yields three inconsistent opinions. The genuine gap is mechanical: **no ESLint, no dead-code detection**, and files like `src/components/ui/EditModal.tsx` (862 lines) and `src/components/tabs/ProgramTab.tsx` (840 lines). Mechanize first, judge second; give `/code-review` a short tekio conventions file so its judgment is project-specific. | agreed, not started |
 | 5 | **"Nothing proceeds until all three grounds report" is unenforceable** and wrong at small sizes -- hard gates get bypassed exactly when moving fast. Replace with a crisp trigger: **the gate fires when a change writes a number into the app that claims physiological meaning** (weight, threshold, target, scoring coefficient). Gated: `RECOVERY_WEIGHTS`, `adaptation_targets`, FRS coefficients, rep-range boundaries. Not gated: chart colors, layout fixes, export fields. | agreed, not started |
@@ -65,9 +66,9 @@ Decided 2026-08-26 while writing `docs/doctrine.md`; each needs its own brief.
   [home-fused-reads.md](home-fused-reads.md) (proposed, not agreed). Recovery stops
   being a parallel axis and becomes the second dimension of the muscle and
   adaptation reads: one systemic number (can I push today?) plus per-muscle local
-  recovery from logged-set history (what can I train today?). **That brief is
-  blocked on pushback #2** — its recovery-window numbers trip the §4.5 grounding
-  trigger, so `science-scout` has to exist first.
+  recovery from logged-set history (what can I train today?). Its recovery-window
+  numbers trip the §4.5 grounding trigger; **pushback #2 is now resolved**, so that
+  brief is unblocked and waits only on an actual `science-scout` run.
 - **Four folds** — Sports → Cardio, Water → Recovery, Donations → Recovery,
   Body Weight → Home stat. (Habits was a fifth candidate; it is now shelved instead.)
   UI folds are cheap; the Sports/Cardio DB merge is not, and is its own item.
@@ -90,3 +91,11 @@ Decided 2026-08-26 while writing `docs/doctrine.md`; each needs its own brief.
 
 - Standing working agreement (2026-08-26): mutual pushback is expected in both
   directions -- see the `feedback_mutual_pushback_rule` memory.
+- **Local setup (2026-08-26):** Claude Code discovers project subagents by walking
+  *up* from the working directory, and sessions run from `tekio-workspace/` while
+  the repo is `tekio/`. `tekio-workspace/.claude/agents` is therefore a Windows
+  directory junction onto `tekio/.claude/agents`, so the repo stays the single
+  source of truth. Recreate with:
+  `New-Item -ItemType Junction -Path .claude/agents -Target tekio/.claude/agents`
+- **Open on the scout:** the roster's "Harris" needs a full name pinned before the
+  first run, otherwise searches for that voice are ambiguous.

@@ -58,14 +58,19 @@ Per the doctrine's purpose ("tell me what's missing") and P2 (honest reads):
 Existing parts to reuse: `BodyMap.tsx`, `MuscleCoverageCard.tsx`,
 `MuscleStatusList.tsx`, `AdaptationCard.tsx`, `RecoveryCard.tsx`.
 
-## 4. Blocked on grounding
+## 4. Grounding required (tooling now exists)
 
 The local level needs recovery-window numbers (how long until a muscle is
 "recovered" — commonly cited as 48–72 h, varying by muscle size, training age and
 session volume). That is exactly a §4.5 number claiming physiological meaning, so
-it **requires `## Grounding` before implementation** — which means this brief is
-blocked on pushback #2 in
-[feature-grounding.md](feature-grounding.md) (the `science-scout` subagent).
+it **requires `## Grounding` before implementation**.
+
+The `science-scout` subagent that produces that block now exists
+([.claude/agents/science-scout.md](../../.claude/agents/science-scout.md), shipped
+2026-08-26), so this brief is **no longer blocked on tooling** — it waits only on an
+actual scout run for the per-muscle recovery window. `/ground` (deliverable 3 in
+[feature-grounding.md](feature-grounding.md)) is not built yet; until it is, invoke
+the scout directly and paste its block in below.
 
 Good sign, not a problem: the gate caught its first real case unprompted.
 
