@@ -43,6 +43,11 @@ it; one has to be created before a scout run has anywhere to land.
 Counts: **75 rows**, of which 64 fire the trigger, 8 are ambiguous, 3 do not
 fire. **31 of the 64 firing rows are `unnamed`** — see [§13.1](#131-the-gated-table-is-a-location-list).
 
+**Struck-through rows are fixed**, not grounded. 2026-08-26 removed six
+duplicate/contradictory copies (§2, §5); every surviving claim is still
+`unknown`. De-duplicating a number does not ground it — it just means there is
+now one thing to ground.
+
 ---
 
 ## 1. Adaptation targets — what Home calls "missing"
@@ -76,13 +81,15 @@ weights").
 | 2.1 | `[1, 5]` | [adaptations.ts:118](../src/constants/adaptations.ts#L118) | 1–5 reps = strength | named | unknown | cross-adaptation-rep-ranges |
 | 2.2 | `[6, 15]` | [adaptations.ts:137](../src/constants/adaptations.ts#L137) | 6–15 reps = hypertrophy | named | unknown | cross-adaptation-rep-ranges |
 | 2.3 | `[16, 999]` | [adaptations.ts:156](../src/constants/adaptations.ts#L156) | 16+ reps = muscular endurance | named | unknown | cross-adaptation-rep-ranges |
-| 2.4 | `reps <= 5` | [lib/adaptations.ts:26](../src/lib/adaptations.ts#L26) | Same boundary as 2.1 — **this is the copy the app actually runs** | unnamed | unknown | cross-adaptation-rep-ranges |
-| 2.5 | `reps <= 15` | [lib/adaptations.ts:27](../src/lib/adaptations.ts#L27) | Same boundary as 2.2, likewise live | unnamed | unknown | cross-adaptation-rep-ranges |
+| 2.4 | ~~`reps <= 5`~~ | — | **Fixed 2026-08-26.** `classifyWeightSet` now derives its boundaries from `repRange`, so 2.1–2.3 are the live values and there is one copy | — | — | — |
+| 2.5 | ~~`reps <= 15`~~ | — | **Fixed 2026-08-26**, same change | — | — | — |
 | 2.6 | 18 keyword rules | [adaptations.ts:242-265](../src/constants/adaptations.ts#L242) | "kettlebell swing is power", "pogo is speed", etc. — a physiological classification carrying **no digit** | ? | unknown | cross-adaptation-rep-ranges |
 
-> **2.1–2.3 are dead code.** `grep -rn "repRange" src/` shows the field declared
-> and never read. The gated table names the field that does nothing and misses
-> the two lines that do the work. See
+> **~~2.1–2.3 are dead code.~~ Fixed 2026-08-26** — `classifyWeightSet` now reads
+> `repRange` ([lib/adaptations.ts](../src/lib/adaptations.ts#L23)), so the gated
+> constant is the live one. Behaviour is unchanged, so no claim moved
+> (exemption 2). The rows stay `unknown`: de-duplicating a number does not ground
+> it. The finding it produced stands — see
 > [§13.1](#131-the-gated-table-is-a-location-list).
 
 ## 3. `rx` prescriptions — 9 blocks, ~45 numbers in prose
@@ -125,21 +132,23 @@ sharpest debt in the app because they read as settled fact.
 
 ## 5. Cycle length & deload
 
-Four copies of the cycle length (three saying `6`, one saying `4`) and three of
-the deload factor. **No brief in `roadmap/` carries any of them.**
+**Three bugs here were fixed 2026-08-26** (struck-through rows). What remains is
+the claim itself: a 6-week block, deloading in week 6, at 70% of reps. **No brief
+in `roadmap/` carries any of it** — this is the one domain that needs a brief
+created before a scout run has anywhere to land.
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
 | 5.1 | `CYCLE = 6` | [app.ts:3](../src/constants/app.ts#L3) | A training block is 6 weeks | named | unknown | **(no brief)** |
-| 5.2 | `CYCLE = 6` | [utils.ts:11](../src/lib/utils.ts#L11) | File-private duplicate that shadows 5.1 — and this is the one all cycle math reads | unnamed | unknown | **(no brief)** |
-| 5.3 | `wc === CYCLE` | [utils.ts:52](../src/lib/utils.ts#L52), [:62](../src/lib/utils.ts#L62) | **Week 6 is the deload week** — deload placement, explicitly gated by Step 0 | unnamed | unknown | **(no brief)** |
-| 5.4 | `× 0.7` | [VolumeRow.tsx:28](../src/components/tabs/weights/VolumeRow.tsx#L28) | Deload = 70% of last weight **and** 70% of last reps | unnamed | unknown | **(no brief)** |
-| 5.5 | `× 0.7` | [ExPlan.tsx:37](../src/components/tabs/weights/ExPlan.tsx#L37) | Deload button = 70% of reps, weight unchanged. **Disagrees with 5.4** — two deload models, one screen apart | unnamed | unknown | **(no brief)** |
-| 5.6 | `"⚠️ Deload — 70%"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads | unnamed | unknown | **(no brief)** |
-| 5.7 | `cycle_length_weeks: 6` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | Third and fourth copies of 5.1, hardcoded rather than importing `CYCLE`. **Written, never read back** | unnamed | unknown † | **(no brief)** |
-| 5.8 | `deload_week: 6` | [db/program.ts:260](../src/lib/db/program.ts#L260) | Persisted deload placement. Write-only | unnamed | unknown † | **(no brief)** |
-| 5.9 | `{"type":"reps","factor":0.7}` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | The deload magnitude, as a **jsonb column default**. Write-only | unnamed | unknown | **(no brief)** |
-| 5.10 | `4` | `program_phases.duration_weeks` column default (DB only) | A phase is 4 weeks — **contradicts `CYCLE = 6`** and is reachable by any insert that omits the column | unnamed | unknown | **(no brief)** |
+| 5.2 | ~~`CYCLE = 6`~~ | — | **Fixed 2026-08-26** — `utils.ts` imports `CYCLE` from `constants/app` | — | — | — |
+| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:8](../src/constants/app.ts#L8), used at [utils.ts:51](../src/lib/utils.ts#L51), [:61](../src/lib/utils.ts#L61) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | **(no brief)** |
+| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:15](../src/constants/app.ts#L15), applied by `deloadSets` at [utils.ts:69](../src/lib/utils.ts#L69) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | **(no brief)** |
+| 5.5 | ~~`× 0.7`~~ ×2 | — | **Fixed 2026-08-26.** `VolumeRow` previewed a deload scaling *weight and reps* that the app could never apply — `ExPlan`'s button, `ExPlan`'s exported helper and `programs.deload_strategy` all say reps-only. The preview was the outlier and now calls `deloadSets` | — | — | — |
+| 5.6 | `"⚠️ Deload — 70% reps"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads — now derived from 5.4 and says *what* is at 70% | named | unknown | **(no brief)** |
+| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | **(no brief)** |
+| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:260](../src/lib/db/program.ts#L260) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | **(no brief)** |
+| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | **(no brief)** |
+| 5.10 | ~~`4`~~ | — | **Fixed 2026-08-26** (migration `20260826144439`). The `program_phases.duration_weeks` default asserted a 4-week phase against `CYCLE = 6`; default dropped, so a missing value is now `NULL` — which the type already allowed. No number replaced it | — | — | — |
 
 ## 6. Cardio & sport classification
 
@@ -229,6 +238,10 @@ first test against real numbers rather than the four examples it was written
 from. Result: **8 of 75 rows (11%) needed a judgement call Step 0 does not
 make** — inside the bar #5 set. But the misses are not random. They cluster, and
 one edit fixes most of them.
+
+**Eight findings, each with a proposed SKILL.md edit. None are applied yet.**
+§13.7's second half is the one that changes plans rather than wording: it means
+#7(b)'s opportunistic strategy does not reach `RECOVERY_WEIGHTS` at all.
 
 ### 13.1 The gated table is a location list
 
@@ -370,6 +383,27 @@ and must not be ticked off as handled.
 > Renormalisation preserves relative claims; it does not create them. If the
 > weights were `unknown` before, they are `unknown` after, and the inventory row
 > does not clear.
+
+**And it is worse than that — #7(b)'s strategy depends on the opposite** (raised
+2026-08-26). The roadmap says `RECOVERY_WEIGHTS` "is already due for rewrite by
+the Habits reweight… so both trip the #5 trigger naturally." That is true of the
+targets, whose values genuinely change under the fused Home read. It is **false
+of the weights**: the Habits reweight is exemption 1 by construction, so it does
+not fire. `RECOVERY_WEIGHTS` can be edited indefinitely and never trip the gate,
+which is pushback #7's original *"the gate is forward-only"* complaint
+reappearing inside an exemption.
+
+So the opportunistic half of #7(b) covers one of its two named cases. Two ways
+out, and they are not equivalent:
+
+| Option | Effect |
+|---|---|
+| **(a) Exemption 1 applies only to a `grounded` / `convention` base.** Renormalising from `unknown` is not exempt — the run happens now. | Fires once, on the Habits reweight, on the number #6 used as its own worked example. Self-limiting: after the run the base is labelled and the exemption applies forever after. |
+| **(b) Leave the exemption; ground `RECOVERY_WEIGHTS` on the 6-week clock instead.** | Honest, but concedes that "opportunistic" does not reach it, and R2's clock becomes the only mechanism — which is what #7(b) said it wanted to avoid relying on. |
+
+I lean **(a)**: it is one extra scout run, on the number the whole grounding
+brief was written around, and it closes the hole rather than routing around it.
+Recorded here rather than acted on — it is a change to the spec, not to the app.
 
 ### 13.8 Ambiguous, left ambiguous
 

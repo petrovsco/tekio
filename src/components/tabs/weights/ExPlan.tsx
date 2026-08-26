@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isDeloadDate, r05 } from '../../../lib/utils'
+import { isDeloadDate, deloadSets } from '../../../lib/utils'
 import { VolumeRow } from './VolumeRow'
 import type { WeightEntry, LiftSet } from '../../../types'
 
@@ -35,7 +35,7 @@ export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWit
           {isDeload ? (
             lastPerf && (
               <button
-                onClick={() => onPickWithSets(ex, lastPerf.sets.map(s => ({ weight: s.weight, reps: Math.max(1, Math.round(s.reps * 0.7)) })))}
+                onClick={() => onPickWithSets(ex, deloadSets(lastPerf.sets))}
                 className="text-[11px] font-semibold text-white bg-dl-tx rounded-full px-2.5 py-1"
               >
                 Deload ↓
@@ -95,9 +95,4 @@ export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWit
       )}
     </div>
   )
-}
-
-// Also export a deload-only version used in SupersetLogger header
-export function deloadSets(sets: LiftSet[]): LiftSet[] {
-  return sets.map(s => ({ weight: r05(s.weight), reps: Math.max(1, Math.round(s.reps * 0.7)) }))
 }

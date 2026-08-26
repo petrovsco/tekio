@@ -5,7 +5,8 @@ import {
 } from '../../../lib/utils'
 import type { GroupedExercise } from '../../../lib/utils'
 import { BLOCK_META } from '../../../constants/program'
-import { ExPlan, deloadSets } from './ExPlan'
+import { ExPlan } from './ExPlan'
+import { deloadSets } from '../../../lib/utils'
 import { SSBadge } from '../../ui/Badges'
 import type { Program, ProgramDay, ProgramDayBlock, WeightEntry, LiftSet, BlockType, DayOfWeek } from '../../../types'
 

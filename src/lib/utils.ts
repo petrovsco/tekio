@@ -1,14 +1,13 @@
 import type {
   WeightEntry, Program, ProgramDay, ProgramWeekOverride, MobilityEntry, DayOfWeek,
   Habit, HabitCompletion, HabitCadence, HabitProgress, ExerciseMuscleLink, MuscleGroup,
-  MuscleContribution, WaterEntry, CardioEntry,
+  MuscleContribution, WaterEntry, CardioEntry, LiftSet,
 } from '../types'
+import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../constants/app'
 
 export type GroupedExercise =
   | { type: 'single'; exercises: [string] }
   | { type: 'superset'; exercises: [string, string] }
-
-const CYCLE = 6
 
 export const uid = (): string =>
   Date.now().toString(36) + Math.random().toString(36).slice(2)
@@ -49,7 +48,7 @@ export function cycleInfo(p: Program | null | undefined): CycleInfo {
   // Once all CYCLE weeks (including deload) have elapsed, the program is done
   if (weekCount >= CYCLE) return { week: CYCLE, isDeload: false, isComplete: true }
   const wc = weekCount + 1 // 1-based current week number (1 … CYCLE)
-  return { week: wc, isDeload: wc === CYCLE, isComplete: false }
+  return { week: wc, isDeload: wc === DELOAD_WEEK, isComplete: false }
 }
 
 export function isDeloadDate(startDate: string | null | undefined, d: string): boolean {
@@ -59,7 +58,19 @@ export function isDeloadDate(startDate: string | null | undefined, d: string): b
     Math.floor((new Date(d).getTime() - new Date(startDate).getTime()) / 86400000),
   )
   const wc = (Math.floor(days / 7) % (CYCLE + 1)) + 1
-  return wc === CYCLE
+  return wc === DELOAD_WEEK
+}
+
+/**
+ * A deload session's prescribed sets: reps scaled by {@link DELOAD_REP_FACTOR}
+ * (min 1), load unchanged. The single deload model — the plan preview and the
+ * "Deload ↓" button must not disagree. See docs/grounding-inventory.md §5.
+ */
+export function deloadSets(lastSets: LiftSet[]): LiftSet[] {
+  return lastSets.map(s => ({
+    weight: r05(s.weight),
+    reps: Math.max(1, Math.round(s.reps * DELOAD_REP_FACTOR)),
+  }))
 }
 
 export function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {

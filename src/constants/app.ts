@@ -2,6 +2,19 @@ export const USER_ID = 'a0000000-0000-0000-0000-000000000001'
 
 export const CYCLE = 6
 
+/**
+ * Deload week within the cycle (1-based) — the last week of every cycle.
+ * Ungrounded; see docs/grounding-inventory.md §5.
+ */
+export const DELOAD_WEEK = CYCLE
+
+/**
+ * Deload dose: reps are scaled to 70% of the last session, load unchanged.
+ * `reps`-only is what the app applies and what `programs.deload_strategy`
+ * persists. Ungrounded; see docs/grounding-inventory.md §5.
+ */
+export const DELOAD_REP_FACTOR = 0.7
+
 export const WATER_GOAL_ML = 2500
 
 export const CARDIO_TYPES = ['Running', 'Cycling', 'Swimming', 'Indoor Rowing'] as const

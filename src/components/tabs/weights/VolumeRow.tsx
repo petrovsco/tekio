@@ -1,4 +1,5 @@
-import { r05 } from '../../../lib/utils'
+import { r05, deloadSets } from '../../../lib/utils'
+import { DELOAD_REP_FACTOR } from '../../../constants/app'
 import type { LiftSet } from '../../../types'
 
 const setVol = (w: number, r: number) => w * r
@@ -21,11 +22,13 @@ export function VolumeRow({ pct, lastSets, isDeload, onUse }: VolumeRowProps) {
   if (isDeload) {
     return (
       <div className="mb-2.5">
-        <span className="text-[11px] font-bold text-dl-tx bg-dl-bg px-2 py-0.5 rounded-full">⚠️ Deload — 70%</span>
+        <span className="text-[11px] font-bold text-dl-tx bg-dl-bg px-2 py-0.5 rounded-full">
+          ⚠️ Deload — {Math.round(DELOAD_REP_FACTOR * 100)}% reps
+        </span>
         <div className="flex flex-wrap gap-1 mt-1.5">
-          {lastSets.map((s, i) => (
+          {deloadSets(lastSets).map((s, i) => (
             <span key={i} className="text-xs px-2 py-1 rounded-lg bg-dl-bg text-dl-tx font-semibold">
-              Set {i + 1}: {r05(s.weight * 0.7)}kg × {Math.max(1, Math.round(s.reps * 0.7))}
+              Set {i + 1}: {s.weight}kg × {s.reps}
             </span>
           ))}
         </div>

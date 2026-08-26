@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID, CYCLE } from '../../constants/app'
+import { USER_ID, CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../../constants/app'
 import { startOfWeek, today } from '../utils'
 import type {
   Program, ProgramDay, ProgramPhase, ProgramDayBlock, ProgramDayExercisePrescription,
@@ -256,9 +256,9 @@ export async function saveProgram(
       .insert({
         user_id: USER_ID,
         name: program.name,
-        cycle_length_weeks: 6,
-        deload_week: 6,
-        deload_strategy: { type: 'reps', factor: 0.7 },
+        cycle_length_weeks: CYCLE,
+        deload_week: DELOAD_WEEK,
+        deload_strategy: { type: 'reps', factor: DELOAD_REP_FACTOR },
         weekly_principles: program.weeklyPrinciples ?? null,
       })
       .select('id')

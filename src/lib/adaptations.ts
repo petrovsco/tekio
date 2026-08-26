@@ -20,12 +20,23 @@ export function resolveExerciseAdaptation(
   return defaultAdaptationForExercise(exercise)
 }
 
+/**
+ * Rep-derived adaptations, ordered by their range's lower bound. Derived from
+ * `repRange` so the boundaries have exactly one home — see
+ * docs/grounding-inventory.md §2.
+ */
+const REP_DERIVED = ADAPTATIONS
+  .filter(a => a.repRange !== null)
+  .sort((a, b) => a.repRange![0] - b.repRange![0])
+
 /** Classify a single logged resistance set. An exercise `override` wins over reps. */
 export function classifyWeightSet(reps: number, override?: Adaptation | null): Adaptation {
   if (override) return override
-  if (reps <= 5) return 'strength'
-  if (reps <= 15) return 'hypertrophy'
-  return 'muscular_endurance'
+  for (const a of REP_DERIVED) {
+    if (reps <= a.repRange![1]) return a.key
+  }
+  // Above every range's ceiling — the highest-rep adaptation still applies.
+  return REP_DERIVED[REP_DERIVED.length - 1].key
 }
 
 /**
