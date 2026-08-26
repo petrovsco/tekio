@@ -60,15 +60,15 @@ weights").
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 1.1 | `6` | [adaptations.ts:88](../src/constants/adaptations.ts#L88) | Speed needs 6 weighted sets per muscle group per week (was 3) | named | **convention** | adaptation-weekly-targets |
-| 1.2 | `6` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | Power needs 6 sets/muscle/week (was 4; deliberately identical to speed) | named | **convention** | adaptation-weekly-targets |
+| 1.1 | `6` | [adaptations.ts:88](../src/constants/adaptations.ts#L88) | Speed needs 6 weighted sets per muscle group per week (was 3) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) |
+| 1.2 | `6` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | Power needs 6 sets/muscle/week (was 4; deliberately identical to speed) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) |
 | 1.3 | `6` | [adaptations.ts:145](../src/constants/adaptations.ts#L145) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
 | 1.4 | `10` | [adaptations.ts:173](../src/constants/adaptations.ts#L173) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
 | 1.5 | `6` | [adaptations.ts:199](../src/constants/adaptations.ts#L199) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
 | 1.6 | `3` | [adaptations.ts:63](../src/constants/adaptations.ts#L63) | Skill needs 3 sessions/week | named | unknown | skill-adaptation-data-source |
-| 1.7 | `1` | [adaptations.ts:226](../src/constants/adaptations.ts#L226) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets |
+| 1.7 | `1` | [adaptations.ts:226](../src/constants/adaptations.ts#L226) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
 | 1.8 | `1` | [adaptations.ts:257](../src/constants/adaptations.ts#L257) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
-| 1.9 | `2` | [adaptations.ts:288](../src/constants/adaptations.ts#L288) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets |
+| 1.9 | `2` | [adaptations.ts:288](../src/constants/adaptations.ts#L288) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
 | 1.10 | `0` ×9 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:263](../src/lib/adaptations.ts#L263) | ? | unknown † | — |
 | 1.11 | all 18, duplicated | `adaptation_targets` (DB), 9 rows | Identical values to 1.1–1.9, and **they win** — [lib/adaptations.ts:261-262](../src/lib/adaptations.ts#L261) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
 

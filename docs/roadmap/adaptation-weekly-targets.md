@@ -136,9 +136,9 @@ a quality-driven adaptation with a fatigue-shaped metric.
 
 **That is not a constant edit, and it is not done here.** For resistance
 adaptations `volume[a] += 1` increments **per set**
-([src/lib/adaptations.ts:217](../../src/lib/adaptations.ts#L217)), while
+([src/lib/adaptations.ts:218](../../src/lib/adaptations.ts#L218)), while
 `unit` renders from `modality`
-([src/lib/adaptations.ts:290](../../src/lib/adaptations.ts#L290)). Setting
+([src/lib/adaptations.ts:288](../../src/lib/adaptations.ts#L288)). Setting
 `weeklySessionTarget: 2` on speed today would make the app compare a **set
 count** against a **session target** and still label the result "sets" — a
 silently wrong number, which is worse than the ungrounded one it replaced.
@@ -322,14 +322,16 @@ Raising the integer does not fix this: even `3` yields only ~75 min/week at the
 current classification threshold, still half of every published floor. **So the
 integer is deliberately left alone** — changing it would buy a more plausible
 number without making it true, which is the failure mode this gate exists to
-prevent. The fix is a shape change (follow-up #3), the same blocker that stops
-speed and power moving to session targets.
+prevent. The fix is a shape change (follow-up #2), the same blocker that stops
+speed and power moving to session targets — and it is the *same* blocker, which
+is why both now live in [adaptation-target-shapes.md](adaptation-target-shapes.md).
 
 **The Attia-vs-Galpin fork this forces** is a real design decision and is *not*
 resolved here: Attia's ~180–240 min/wk in four 45–60 min bouts, where the long
 bout is load-bearing (San-Millán's mechanism), versus Galpin's 150–200 min/wk
 accumulated any way with no bout-length floor. Murphy 2019 partly adjudicates in
-Galpin's favour. Whoever implements follow-up #3 picks a side and records it.
+Galpin's favour. Whoever implements [adaptation-target-shapes.md](adaptation-target-shapes.md)
+picks a side and records it.
 
 ### Where the scout's other findings landed
 
@@ -351,9 +353,9 @@ Galpin's favour. Whoever implements follow-up #3 picks a side and records it.
 
 | # | Item | Why it is not done here |
 |---|---|---|
-| 1 | **Session-counting for resistance adaptations**, so speed and power can move to `weeklySessionTarget` and stop being measured with a fatigue-shaped metric. | Not a constant edit — `volume[a]` counts sets, `unit` derives from `modality`. Code change, outside this run's one question. |
-| 2 | **Weekly-minutes target for endurance**, replacing the session count, and picking a side in the Attia/Galpin fork. Garmin already supplies duration. | Same class as #1: a shape change to the target model, not a value. |
-| 3 | **Anaerobic capacity as a block-periodised quality** rather than a standing weekly target. | A periodisation feature, not a number. |
+| 1 | **Session-counting for resistance adaptations**, so speed and power can move to `weeklySessionTarget` and stop being measured with a fatigue-shaped metric. | Not a constant edit — `volume[a]` counts sets, `unit` derives from `modality`. Code change, outside this run's one question. **Now briefed in [adaptation-target-shapes.md](adaptation-target-shapes.md)** — #1, #2 and #3 are one problem, not three. |
+| 2 | **Weekly-minutes target for endurance**, replacing the session count, and picking a side in the Attia/Galpin fork. Garmin already supplies duration. | Same class as #1: a shape change to the target model, not a value. **Briefed in [adaptation-target-shapes.md](adaptation-target-shapes.md).** |
+| 3 | **Anaerobic capacity as a block-periodised quality** rather than a standing weekly target. | A periodisation feature, not a number. Carried as an open question in [adaptation-target-shapes.md](adaptation-target-shapes.md) §5. |
 | 4 | **Row 1.6 — skill = 3 sessions/week.** | Deliberately deferred: blocked on the product decision in [skill-adaptation-data-source.md](skill-adaptation-data-source.md), not on evidence. |
 | 5 | **Tighten the VO₂max classifier's intensity criterion.** | Belongs to [hr-zone-intensity-classification.md](hr-zone-intensity-classification.md). |
 | 6 | **An RIR / effort field.** | Named as the single change that would make Tekiō's "set" mean what the literature's "set" means. Not urgent — ACSM 2026 reports training to momentary fatigue did not consistently affect outcomes. |
