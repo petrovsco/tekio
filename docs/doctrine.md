@@ -45,6 +45,23 @@ sharpen?" before "where does this live?"
 not a justification for building something. A feature earns its default-on place
 or it doesn't ship.
 
+**P5 — Stimulus and recovery are two dimensions of one read, not two places in
+the app.** Sustainable progress needs both sides: stimulus alone injures, recovery
+alone adapts nothing. But they are not opposite ends of one axis — more rest is not
+less training. Every target has a *state* on two axes. Recovery is therefore never a
+destination; it is the second dimension of the muscle and adaptation reads, at two
+levels:
+
+- **Systemic** (sleep, sauna, cold, hydration, HRV / Garmin readiness, blood
+  donation) — one global number. Answers *can I push at all today?*
+- **Local** (hours since that muscle was last stimulated, recent volume load) —
+  per muscle, computed from logged sets. Answers *what can I train today?*
+
+Never split a systemic number N ways and present it as N per-adaptation facts;
+that is one fact wearing a costume (P2). Skill is exempt from *local muscular*
+recovery only — motor consolidation is sleep-dependent, so it leans hardest on the
+systemic side. Any number encoding that needs §4 grounding first.
+
 ## 3. Rules with teeth
 
 **R1 — Cap: at most 4 menu sections.**
@@ -94,19 +111,28 @@ Status of every surface as of 2026-08-26. This table is the shelf; keep it curre
 | Cardio | **Core — capture** | Endurance / VO₂max / anaerobic stimulus. |
 | Mobility | **Core — capture** | Recovery-axis input with its own volume model. |
 | Program | **Core — plan** | Cycle + today's plan; the thing that closes gaps. |
-| Recovery | **Core — read, Home-only** | Already has no tab. The precedent the folds follow. |
+| Recovery | **Core — read, Home-only** | Systemic readiness only (P5). Local recovery fuses into the muscle read rather than living here. Already has no tab — the precedent the folds follow. |
 | Sports | **Fold → Cardio** | Already classifies into cardio adaptations; a sport session is a cardio session with a name and a quality rating. UI folds first; the DB merge is its own brief. |
 | Water | **Fold → Recovery** | Hydration is an FRS sub-score, not a destination. |
 | Donations | **Fold → Recovery** | Not training, but real: full-blood donation suppresses endurance performance for weeks, and eligibility windows are already tracked. A readiness input. |
 | Body Weight | **Fold → Home stat** | A trend, not a stimulus or readiness signal. Inline logging on Home; FRS needs the number anyway. |
-| Habits | **Fold → Admin (definitions) + Home (completion)** | `recoveryHabitSets()` genuinely feeds the Recovery read, so the machinery stays. The tab does not. |
+| Habits | **Shelf — delete by 2026-10-07** | Decided 2026-08-26. A checklist is an adherence tool; the app tells me what's missing, it does not make me do it. Sauna/cold/mobility/sleep are captured directly, so habits was a duplicate capture path. |
 | Profile / Admin / Assistant settings | **Exempt** | Infrastructure, not sections. Not counted against R1. |
 
-**Open question (not decided):** habit-derived *muscle* contributions
-(`habitMuscleContributions()`). Inferred stimulus may make the "what's missing"
-answer less honest than counting only logged sets. Recovery bouts are a
-different case and stay. Decide before the Home redesign.
+**Shelving Habits — two things it must not break:**
 
+1. `ExerciseMuscleEditor.tsx` lives under `tabs/habits/` but edits exercise→muscle
+   mappings, which power the body map and muscle coverage. It **moves to Admin**;
+   it does not get deleted with the section. Same for `muscle_groups` /
+   `exercise_muscle_groups` — Core infrastructure that happens to sit nearby.
+2. Habits feeds `RECOVERY_WEIGHTS.habits` (0.10) and contributes volume via
+   `habitCompletionSets()`. Dropping the input without reweighting silently drags
+   readiness down. Proportional renormalisation of the remaining four preserves
+   their existing relative claims, so it does not trip §4.5 — but see the
+   sequencing note in `roadmap/home-fused-reads.md` before doing it.
+
+Resolved by the same decision: habit-derived *muscle* contributions go too. The
+muscle read counts logged sets only, which is the more honest answer anyway.
 ## 6. Exit condition
 
 The core is **perfected** when:

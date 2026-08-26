@@ -61,18 +61,21 @@ current as each is resolved.
 
 Decided 2026-08-26 while writing `docs/doctrine.md`; each needs its own brief.
 
-- **Home redesign** — purpose "tell me what's missing" implies Home *is* the
-  answer surface. Likely two honest reads: a body map for spatial muscle gaps
-  plus a non-spatial read for whole-body qualities + readiness, with tap-to-drill
-  detail (the JIT layer). Deliberately deferred so the doctrine session stayed a
-  doctrine session.
+- **Home redesign + the stimulus/recovery model** — written up as
+  [home-fused-reads.md](home-fused-reads.md) (proposed, not agreed). Recovery stops
+  being a parallel axis and becomes the second dimension of the muscle and
+  adaptation reads: one systemic number (can I push today?) plus per-muscle local
+  recovery from logged-set history (what can I train today?). **That brief is
+  blocked on pushback #2** — its recovery-window numbers trip the §4.5 grounding
+  trigger, so `science-scout` has to exist first.
 - **Four folds** — Sports → Cardio, Water → Recovery, Donations → Recovery,
-  Body Weight → Home stat, Habits → Admin (definitions) + Home (completion).
+  Body Weight → Home stat. (Habits was a fifth candidate; it is now shelved instead.)
   UI folds are cheap; the Sports/Cardio DB merge is not, and is its own item.
 - **Skill adaptation (roadmap task 8)** is forced by the Home redesign: a surface
   built to show gaps makes a permanently-zero adaptation impossible to ignore.
-- **Open question** — whether habit-derived *muscle* contributions should count
-  as stimulus at all, or whether inferred sets make the read less honest.
+- **Habits shelved** (2026-08-26, delete by 2026-10-07), which also resolves the
+  habit-derived muscle-contribution question: inferred stimulus goes, the muscle read
+  counts logged sets only.
 
 ## Acceptance
 
