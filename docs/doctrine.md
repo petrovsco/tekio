@@ -105,6 +105,12 @@ A roadmap brief in `docs/roadmap/` is not ready until it answers all five:
 
 Status of every surface as of 2026-08-26. This table is the shelf; keep it current.
 
+**This ledger records verdicts, not steps.** Five surfaces below are ruled out
+of the menu and all five still ship — the work that closes the gap is
+[roadmap/doctrine-ledger-execution.md](roadmap/doctrine-ledger-execution.md).
+Pending work lives in `docs/roadmap/`, never in this file (house rule
+`pending-work-in-roadmap`).
+
 | Surface | Verdict | Note |
 |---|---|---|
 | Home (Overview) | **Core — read** | The product. Answers "what's missing" without tapping. |
@@ -121,20 +127,16 @@ Status of every surface as of 2026-08-26. This table is the shelf; keep it curre
 | Habits | **Shelf — delete by 2026-10-07** | Decided 2026-08-26. A checklist is an adherence tool; the app tells me what's missing, it does not make me do it. Sauna/cold/mobility/sleep are captured directly, so habits was a duplicate capture path. |
 | Profile / Admin / Assistant settings | **Exempt** | Infrastructure, not sections. Not counted against R1. |
 
-**Shelving Habits — two things it must not break:**
-
-1. `ExerciseMuscleEditor.tsx` lives under `tabs/habits/` but edits exercise→muscle
-   mappings, which power the body map and muscle coverage. It **moves to Admin**;
-   it does not get deleted with the section. Same for `muscle_groups` /
-   `exercise_muscle_groups` — Core infrastructure that happens to sit nearby.
-2. Habits feeds `RECOVERY_WEIGHTS.habits` (0.10) and contributes volume via
-   `habitCompletionSets()`. Dropping the input without reweighting silently drags
-   readiness down. Proportional renormalisation of the remaining four preserves
-   their existing relative claims, so it does not trip §4.5 — but see the
-   sequencing note in `roadmap/home-fused-reads.md` before doing it.
+**Two conditions attach to the Habits shelf**, and they are conditions on the
+decision, not optional cleanup: `ExerciseMuscleEditor.tsx` moves to Admin rather
+than being deleted with the section, and `RECOVERY_WEIGHTS.habits` (0.10) is
+renormalised rather than dropped. Both are carried in full, with their sequencing
+and their grounding trap, by
+[roadmap/doctrine-ledger-execution.md](roadmap/doctrine-ledger-execution.md).
 
 Resolved by the same decision: habit-derived *muscle* contributions go too. The
 muscle read counts logged sets only, which is the more honest answer anyway.
+
 ## 6. Exit condition
 
 The core is **perfected** when:

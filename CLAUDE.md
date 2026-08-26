@@ -86,8 +86,16 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 @~/.claude/modus/rules/build-before-push.md
 @~/.claude/modus/rules/direct-push.md
 @~/.claude/modus/rules/verify-in-browser.md
+@~/.claude/modus/rules/pending-work-in-roadmap.md
 
 Repo specifics for those rules: this repo is the working directory, so all paths
 are repo-relative — run `npm run build` here; "main branch" means `master`;
 roadmap briefs go to `docs/roadmap/` (the context guard is pointed there via
 `CTX_GUARD_ROADMAP_DIR` in `.claude/settings.local.json`).
+
+**Reference-only docs** — these state what *is* and must never grow a follow-up,
+a "proposed edit" or a next step; those go to `docs/roadmap/` instead:
+[docs/doctrine.md](docs/doctrine.md) (decisions),
+[docs/grounding-inventory.md](docs/grounding-inventory.md) (an index of the 75
+numbers), [supabase/README.md](supabase/README.md) and
+[scripts/garmin-sync/README.md](scripts/garmin-sync/README.md) (how things work).

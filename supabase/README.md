@@ -8,6 +8,12 @@ were never mirrored into this repo. This folder closes that gap.
 
 ## One-time: adopt the existing schema as a baseline
 
+> **Not done yet.** There is no `_remote_schema.sql` in `migrations/`, so the
+> repo and the live database are still out of sync and the "going forward"
+> workflow below rests on a baseline that does not exist. Tracked as
+> [docs/roadmap/supabase-migration-baseline.md](../docs/roadmap/supabase-migration-baseline.md)
+> — this file documents *how*, the brief tracks that it is *outstanding*.
+
 Requires the project's access token + DB password, so run this locally:
 
 ```bash
@@ -33,7 +39,11 @@ supabase db push                # applies to the linked project
 If a change is ever applied out-of-band (dashboard / MCP `apply_migration`),
 mirror it back here as a migration file so the two never drift.
 
-## Applied this session (will fold into the `db pull` baseline)
+## Applied out of band — the record
+
+Kept here because `db pull` cannot regenerate the data migrations. What still
+has to be *decided* about them (commit as files, or accept as server-only) is in
+[the baseline brief](../docs/roadmap/supabase-migration-baseline.md), not here.
 
 - **`program_phases_stage1`** — schema. Adds `program_days.queue_order /
   is_variant / variant_group_key`, the `program_week_overrides` table,

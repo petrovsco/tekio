@@ -25,7 +25,7 @@ is still `unknown`. The blocks live in
 [roadmap/adaptation-weekly-targets.md](roadmap/adaptation-weekly-targets.md).
 
 Rows marked **†** are ones I would *not* spend a scout run on — see
-[§13.2](#132-a-fourth-inventory-state).
+[§13.2](roadmap/ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
 **Step 0** records whether the trigger spec in
 [.claude/skills/ground/SKILL.md](../.claude/skills/ground/SKILL.md) catches the
@@ -44,7 +44,7 @@ this is where #7(b) starts. **(no brief)** = nothing in `roadmap/` would carry
 it; one has to be created before a scout run has anywhere to land.
 
 Counts: **75 rows**, of which 64 fire the trigger, 8 are ambiguous, 3 do not
-fire. **31 of the 64 firing rows are `unnamed`** — see [§13.1](#131-the-gated-table-is-a-location-list).
+fire. **31 of the 64 firing rows are `unnamed`** — see [§13.1](roadmap/ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 
 **Struck-through rows are fixed**, not grounded. 2026-08-26 removed six
 duplicate/contradictory copies (§2, §5); every surviving claim is still
@@ -75,7 +75,7 @@ weights").
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
 > the user sees. The DB rows shadow every default, are currently byte-identical,
 > and carry no marker distinguishing "seeded" from "user-edited". See
-> [§13.3](#133-the-db-shadow-makes-defaults-not-runtime-edits-undecidable).
+> [§13.3](roadmap/ground-trigger-spec-fixes.md#133-the-db-shadow-makes-defaults-not-runtime-edits-undecidable).
 
 ## 2. Rep-range classification
 
@@ -93,7 +93,7 @@ weights").
 > constant is the live one. Behaviour is unchanged, so no claim moved
 > (exemption 2). The rows stay `unknown`: de-duplicating a number does not ground
 > it. The finding it produced stands — see
-> [§13.1](#131-the-gated-table-is-a-location-list).
+> [§13.1](roadmap/ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 
 ## 3. `rx` prescriptions — 9 blocks, ~45 numbers in prose
 
@@ -136,21 +136,22 @@ sharpest debt in the app because they read as settled fact.
 ## 5. Cycle length & deload
 
 **Three bugs here were fixed 2026-08-26** (struck-through rows). What remains is
-the claim itself: a 6-week block, deloading in week 6, at 70% of reps. **No brief
-in `roadmap/` carries any of it** — this is the one domain that needs a brief
-created before a scout run has anywhere to land.
+the claim itself: a 6-week block, deloading in week 6, at 70% of reps.
+**Resolved 2026-08-26** — this was the one domain with nowhere for a block to
+land; [roadmap/cycle-deload-grounding.md](roadmap/cycle-deload-grounding.md) was
+created to carry it.
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 5.1 | `CYCLE = 6` | [app.ts:3](../src/constants/app.ts#L3) | A training block is 6 weeks | named | unknown | **(no brief)** |
+| 5.1 | `CYCLE = 6` | [app.ts:3](../src/constants/app.ts#L3) | A training block is 6 weeks | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
 | 5.2 | ~~`CYCLE = 6`~~ | — | **Fixed 2026-08-26** — `utils.ts` imports `CYCLE` from `constants/app` | — | — | — |
-| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:8](../src/constants/app.ts#L8), used at [utils.ts:51](../src/lib/utils.ts#L51), [:61](../src/lib/utils.ts#L61) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | **(no brief)** |
-| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:15](../src/constants/app.ts#L15), applied by `deloadSets` at [utils.ts:69](../src/lib/utils.ts#L69) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | **(no brief)** |
+| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:9](../src/constants/app.ts#L9), used at [utils.ts:51](../src/lib/utils.ts#L51), [:61](../src/lib/utils.ts#L61) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:16](../src/constants/app.ts#L16), applied by `deloadSets` at [utils.ts:69](../src/lib/utils.ts#L69) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
 | 5.5 | ~~`× 0.7`~~ ×2 | — | **Fixed 2026-08-26.** `VolumeRow` previewed a deload scaling *weight and reps* that the app could never apply — `ExPlan`'s button, `ExPlan`'s exported helper and `programs.deload_strategy` all say reps-only. The preview was the outlier and now calls `deloadSets` | — | — | — |
-| 5.6 | `"⚠️ Deload — 70% reps"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads — now derived from 5.4 and says *what* is at 70% | named | unknown | **(no brief)** |
-| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | **(no brief)** |
-| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:260](../src/lib/db/program.ts#L260) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | **(no brief)** |
-| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | **(no brief)** |
+| 5.6 | `"⚠️ Deload — 70% reps"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads — now derived from 5.4 and says *what* is at 70% | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:260](../src/lib/db/program.ts#L260) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
 | 5.10 | ~~`4`~~ | — | **Fixed 2026-08-26** (migration `20260826144439`). The `program_phases.duration_weeks` default asserted a 4-week phase against `CYCLE = 6`; default dropped, so a missing value is now `NULL` — which the type already allowed. No number replaced it | — | — | — |
 
 ## 6. Cardio & sport classification
@@ -236,208 +237,15 @@ they were missed.
 
 ## 13. What this exercise found about the trigger
 
-Pushback #5 replaced an unenforceable gate with "a crisp trigger". This is its
-first test against real numbers rather than the four examples it was written
-from. Result: **8 of 75 rows (11%) needed a judgement call Step 0 does not
-make** — inside the bar #5 set. But the misses are not random. They cluster, and
-one edit fixes most of them.
+The inventory doubled as the first real test of `/ground` Step 0's trigger and
+found **eight gaps** — 8 of 75 rows (11%) needed a judgement call Step 0 does not
+make. Each carries a proposed `SKILL.md` edit; **none are applied**.
 
-**Eight findings, each with a proposed SKILL.md edit. None are applied yet.**
-§13.7's second half is the one that changes plans rather than wording: it means
-#7(b)'s opportunistic strategy does not reach `RECOVERY_WEIGHTS` at all.
+**Moved 2026-08-26 to [roadmap/ground-trigger-spec-fixes.md](roadmap/ground-trigger-spec-fixes.md)**
+under the `pending-work-in-roadmap` house rule: they are pending work, and this
+file is an index. The `13.x` numbering is preserved there, so existing references
+to §13.1–§13.8 still resolve.
 
-### 13.1 The gated table is a location list
-
-**31 of 64 firing rows are `unnamed`.** Step 0 opens with a claim-shaped sentence
-— *"writes, moves, or reinterprets a number that claims physiological meaning"* —
-and then hands you a table of five locations. In practice the table is what gets
-read, and every miss is a number that entered somewhere the table does not name:
-`src/lib/`, `src/components/tabs/`, a jsonb column default, a magic literal. Note
-that even for `src/constants/app.ts` the table lists *constants*, not the file —
-so `WATER_GOAL_ML` and `DONATION_ELIGIBILITY_DAYS` sit two lines from `CYCLE` and
-are not named.
-
-The sharpest case is rows 2.1–2.5. `repRange` is gated by name and is **dead
-code** — declared, never read. The live rep-range boundaries are `reps <= 5` /
-`reps <= 15` at [lib/adaptations.ts:26-27](../src/lib/adaptations.ts#L26), which
-the table does not name. Someone changing hypertrophy's rep range by editing the
-gated constant would ship nothing, pass the gate, and believe they had grounded
-the app's classifier.
-
-**Proposed edit — reframe the "Gated" table.** Keep it, retitle it *"Where these
-claims live today (non-exhaustive)"*, and add above it:
-
-> The trigger is on the **claim**, not the file. This table maps the claims
-> currently in the app; it is not the boundary of the gate. A copy in an unlisted
-> file is still gated.
-
-And add a Step 0 closing line:
-
-> **Before you proceed, enumerate the copies.** `grep` the value and its
-> siblings. If the number appears more than once, the grounding block covers
-> every copy and the brief says so. Two copies that disagree are a bug the gate
-> has just found — fix it in the same change.
-
-That last sentence alone would have caught 5.4 vs 5.5 (two deload models, one
-screen apart), 5.1/5.2/5.7/5.10 (`6, 6, 6, 4`), 2.1–2.5, and 10.2 vs 10.4.
-
-### 13.2 A fourth inventory state
-
-`convention` is defined as a *scout verdict*. Before any scout has run, all 75
-rows are `unknown` — the column carries no information, and Mode B's clock
-("anything still `unknown` after one cycle earns a deliberate run") points a
-scout at `r05` rounding to the nearest 0.5 kg and at Brzycki's `reps >= 37`
-divide-by-zero guard.
-
-**Proposed edit — Step 3, verdict vocabulary table.** Add one row:
-
-| Scout verdict | Inventory state | What it means for shipping |
-|---|---|---|
-| *(no run needed)* | **n/a — definitional** | The number fixes a unit, period or guard rather than asserting a dose–response. No search could return "supported", because there is no proposition to test. Record why in one line; it never enters the 6-week clock. |
-
-This is an **inventory-only** state, not a fifth scout verdict — the scout's four
-verdicts are unchanged. It applies to the 11 rows marked **†** and should stay
-that small: if a row is arguable, it is `unknown`.
-
-Note the boundary. `CYCLE = 6` is **not** definitional: "a block is 6 weeks with
-a deload at week 6" is a dose claim about deload frequency, and it is the number
-in §5 that most needs a run. `r05` is definitional: plates come in 2.5 kg pairs.
-
-### 13.3 The DB shadow makes "defaults, not runtime edits" undecidable
-
-Step 0 says the gate fires on *"the default — the constant, the seed row, the
-migration"* and never on a runtime edit. `adaptation_targets` breaks this
-cleanly: its 9 rows are byte-identical to the `adaptations.ts` defaults, they
-**override** them at [lib/adaptations.ts:261](../src/lib/adaptations.ts#L261),
-and no column records whether a row is still seeded or has been edited. So "is
-this a default or a runtime edit?" has no answer, and the carve-out cannot be
-applied. Row 7.6 (179 exercise→muscle links) is the same shape at scale.
-
-**Proposed edit — extend the "Defaults, not runtime edits" paragraph:**
-
-> Where a constant has a **DB shadow** — a table whose rows override it — the
-> grounding block lands on the constant *and* the change re-seeds the shadow, or
-> the app keeps showing the ungrounded value. Say in the brief which copy the app
-> reads. Where seeded rows are indistinguishable from edited ones, treat the
-> whole table as seeded and ground it.
-
-### 13.4 The trigger is numeric; some claims carry no digit
-
-Three rows assert physiology with no number in them. `ADAPTATION_PRINCIPLE`
-(3.10) tells the user never to train Skill/Speed/Power/Strength to fatigue.
-`KEYWORD_ADAPTATION` (2.6) rules that a kettlebell swing is power and not
-strength. The endurance cue (3.9) claims Zone 2 "builds mitochondria & fat
-oxidation". Step 0 fires on *"a weight, threshold, target, window, or
-coefficient"* — none of these is one, and all three are exactly the kind of
-confident, unsourced claim the gate exists to catch. `rx.cue` was already gated
-"because prose states numbers too"; the real reason is broader — prose states
-*claims*.
-
-**Proposed edit — Step 0, after the trigger sentence:**
-
-> A claim does not need a digit. Prose that **prescribes or classifies** ("never
-> train to fatigue", "builds mitochondria", "a swing is power work") is gated on
-> the same terms as a coefficient. Prose that merely **labels** is not:
-> `summary: 'Muscle growth'` names the adaptation, it does not assert anything
-> about how to train it.
-
-This is the edit I am least sure about, because it widens the gate and *"a gate
-that fires on everything is a gate nobody reads"* is the skill's own rule. The
-prescribe/classify vs. label split is the narrowing that keeps it honest; if it
-does not hold in practice, drop the edit rather than blunt the rule.
-
-### 13.5 Formulas are not on the enumerated list
-
-Rows 8.1–8.4. Epley and Brzycki are published estimators — citable, and squarely
-physiological. "Coefficient" arguably reaches them, but nobody reading the list
-would think of a formula. Worse, 8.4 blends the two by unweighted mean, which is
-**Tekiō's own invention**; none of the three exemptions covers it, and it is the
-one number in §8 that actually needs a run.
-
-**Proposed edit** — add *formula or estimator* to Step 0's enumeration, and add a
-fourth entry to the exemptions section, as a stated non-exemption:
-
-> **Not an exemption: combining estimators.** Averaging, blending or
-> interpolating between two published formulas produces a third that nobody
-> published. That is a new claim, not a shape change.
-
-### 13.6 A location-shaped hole in "Not gated"
-
-The Not-gated list ends with *"anything in `src/components/ui/`"* — a blanket
-exemption by directory, in a list whose other entries are all by kind. Rows 4.11
-and 4.12 (the Garmin-score model switch; the 80/50 readiness bands that answer
-the purpose sentence's "can I push today?") live one directory over in
-`components/tabs/home/`, and nothing but that accident keeps them gated.
-
-**Proposed edit:** change the entry to *"presentational primitives in
-`src/components/ui/` that state no number"* — which is what was meant.
-
-### 13.7 Exemption 1 will be misapplied within the week
-
-The Habits reweight (rows 4.5–4.10) is Step 0's named example of exemption 1:
-renormalisation preserves every relative claim. That is true, and this is not an
-argument against the exemption. But the ratios being preserved are `unknown` —
-0.45 : 0.15 : 0.15 : 0.15 has never been checked. Preserving an unchecked ratio
-yields an unchecked ratio, so those rows stay `unknown` after the reweight ships
-and must not be ticked off as handled.
-
-**Proposed edit — exemption 1, one added sentence:**
-
-> Renormalisation preserves relative claims; it does not create them. If the
-> weights were `unknown` before, they are `unknown` after, and the inventory row
-> does not clear.
-
-**And it is worse than that — #7(b)'s strategy depends on the opposite** (raised
-2026-08-26). The roadmap says `RECOVERY_WEIGHTS` "is already due for rewrite by
-the Habits reweight… so both trip the #5 trigger naturally." That is true of the
-targets, whose values genuinely change under the fused Home read. It is **false
-of the weights**: the Habits reweight is exemption 1 by construction, so it does
-not fire. `RECOVERY_WEIGHTS` can be edited indefinitely and never trip the gate,
-which is pushback #7's original *"the gate is forward-only"* complaint
-reappearing inside an exemption.
-
-So the opportunistic half of #7(b) covers one of its two named cases. Two ways
-out, and they are not equivalent:
-
-| Option | Effect |
-|---|---|
-| **(a) Exemption 1 applies only to a `grounded` / `convention` base.** Renormalising from `unknown` is not exempt — the run happens now. | Fires once, on the Habits reweight, on the number #6 used as its own worked example. Self-limiting: after the run the base is labelled and the exemption applies forever after. |
-| **(b) Leave the exemption; ground `RECOVERY_WEIGHTS` on the 6-week clock instead.** | Honest, but concedes that "opportunistic" does not reach it, and R2's clock becomes the only mechanism — which is what #7(b) said it wanted to avoid relying on. |
-
-I lean **(a)**: it is one extra scout run, on the number the whole grounding
-brief was written around, and it closes the hole rather than routing around it.
-Recorded here rather than acted on — it is a change to the spec, not to the app.
-
-### 13.8 Ambiguous, left ambiguous
-
-Two cases with no proposed edit, because the resolution would cost more spec than
-the numbers are worth:
-
-- **Sentinel zeros** (1.10). `weeklyMuscleTarget: 0` sits in a gated field and
-  asserts nothing — a `null` substitute read as a flag. Step 0 fires; a reader
-  shrugs and moves on. Harmless, and the real fix (a proper `null`) is a code
-  change, not a spec change.
-- **Form placeholders** (4.14). The 80 °C / 10 °C hints are stored and never
-  scored. "Copy that states no number" does not cover copy that states a number
-  nothing reads. Not gated is the sensible call; writing the rule that says so
-  costs more than it saves.
-
-### 13.9 Where 7(b) starts
-
-Ordered by the priority already agreed (targets before weights) and by what trips
-the trigger on its own:
-
-1. **§1 adaptation targets** (9 numbers + the DB shadow) — the fused Home read
-   rewrites them, and Home's "what's missing" is denominated in them. One scout
-   run: *weekly sets per muscle group for a trained adult*. Row 3.5 resolves in
-   the same run — the hypertrophy card prescribes 10–20 sets/muscle/week while
-   the target says 10.
-2. **§4 recovery weights** (4.6–4.10) — the Habits reweight touches them, though
-   per §13.7 the reweight itself does not ground them. Rows 4.11 and 4.12 belong
-   in the same brief: they decide what the readiness number *means*.
-3. **§5 cycle & deload** — no brief exists, four copies of the cycle length that
-   do not agree, and two deload models one screen apart. Needs a brief created
-   before a scout run has anywhere to land; the disagreement itself is a bug
-   findable without any research.
-4. **3.4 / 3.8 cues** — the known debt, plus its twin. Cheapest possible run:
-   both are named protocols, and the only question is who said it and on what.
+The back-fill running order that was §13.9 now lives in
+[roadmap/feature-grounding.md](roadmap/feature-grounding.md) beside pushback #7,
+whose 7(b) it sequences.

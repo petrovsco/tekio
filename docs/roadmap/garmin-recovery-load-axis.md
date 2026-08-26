@@ -15,12 +15,21 @@ Training-Effect adaptation classifier) shipped 2026-07-13 — see
 [[project_tekio_garmin_cardio_sync]] and the two Garmin scripts under
 `scripts/garmin-sync/`.
 
+**Phase 1 remainder (user action, not blocking this brief):** the activity-sync
+workflow has never been run with a raised `SYNC_DAYS` to backfill history, so
+`cardio_sessions` only holds what the daily cron has picked up since it shipped.
+Actions tab → *Garmin activity sync* → *Run workflow*. Recorded here rather than
+in `scripts/garmin-sync/README.md`, which documents how the sync works, not what
+is outstanding.
+
 ## Context (what exists today)
 
 - **Recovery axis** lives in [src/components/tabs/home/RecoveryCard.tsx](../../src/components/tabs/home/RecoveryCard.tsx).
   It computes a **weekly** `readiness` % as a weighted roll-up of per-modality
   sub-scores (each `clamp01(achieved / weekly target)`):
-  `RECOVERY_WEIGHTS` = { sleep .5, mobility .2, sauna .15, cold .15, habits ... }
+  `RECOVERY_WEIGHTS` = { sleep .45, mobility .15, sauna .15, cold .15, habits .10 }
+  (corrected 2026-08-26 — this brief had drifted; `habits` is being dropped, see
+  [doctrine-ledger-execution.md](doctrine-ledger-execution.md))
   and `RECOVERY_TARGETS` in [src/constants/app.ts](../../src/constants/app.ts).
 - **Sleep Score precedent** — the pattern to copy. `sleep_logs` gained
   `sleep_score` / `source` via the Garmin sleep sync; the per-night sub-score

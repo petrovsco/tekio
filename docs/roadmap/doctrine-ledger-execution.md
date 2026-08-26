@@ -1,0 +1,119 @@
+# Roadmap: Execute the doctrine ledger — four folds and the Habits shelf
+
+**Status:** planned — decided 2026-08-26, **none of it executed**. The ledger records the verdicts; this brief is the work they create.
+
+[doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. The code
+still ships all five. Today `DEFAULTS` in
+[sectionConfig.ts](../../src/lib/db/sectionConfig.ts#L11) seeds **eight
+menu sections** against R1's cap of **four** — so the app is at double its own
+hard limit, and the cap that "is the argument" has never been enforced.
+
+## Why this is a brief and not just a ledger row
+
+Doctrine R3 says shelving and folding are *decisions*, executed by editing the
+ledger and flipping existing config — not by building machinery. That is still
+true, and this brief builds nothing. But a decision with unexecuted code behind
+it is pending work, and per the `pending-work-in-roadmap` house rule it needs a
+file `/roadmap` can see. The ledger keeps the verdicts; the steps live here.
+
+## Target state
+
+| Surface | Ledger verdict | What that means in code |
+|---|---|---|
+| Sports | Fold → Cardio | UI fold first: a sport session is a cardio session with a name and a quality rating. **The DB merge is explicitly a separate brief** — do not start it here |
+| Water | Fold → Recovery | Hydration becomes an FRS sub-score input on the Recovery card |
+| Donations | Fold → Recovery | A readiness input; eligibility windows already tracked |
+| Body Weight | Fold → Home stat | Inline logging on Home; FRS needs the number anyway |
+| Habits | **Shelf — delete by 2026-10-07** | Default-off now; component, tests and unused tables deleted at expiry |
+
+End state: **Weights, Cardio, Mobility** in the menu, one slot of headroom, and
+Recovery still Home-only (the precedent the folds follow).
+
+## Sequencing — this is the part that matters
+
+[home-fused-reads.md](home-fused-reads.md) §5 sets the order, and it exists to
+stop one specific mistake:
+
+1. **Shelf the Habits *tab*** — config-level, reversible, no numbers touched.
+   Flip `show_in_menu` / `show_in_home` false, or drop it from `DEFAULTS`.
+2. **Decide the fused stimulus × recovery model** (home-fused-reads).
+3. **Do the `RECOVERY_WEIGHTS` surgery once**, in whatever shape survives.
+
+Doing step 3 before step 2 is work that gets thrown away: if the recovery read is
+about to be rebuilt as systemic-plus-local, rebalancing today's weekly-rollup
+weights is wasted. **Steps 1 and 2 are independent of the four folds** — the
+folds can proceed in parallel.
+
+## The two things the shelf must not break
+
+Both are called out in the ledger; repeated here because they are easy to miss
+while deleting a directory.
+
+1. **`ExerciseMuscleEditor.tsx` moves to Admin, it is not deleted.** It lives at
+   [src/components/tabs/habits/ExerciseMuscleEditor.tsx](../../src/components/tabs/habits/ExerciseMuscleEditor.tsx)
+   but edits exercise→muscle mappings, which power the body map and muscle
+   coverage — Core infrastructure that happens to sit nearby. Its natural home is
+   next to [MuscleGroupEditor.tsx](../../src/components/tabs/admin/MuscleGroupEditor.tsx),
+   which already does the adjacent job. Same for the `muscle_groups` /
+   `exercise_muscle_groups` tables: they stay.
+2. **`RECOVERY_WEIGHTS.habits` (0.10) must be reweighted, not just dropped.**
+   [app.ts:91-97](../../src/constants/app.ts#L91) currently reads
+   sleep 0.45 / mobility 0.15 / sauna 0.15 / cold 0.15 / habits 0.10. Removing
+   the input without renormalising the other four silently drags readiness down
+   for every day the app has ever scored.
+
+## The grounding trap (inventory §13.7 — read before ticking anything off)
+
+Proportional renormalisation preserves the four survivors' existing relative
+claims, so it is `/ground` **exemption 1** and does **not** trip §4.5. That is
+correct, and it is also the trap:
+
+> Renormalisation preserves relative claims; it does not create them. If the
+> weights were `unknown` before, they are `unknown` after, and the inventory row
+> does not clear.
+
+`0.45 : 0.15 : 0.15 : 0.15` has never been checked. **After this reweight ships,
+inventory rows 4.6–4.9 are still `unknown`** and must not be marked handled.
+Worse, because the reweight is exempt by construction, `RECOVERY_WEIGHTS` can be
+edited indefinitely without ever firing the gate — pushback #7's "forward-only"
+complaint reappearing inside an exemption. The proposed fix (exemption 1 applies
+only to a `grounded` / `convention` base) is
+[ground-trigger-spec-fixes.md](ground-trigger-spec-fixes.md) §13.7 and is a
+prerequisite if you want the reweight to actually pull the run in.
+
+## Also resolved by the same decision
+
+Habit-derived **muscle** contributions go too — the muscle read counts logged
+sets only, which is the more honest answer anyway. That touches
+`habitCompletionSets` in [utils.ts:500](../../src/lib/utils.ts#L500) and its
+three call sites ([adaptations.ts:262](../../src/lib/adaptations.ts#L262),
+[utils.ts:607](../../src/lib/utils.ts#L607), [utils.ts:651](../../src/lib/utils.ts#L651)),
+plus [src/test/habits.test.ts](../../src/test/habits.test.ts).
+
+## Scope
+
+- Step 1 (shelf Habits, config-only) — do now, reversible.
+- The four UI folds — Sports, Water, Donations, Body Weight. Each removes a
+  `DRAWER_TABS` entry in [App.tsx:20](../../src/App.tsx#L20) and a `DEFAULTS` row.
+- Step 3 (reweight) — **blocked on home-fused-reads**.
+- At expiry (2026-10-07): delete `HabitsTab.tsx`, `habits/HabitForm.tsx`,
+  `habits/habitFields.ts`, `habits.test.ts`, `habitCompletionSets`, and the
+  unused habit tables — *after* moving `ExerciseMuscleEditor.tsx`.
+
+## Out of scope
+
+- **The Sports → Cardio DB merge.** UI folds are cheap; the schema merge is not,
+  and the ledger already says it is its own brief.
+- Grounding any recovery number — see the trap above.
+- Any new machinery for managing sections (tier fields, category admin). R3
+  forbids it explicitly: that is solving feature bloat by adding features.
+
+## Acceptance
+
+- `DEFAULTS` seeds at most four menu sections, and R1 is satisfied for the first
+  time.
+- Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
+  logging capability is lost, only destinations.
+- `ExerciseMuscleEditor` is under Admin and the body map still renders.
+- Readiness scores computed before and after the reweight are compared on real
+  data, and the difference is explained rather than discovered.
