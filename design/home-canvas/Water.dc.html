@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: #1a1a1a; } a:hover { color: #6b6b6b; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #f2f2f0; color: #1a1a1a; overflow: hidden; display: flex; flex-direction: column; padding: 14px 16px 12px 16px;">
+
+  <!-- what this artboard decides -->
+  <div>
+    <div style="font-size: 9px; font-weight: 700; letter-spacing: 0.16em; color: #8a8a8a;">FOLD — WATER INTO RECOVERY</div>
+    <div style="font-size: 17px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; margin-top: 3px; text-wrap: pretty;">Hydration is an input to readiness, not a place to go.</div>
+    <div style="font-size: 11px; line-height: 1.4; color: #6b6b6b; margin-top: 4px; text-wrap: pretty;">Same row of the readiness card in both. The only difference is <strong style="color: #1a1a1a;">when the capture control exists</strong>. Both work — tap them.</div>
+  </div>
+
+  <!-- ============ OPTION 1 — ALWAYS-VISIBLE QUICK-ADD ============ -->
+  <div style="margin-top: 12px; background: #ffffff; border: 1px solid #1a1a1a; border-radius: 3px;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-bottom: 1px solid #e2e2e0;">
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em;">OPTION 1 · ALWAYS VISIBLE</span>
+      <span style="font-size: 8px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;">T1</span>
+    </div>
+
+    <div style="padding: 10px 12px 12px 12px;">
+      <div style="display: flex; align-items: center; gap: 7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.6 6 10.6A6 6 0 0 1 6 13.6C6 9.6 12 3 12 3z"/></svg>
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em;">HYDRATION</span>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.02em;">{{ aTotal }}</span>
+        <span style="font-size: 11px; color: #6b6b6b;">/ 3.0 L</span>
+      </div>
+      <div style="height: 6px; background: #e2e2e0; border-radius: 3px; margin-top: 6px;">
+        <div style="height: 6px; background: #1a1a1a; border-radius: 3px; width: {{ aPct }};"></div>
+      </div>
+      <div style="font-size: 10px; color: #6b6b6b; margin-top: 5px;">{{ aNote }}</div>
+
+      <div style="display: flex; gap: 6px; margin-top: 9px;">
+        <sc-for list="{{ aQuick }}" as="q" hint-placeholder-count="3">
+          <div onClick="{{ q.add }}" style="cursor: pointer; flex-grow: 1; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px; font-size: 14px; font-weight: 700;">{{ q.label }}</div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding: 0 12px 10px 12px;">
+      <div style="font-size: 9px; line-height: 1.35; color: #8a8a8a; border-left: 2px solid #c9c9c7; padding-left: 7px; text-wrap: pretty;">
+        Three 46px buttons on the first paint. Logging costs one tap and zero thought — but they occupy T1 space that the five-second answer needs, on a screen whose whole job is the read.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 2 — REVEALED ON INTENT ============ -->
+  <div style="margin-top: 12px; background: #ffffff; border: 1px solid #1a1a1a; border-radius: 3px;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-bottom: 1px solid #e2e2e0;">
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em;">OPTION 2 · REVEALED ON INTENT</span>
+      <span style="font-size: 8px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;">T2</span>
+    </div>
+
+    <div style="padding: 10px 12px 12px 12px;">
+      <div onClick="{{ toggleB }}" style="cursor: pointer;">
+        <div style="display: flex; align-items: center; gap: 7px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3s6 6.6 6 10.6A6 6 0 0 1 6 13.6C6 9.6 12 3 12 3z"/></svg>
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em;">HYDRATION</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.02em;">{{ bTotal }}</span>
+          <span style="font-size: 11px; color: #6b6b6b;">/ 3.0 L</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate({{ bRot }}); margin-left: 2px;"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div style="height: 6px; background: #e2e2e0; border-radius: 3px; margin-top: 6px;">
+          <div style="height: 6px; background: #1a1a1a; border-radius: 3px; width: {{ bPct }};"></div>
+        </div>
+        <div style="font-size: 10px; color: #6b6b6b; margin-top: 5px;">{{ bNote }}</div>
+      </div>
+
+      <sc-if value="{{ bOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top: 9px; border-top: 1px solid #e2e2e0; padding-top: 9px;">
+          <div style="display: flex; gap: 6px;">
+            <sc-for list="{{ bQuick }}" as="q" hint-placeholder-count="3">
+              <div onClick="{{ q.add }}" style="cursor: pointer; flex-grow: 1; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px; font-size: 14px; font-weight: 700;">{{ q.label }}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 8px; margin-top: 8px;">
+            <span style="font-size: 9px; letter-spacing: 0.1em; color: #8a8a8a;">LAST 7 DAYS</span>
+            <span style="flex-grow: 1;"></span>
+            <span style="font-size: 9px; color: #8a8a8a;">nothing logged since 12 Aug</span>
+          </div>
+          <div style="display: flex; align-items: flex-end; gap: 5px; height: 34px; margin-top: 5px;">
+            <sc-for list="{{ history }}" as="h" hint-placeholder-count="7">
+              <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; justify-content: flex-end; height: 34px;">
+                <div style="width: 100%; height: {{ h.h }}; background: {{ h.tone }}; border-radius: 1px; min-height: 2px;"></div>
+                <span style="font-size: 8px; color: #a8a8a8;">{{ h.d }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="padding: 0 12px 10px 12px;">
+      <div style="font-size: 9px; line-height: 1.35; color: #8a8a8a; border-left: 2px solid #c9c9c7; padding-left: 7px; text-wrap: pretty;">
+        The number is always visible — the read never disappears. The buttons and the history are one tap away and load only when asked. Costs one extra tap on every log; saves T1 space and initial bundle on every open.
+      </div>
+    </div>
+  </div>
+
+  <span style="flex-grow: 1;"></span>
+
+  <!-- the fork stated plainly -->
+  <div style="border-top: 1px solid #d6d6d4; padding-top: 9px;">
+    <div style="font-size: 10px; line-height: 1.45; color: #1a1a1a; text-wrap: pretty;">
+      <strong>The fork this decides three times.</strong> Water, blood donation and body weight all take the same answer. Doctrine §1 says capture is overhead and the read is the product — which argues for Option 2. The counter-argument is real: hydration is logged several times a day, and a control you have to find is a control you stop using. <strong>Water is the strongest case for Option 1</strong> of the three.
+    </div>
+    <div style="font-size: 9px; color: #8a8a8a; margin-top: 6px;">Data: last water log 12 Aug 2026, 700 ml. Daily range 0.7–2.9 L. Target 3.0 L <strong style="color: #1a1a1a;">PLACEHOLDER</strong> — no grounded hydration target exists yet.</div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+var HIST = [
+  { d: 'W', ml: 0 }, { d: 'T', ml: 0 }, { d: 'F', ml: 0 },
+  { d: 'S', ml: 0 }, { d: 'S', ml: 0 }, { d: 'M', ml: 0 }, { d: 'T', ml: 0 }
+];
+
+class Component extends DCLogic {
+  fmt(ml) {
+    return (ml / 1000).toFixed(1) + ' L';
+  }
+
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var a = st.a || 0;
+    var b = st.b || 0;
+
+    var mkA = function (ml) {
+      return { label: '+' + ml, add: function () { self.setState({ a: a + ml }); } };
+    };
+    var mkB = function (ml) {
+      return { label: '+' + ml, add: function () { self.setState({ b: b + ml, bOpen: true }); } };
+    };
+
+    var history = HIST.map(function (h) {
+      return {
+        d: h.d,
+        h: Math.max(2, Math.round((h.ml / 3000) * 26)) + 'px',
+        tone: h.ml === 0 ? '#e2e2e0' : '#1a1a1a'
+      };
+    });
+
+    return {
+      aTotal: this.fmt(a),
+      aPct: Math.min(100, Math.round((a / 3000) * 100)) + '%',
+      aNote: a === 0 ? 'Nothing logged today. Last entry 15 days ago.' : this.fmt(a) + ' logged today — readiness recalculated.',
+      aQuick: [mkA(250), mkA(500), mkA(750)],
+
+      bTotal: this.fmt(b),
+      bPct: Math.min(100, Math.round((b / 3000) * 100)) + '%',
+      bNote: b === 0 ? 'Nothing logged today. Last entry 15 days ago. Tap to log.' : this.fmt(b) + ' logged today — readiness recalculated.',
+      bQuick: [mkB(250), mkB(500), mkB(750)],
+      bOpen: st.bOpen === true,
+      bRot: st.bOpen === true ? '180deg' : '0deg',
+      toggleB: function () { self.setState({ bOpen: !(st.bOpen === true) }); },
+      history: history
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Structure" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html",          "title": "A — readiness gates the read",   "x": 0,    "y": 0,    "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
+    { "file": "Alongside.dc.html",     "title": "B — readiness sits alongside",   "x": 470,  "y": 0,    "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
+    { "file": "MuscleDrillIn.dc.html", "title": "Muscle drill-in (T2)",           "x": 940,  "y": 0,    "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
+    { "file": "Water.dc.html",         "title": "Water inline",                   "x": 0,    "y": 1000, "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
+    { "file": "Donations.dc.html",     "title": "Donations inline",               "x": 470,  "y": 1000, "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
+    { "file": "BodyWeight.dc.html",    "title": "Body Weight inline",             "x": 940,  "y": 1000, "w": 390, "h": 844, "page": "page-1", "is_interactive": true }
+  ],
+  "annotations": [
+    {
+      "id": "round-1",
+      "x": -420,
+      "y": 0,
+      "w": 340,
+      "page": "page-1",
+      "text": "ROUND 1 — STRUCTURE\n\nGrey boxes, real numbers, one type weight. No colour or type decisions yet — those are round 2.\n\nRun the five-second test BEFORE tapping anything: open A, then B, five seconds each. Can you name (1) which muscles are under-stimulated, (2) which adaptations are untouched, (3) whether to push today?\n\nWrite the answer down. Then start tapping."
+    },
+    {
+      "id": "fork-1",
+      "x": -420,
+      "y": 300,
+      "w": 340,
+      "page": "page-1",
+      "text": "FORK 1 — where readiness sits\n\nA: readiness GATES the local read. One instruction, never two. On a bad day the gap is dimmed.\n\nB: readiness sits ALONGSIDE. The gap is never hidden; you combine the two signals yourself.\n\nSecond question, answered differently in each: the six whole-body qualities get ONE combined read in A, ONE STATE EACH in B."
+    },
+    {
+      "id": "fork-2",
+      "x": -420,
+      "y": 1000,
+      "w": 340,
+      "page": "page-1",
+      "text": "FORK 2 — when the capture control exists\n\nThe same fork three times: always-visible quick-add (T1) vs revealed-on-intent (T2). Both work on all three artboards — tap them.\n\nWater is logged daily. Donation three times a year. Body weight twice a month. One answer has to cover all three, and it decides three folds at once."
+    },
+    {
+      "id": "tiers",
+      "x": 1410,
+      "y": 0,
+      "w": 320,
+      "page": "page-1",
+      "text": "THE TIERS\n\nT1 — on screen the moment Home paints. This is the entire five-second answer and nothing else. Ships in the initial chunk.\n\nT2 — appears when the read raises a question: a drill-in, a detail, an inline capture. Lazy chunk, prefetched on hover.\n\nT3 — reached by an explicit destination change. Lazy chunk, no prefetch.\n\nIf the glance needs a tap, T1 is wrong. If every chart is in T1, the bundle is wrong."
+    },
+    {
+      "id": "placeholders",
+      "x": 1410,
+      "y": 360,
+      "w": 320,
+      "page": "page-1",
+      "text": "PLACEHOLDERS\n\nEvery physiological threshold on this canvas is marked PLACEHOLDER and is NOT decided:\n\n· 60 sets per muscle per cycle\n· recovered after 48 h\n· 3.0 L hydration target\n· donation windows 14 / 56 days\n· the readiness push threshold\n\n/ground runs before any of these becomes code."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

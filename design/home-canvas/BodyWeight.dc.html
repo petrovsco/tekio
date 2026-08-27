@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: #1a1a1a; } a:hover { color: #6b6b6b; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #f2f2f0; color: #1a1a1a; overflow: hidden; display: flex; flex-direction: column; padding: 14px 16px 12px 16px;">
+
+  <div>
+    <div style="font-size: 9px; font-weight: 700; letter-spacing: 0.16em; color: #8a8a8a;">FOLD — BODY WEIGHT INTO A HOME STAT</div>
+    <div style="font-size: 17px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.2; margin-top: 3px; text-wrap: pretty;">A trend, not a stimulus and not a readiness signal.</div>
+    <div style="font-size: 11px; line-height: 1.4; color: #6b6b6b; margin-top: 4px; text-wrap: pretty;">The only number here that is not about today. It earns its place because the food recovery score needs it — and because the direction is actionable on its own.</div>
+  </div>
+
+  <!-- ============ OPTION 1 — ALWAYS-VISIBLE QUICK-ADD ============ -->
+  <div style="margin-top: 12px; background: #ffffff; border: 1px solid #1a1a1a; border-radius: 3px;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-bottom: 1px solid #e2e2e0;">
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em;">OPTION 1 · ALWAYS VISIBLE</span>
+      <span style="font-size: 8px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;">T1</span>
+    </div>
+    <div style="padding: 10px 12px 12px 12px;">
+      <div style="display: flex; align-items: center; gap: 7px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20h14l-2.5-11h-9zM12 9V6M9.5 6h5"/></svg>
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em;">BODY WEIGHT</span>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 21px; font-weight: 700; letter-spacing: -0.025em;">{{ aWeight }}</span>
+        <span style="font-size: 11px; color: #6b6b6b;">kg</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+        <svg viewBox="0 0 200 34" width="100%" height="34" preserveAspectRatio="none" style="flex-grow: 1;">
+          <polyline points="{{ spark }}" fill="none" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+          <circle cx="{{ lastX }}" cy="{{ lastY }}" r="2.6" fill="#1a1a1a"/>
+        </svg>
+      </div>
+      <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 3px;">
+        <span style="font-size: 10px; color: #6b6b6b;">Mar 74.0</span>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 10px; font-weight: 700;">+3.4 kg in 5 months</span>
+      </div>
+
+      <div style="display: flex; gap: 6px; margin-top: 9px; align-items: stretch;">
+        <div onClick="{{ aDown }}" style="cursor: pointer; width: 56px; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+        </div>
+        <div style="flex-grow: 1; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e2e0; border-radius: 3px; font-size: 17px; font-weight: 700;">{{ aDraft }} kg</div>
+        <div onClick="{{ aUp }}" style="cursor: pointer; width: 56px; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div onClick="{{ aSave }}" style="cursor: pointer; width: 66px; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px; background: #1a1a1a; color: #ffffff; font-size: 12px; font-weight: 700;">Save</div>
+      </div>
+      <div style="font-size: 10px; color: #6b6b6b; margin-top: 6px;">{{ aNote }}</div>
+    </div>
+    <div style="padding: 0 12px 10px 12px;">
+      <div style="font-size: 9px; line-height: 1.35; color: #8a8a8a; border-left: 2px solid #c9c9c7; padding-left: 7px; text-wrap: pretty;">
+        A stepper on screen every day for a number logged roughly twice a month. It also invites a wrong reflex: fiddling with a number that answers nothing about today.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION 2 — REVEALED ON INTENT ============ -->
+  <div style="margin-top: 12px; background: #ffffff; border: 1px solid #1a1a1a; border-radius: 3px;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-bottom: 1px solid #e2e2e0;">
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em;">OPTION 2 · REVEALED ON INTENT</span>
+      <span style="font-size: 8px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;">T2</span>
+    </div>
+    <div style="padding: 10px 12px 12px 12px;">
+      <div onClick="{{ toggleB }}" style="cursor: pointer;">
+        <div style="display: flex; align-items: center; gap: 7px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20h14l-2.5-11h-9zM12 9V6M9.5 6h5"/></svg>
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.06em;">BODY WEIGHT</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-size: 21px; font-weight: 700; letter-spacing: -0.025em;">{{ bWeight }}</span>
+          <span style="font-size: 11px; color: #6b6b6b;">kg</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate({{ bRot }}); margin-left: 2px;"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div style="margin-top: 6px;">
+          <svg viewBox="0 0 200 34" width="100%" height="34" preserveAspectRatio="none">
+            <polyline points="{{ spark }}" fill="none" stroke="#1a1a1a" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <circle cx="{{ lastX }}" cy="{{ lastY }}" r="2.6" fill="#1a1a1a"/>
+          </svg>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 3px;">
+          <span style="font-size: 10px; color: #6b6b6b;">Mar 74.0</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-size: 10px; font-weight: 700;">+3.4 kg in 5 months</span>
+        </div>
+      </div>
+
+      <sc-if value="{{ bOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top: 9px; border-top: 1px solid #e2e2e0; padding-top: 9px;">
+          <div style="display: flex; gap: 6px; align-items: stretch;">
+            <div onClick="{{ bDown }}" style="cursor: pointer; width: 56px; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg>
+            </div>
+            <div style="flex-grow: 1; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #e2e2e0; border-radius: 3px; font-size: 17px; font-weight: 700;">{{ bDraft }} kg</div>
+            <div onClick="{{ bUp }}" style="cursor: pointer; width: 56px; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div onClick="{{ bSave }}" style="cursor: pointer; width: 66px; min-height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid #1a1a1a; border-radius: 3px; background: #1a1a1a; color: #ffffff; font-size: 12px; font-weight: 700;">Save</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 9px;">
+            <sc-for list="{{ recent }}" as="r" hint-placeholder-count="4">
+              <div style="display: flex; align-items: baseline; gap: 8px; font-size: 11px;">
+                <span style="color: #6b6b6b;">{{ r.date }}</span>
+                <span style="flex-grow: 1; border-bottom: 1px dotted #d6d6d4;"></span>
+                <span style="font-weight: 600;">{{ r.kg }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size: 10px; color: #6b6b6b; margin-top: 7px;">{{ bNote }}</div>
+        </div>
+      </sc-if>
+    </div>
+    <div style="padding: 0 12px 10px 12px;">
+      <div style="font-size: 9px; line-height: 1.35; color: #8a8a8a; border-left: 2px solid #c9c9c7; padding-left: 7px; text-wrap: pretty;">
+        The trend — the whole actionable part — is on screen at all times. The stepper and the history arrive on the tap that means "I stood on the scale."
+      </div>
+    </div>
+  </div>
+
+  <span style="flex-grow: 1;"></span>
+
+  <div style="border-top: 1px solid #d6d6d4; padding-top: 9px;">
+    <div style="font-size: 10px; line-height: 1.45; color: #1a1a1a; text-wrap: pretty;">
+      <strong>Third instance of one fork.</strong> Water argues weakly for Option 1, donation argues strongly for Option 2, body weight sits between. One rule covers all three without special cases: <strong>the read is T1, the control is T2.</strong>
+    </div>
+    <div style="font-size: 9px; color: #8a8a8a; margin-top: 6px;">Data: 10 logs, 18 Mar – 17 Aug 2026, 74.0 → 77.4 kg. No target weight is shown — there is no grounded one, and a number that changes nothing about today does not get a goal line.</div>
+  </div>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+/* Real logs, oldest first. See design/home-canvas/DATA.md */
+var LOGS = [
+  { date: '18 Mar', kg: 74.0 }, { date: '5 Apr', kg: 74.1 }, { date: '8 Apr', kg: 75.0 },
+  { date: '15 Apr', kg: 74.6 }, { date: '22 Apr', kg: 75.7 }, { date: '29 Apr', kg: 76.7 },
+  { date: '6 May', kg: 76.0 }, { date: '13 May', kg: 76.5 }, { date: '28 Jul', kg: 75.3 },
+  { date: '17 Aug', kg: 77.4 }
+];
+
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var lo = 78.0, hi = 83.0;
+
+    var pts = LOGS.map(function (l, i) {
+      var x = (i / (LOGS.length - 1)) * 200;
+      var y = 32 - ((l.kg - lo) / (hi - lo)) * 30;
+      return { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 };
+    });
+    var spark = pts.map(function (p) { return p.x + ',' + p.y; }).join(' ');
+    var last = pts[pts.length - 1];
+
+    var aDraft = st.aDraft === undefined ? 77.4 : st.aDraft;
+    var bDraft = st.bDraft === undefined ? 77.4 : st.bDraft;
+    var round1 = function (n) { return Math.round(n * 10) / 10; };
+
+    var recent = LOGS.slice(-4).reverse().map(function (l) {
+      return { date: l.date + ' 2026', kg: l.kg.toFixed(1) + ' kg' };
+    });
+
+    return {
+      spark: spark,
+      lastX: String(last.x),
+      lastY: String(last.y),
+
+      aWeight: (st.aSaved === undefined ? 77.4 : st.aSaved).toFixed(1),
+      aDraft: aDraft.toFixed(1),
+      aUp:   function () { self.setState({ aDraft: round1(aDraft + 0.1) }); },
+      aDown: function () { self.setState({ aDraft: round1(aDraft - 0.1) }); },
+      aSave: function () { self.setState({ aSaved: aDraft, aDone: true }); },
+      aNote: st.aDone ? 'Saved. Feeds the food recovery score; the trend line redraws.' : 'Last logged 17 Aug — 10 days ago.',
+
+      bWeight: (st.bSaved === undefined ? 77.4 : st.bSaved).toFixed(1),
+      bDraft: bDraft.toFixed(1),
+      bUp:   function () { self.setState({ bDraft: round1(bDraft + 0.1), bOpen: true }); },
+      bDown: function () { self.setState({ bDraft: round1(bDraft - 0.1), bOpen: true }); },
+      bSave: function () { self.setState({ bSaved: bDraft, bDone: true, bOpen: true }); },
+      bNote: st.bDone ? 'Saved. Feeds the food recovery score; the trend line redraws.' : 'Last logged 17 Aug — 10 days ago.',
+      recent: recent,
+      bOpen: st.bOpen === true,
+      bRot: st.bOpen === true ? '180deg' : '0deg',
+      toggleB: function () { self.setState({ bOpen: !(st.bOpen === true) }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

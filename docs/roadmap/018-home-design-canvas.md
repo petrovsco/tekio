@@ -1,8 +1,9 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
-**Status:** ready — decisions taken 2026-08-27, canvas not yet made. This file is
-the kickoff brief and it contains the prompt to run.
-**Canvas URL:** _not yet published._ Paste it here the moment it exists. Rounds 2
+**Status:** round 1 (structure) published 2026-08-27. Next: the five-second test
+and the §6 pick (steps 2–3).
+**Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
+Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
 or the user's own edits in the editor are lost.
 **Working files:** `design/home-canvas/` — committed to the repo, not the
