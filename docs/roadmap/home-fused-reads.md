@@ -87,6 +87,12 @@ current weekly-rollup weights is work that gets thrown away. Order:
 
 ## 6. Open questions (owners)
 
+**Both design questions below are now scheduled to be answered by a canvas, not
+by argument** — see [home-design-canvas.md](home-design-canvas.md), which turns
+each into a side-by-side variant. That brief also carries the JIT design-system
+requirement and the order in which `/ground` runs.
+
+
 These are **this brief's** kickoff questions, not blockers on the `science-scout`
 work — that is tooling, and this brief is a consumer of it.
 
