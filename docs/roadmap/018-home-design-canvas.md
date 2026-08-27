@@ -2,6 +2,13 @@
 
 **Status:** ready — decisions taken 2026-08-27, canvas not yet made. This file is
 the kickoff brief and it contains the prompt to run.
+**Canvas URL:** _not yet published._ Paste it here the moment it exists. Rounds 2
+and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
+or the user's own edits in the editor are lost.
+**Working files:** `design/home-canvas/` — committed to the repo, not the
+scratchpad. The canvas is re-seeded from these files on every change, so they
+have to outlive the session that made them. They sit outside `src/`, so they add
+nothing to the bundle.
 **Origin:** [010-home-fused-reads.md](010-home-fused-reads.md) §6 says its two open
 questions are "easier to answer with the fused state concrete than in the
 abstract." That is a request for a mockup. This brief is that mockup, plus the
@@ -50,9 +57,12 @@ Two things make this the right moment:
 | Question | Decision |
 |---|---|
 | Scope | **Home + the three fold destinations.** Six artboards. Not the capture screens — doctrine §1 says capture is overhead. |
-| Purpose | **Variants first, then refine.** Round 1 puts the §6 forks side by side and the user picks; round 2 refines the winner into a build spec. |
+| Purpose | **Variants first, then refine.** Round 1 puts the §6 forks side by side and the user picks; later rounds refine the winner into a build spec. |
 | Visual language | **Free.** Explicitly *not* constrained to today's cards / indigo / emoji. The user's words: "I don't want to stick to existing concepts just because we want to spare some work." |
 | Grounding order | **Design first, ground after.** Labelled placeholder thresholds on the canvas; `/ground` before code. No scout run is dispatched by this brief. |
+| Interaction | **Clickable prototype**, not static mockups. A tap on a muscle really opens the drill-in; the quick-add reveal really reveals. **The five-second test is run on first paint, before anything is tapped** — that is how the two rules stay compatible. |
+| Rounds | **Three, and each is cheap.** Structure → look → refine. Never settle structure and visual language in the same pick: "I like B's layout but A's colours" is not an answer. |
+| Icons | **Inline SVG, no emoji.** Icons have to recolour with muscle and readiness state, which emoji cannot do. This **supersedes** the standing "give Home cards an emoji icon" preference, for this surface. |
 
 ## The new constraint: the design system must encode P1
 
@@ -67,9 +77,11 @@ P1 has two faces and they are the same rule:
   surface that raised the question.
 - **Performance face** — what isn't needed now isn't loaded now.
 
-**Today the performance face is at zero.** Measured 2026-08-27:
+**Today the performance face is at zero.** Measured 2026-08-27, re-verified
+2026-08-27:
 
-- No `React.lazy`, no `Suspense`, no dynamic `import()` anywhere in `src/`.
+- No `React.lazy`, no `Suspense`, no dynamic `import()` anywhere in `src/`. (The
+  single grep hit, `src/constants/program.ts:31`, is a type-only `import('../types')`.)
 - One chunk: **1,142 kB / 322 kB gzip**. Vite's own 500 kB warning fires on every
   build and has simply been lived with.
 - `bootstrap()` loads every domain in parallel at startup, whether or not the
@@ -96,28 +108,64 @@ visible (T1); the detail and the capture are just in time (T2).** A design that
 hides the answer behind a tap fails §6. A design that puts every chart in T1
 fails P1.
 
-## The canvas — six artboards
+Because the canvas is a working prototype, this is also *testable* on it: the
+five-second test is the T1 test. If the glance needs a tap, T1 is wrong.
 
-Round 1. Phone-first (390 × 844); the app has a bottom nav and safe-area insets,
-so phone is the honest target.
+## How the canvas is put together
 
-| # | Artboard | What it must show |
+`/design` carries its own mechanics — the seeding helper, the publish rules, the
+`.dc.html` format. **Do not restate them here; they will rot.** What belongs in
+this brief is the design-level shape the executing session has to know before it
+starts:
+
+**Artboards.** Six files in `design/home-canvas/`, phone-first at **390 × 844**
+(the app has a bottom nav and safe-area insets, so phone is the honest target):
+
+| File | Artboard | What it must show |
 |---|---|---|
-| 1 | **Home — variant A** | Systemic readiness **gates** the local read (a bad recovery day visibly greys/dampens what you'd otherwise be told to train) |
-| 2 | **Home — variant B** | Systemic readiness sits **alongside** the local read as a separate signal |
-| 3 | **Muscle drill-in (T2)** | What a tap on one muscle reveals: its state, hours since stimulus, recent volume, and inline capture |
-| 4 | **Water inline** | Hydration as an FRS input on the fused read — not a card, not a destination |
-| 5 | **Donations inline** | Eligibility window as a readiness input |
-| 6 | **Body Weight inline** | Trend + inline logging as a Home stat |
+| `Main.dc.html` | **Home — variant A** | Systemic readiness **gates** the local read (a bad recovery day visibly greys/dampens what you'd otherwise be told to train) |
+| `Alongside.dc.html` | **Home — variant B** | Systemic readiness sits **alongside** the local read as a separate signal |
+| `MuscleDrillIn.dc.html` | **Muscle drill-in (T2)** | What a tap on one muscle reveals: its state, hours since stimulus, recent volume, and inline capture |
+| `Water.dc.html` | **Water inline** | Hydration as an FRS input on the fused read — not a card, not a destination |
+| `Donations.dc.html` | **Donations inline** | Eligibility window as a readiness input |
+| `BodyWeight.dc.html` | **Body Weight inline** | Trend + inline logging as a Home stat |
+
+Variant A is the file called `Main` only because the format requires an entry
+file. **That is a naming convention, not a preference** — give both variants an
+honest case and its main tradeoff, and set the neutral display names (`A —
+readiness gates the read`, `B — readiness sits alongside`) in `canvas.json` so
+the artboard headers don't put a thumb on the scale.
 
 Artboards 4–6 each carry the same secondary fork, shown rather than asked:
 **always-visible quick-add vs. revealed-on-intent.** That is the JIT question in
-its most concrete form, and it decides three folds at once.
+its most concrete form, and it decides three folds at once. It is an interaction
+question, so on these three the reveal has to actually work.
 
 **Two variants of the whole-body read** (speed, power, VO₂max, anaerobic,
-cardio-endurance, skill) must appear across artboards 1–2, since §6's second
+cardio-endurance, skill) must appear across variants A and B, since §6's second
 question is whether they get one combined read or one state each. P2 forbids
 putting them on the silhouette.
+
+**Pages.** One page per round, so nothing is renumbered or overwritten between
+rounds and the earlier thinking stays visible:
+
+```
+page-1  "Structure"   round 1 — grey wireframes, the §6 fork
+page-2  "Look"        round 2 — visual directions on the winner
+page-3  "Refined"     round 3 — the build spec
+```
+
+Set the launch view to the page of the round in progress, so opening the link
+lands on the current work rather than on last week's.
+
+**Scenario switches.** The edge cases (a bad recovery day, a zero-data day, a
+deload week, donation-ineligible) belong on the artboard as a small switch above
+it, not as six more artboards. Keep them few and behavioural — one `scenario`
+enum and one `deload` toggle is the right budget. Everything else stays literal
+text on the artboard so it can be retyped in place.
+
+**Icons** are drawn inline SVG on one grid, one stroke style, recolouring with
+state. No emoji anywhere on the canvas.
 
 ## Exact steps
 
@@ -153,24 +201,47 @@ Also carry over what is already on screen: readiness **36%**, body weight
 **77.4 kg**, Garmin sleep score **80**, and the real sport names (Tennis, Beach
 Volleyball).
 
-### Step 1 — run the canvas
+### Step 1 — round 1: settle the structure
 
-Invoke `/design` with the prompt in the next section. Do **not** hand it the
-doctrine and hope; the prompt below already carries the parts that constrain
-design, because a canvas prompt that says "read the doctrine" produces a canvas
-that ignores it.
+Invoke `/design` with the round-1 prompt below. Do **not** hand it the doctrine
+and hope; the prompt already carries the parts that constrain design, because a
+canvas prompt that says "read the doctrine" produces a canvas that ignores it.
 
-### Step 2 — review the canvas against the doctrine, before showing it
+Round 1 is **low-fi on purpose**: grey boxes, real numbers, one weight of type,
+no colour decisions. Structure only. Working controls only where the fork *is* an
+interaction — the muscle tap on artboards 1–2, the quick-add reveal on 4–6.
+Everything else can be inert this round.
 
-Three checks, and they are pass/fail:
+**Override the skill's default.** `/design` will otherwise try to match the
+existing app pixel-perfectly without being asked, and here that is exactly wrong:
+there is no design system to match. `src/constants/colors.ts` is a flat token bag
+(slate + `#6366f1` indigo), `src/index.css` is Tailwind v4 plus four keyframes,
+and there is no `tailwind.config.*` at all. Read the code for **structure, the
+nine adaptations, the muscle list and the real numbers**; inherit **none of the
+look**.
 
-- **§6, timed.** Look at artboards 1 and 2 for five seconds each. Can you name
-  the under-stimulated muscles, the untouched adaptations, and whether to push?
-  If not, the design fails regardless of how it looks.
+If saving turns out not to be enabled for this account, the canvas is still
+viewable and exportable — but edits made in the editor will not stick, so
+rounds 2 and 3 come back through this brief instead of being done by hand.
+
+### Step 2 — the timed test, and the checks I can actually run
+
+These are split by who can honestly do them. Both halves are pass/fail.
+
+**Yours, on first paint, before tapping anything:** open artboards A and B for
+five seconds each. Can you name the under-stimulated muscles, the untouched
+adaptations, and whether to push? Write the answer down — the acceptance
+criterion is that the test was *performed*, not reasoned about. Only then start
+tapping.
+
+**Mine, on the working files, after handing the canvas over** (the design skill's
+own rule is to show it first and check it after, not to make you wait):
+
 - **P2.** Is anything whole-body drawn on the silhouette? Is anything spatial
   drawn as a bar? Either is a fail.
 - **T1 budget.** List every component in T1 and estimate its weight. Recharts
   alone is a large dependency — if a chart is in T1, justify it or move it.
+- **Placeholders.** Every recovery threshold is labelled `PLACEHOLDER`.
 
 ### Step 3 — decide §6 with the canvas in hand
 
@@ -179,35 +250,54 @@ by picking, then **record the decision and the reason in that brief** and flip
 its status from `proposed` to `agreed`. The canvas is the evidence; the brief
 stays the record.
 
-### Step 4 — refine round
+### Step 4 — round 2: settle the look
 
-Second canvas pass on the winner only: real states, real edge cases (a muscle
-never trained, a zero-data day, a deload week, donation-ineligible), and the T1/
-T2/T3 tier of every component written on the artboard itself.
+Update the same canvas — new page, not a new canvas. If the canvas was edited in
+the editor, read it back into the working files first, or those edits are
+discarded.
 
-### Step 5 — write the design system down
+Put **2–3 genuinely different visual directions** on the winning structure, each
+exploring an axis that can be named out loud, each with an honest motivation and
+its main tradeoff. Three shades of one aesthetic is not a choice. Then pick one.
+
+### Step 5 — round 3: refine into a build spec
+
+The picked structure in the picked language, built into `Main.dc.html`: real
+states, real edge cases via the scenario switches (a muscle never trained, a
+zero-data day, a deload week, donation-ineligible), full working controls, and
+the T1/T2/T3 tier of every component written on the artboard itself. Move the
+unchosen sketches to their own page rather than deleting them — they are the
+record of why.
+
+Run the five-second test again here, on the refined design. Round 1 proved the
+structure carries the answer; this proves the finished look still does.
+
+### Step 6 — write the design system down
 
 One short doc, `docs/design-system.md`, reference-only per the house rule: type
-scale, colour and state semantics, spacing, the component tier table, and the
-rule for deciding a new component's tier. It records what *is*; anything pending
-comes back here.
+scale, colour and state semantics, spacing, the icon rules, the component tier
+table, and the rule for deciding a new component's tier. It records what *is*;
+anything pending comes back here. Cite the canvas URL as the visual source.
 
-### Step 6 — `/ground` the recovery windows
+### Step 7 — `/ground` the recovery windows
 
 Only now. The gate needs: how long until a muscle is "recovered", whether it
 varies by muscle size, and whether local recovery needs a rolling window at all.
 The `## Grounding` block lands in `010-home-fused-reads.md`, and the constants get
 source comments. **No placeholder threshold may become code before this.**
 
-### Step 7 — build, and unblock R1
+### Step 8 — build, and unblock R1
 
 Implement the refined design, then the three folds land on the surface that was
 designed for them, and `DEFAULTS` finally seeds four menu sections.
 
-## The prompt to use in step 1
+## The round-1 prompt
+
+Rounds 2 and 3 do not re-paste this; they carry only what changed.
 
 > Design the Home screen for Tekiō, a single-user training app. Phone-first,
-> 390 × 844.
+> 390 × 844. This round is **low-fi**: grey boxes, real numbers, structure only —
+> no colour or type decisions yet, those are round 2.
 >
 > **The one sentence the app exists for:** *Tekiō tells me what's missing.*
 > Whether my training is balanced across nine adaptations and the muscles that
@@ -239,11 +329,23 @@ designed for them, and `DEFAULTS` finally seeds four menu sections.
 > destination change. T1 must stay small — it is also the initial JS chunk. The
 > answer is always visible; the detail and the capture are just in time.
 >
-> **Do not reuse the app's current look.** It is Tailwind defaults plus emoji and
-> was never designed. Build a visual language that serves a five-second
-> glanceable read.
+> **Working controls, but the glance comes first.** This is a clickable
+> prototype: tapping a muscle opens its drill-in, and the quick-add reveal really
+> reveals. The screen still has to be readable in five seconds *before* anything
+> is tapped — that is the point of the tier labels.
 >
-> **Artboards:** [the six from the table above, pasted in full]
+> **Do not match the existing app, and say so back to me.** There is no design
+> system to lift: no `tailwind.config.*`, `src/constants/colors.ts` is a flat
+> slate-plus-indigo token bag, and the current look is Tailwind defaults plus
+> emoji that was never designed. Read the code for structure, the nine
+> adaptations, the muscle list and the real numbers. Inherit none of the styling.
+> Build a visual language that serves a five-second glanceable read.
+>
+> **Icons are inline SVG on one grid, one stroke style, recolouring with state.**
+> No emoji anywhere.
+>
+> **Artboards:** [the six from the table above, pasted in full, with their file
+> names and the neutral display names]
 >
 > **Use this real data, not placeholders:** [paste step 0 output]
 >
@@ -257,14 +359,18 @@ designed for them, and `DEFAULTS` finally seeds four menu sections.
 - **Any new section.** R1 is the argument; this brief exists to make the cap
   reachable, not to spend its headroom.
 - **Machinery for managing sections.** R3 forbids it.
-- **Writing any physiological number.** Step 6 is the gate.
+- **Writing any physiological number.** Step 7 is the gate.
 - **The Sports → Cardio DB merge.** Still its own brief.
+- **Restating how `/design` works.** The skill carries its own mechanics; this
+  brief carries only the decisions the skill will ask for.
 
 ## Acceptance
 
-- Six artboards exist, published, using real data.
-- The five-second test has actually been performed and its result written down —
-  not reasoned about.
+- Six artboards exist on one published canvas, using real data, and its URL is
+  recorded at the top of this file.
+- `design/home-canvas/` is committed and re-seeds the canvas.
+- The five-second test has actually been performed **twice** — round 1 and round
+  3 — and both results are written down, not reasoned about.
 - Both §6 questions are answered in `010-home-fused-reads.md` with the canvas cited.
 - Every component on the refined artboard carries a T1/T2/T3 label, and the T1
   set is small enough to defend as an initial chunk.
