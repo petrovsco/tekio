@@ -75,7 +75,7 @@ rewrites the file.
    2026-08-26, consistent with the sync never having succeeded.
 
 5. **Backfill** (this absorbs the Phase 1 remainder that used to live in
-   [garmin-recovery-load-axis.md](garmin-recovery-load-axis.md)): the activity
+   [008-garmin-recovery-load-axis.md](../008-garmin-recovery-load-axis.md)): the activity
    sync has never run with a raised `SYNC_DAYS`, so `cardio_sessions` only ever
    held what the daily cron picked up. Re-run *Garmin activity sync* with
    `SYNC_DAYS` temporarily raised in

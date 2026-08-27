@@ -2,12 +2,12 @@
 
 **Status:** ready — decisions taken 2026-08-27, canvas not yet made. This file is
 the kickoff brief and it contains the prompt to run.
-**Origin:** [home-fused-reads.md](home-fused-reads.md) §6 says its two open
+**Origin:** [010-home-fused-reads.md](010-home-fused-reads.md) §6 says its two open
 questions are "easier to answer with the fused state concrete than in the
 abstract." That is a request for a mockup. This brief is that mockup, plus the
 design system it needs.
 **Blocks:** the three remaining folds in
-[doctrine-ledger-execution.md](doctrine-ledger-execution.md) and, through them,
+[014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md) and, through them,
 R1's cap of four menu sections.
 
 ---
@@ -174,7 +174,7 @@ Three checks, and they are pass/fail:
 
 ### Step 3 — decide §6 with the canvas in hand
 
-Answer the two open questions in [home-fused-reads.md](home-fused-reads.md) §6
+Answer the two open questions in [010-home-fused-reads.md](010-home-fused-reads.md) §6
 by picking, then **record the decision and the reason in that brief** and flip
 its status from `proposed` to `agreed`. The canvas is the evidence; the brief
 stays the record.
@@ -196,7 +196,7 @@ comes back here.
 
 Only now. The gate needs: how long until a muscle is "recovered", whether it
 varies by muscle size, and whether local recovery needs a rolling window at all.
-The `## Grounding` block lands in `home-fused-reads.md`, and the constants get
+The `## Grounding` block lands in `010-home-fused-reads.md`, and the constants get
 source comments. **No placeholder threshold may become code before this.**
 
 ### Step 7 — build, and unblock R1
@@ -265,7 +265,7 @@ designed for them, and `DEFAULTS` finally seeds four menu sections.
 - Six artboards exist, published, using real data.
 - The five-second test has actually been performed and its result written down —
   not reasoned about.
-- Both §6 questions are answered in `home-fused-reads.md` with the canvas cited.
+- Both §6 questions are answered in `010-home-fused-reads.md` with the canvas cited.
 - Every component on the refined artboard carries a T1/T2/T3 label, and the T1
   set is small enough to defend as an initial chunk.
 - `docs/design-system.md` exists and is reference-only.

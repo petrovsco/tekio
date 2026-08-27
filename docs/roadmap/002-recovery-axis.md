@@ -25,7 +25,7 @@ sleep 0.45 / mobility 0.15 / sauna 0.15 / cold 0.15 / habits 0.10.
 ## Follow-ups
 
 - **Food / nutrition** — spun out into its own brief now that a scoring model is
-  defined: [nutrition-food-recovery-score.md](nutrition-food-recovery-score.md)
+  defined: [007-nutrition-food-recovery-score.md](007-nutrition-food-recovery-score.md)
   (Phase 1 FRS bench shipped 2026-07-14; app integration is the remaining work).
 - **Export/import** — DONE (2026-07-14, commit 9f3ac0c): sleep/sauna/cold now
   round-trip through `ExportPane`/`ImportPane`. Nutrition export/import is tracked

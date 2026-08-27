@@ -69,7 +69,7 @@ The `science-scout` subagent that produces that block now exists
 ([.claude/agents/science-scout.md](../../.claude/agents/science-scout.md), shipped
 2026-08-26), so this brief is **no longer blocked on tooling** — it waits only on an
 actual scout run for the per-muscle recovery window. `/ground` (deliverable 3 in
-[feature-grounding.md](feature-grounding.md)) is not built yet; until it is, invoke
+[009-feature-grounding.md](009-feature-grounding.md)) is not built yet; until it is, invoke
 the scout directly and paste its block in below.
 
 Good sign, not a problem: the gate caught its first real case unprompted.
@@ -88,7 +88,7 @@ current weekly-rollup weights is work that gets thrown away. Order:
 ## 6. Open questions (owners)
 
 **Both design questions below are now scheduled to be answered by a canvas, not
-by argument** — see [home-design-canvas.md](home-design-canvas.md), which turns
+by argument** — see [018-home-design-canvas.md](018-home-design-canvas.md), which turns
 each into a side-by-side variant. That brief also carries the JIT design-system
 requirement and the order in which `/ground` runs.
 
@@ -103,7 +103,7 @@ work — that is tooling, and this brief is a consumer of it.
   each get its own state?
 - **Resolved 2026-08-26 by P5:** systemic chronic load is Garmin's acute load —
   consume `daily_metrics.acute_load` from
-  [garmin-recovery-load-axis.md](garmin-recovery-load-axis.md), do not recompute it
+  [008-garmin-recovery-load-axis.md](008-garmin-recovery-load-axis.md), do not recompute it
   (that brief also rules it informational context, not a recovery-% input).
   Per-muscle chronic load is a *different scope*, computed from logged sets, and
   stays here. Whether it needs a rolling window at all — and what window — is the

@@ -3,7 +3,7 @@
 **Status:** in progress (2026-08-26) — grounding landed; constants and DB re-seeded.
 **Kickoff:** this file is the brief. It exists to carry a grounding decision, not a
 feature.
-**Origin:** run #7(b) of [feature-grounding.md](feature-grounding.md) — the first
+**Origin:** run #7(b) of [009-feature-grounding.md](009-feature-grounding.md) — the first
 back-fill scout runs. Scope set by [grounding-inventory.md](../grounding-inventory.md)
 §1 (rows 1.1–1.5, 1.7–1.9, 1.11) and §3.5, and by §13.9's ordering
 ("targets before weights").
@@ -13,7 +13,7 @@ back-fill scout runs. Scope set by [grounding-inventory.md](../grounding-invento
 `/ground` Mode B says a one-decision brief is legitimate for a back-fill, and
 this is the case it was written for.
 
-[home-fused-reads.md](home-fused-reads.md) is the natural-looking home — the
+[010-home-fused-reads.md](010-home-fused-reads.md) is the natural-looking home — the
 inventory points nine rows at it — but it is the wrong place, for three reasons:
 
 1. It is marked **"proposed — do not build from this until the two-level model in
@@ -28,7 +28,7 @@ inventory points nine rows at it — but it is the wrong place, for three reason
    volume claim consumed by Home, the Adaptations tab and the body map, and they
    have to outlive any single redesign of the surface that reads them.
 
-So the blocks live here. `home-fused-reads.md` keeps its own grounding
+So the blocks live here. `010-home-fused-reads.md` keeps its own grounding
 requirement — the per-muscle **recovery window**, which is a different question
 and is still unrun.
 
@@ -39,7 +39,7 @@ their nine shadow rows in the `adaptation_targets` table, and the hypertrophy
 `rx.sets` conflict (inventory row 3.5).
 
 **Out, deliberately:** row 1.6 (skill = 3 sessions/week) is blocked on a product
-decision in [skill-adaptation-data-source.md](skill-adaptation-data-source.md),
+decision in [006-skill-adaptation-data-source.md](006-skill-adaptation-data-source.md),
 not on evidence — grounding a target for an adaptation whose data source is
 undecided would be grounding the wrong question. §4 recovery weights and §5
 cycle/deload are separate runs, later. The nine `0` sentinels (row 1.10) assert
@@ -148,7 +148,7 @@ is a code change well outside this run's one question.
 So `6` is taken as the scout's own stated fallback, and recorded for what it is:
 **an exposure counter, not a dose.** The reshape is the real fix and belongs in
 whichever brief rebuilds the adaptation reads — most likely
-[home-fused-reads.md](home-fused-reads.md).
+[010-home-fused-reads.md](010-home-fused-reads.md).
 
 ---
 
@@ -324,13 +324,13 @@ integer is deliberately left alone** — changing it would buy a more plausible
 number without making it true, which is the failure mode this gate exists to
 prevent. The fix is a shape change (follow-up #2), the same blocker that stops
 speed and power moving to session targets — and it is the *same* blocker, which
-is why both now live in [adaptation-target-shapes.md](adaptation-target-shapes.md).
+is why both now live in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md).
 
 **The Attia-vs-Galpin fork this forces** is a real design decision and is *not*
 resolved here: Attia's ~180–240 min/wk in four 45–60 min bouts, where the long
 bout is load-bearing (San-Millán's mechanism), versus Galpin's 150–200 min/wk
 accumulated any way with no bout-length floor. Murphy 2019 partly adjudicates in
-Galpin's favour. Whoever implements [adaptation-target-shapes.md](adaptation-target-shapes.md)
+Galpin's favour. Whoever implements [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md)
 picks a side and records it.
 
 ### Where the scout's other findings landed
@@ -346,18 +346,18 @@ picks a side and records it.
   maintenance source qualifies its result with *"provided intensity is
   maintained"*. A session auto-classified as VO₂max from Garmin zone distribution
   may never have reached 90–100% HRmax. That points at
-  [hr-zone-intensity-classification.md](hr-zone-intensity-classification.md),
+  [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md),
   not at this brief.
 
 ## Follow-ups this brief creates
 
 | # | Item | Why it is not done here |
 |---|---|---|
-| 1 | **Session-counting for resistance adaptations**, so speed and power can move to `weeklySessionTarget` and stop being measured with a fatigue-shaped metric. | Not a constant edit — `volume[a]` counts sets, `unit` derives from `modality`. Code change, outside this run's one question. **Now briefed in [adaptation-target-shapes.md](adaptation-target-shapes.md)** — #1, #2 and #3 are one problem, not three. |
-| 2 | **Weekly-minutes target for endurance**, replacing the session count, and picking a side in the Attia/Galpin fork. Garmin already supplies duration. | Same class as #1: a shape change to the target model, not a value. **Briefed in [adaptation-target-shapes.md](adaptation-target-shapes.md).** |
-| 3 | **Anaerobic capacity as a block-periodised quality** rather than a standing weekly target. | A periodisation feature, not a number. Carried as an open question in [adaptation-target-shapes.md](adaptation-target-shapes.md) §5. |
-| 4 | **Row 1.6 — skill = 3 sessions/week.** | Deliberately deferred: blocked on the product decision in [skill-adaptation-data-source.md](skill-adaptation-data-source.md), not on evidence. |
-| 5 | **Tighten the VO₂max classifier's intensity criterion.** | Belongs to [hr-zone-intensity-classification.md](hr-zone-intensity-classification.md). |
+| 1 | **Session-counting for resistance adaptations**, so speed and power can move to `weeklySessionTarget` and stop being measured with a fatigue-shaped metric. | Not a constant edit — `volume[a]` counts sets, `unit` derives from `modality`. Code change, outside this run's one question. **Now briefed in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md)** — #1, #2 and #3 are one problem, not three. |
+| 2 | **Weekly-minutes target for endurance**, replacing the session count, and picking a side in the Attia/Galpin fork. Garmin already supplies duration. | Same class as #1: a shape change to the target model, not a value. **Briefed in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md).** |
+| 3 | **Anaerobic capacity as a block-periodised quality** rather than a standing weekly target. | A periodisation feature, not a number. Carried as an open question in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md) §5. |
+| 4 | **Row 1.6 — skill = 3 sessions/week.** | Deliberately deferred: blocked on the product decision in [006-skill-adaptation-data-source.md](006-skill-adaptation-data-source.md), not on evidence. |
+| 5 | **Tighten the VO₂max classifier's intensity criterion.** | Belongs to [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md). |
 | 6 | **An RIR / effort field.** | Named as the single change that would make Tekiō's "set" mean what the literature's "set" means. Not urgent — ACSM 2026 reports training to momentary fatigue did not consistently affect outcomes. |
 
 ## Acceptance

@@ -25,7 +25,7 @@ the point:
 | Does the UI read well? | `frontend-design` | Craft, and it belongs after the diff exists |
 
 Growing `/ground` to cover those rebuilds the single all-purpose panel that
-[feature-grounding.md](../../../docs/roadmap/feature-grounding.md) was written
+[009-feature-grounding.md](../../../docs/roadmap/009-feature-grounding.md) was written
 to reject. Four concerns, two moments — don't re-merge them.
 
 Prerequisite: [docs/doctrine.md](../../../docs/doctrine.md) — §4 is the
@@ -50,7 +50,7 @@ This is the canonical trigger spec. Doctrine §4.5 points here.
 | [src/constants/app.ts](../../../src/constants/app.ts) | `RECOVERY_WEIGHTS`, `RECOVERY_TARGETS`, `CYCLE` |
 | [src/constants/adaptations.ts](../../../src/constants/adaptations.ts) | `weeklyMuscleTarget`, `weeklySessionTarget`, `repRange`, every `rx` field (load / reps / sets / rest / effort / **cue**) |
 | `adaptation_targets` (DB) | seeded defaults and any migration that writes `weekly_muscle_target` / `weekly_session_target` |
-| [Nutrition FRS](../../../docs/roadmap/nutrition-food-recovery-score.md) | the six sub-score weights and their cut-points |
+| [Nutrition FRS](../../../docs/roadmap/007-nutrition-food-recovery-score.md) | the six sub-score weights and their cut-points |
 | Local recovery | hours-since-stimulus thresholds, volume-load decay |
 | Deload | which week of the cycle deloads, and by how much |
 

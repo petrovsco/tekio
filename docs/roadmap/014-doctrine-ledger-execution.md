@@ -54,7 +54,7 @@ This brief originally said "steps 1 and 2 are independent of the four folds —
 the folds can proceed in parallel." **That is wrong for three of the four**, and
 the brief's own reasoning is what refutes it.
 
-Step 3 is blocked on [home-fused-reads.md](home-fused-reads.md) because
+Step 3 is blocked on [010-home-fused-reads.md](010-home-fused-reads.md) because
 rebalancing today's recovery weights is wasted if the recovery read is about to
 be rebuilt. The same argument applies to the fold *destinations*:
 
@@ -95,7 +95,7 @@ Recovery still Home-only (the precedent the folds follow).
 
 ## Sequencing — this is the part that matters
 
-[home-fused-reads.md](home-fused-reads.md) §5 sets the order, and it exists to
+[010-home-fused-reads.md](010-home-fused-reads.md) §5 sets the order, and it exists to
 stop one specific mistake:
 
 1. **Shelf the Habits *tab*** — config-level, reversible, no numbers touched.
@@ -146,7 +146,7 @@ Worse, because the reweight is exempt by construction, `RECOVERY_WEIGHTS` can be
 edited indefinitely without ever firing the gate — pushback #7's "forward-only"
 complaint reappearing inside an exemption. The proposed fix (exemption 1 applies
 only to a `grounded` / `convention` base) is
-[ground-trigger-spec-fixes.md](ground-trigger-spec-fixes.md) §13.7 and is a
+[015-ground-trigger-spec-fixes.md](015-ground-trigger-spec-fixes.md) §13.7 and is a
 prerequisite if you want the reweight to actually pull the run in.
 
 ## Also resolved by the same decision

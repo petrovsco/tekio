@@ -52,7 +52,7 @@ itself is safe. The thing to watch is the commit afterwards: the generated
 baseline may include RLS policies that are deliberately wide open
 (`USING(true)`), which is the current intentional MVP posture and must not be
 "tidied up" on sight. That posture changes in
-[rls-auth-v1.1.md](rls-auth-v1.1.md), not here.
+[003-rls-auth-v1.1.md](003-rls-auth-v1.1.md), not here.
 
 ## Acceptance
 

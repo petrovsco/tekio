@@ -18,7 +18,7 @@ Training-Effect adaptation classifier) shipped 2026-07-13 — see
 **Phase 1 is unblocked (2026-08-27).** The sync had been failing since it
 shipped (a dead Garmin token — fixed 2026-08-26); the token was minted and the
 pipeline verified, so this brief's prerequisite is met. See
-[done/garmin-sync-token-restore.md](done/garmin-sync-token-restore.md).
+[done/017-garmin-sync-token-restore.md](done/017-garmin-sync-token-restore.md).
 
 ## Context (what exists today)
 
@@ -27,7 +27,7 @@ pipeline verified, so this brief's prerequisite is met. See
   sub-scores (each `clamp01(achieved / weekly target)`):
   `RECOVERY_WEIGHTS` = { sleep .45, mobility .15, sauna .15, cold .15, habits .10 }
   (corrected 2026-08-26 — this brief had drifted; `habits` is being dropped, see
-  [doctrine-ledger-execution.md](doctrine-ledger-execution.md))
+  [014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md))
   and `RECOVERY_TARGETS` in [src/constants/app.ts](../../src/constants/app.ts).
 - **Sleep Score precedent** — the pattern to copy. `sleep_logs` gained
   `sleep_score` / `source` via the Garmin sleep sync; the per-night sub-score

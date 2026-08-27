@@ -3,7 +3,7 @@
 **Status:** planned — model validated, app integration not started
 **Kickoff:** start a fresh session with this file as the brief.
 **Origin:** 2026-07-14, spun out of the recovery-axis food/nutrition follow-up
-([recovery-axis.md](recovery-axis.md)) once the user specified a full scoring
+([002-recovery-axis.md](002-recovery-axis.md)) once the user specified a full scoring
 model. This is the "its own sub-project" the recovery axis deferred.
 
 ## Phase 1 — DONE (2026-07-14)

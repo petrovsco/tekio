@@ -4,7 +4,7 @@ Every number in Tekiō that claims physiological meaning — what it is, where i
 lives, what it asserts, and whether anything backs it.
 
 **Built 2026-08-26** as pushback #7(a) of
-[roadmap/feature-grounding.md](roadmap/feature-grounding.md). This is an *index*,
+[roadmap/009-feature-grounding.md](roadmap/009-feature-grounding.md). This is an *index*,
 not a grounding block: findings live in briefs (`/ground` Step 3) and this file
 points at them. It sits outside `roadmap/` on purpose — briefs move to `done/`,
 an index must not.
@@ -22,10 +22,10 @@ an index must not.
 targets in §1 are no longer `unknown` — four are `grounded`, five are
 `convention`, and row 1.6 (skill) is deliberately deferred. Every row outside §1
 is still `unknown`. The blocks live in
-[roadmap/adaptation-weekly-targets.md](roadmap/adaptation-weekly-targets.md).
+[roadmap/011-adaptation-weekly-targets.md](roadmap/011-adaptation-weekly-targets.md).
 
 Rows marked **†** are ones I would *not* spend a scout run on — see
-[§13.2](roadmap/ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
+[§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
 **Step 0** records whether the trigger spec in
 [.claude/skills/ground/SKILL.md](../.claude/skills/ground/SKILL.md) catches the
@@ -44,7 +44,7 @@ this is where #7(b) starts. **(no brief)** = nothing in `roadmap/` would carry
 it; one has to be created before a scout run has anywhere to land.
 
 Counts: **75 rows**, of which 64 fire the trigger, 8 are ambiguous, 3 do not
-fire. **31 of the 64 firing rows are `unnamed`** — see [§13.1](roadmap/ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
+fire. **31 of the 64 firing rows are `unnamed`** — see [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 
 **Struck-through rows are fixed**, not grounded. 2026-08-26 removed six
 duplicate/contradictory copies (§2, §5); every surviving claim is still
@@ -60,22 +60,22 @@ weights").
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 1.1 | `6` | [adaptations.ts:88](../src/constants/adaptations.ts#L88) | Speed needs 6 weighted sets per muscle group per week (was 3) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) |
-| 1.2 | `6` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | Power needs 6 sets/muscle/week (was 4; deliberately identical to speed) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) |
+| 1.1 | `6` | [adaptations.ts:88](../src/constants/adaptations.ts#L88) | Speed needs 6 weighted sets per muscle group per week (was 3) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
+| 1.2 | `6` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | Power needs 6 sets/muscle/week (was 4; deliberately identical to speed) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
 | 1.3 | `6` | [adaptations.ts:145](../src/constants/adaptations.ts#L145) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
 | 1.4 | `10` | [adaptations.ts:173](../src/constants/adaptations.ts#L173) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
 | 1.5 | `6` | [adaptations.ts:199](../src/constants/adaptations.ts#L199) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
 | 1.6 | `3` | [adaptations.ts:63](../src/constants/adaptations.ts#L63) | Skill needs 3 sessions/week | named | unknown | skill-adaptation-data-source |
-| 1.7 | `1` | [adaptations.ts:226](../src/constants/adaptations.ts#L226) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
+| 1.7 | `1` | [adaptations.ts:226](../src/constants/adaptations.ts#L226) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
 | 1.8 | `1` | [adaptations.ts:257](../src/constants/adaptations.ts#L257) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
-| 1.9 | `2` | [adaptations.ts:288](../src/constants/adaptations.ts#L288) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
+| 1.9 | `2` | [adaptations.ts:288](../src/constants/adaptations.ts#L288) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
 | 1.10 | `0` ×9 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:263](../src/lib/adaptations.ts#L263) | ? | unknown † | — |
 | 1.11 | all 18, duplicated | `adaptation_targets` (DB), 9 rows | Identical values to 1.1–1.9, and **they win** — [lib/adaptations.ts:261-262](../src/lib/adaptations.ts#L261) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
 
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
 > the user sees. The DB rows shadow every default, are currently byte-identical,
 > and carry no marker distinguishing "seeded" from "user-edited". See
-> [§13.3](roadmap/ground-trigger-spec-fixes.md#133-the-db-shadow-makes-defaults-not-runtime-edits-undecidable).
+> [§13.3](roadmap/015-ground-trigger-spec-fixes.md#133-the-db-shadow-makes-defaults-not-runtime-edits-undecidable).
 
 ## 2. Rep-range classification
 
@@ -93,7 +93,7 @@ weights").
 > constant is the live one. Behaviour is unchanged, so no claim moved
 > (exemption 2). The rows stay `unknown`: de-duplicating a number does not ground
 > it. The finding it produced stands — see
-> [§13.1](roadmap/ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
+> [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 
 ## 3. `rx` prescriptions — 9 blocks, ~45 numbers in prose
 
@@ -138,20 +138,20 @@ sharpest debt in the app because they read as settled fact.
 **Three bugs here were fixed 2026-08-26** (struck-through rows). What remains is
 the claim itself: a 6-week block, deloading in week 6, at 70% of reps.
 **Resolved 2026-08-26** — this was the one domain with nowhere for a block to
-land; [roadmap/cycle-deload-grounding.md](roadmap/cycle-deload-grounding.md) was
+land; [roadmap/013-cycle-deload-grounding.md](roadmap/013-cycle-deload-grounding.md) was
 created to carry it.
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 5.1 | `CYCLE = 6` | [app.ts:3](../src/constants/app.ts#L3) | A training block is 6 weeks | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.1 | `CYCLE = 6` | [app.ts:3](../src/constants/app.ts#L3) | A training block is 6 weeks | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.2 | ~~`CYCLE = 6`~~ | — | **Fixed 2026-08-26** — `utils.ts` imports `CYCLE` from `constants/app` | — | — | — |
-| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:9](../src/constants/app.ts#L9), used at [utils.ts:51](../src/lib/utils.ts#L51), [:61](../src/lib/utils.ts#L61) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
-| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:16](../src/constants/app.ts#L16), applied by `deloadSets` at [utils.ts:69](../src/lib/utils.ts#L69) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:9](../src/constants/app.ts#L9), used at [utils.ts:51](../src/lib/utils.ts#L51), [:61](../src/lib/utils.ts#L61) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:16](../src/constants/app.ts#L16), applied by `deloadSets` at [utils.ts:69](../src/lib/utils.ts#L69) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.5 | ~~`× 0.7`~~ ×2 | — | **Fixed 2026-08-26.** `VolumeRow` previewed a deload scaling *weight and reps* that the app could never apply — `ExPlan`'s button, `ExPlan`'s exported helper and `programs.deload_strategy` all say reps-only. The preview was the outlier and now calls `deloadSets` | — | — | — |
-| 5.6 | `"⚠️ Deload — 70% reps"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads — now derived from 5.4 and says *what* is at 70% | named | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
-| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
-| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:260](../src/lib/db/program.ts#L260) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
-| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | [cycle-deload-grounding](roadmap/cycle-deload-grounding.md) |
+| 5.6 | `"⚠️ Deload — 70% reps"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads — now derived from 5.4 and says *what* is at 70% | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:260](../src/lib/db/program.ts#L260) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.10 | ~~`4`~~ | — | **Fixed 2026-08-26** (migration `20260826144439`). The `program_phases.duration_weeks` default asserted a 4-week phase against `CYCLE = 6`; default dropped, so a missing value is now `NULL` — which the type already allowed. No number replaced it | — | — | — |
 
 ## 6. Cardio & sport classification
@@ -227,10 +227,10 @@ they were missed.
 - **Nutrition FRS** — ~25 coefficients and cut-points (`0.25·P + 0.20·E + …`,
   protein 1.6–2.2 g/kg, hydration 33 ml/kg, deficit penalty k=2.5, 3-day
   smoothing 0.5/0.3/0.2, alcohol ×0.85 …) live only in
-  [roadmap/nutrition-food-recovery-score.md](roadmap/nutrition-food-recovery-score.md)
+  [roadmap/007-nutrition-food-recovery-score.md](roadmap/007-nutrition-food-recovery-score.md)
   and its bench artifact. State: `unknown`, all of them.
 - **Local recovery windows** — "commonly cited as 48–72 h"
-  ([roadmap/home-fused-reads.md](roadmap/home-fused-reads.md)). That brief
+  ([roadmap/010-home-fused-reads.md](roadmap/010-home-fused-reads.md)). That brief
   already says it requires `## Grounding` before implementation.
 
 ---
@@ -241,11 +241,11 @@ The inventory doubled as the first real test of `/ground` Step 0's trigger and
 found **eight gaps** — 8 of 75 rows (11%) needed a judgement call Step 0 does not
 make. Each carries a proposed `SKILL.md` edit; **none are applied**.
 
-**Moved 2026-08-26 to [roadmap/ground-trigger-spec-fixes.md](roadmap/ground-trigger-spec-fixes.md)**
+**Moved 2026-08-26 to [roadmap/015-ground-trigger-spec-fixes.md](roadmap/015-ground-trigger-spec-fixes.md)**
 under the `pending-work-in-roadmap` house rule: they are pending work, and this
 file is an index. The `13.x` numbering is preserved there, so existing references
 to §13.1–§13.8 still resolve.
 
 The back-fill running order that was §13.9 now lives in
-[roadmap/feature-grounding.md](roadmap/feature-grounding.md) beside pushback #7,
+[roadmap/009-feature-grounding.md](roadmap/009-feature-grounding.md) beside pushback #7,
 whose 7(b) it sequences.
