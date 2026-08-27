@@ -1,12 +1,16 @@
 # Roadmap: Execute the doctrine ledger — four folds and the Habits shelf
 
-**Status:** planned — decided 2026-08-26, **none of it executed**. The ledger records the verdicts; this brief is the work they create.
+**Status:** in progress (2026-08-27) — **step 1 and the Sports fold shipped**; the
+remaining three folds are re-scoped as blocked (see §"Why the folds are not
+parallel after all"). The ledger records the verdicts; this brief is the work
+they create.
 
-[doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. The code
-still ships all five. Today `DEFAULTS` in
-[sectionConfig.ts](../../src/lib/db/sectionConfig.ts#L11) seeds **eight
-menu sections** against R1's cap of **four** — so the app is at double its own
-hard limit, and the cap that "is the argument" has never been enforced.
+[doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. Before
+2026-08-27 the code shipped all five: `DEFAULTS` in
+[sectionConfig.ts](../../src/lib/db/sectionConfig.ts#L11) seeded **eight** menu
+sections against R1's cap of **four**, so the app was at double its own hard
+limit and the cap that "is the argument" had never been enforced. It now seeds
+**six** — the first enforcement, still two over.
 
 ## Why this is a brief and not just a ledger row
 
@@ -15,6 +19,66 @@ ledger and flipping existing config — not by building machinery. That is still
 true, and this brief builds nothing. But a decision with unexecuted code behind
 it is pending work, and per the `pending-work-in-roadmap` house rule it needs a
 file `/roadmap` can see. The ledger keeps the verdicts; the steps live here.
+
+## Shipped 2026-08-27
+
+Menu sections went from **8 to 6** — still over R1's cap of 4, but enforced for
+the first time.
+
+- **Habits shelved.** `DEFAULTS` seeds it `showInMenu: false / showInHome: false`
+  and the live `user_section_config` row was flipped to match. No code deleted,
+  no numbers touched: the tab is still reachable from the Recovery card's Habits
+  sub-score link, and one toggle in Profile brings it back. Delete-by date is
+  unchanged at **2026-10-07**.
+  - Note for the deletion pass: the Habits row is **kept** rather than dropped
+    from `DEFAULTS`, because `homeOn()` in `OverviewTab` treats a *missing*
+    section as visible. Dropping the row would put the Home card back.
+- **Sports folded into Cardio (UI).** `SportsTab.tsx` is gone; its parts live in
+  `src/components/tabs/cardio/` as `SportLogForm`, `SportProgress` and a shared
+  `SessionList`. Cardio now has a Cardio/Sport switch on the log card, and — the
+  part that actually folds a *read* — **one Sessions history covering both**,
+  since a sport session is cardio stimulus. `TodaysPlan`'s sport block now says
+  "Log in Cardio". The DB merge remains out of scope.
+- **Orphan config rows no longer render.** Profile listed a dead `Skills` toggle
+  (renamed away in Jul 2026) and would have listed `Sports`; the settings list
+  is now filtered to sections the app can still render. The rows themselves are
+  untouched in the DB.
+
+Verified in the browser: drawer, Cardio in both modes (including the
+conditional competitor/result fields), Profile sections, Home, and that the
+shelved Habits tab is still reachable. Build and 96 tests green.
+
+## Why the folds are not parallel after all
+
+This brief originally said "steps 1 and 2 are independent of the four folds —
+the folds can proceed in parallel." **That is wrong for three of the four**, and
+the brief's own reasoning is what refutes it.
+
+Step 3 is blocked on [home-fused-reads.md](home-fused-reads.md) because
+rebalancing today's recovery weights is wasted if the recovery read is about to
+be rebuilt. The same argument applies to the fold *destinations*:
+
+| Fold | Destination | Blocked? |
+|---|---|---|
+| Sports → Cardio | Cardio | **No** — Cardio is not being redesigned. **Shipped.** |
+| Water → Recovery | `RecoveryCard` | **Yes** — home-fused-reads replaces it with systemic + local |
+| Donations → Recovery | `RecoveryCard` | **Yes** — same |
+| Body Weight → Home stat | Home | **Yes** — home-fused-reads reshapes Home |
+
+Wiring hydration and donation inputs into a `RecoveryCard` that is about to be
+replaced is the same throwaway work step 3 is being protected from. So the real
+order is:
+
+1. ~~Shelf the Habits tab~~ — **done 2026-08-27**.
+2. ~~Fold Sports → Cardio (UI)~~ — **done 2026-08-27**.
+3. **Decide the fused stimulus × recovery model** (home-fused-reads §6). Now the
+   only thing standing between the app and R1.
+4. Then the remaining three folds *and* the `RECOVERY_WEIGHTS` surgery, once,
+   into whatever shape survives.
+
+The cap is still violated (6 of 4) and stays violated until step 3 is decided.
+That is the honest cost of not doing throwaway work, and it should be visible
+rather than papered over.
 
 ## Target state
 
@@ -41,8 +105,12 @@ stop one specific mistake:
 
 Doing step 3 before step 2 is work that gets thrown away: if the recovery read is
 about to be rebuilt as systemic-plus-local, rebalancing today's weekly-rollup
-weights is wasted. **Steps 1 and 2 are independent of the four folds** — the
-folds can proceed in parallel.
+weights is wasted.
+
+This section used to add "**steps 1 and 2 are independent of the four folds** —
+the folds can proceed in parallel." **Superseded 2026-08-27** — that holds only
+for Sports. See §"Why the folds are not parallel after all" above for why the
+other three inherit step 3's blocker.
 
 ## The two things the shelf must not break
 
@@ -92,9 +160,12 @@ plus [src/test/habits.test.ts](../../src/test/habits.test.ts).
 
 ## Scope
 
-- Step 1 (shelf Habits, config-only) — do now, reversible.
-- The four UI folds — Sports, Water, Donations, Body Weight. Each removes a
-  `DRAWER_TABS` entry in [App.tsx:20](../../src/App.tsx#L20) and a `DEFAULTS` row.
+- ~~Step 1 (shelf Habits, config-only)~~ — **done 2026-08-27**, reversible.
+- ~~Sports → Cardio (UI fold)~~ — **done 2026-08-27**.
+- The remaining three UI folds — Water, Donations, Body Weight. Each removes a
+  `DRAWER_TABS` entry in [App.tsx:20](../../src/App.tsx#L20) and a `DEFAULTS` row
+  — but all three are **blocked on home-fused-reads**, because their destination
+  is the surface that brief rebuilds.
 - Step 3 (reweight) — **blocked on home-fused-reads**.
 - At expiry (2026-10-07): delete `HabitsTab.tsx`, `habits/HabitForm.tsx`,
   `habits/habitFields.ts`, `habits.test.ts`, `habitCompletionSets`, and the

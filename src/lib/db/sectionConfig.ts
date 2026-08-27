@@ -13,10 +13,12 @@ const DEFAULTS: SectionConfig[] = [
   { sectionKey: 'Body Weight', showInMenu: true, showInHome: true, sortOrder: 1 },
   { sectionKey: 'Cardio',      showInMenu: true, showInHome: true, sortOrder: 2 },
   { sectionKey: 'Mobility',    showInMenu: true, showInHome: true, sortOrder: 3 },
-  { sectionKey: 'Sports',      showInMenu: true, showInHome: true, sortOrder: 4 },
   { sectionKey: 'Donations',   showInMenu: true, showInHome: true, sortOrder: 5 },
   { sectionKey: 'Water',       showInMenu: true, showInHome: true, sortOrder: 6 },
-  { sectionKey: 'Habits',      showInMenu: true, showInHome: true, sortOrder: 7 },
+  // Habits is shelved (doctrine R2, decided 2026-08-26; delete by 2026-10-07).
+  // Kept as a row rather than dropped: `homeOn()` in OverviewTab treats a MISSING
+  // section as visible, so removing the row would leave the Home card on screen.
+  { sectionKey: 'Habits',      showInMenu: false, showInHome: false, sortOrder: 7 },
   // Recovery has no dedicated tab — it lives only as a Home card (quick-add inline),
   // so it is seeded Home-only. showInMenu stays false (no drawer/tab destination).
   { sectionKey: 'Recovery',    showInMenu: false, showInHome: true, sortOrder: 8 },

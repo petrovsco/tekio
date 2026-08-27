@@ -15,11 +15,10 @@ Training-Effect adaptation classifier) shipped 2026-07-13 — see
 [[project_tekio_garmin_cardio_sync]] and the two Garmin scripts under
 `scripts/garmin-sync/`.
 
-**Phase 1 remainder (user action, not blocking this brief):** the sync has in
-fact been failing since it shipped (a dead Garmin token — fixed 2026-08-26), so
-`cardio_sessions` is empty and the backfill still has not run. Both steps moved
-to [garmin-sync-token-restore.md](garmin-sync-token-restore.md). **Phase 2 needs
-a working Phase 1 pipeline, so do that one first.**
+**Phase 1 is unblocked (2026-08-27).** The sync had been failing since it
+shipped (a dead Garmin token — fixed 2026-08-26); the token was minted and the
+pipeline verified, so this brief's prerequisite is met. See
+[done/garmin-sync-token-restore.md](done/garmin-sync-token-restore.md).
 
 ## Context (what exists today)
 

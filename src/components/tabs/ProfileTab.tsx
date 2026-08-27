@@ -29,7 +29,6 @@ const SECTION_META: Record<string, { icon: string; label: string }> = {
   'Body Weight': { icon: '⚖️', label: 'Body Weight' },
   Cardio:       { icon: '❤️', label: 'Cardio' },
   Mobility:     { icon: '🧘', label: 'Mobility' },
-  Sports:       { icon: '⚽', label: 'Sports' },
   Donations:    { icon: '🩸', label: 'Donations' },
   Water:        { icon: '💧', label: 'Water' },
   Habits:       { icon: '✅', label: 'Habits' },
@@ -150,7 +149,11 @@ export function ProfileTab() {
     useSensor(TouchSensor,   { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
-  const sectionIds = sections.map(s => s.sectionKey)
+  // Config rows outlive the sections they configure — a folded section (Sports)
+  // or a renamed one (Skills) leaves an orphan row behind. Only offer toggles
+  // for sections the app still knows how to render.
+  const knownSections = sections.filter(s => s.sectionKey in SECTION_META)
+  const sectionIds = knownSections.map(s => s.sectionKey)
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
@@ -223,7 +226,7 @@ export function ProfileTab() {
         >
           <SortableContext items={sectionIds} strategy={verticalListSortingStrategy}>
             <div className="flex flex-col gap-2">
-              {sections.map(section => (
+              {knownSections.map(section => (
                 <SortableRow key={section.sectionKey} section={section} />
               ))}
             </div>

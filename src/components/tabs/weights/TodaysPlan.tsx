@@ -25,7 +25,7 @@ interface TodaysPlanProps extends PickHandlers {
 }
 
 const LOG_IN_TAB: Partial<Record<BlockType, string>> = {
-  sport: 'Sports',
+  sport: 'Cardio',
   mobility: 'Mobility',
   conditioning: 'Cardio',
 }

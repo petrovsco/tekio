@@ -229,17 +229,19 @@ export function OverviewTab({ setTab }: OverviewTabProps) {
           ),
         },
         {
+          // Sports folded into Cardio (doctrine ledger): no Sports section of its
+          // own any more, so this card rides Cardio's visibility and sort order.
           key: 'Sports',
-          order: sectionOrder['Sports'] ?? 4,
-          show: homeOn('Sports') && Object.entries(sportWeekMap).length > 0,
+          order: sectionOrder['Cardio'] ?? 2,
+          show: homeOn('Cardio') && Object.entries(sportWeekMap).length > 0,
           node: (
             <Card>
-              <CardHeader title="⚽ Sports This Week" onOpen={() => setTab('Sports')} />
+              <CardHeader title="⚽ Sports This Week" onOpen={() => setTab('Cardio')} />
               <div className="flex flex-wrap gap-2">
                 {Object.entries(sportWeekMap).map(([sk, count]) => (
                   <button
                     key={sk}
-                    onClick={() => setTab('Sports')}
+                    onClick={() => setTab('Cardio')}
                     className="px-3 py-1.5 rounded-full bg-accent-l text-accent text-sm font-semibold active:scale-[0.95] transition-transform"
                   >
                     {sk} <span className="opacity-70">{count}×</span>

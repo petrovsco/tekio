@@ -1,54 +1,27 @@
 import { useState } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
-import { today, parseDurationMins, formatDurationMins, calcPace } from '../../lib/utils'
 import { CARDIO_TYPES, CARDIO_ICONS } from '../../constants/app'
 import { Card, SecTitle } from '../ui/Card'
-import { Inp } from '../ui/Input'
-import { Btn, DelBtn, EditBtn } from '../ui/Button'
 import { Chip } from '../ui/Chip'
-import { HistoryList } from '../ui/HistoryList'
-import type { CardioType } from '../../types'
+import { CardioLogForm } from './cardio/CardioLogForm'
+import { SportLogForm } from './cardio/SportLogForm'
+import { SportProgress } from './cardio/SportProgress'
+import { SessionList } from './cardio/SessionList'
 
-/** Garmin's Training-Effect label (e.g. "VO2MAX", "AEROBIC_BASE") → readable text. */
-function prettyTeLabel(label: string): string {
-  const titled = label
-    .toLowerCase()
-    .split('_')
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(' ')
-  return titled.replace(/Vo2max/i, 'VO₂max').replace(/Vo2/i, 'VO₂')
-}
+/**
+ * Cardio is the single destination for endurance stimulus. Sports folded in
+ * here (doctrine ledger, 2026-08-26): a sport session is a cardio session with
+ * a name and a quality rating, so it is a second capture mode — not a second
+ * section. The DB merge is deliberately a separate brief; these are still two
+ * tables underneath.
+ */
+type LogMode = 'cardio' | 'sport'
 
 export function CardioTab() {
-  const [type, setType] = useState<CardioType>('Running')
-  const [date, setDate] = useState(today())
-  const [duration, setDuration] = useState('')
-  const [distance, setDistance] = useState('')
-  const [avgHr, setAvgHr] = useState('')
-  const [notes, setNotes] = useState('')
+  const [mode, setMode] = useState<LogMode>('cardio')
   const [filter, setFilter] = useState('All')
-  const { cardio, addCardioEntry, removeCardioEntry, openEditModal, setToast } = useAppStore()
-
-  const durationMins = parseDurationMins(duration)
-  const distKm = distance ? +distance : 0
-  const livePace = calcPace(durationMins, distKm)
-
-  const add = async () => {
-    if (!durationMins) return
-    try {
-      await addCardioEntry({
-        date, type, duration: durationMins,
-        distance: distKm || undefined,
-        avgHr: avgHr ? +avgHr : undefined,
-        notes: notes || undefined,
-      })
-      setDuration(''); setDistance(''); setAvgHr(''); setNotes('')
-      setToast('✅ Session logged!')
-    } catch {
-      setToast('❌ Failed to save.')
-    }
-  }
+  const cardio = useAppStore(s => s.cardio)
 
   const ct = filter === 'All' ? 'Running' : filter
   const chartData = cardio
@@ -60,62 +33,22 @@ export function CardioTab() {
       ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
     }))
 
-  const allSorted = [...cardio].sort((a, b) => b.date.localeCompare(a.date))
-
   return (
     <div className="flex flex-col gap-4">
       <Card>
         <SecTitle>Log Session</SecTitle>
-        <div className="grid grid-cols-2 gap-2.5 mb-3">
-          <div>
-            <p className="text-xs text-muted font-medium mb-1">Type</p>
-            <select
-              value={type}
-              onChange={e => setType(e.target.value as CardioType)}
-              className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
+        <div className="flex gap-1.5 mb-3">
+          {([['cardio', '❤️ Cardio'], ['sport', '⚽ Sport']] as [LogMode, string][]).map(([m, label]) => (
+            <button
+              key={m}
+              onClick={() => setMode(m)}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${mode === m ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'}`}
             >
-              {CARDIO_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
-          <div>
-            <Inp
-              label="Duration (MM:SS)"
-              type="text"
-              value={duration}
-              onChange={e => setDuration(e.target.value)}
-              placeholder="30:00"
-            />
-          </div>
-          <div>
-            <Inp
-              label="Distance (km, opt.)"
-              type="number"
-              value={distance}
-              onChange={e => setDistance(e.target.value)}
-              placeholder="5.0"
-              step="0.01"
-            />
-            {livePace && (
-              <p className="text-xs text-accent font-medium mt-1">⚡ {livePace}</p>
-            )}
-          </div>
-          <div>
-            <Inp
-              label="Avg HR (bpm, opt.)"
-              type="number"
-              value={avgHr}
-              onChange={e => setAvgHr(e.target.value)}
-              placeholder="145"
-              min="0"
-              step="1"
-            />
-          </div>
-          <div className="col-span-2">
-            <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. Easy zone 2" />
-          </div>
+              {label}
+            </button>
+          ))}
         </div>
-        <Btn onClick={add} className="w-full">Add Session</Btn>
+        {mode === 'cardio' ? <CardioLogForm /> : <SportLogForm />}
       </Card>
 
       <Card>
@@ -145,50 +78,9 @@ export function CardioTab() {
         )}
       </Card>
 
-      <Card>
-        <SecTitle>Sessions</SecTitle>
-        <HistoryList
-          items={allSorted}
-          getDate={d => d.date}
-          categories={[...CARDIO_TYPES]}
-          categoryLabel="Type"
-          matchesCategory={(d, cat) => d.type === cat}
-          emptyMessage="No sessions yet"
-          renderItem={d => (
-            <div key={d.id} className="pb-2 mb-2 border-b border-bg last:border-0 last:mb-0">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-base">{CARDIO_ICONS[d.type]}</span>
-                  <span className="text-sm font-semibold text-primary">{d.type}</span>
-                  {d.source === 'garmin' && (
-                    <span className="text-[10px] font-semibold text-accent bg-accent-l px-1.5 py-0.5 rounded-full">
-                      ⌚ Garmin
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-muted">{d.date}</span>
-                  <EditBtn onClick={() => openEditModal({ type: 'cardio', record: d })} />
-                  <DelBtn onClick={() => removeCardioEntry(d.id)} />
-                </div>
-              </div>
-              <p className="text-xs text-muted mt-0.5 ml-0.5">
-                {formatDurationMins(d.duration)}
-                {d.distance ? ` · ${d.distance} km · ${calcPace(d.duration, d.distance)}` : ''}
-                {d.avgHr ? ` · ❤️ ${d.avgHr} bpm` : ''}
-                {d.elevationGain ? ` · ⛰️ ${Math.round(d.elevationGain)} m` : ''}
-                {d.notes ? ` — ${d.notes}` : ''}
-              </p>
-              {(d.aerobicTe != null || d.anaerobicTe != null) && (
-                <p className="text-[11px] text-muted mt-0.5 ml-0.5">
-                  {d.trainingEffectLabel ? `${prettyTeLabel(d.trainingEffectLabel)} · ` : ''}
-                  aerobic {d.aerobicTe ?? '—'} · anaerobic {d.anaerobicTe ?? '—'}
-                </p>
-              )}
-            </div>
-          )}
-        />
-      </Card>
+      <SportProgress />
+
+      <SessionList />
     </div>
   )
 }

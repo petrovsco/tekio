@@ -1,6 +1,6 @@
 # Roadmap: Restore the Garmin sync (token regen + backfill)
 
-**Status:** ready — needs one manual step only you can do (the MFA prompt)
+**Status:** done (2026-08-27) — the token was minted and the sync verified by the user. The steps below are kept as the runbook for the next time the token dies.
 
 The code fix shipped 2026-08-26. What is left is the part CI cannot do for
 itself: mint one fresh Garmin token, then let the jobs take over.

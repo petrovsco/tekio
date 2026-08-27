@@ -8,7 +8,6 @@ import { WeightsTab } from './components/tabs/weights/WeightsTab'
 import { BodyWeightTab } from './components/tabs/BodyWeightTab'
 import { CardioTab } from './components/tabs/CardioTab'
 import { MobilityTab } from './components/tabs/MobilityTab'
-import { SportsTab } from './components/tabs/SportsTab'
 import { DonationsTab } from './components/tabs/DonationsTab'
 import { WaterTab } from './components/tabs/WaterTab'
 import { HabitsTab } from './components/tabs/HabitsTab'
@@ -17,7 +16,7 @@ import { ProfileTab } from './components/tabs/ProfileTab'
 import { AdminTab } from './components/tabs/AdminTab'
 import { HomeSkeleton } from './components/tabs/HomeSkeleton'
 
-const DRAWER_TABS = ['Weights', 'Body Weight', 'Cardio', 'Mobility', 'Sports', 'Donations', 'Water', 'Habits'] as const
+const DRAWER_TABS = ['Weights', 'Body Weight', 'Cardio', 'Mobility', 'Donations', 'Water', 'Habits'] as const
 type DrawerTab = typeof DRAWER_TABS[number]
 type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
 
@@ -30,7 +29,6 @@ function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) 
     case 'Body Weight': return <BodyWeightTab />
     case 'Cardio': return <CardioTab />
     case 'Mobility': return <MobilityTab />
-    case 'Sports': return <SportsTab />
     case 'Donations': return <DonationsTab />
     case 'Water': return <WaterTab />
     case 'Habits': return <HabitsTab />

@@ -5,7 +5,6 @@ const NAV_META: Record<string, { icon: string; label: string }> = {
   'Body Weight': { icon: '⚖️', label: 'Body Weight' },
   Cardio:       { icon: '❤️', label: 'Cardio' },
   Mobility:     { icon: '🧘', label: 'Mobility' },
-  Sports:       { icon: '⚽', label: 'Sports' },
   Donations:    { icon: '🩸', label: 'Donations' },
   Water:        { icon: '💧', label: 'Water' },
   Habits:       { icon: '✅', label: 'Habits' },
