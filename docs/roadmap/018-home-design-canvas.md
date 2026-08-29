@@ -1,7 +1,7 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
 **Label:** feature
-**Status:** structure settled 2026-08-29. The pick: A’s gated verdict header +
+**Status:** structure settled 2026-08-29; look settled 2026-08-30. The pick: A’s gated verdict header +
 readiness card, the body map with ranked callouts (What-is-missing dissolved
 into the map; polarity flipped — ink = trained, light = the gap), B’s
 one-state-each whole-body strip and the T2 fold stats. Fused boards `Home` /
@@ -13,9 +13,15 @@ one state each, with per-quality staleness windows as science-gated
 placeholders) and 010 is agreed. Round 2 is live (2026-08-29): page-2 “Look”
 carries four visual directions on the fused board — SIGNAL (monochrome +
 one action accent), HEAT (a sequential teal ramp carries the state), NIGHT
-(dark ground, work glows), WASHI (Peter’s palette, added same day: rice
-paper, sumi-ink stimulus ramp, vermillion = action, teal = readiness) —
-awaiting Peter’s pick (step 4); a hybrid is a legal answer this round.
+(dark ground, work glows), WASHI (Peter’s palette: rice paper, sumi-ink
+ramp, vermillion seal). **Peter picked SIGNAL (2026-08-30).** Round 3 is
+live: page-3 “Refined” holds the build-spec boards (`Refined` /
+`RefinedHeld`, the latter derived via `make-derived.sh`) — SIGNAL language
+on the fused structure, plus working inline capture on the fold stats
+(fork 2 answered as revealed-on-intent, implied by the pick — open to
+veto), a `post-donation` scenario, and a tier label on every component.
+Awaiting five-second test #2 (step 5); then `docs/design-system.md`
+(step 6) and `/ground` (step 7).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
