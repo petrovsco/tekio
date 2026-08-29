@@ -1,9 +1,15 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
 **Label:** feature
-**Status:** round 1c published 2026-08-29 — the adaptation model simplified to
-seven (Speed and Skill dropped, Power per-muscle; doctrine amended, app-side
-work is roadmap 019). Next: the five-second test and the §6 pick (steps 2–3).
+**Status:** the pick made 2026-08-29 — Peter kept A’s gated verdict header +
+readiness card, the body map, B’s one-state-each whole-body strip and the T2
+fold stats. The What-is-missing chip section is dissolved: ranked callouts
+drawn on the map are the list (direction B of three explored), the verdict
+names the top gap, and Power sits as a footnote under the map. Fused boards
+`Home` / `HomeHeld` published at the top of the canvas. The implied §6 answers
+(readiness gates; whole-body one state each) still need Peter’s confirmation
+before they are recorded in 010. Next: the five-second test on the fused
+boards, then round-2 visual directions.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,

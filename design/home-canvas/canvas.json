@@ -1,6 +1,26 @@
 {
   "artboards": [
     {
+      "file": "Home.dc.html",
+      "title": "THE PICK — fused, good day",
+      "x": 0,
+      "y": -1050,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "HomeHeld.dc.html",
+      "title": "THE PICK — fused, bad day (held)",
+      "x": 470,
+      "y": -1050,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
       "file": "Main.dc.html",
       "title": "A — good day",
       "x": 0,
@@ -92,6 +112,14 @@
     }
   ],
   "annotations": [
+    {
+      "id": "the-pick",
+      "x": -420,
+      "y": -1050,
+      "w": 340,
+      "page": "page-1",
+      "text": "THE PICK (2026-08-29) — the fused structure\n\nPeter kept: A’s verdict header + readiness gate, the body map, B’s one-state-each whole-body strip, and the T2 fold stats.\n\nWHAT IS MISSING did not survive as a section. The concept lands as RANKED CALLOUTS drawn on the map (direction B of the three explored): numbered labels point at the worst regions, worst first — 1 CORE (never), 2 QUADS, 3 GLUTES, 4 HAMS, with CALVES unnumbered below the act-on-these cut. The verdict names the top gap as its reason line. POWER (muscle-linked, 0 sets everywhere) is a footnote under the map — on the muscle side, not in the cardio strip (P2).\n\nHeld state: the callouts never change — the gate changes the instruction, never the facts. Compare the two boards above.\n\nThis implies both §6 answers (readiness GATES; whole-body ONE STATE EACH) — to be recorded in roadmap 010 once confirmed. Round 2 proper (visual directions) builds on this board."
+    },
     {
       "id": "round-1",
       "x": -420,
