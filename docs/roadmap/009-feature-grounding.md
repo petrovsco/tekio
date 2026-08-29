@@ -1,5 +1,6 @@
 # Roadmap: Feature grounding — doctrine, science-scout, and review lenses
 
+**Label:** infra
 **Status:** in progress (2026-08-26) — design agreed; pushbacks 1–2 and 5–6 resolved
 (doctrine, science-scout and `/ground` shipped); 3–4 (post-build tooling) and 7
 (back-fill) queued.

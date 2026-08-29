@@ -1,5 +1,6 @@
 # Roadmap: Home as fused stimulus × recovery reads
 
+**Label:** feature
 **Status:** proposed (2026-08-26) — model sketched in conversation, **not yet
 agreed**. Do not build from this until the two-level model in §2 is confirmed.
 **Origin:** fell out of writing [../doctrine.md](../doctrine.md); the user's point

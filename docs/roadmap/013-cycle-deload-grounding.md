@@ -1,5 +1,6 @@
 # Roadmap: Ground the 6-week cycle and the week-6 deload
 
+**Label:** feature
 **Status:** planned — no scout run yet. Created 2026-08-26 because inventory §5 is the one domain where **every row said `(no brief)`**: there was nowhere for a `## Grounding` block to land.
 
 The de-duplication is already done (three bugs fixed 2026-08-26). What is left is

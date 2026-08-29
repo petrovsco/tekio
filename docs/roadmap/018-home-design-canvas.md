@@ -1,5 +1,6 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
+**Label:** feature
 **Status:** round 1c published 2026-08-29 — the adaptation model simplified to
 seven (Speed and Skill dropped, Power per-muscle; doctrine amended, app-side
 work is roadmap 019). Next: the five-second test and the §6 pick (steps 2–3).

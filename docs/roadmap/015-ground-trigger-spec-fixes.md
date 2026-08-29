@@ -1,5 +1,6 @@
 # Roadmap: `/ground` Step 0 — eight trigger-spec fixes
 
+**Label:** infra
 **Status:** planned — eight findings, each with a proposed `SKILL.md` edit. **None are applied.** No research needed; this is spec surgery, not a scout run.
 
 Moved here 2026-08-26 from `docs/grounding-inventory.md` §13, under the

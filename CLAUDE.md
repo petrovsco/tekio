@@ -91,7 +91,9 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 Repo specifics for those rules: this repo is the working directory, so all paths
 are repo-relative — run `npm run build` here; "main branch" means `master`;
 roadmap briefs go to `docs/roadmap/` (the context guard is pointed there via
-`CTX_GUARD_ROADMAP_DIR` in `.claude/settings.local.json`).
+`CTX_GUARD_ROADMAP_DIR` in `.claude/settings.local.json`). Every brief
+carries a `**Label:**` line — bug / infra / feature / backlog — defined in
+[docs/roadmap/README.md](docs/roadmap/README.md).
 
 **Reference-only docs** — these state what *is* and must never grow a follow-up,
 a "proposed edit" or a next step; those go to `docs/roadmap/` instead:

@@ -1,5 +1,6 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
+**Label:** feature
 **Status:** planned
 
 ## Goal

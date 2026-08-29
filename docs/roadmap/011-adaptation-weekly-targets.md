@@ -1,5 +1,6 @@
 # Roadmap: Adaptation weekly targets — grounding the numbers Home calls "missing"
 
+**Label:** feature
 **Status:** in progress (2026-08-26) — grounding landed; constants and DB re-seeded.
 **Kickoff:** this file is the brief. It exists to carry a grounding decision, not a
 feature.

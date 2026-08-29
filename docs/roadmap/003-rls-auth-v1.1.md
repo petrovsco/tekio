@@ -1,5 +1,6 @@
 # Roadmap: v1.1 — Real RLS + Auth
 
+**Label:** infra
 **Status:** planned — not started
 **Kickoff:** start a fresh session with this file as the brief.
 **Origin:** 2026-07-08 Supabase security alert (`rls_disabled_in_public`). The

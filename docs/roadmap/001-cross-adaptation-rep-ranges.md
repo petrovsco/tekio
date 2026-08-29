@@ -1,5 +1,6 @@
 # Roadmap: Cross-adaptation set/rep classification — TBC
 
+**Label:** backlog
 **Status:** TBC — captured for context, not yet decided.
 **Kickoff:** start a fresh session with this file as the brief.
 

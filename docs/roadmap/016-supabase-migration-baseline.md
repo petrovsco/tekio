@@ -1,5 +1,6 @@
 # Roadmap: Baseline the Supabase schema into the repo
 
+**Label:** infra
 **Status:** planned — **needs the user to run it.** Requires the project access token and DB password, so an agent cannot do this half.
 
 [supabase/README.md](../../supabase/README.md) documents a one-time "adopt the

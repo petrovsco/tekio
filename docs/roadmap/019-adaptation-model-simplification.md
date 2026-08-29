@@ -1,5 +1,6 @@
 # Roadmap: Simplify the adaptation model — nine → seven
 
+**Label:** feature
 **Status:** Ready — decision made 2026-08-29; app-side code not started
 
 ## The decision (2026-08-29, during the roadmap-018 canvas review)
@@ -11,9 +12,10 @@ Peter's call, lightly compressed:
   velocity a specific muscle group can produce — it can be strong for one
   muscle group and absent for another. It moves to the muscle-linked side and
   is read **per muscle**.
-- **Skill — drop for now.** "Very broad… hard to track by an app." Possible
-  future: per-exercise skill-training recommendations — that would be a new
-  brief, not this one.
+- **Skill — drop for now.** "Very broad… hard to track by an app." The
+  per-exercise skill-recommendations idea is parked as
+  [020-skill-recommendations-per-exercise.md](020-skill-recommendations-per-exercise.md)
+  (backlog).
 
 What remains splits cleanly in two, which is itself the argument for the model:
 

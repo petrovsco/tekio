@@ -1,5 +1,6 @@
 # Roadmap: Nutrition → Food Recovery Score (recovery-axis sub-project)
 
+**Label:** feature
 **Status:** planned — model validated, app integration not started
 **Kickoff:** start a fresh session with this file as the brief.
 **Origin:** 2026-07-14, spun out of the recovery-axis food/nutrition follow-up

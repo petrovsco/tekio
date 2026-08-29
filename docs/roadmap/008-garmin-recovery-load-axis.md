@@ -1,5 +1,6 @@
 # Roadmap: Garmin daily load & readiness → Recovery axis (Garmin sync Phase 2)
 
+**Label:** feature
 **Status:** planned
 
 ## Goal

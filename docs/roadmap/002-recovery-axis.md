@@ -1,5 +1,6 @@
 # Roadmap: Recovery / Readiness axis
 
+**Label:** feature
 **Status:** shipped (2026-07-10, commit d809d1e; habits fold-in added 2026-07-14, commit 96ce1b9) — core axis + habits sub-score done; food fold-in + export/import still deferred (see Follow-ups).
 
 ## Shipped

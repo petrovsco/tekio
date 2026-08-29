@@ -1,5 +1,6 @@
 # Roadmap: Execute the doctrine ledger — four folds and the Habits shelf
 
+**Label:** feature
 **Status:** in progress (2026-08-27) — **step 1 and the Sports fold shipped**; the
 remaining three folds are re-scoped as blocked (see §"Why the folds are not
 parallel after all"). The ledger records the verdicts; this brief is the work

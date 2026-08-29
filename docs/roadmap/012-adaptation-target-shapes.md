@@ -1,5 +1,6 @@
 # Roadmap: Adaptation target shapes — one gap, not three follow-ups
 
+**Label:** feature
 **Status:** proposed — kickoff-ready. No code yet.
 **Origin:** follow-ups #1, #2 and #3 of
 [011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md), promoted out of
