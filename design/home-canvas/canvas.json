@@ -109,9 +109,47 @@
       "h": 844,
       "page": "page-1",
       "is_interactive": true
+    },
+    {
+      "file": "LookSignal.dc.html",
+      "title": "R2 \u00b7 1 SIGNAL \u2014 colour = action",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "is_interactive": true
+    },
+    {
+      "file": "LookHeat.dc.html",
+      "title": "R2 \u00b7 2 HEAT \u2014 state in the paint",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "is_interactive": true
+    },
+    {
+      "file": "LookNight.dc.html",
+      "title": "R2 \u00b7 3 NIGHT \u2014 work glows",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "is_interactive": true
     }
   ],
   "annotations": [
+    {
+      "id": "round-2",
+      "x": -420,
+      "y": 0,
+      "w": 340,
+      "page": "page-2",
+      "text": "ROUND 2 \u2014 LOOK\n\nThree visual directions on the picked structure. Same data, same logic, same layout on all three \u2014 only the language changes. Each is named by its axis:\n\n1 \u00b7 SIGNAL \u2014 what colour is allowed to mean. Monochrome paper; one orange accent only where action lives.\n\n2 \u00b7 HEAT \u2014 where the state lives. A single sequential teal ramp IS the read; chrome recedes.\n\n3 \u00b7 NIGHT \u2014 figure-ground. Dark dashboard, work glows, the gap is a void. Note: this inverts the ink-polarity you just chose.\n\nStanding rules, honoured by all three: colour on the map = stimulus only; recovery keeps its own channel (the hatch); systemic readiness never colours the map (P5); every direction is colourblind-safe by construction (one accent / one hue / luminance only).\n\nPick one \u2014 or name the hybrid (\u201c2\u2019s map with 1\u2019s accent\u201d is a legal answer here, unlike in round 1). Round 3 refines the winner into the build spec."
+    },
     {
       "id": "the-pick",
       "x": -420,
@@ -189,10 +227,14 @@
     {
       "id": "page-1",
       "name": "Structure"
+    },
+    {
+      "id": "page-2",
+      "name": "Look"
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-1"
+    "page": "page-2"
   }
 }

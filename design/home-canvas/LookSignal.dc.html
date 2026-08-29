@@ -1,0 +1,464 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    a { color: #1a1a1a; } a:hover { color: #6b6b6b; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #faf9f7; color: #1a1a1a; position: relative; overflow: hidden; display: flex; flex-direction: column;">
+
+  <!-- ============ HEADER — T1 ============ -->
+  <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 14px 16px 8px 16px;">
+    <div style="font-size: 15px; font-weight: 700; letter-spacing: 0.14em;">TEKIŌ</div>
+    <div style="font-size: 11px; color: #6b6b6b; letter-spacing: 0.04em;">{{ cycleLabel }}</div>
+  </div>
+
+  <!-- ============ VERDICT — T1 (kept from A: readiness gates the
+       instruction; the sub names the top gap = the reason) ============ -->
+  <div style="padding: 0 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.16em; color: #8a8a8a;">TODAY</span>
+      <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 2px 5px; border-radius: 2px;">T1</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 11px; color: #6b6b6b;">{{ readinessLabel }}</span>
+    </div>
+    <div style="font-family: ui-serif, Georgia, 'Times New Roman', serif; font-size: 28px; line-height: 1.12; font-weight: 700; letter-spacing: -0.01em; color: #c2410c; text-wrap: pretty;">{{ verdict }}</div>
+    <div style="font-size: 12px; line-height: 1.4; color: #6b6b6b; margin-top: 6px; text-wrap: pretty;">{{ verdictSub }}</div>
+  </div>
+
+  <!-- ============ SYSTEMIC GATE — T1 (kept from A) ============ -->
+  <div style="margin: 12px 16px 0 16px; border: 1px solid #1a1a1a; border-radius: 3px; background: {{ sysBg }}; color: {{ sysFg }};">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 7px 10px 5px 10px; border-bottom: 1px solid {{ sysDiv }};">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{ sysFg }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10z"/></svg>
+      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em;">SYSTEMIC READINESS</span>
+      <span style="flex-grow: 1;"></span>
+      <span style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em;">{{ readinessNum }}</span>
+    </div>
+    <div style="display: flex; gap: 0; padding: 7px 10px 8px 10px;">
+      <sc-for list="{{ gates }}" as="g" hint-placeholder-count="4">
+        <div style="flex-grow: 1; padding-right: 8px;">
+          <div style="font-size: 9px; color: {{ sysMuted }}; letter-spacing: 0.05em; margin-bottom: 3px;">{{ g.label }}</div>
+          <div style="font-size: 12px; font-weight: 600;">{{ g.value }}</div>
+          <div style="height: 3px; margin-top: 4px; background: {{ sysTrack }}; border-radius: 2px;">
+            <div style="height: 3px; border-radius: 2px; width: {{ g.pct }}; background: {{ g.tone }};"></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ GATE BANNER (held days only) ============ -->
+  <sc-if value="{{ gated }}" hint-placeholder-val="{{ false }}">
+    <div style="margin: 8px 16px 0 16px; padding: 7px 10px; background: #1a1a1a; color: #ffffff; border-radius: 3px; display: flex; align-items: center; gap: 7px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"><path d="M9 6v12M15 6v12"/></svg>
+      <span style="font-size: 11px; line-height: 1.3; text-wrap: pretty;">{{ gateBanner }}</span>
+    </div>
+  </sc-if>
+
+  <div style="flex-grow: 1; padding: 0 16px;">
+
+    <!-- ============ WHAT IS MISSING = THE MAP — T1 ============
+         The former chip section is dissolved: ranked callouts drawn on the
+         body map ARE the list. Worst first, numbered. On a held day the
+         callouts do not change — the gate changes the instruction, never
+         the facts. -->
+    <div style="margin-top: 12px; background: #ffffff; border: 1px solid #e2e2e0; border-radius: 3px; padding: 7px 10px 7px 10px;">
+      <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 2px;">
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #8a8a8a;">WHAT IS MISSING</span>
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 2px 5px; border-radius: 2px;">T1</span>
+        <span style="font-size: 9px; color: #a8a8a8;">— ranked on the body · worst first</span>
+      </div>
+      <svg viewBox="0 0 336 224" width="336" height="224" style="display: block;">
+        <defs>
+          <pattern id="hatchHM" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="0" x2="0" y2="4" stroke="#ffffff" stroke-width="1.6"/>
+          </pattern>
+        </defs>
+        <text x="103" y="8" text-anchor="middle" font-size="7" letter-spacing="1" fill="#8a8a8a">FRONT</text>
+        <text x="201" y="8" text-anchor="middle" font-size="7" letter-spacing="1" fill="#8a8a8a">BACK</text>
+        <g transform="translate(52,12) scale(0.85)">
+          <circle cx="60" cy="14" r="9" fill="none" stroke="#c9c9c7" stroke-width="1"/>
+          <path d="M53,25 L67,25 L67,32 L80,36 L94,42 L97,54 L95,106 L86,110 L82,104 L79,66 L77,98 L76,116 L77,164 L74,206 L72,236 L63,236 L61,200 L60,164 L59,200 L57,236 L48,236 L46,206 L43,164 L44,116 L43,98 L41,66 L38,104 L34,110 L25,106 L23,54 L26,42 L40,36 L53,32 Z" fill="#ffffff" stroke="#c9c9c7" stroke-width="1"/>
+          <sc-for list="{{ frontShapes }}" as="s" hint-placeholder-count="16">
+            <path d="{{ s.d }}" fill="{{ s.fill }}" stroke="#ffffff" stroke-width="0.7" onClick="{{ s.pick }}" style="cursor: pointer;"></path>
+          </sc-for>
+          <sc-for list="{{ frontHatch }}" as="s" hint-placeholder-count="0">
+            <path d="{{ s.d }}" fill="url(#hatchHM)" stroke="none" style="pointer-events: none;"></path>
+          </sc-for>
+        </g>
+        <g transform="translate(150,12) scale(0.85)">
+          <circle cx="60" cy="14" r="9" fill="none" stroke="#c9c9c7" stroke-width="1"/>
+          <path d="M53,25 L67,25 L67,32 L80,36 L94,42 L97,54 L95,106 L86,110 L82,104 L79,66 L77,98 L76,116 L77,164 L74,206 L72,236 L63,236 L61,200 L60,164 L59,200 L57,236 L48,236 L46,206 L43,164 L44,116 L43,98 L41,66 L38,104 L34,110 L25,106 L23,54 L26,42 L40,36 L53,32 Z" fill="#ffffff" stroke="#c9c9c7" stroke-width="1"/>
+          <sc-for list="{{ backShapes }}" as="s" hint-placeholder-count="16">
+            <path d="{{ s.d }}" fill="{{ s.fill }}" stroke="#ffffff" stroke-width="0.7" onClick="{{ s.pick }}" style="cursor: pointer;"></path>
+          </sc-for>
+          <sc-for list="{{ backHatch }}" as="s" hint-placeholder-count="0">
+            <path d="{{ s.d }}" fill="url(#hatchHM)" stroke="none" style="pointer-events: none;"></path>
+          </sc-for>
+        </g>
+        <sc-for list="{{ callouts }}" as="c" hint-placeholder-count="5">
+          <g>
+            <line x1="{{ c.lx }}" y1="{{ c.dy }}" x2="{{ c.dx }}" y2="{{ c.dy }}" stroke="#6b6b6b" stroke-width="1"/>
+            <circle cx="{{ c.dx }}" cy="{{ c.dy }}" r="2.3" fill="#ffffff" stroke="#c2410c" stroke-width="1.2"/>
+            <text x="{{ c.tx }}" y="{{ c.ty }}" text-anchor="{{ c.anchor }}" font-size="9" font-weight="{{ c.fw }}" fill="{{ c.tone }}" onClick="{{ c.pick }}" style="cursor: pointer;">{{ c.text }}</text>
+            <text x="{{ c.tx }}" y="{{ c.ty2 }}" text-anchor="{{ c.anchor }}" font-size="7.5" fill="#6b6b6b">{{ c.sub }}</text>
+          </g>
+        </sc-for>
+      </svg>
+      <!-- legend: two dimensions in one map -->
+      <div style="display: flex; align-items: center; gap: 10px; margin-top: 3px; padding-top: 4px; border-top: 1px solid #eeeeec;">
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <svg width="46" height="8"><rect x="0" y="0" width="11" height="8" fill="#ececea"/><rect x="11.5" y="0" width="11" height="8" fill="#c9c9c7"/><rect x="23" y="0" width="11" height="8" fill="#8f8f8f"/><rect x="34.5" y="0" width="11" height="8" fill="#1f1f1f"/></svg>
+          <span style="font-size: 9px; color: #6b6b6b;">darker = more trained · light = the gap</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 4px;">
+          <svg width="11" height="8"><defs><pattern id="lgHM" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="4" stroke="#ffffff" stroke-width="1.6"/></pattern></defs><rect x="0" y="0" width="11" height="8" fill="#4a4a4a"/><rect x="0" y="0" width="11" height="8" fill="url(#lgHM)"/></svg>
+          <span style="font-size: 9px; color: #6b6b6b;">still recovering</span>
+        </div>
+      </div>
+      <!-- power is muscle-linked, not whole-body — so its zero lives here,
+           on the muscle side, not in the cardio strip (P2) -->
+      <div style="font-size: 9px; color: #6b6b6b; margin-top: 4px;">{{ powerLine }}</div>
+    </div>
+
+    <!-- ============ WHOLE-BODY QUALITIES — T1 (kept from B: one state
+         each; all cardio after the 2026-08-29 simplification) ========== -->
+    <div style="margin-top: 8px; background: #ffffff; border: 1px solid #e2e2e0; border-radius: 3px; padding: 7px 10px 8px 10px;">
+      <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px;">
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #8a8a8a;">WHOLE-BODY QUALITIES</span>
+        <span style="font-size: 9px; color: #a8a8a8;">— all cardio · one state each</span>
+        <span style="flex-grow: 1;"></span>
+        <span style="font-size: 7px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;">T1</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{ qualities }}" as="q" hint-placeholder-count="3">
+          <div style="border: 1px solid #e2e2e0; border-radius: 2px; padding: 4px 5px 5px 5px;">
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <svg width="8" height="8"><rect x="0" y="0" width="8" height="8" rx="1" fill="{{ q.fill }}" stroke="{{ q.edge }}" stroke-width="1"/></svg>
+              <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.02em;">{{ q.name }}</span>
+            </div>
+            <div style="font-size: 9px; color: #6b6b6b; margin-top: 2px;">{{ q.note }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ READINESS INPUTS (the three folds) — T2 ============ -->
+  <div style="display: flex; gap: 6px; padding: 8px 16px 6px 16px;">
+    <sc-for list="{{ folds }}" as="f" hint-placeholder-count="3">
+      <div style="flex-grow: 1; background: #ffffff; border: 1px solid #e2e2e0; border-radius: 3px; padding: 4px 7px 5px 7px;">
+        <div style="display: flex; align-items: center; gap: 3px;">
+          <span style="font-size: 8px; color: #8a8a8a; letter-spacing: 0.08em;">{{ f.label }}</span>
+          <span style="font-size: 7px; font-weight: 700; color: #8a8a8a; border: 1px solid #d6d6d4; padding: 0px 3px; border-radius: 2px;">T2</span>
+        </div>
+        <div style="font-size: 13px; font-weight: 700; margin-top: 1px;">{{ f.value }}</div>
+        <div style="font-size: 8px; color: {{ f.noteTone }};">{{ f.note }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ============ DESIGN NOTE (not app chrome) ============ -->
+  <div style="padding: 0 16px 6px 16px;">
+    <div style="font-size: 9px; line-height: 1.35; color: #8a8a8a; border-left: 2px solid #c2410c; padding-left: 7px; text-wrap: pretty;">
+      <strong style="color: #1a1a1a;">R2 · Direction 1 — SIGNAL.</strong> Axis: what colour is allowed to mean. Paper-calm monochrome, serif verdict; one accent, spent only where action lives — the verdict, the ranked callouts, the missing qualities, a stale input. If it’s orange, do something about it. Tradeoff: the map itself stays quiet grey, and a Hold day wears the same orange as a Push day — the accent means urgency, not mood.
+    </div>
+  </div>
+
+  <!-- ============ BOTTOM NAV — T3 ============ -->
+  <div style="display: flex; border-top: 1px solid #d6d6d4; background: #ffffff;">
+    <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 10px 0; min-height: 46px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{ n.tone }}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{ n.icon }}"/></svg>
+        <span style="font-size: 8px; letter-spacing: 0.06em; color: {{ n.tone }};">{{ n.label }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ============ MUSCLE DRILL-IN — T2, opens on tap ============ -->
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(26,26,26,0.34);" onClick="{{ closeSheet }}"></div>
+  </sc-if>
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #ffffff; border-top: 2px solid #1a1a1a; border-radius: 6px 6px 0 0; padding: 12px 16px 18px 16px;">
+      <div style="display: flex; align-items: center; gap: 7px;">
+        <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">{{ sheet.name }}</span>
+        <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 2px 5px; border-radius: 2px;">T2</span>
+        <span style="flex-grow: 1;"></span>
+        <div onClick="{{ closeSheet }}" style="cursor: pointer; min-width: 44px; min-height: 30px; display: flex; align-items: center; justify-content: flex-end;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: #6b6b6b; margin-top: 3px;">{{ sheet.state }}</div>
+      <div style="display: flex; gap: 18px; margin-top: 10px;">
+        <div><div style="font-size: 9px; color: #8a8a8a; letter-spacing: 0.06em;">SETS / CYCLE</div><div style="font-size: 19px; font-weight: 700;">{{ sheet.sets }}</div></div>
+        <div><div style="font-size: 9px; color: #8a8a8a; letter-spacing: 0.06em;">LAST STIMULUS</div><div style="font-size: 19px; font-weight: 700;">{{ sheet.since }}</div></div>
+        <div><div style="font-size: 9px; color: #8a8a8a; letter-spacing: 0.06em;">TARGET · PLACEHOLDER</div><div style="font-size: 19px; font-weight: 700;">60</div></div>
+      </div>
+      <div style="font-size: 9px; color: #a8a8a8; margin-top: 8px;">Full detail, weekly bars and inline logging live on the drill-in artboard.</div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"scenario":{"editor":"enum","options":["today","trained-yesterday","bad-recovery","zero-data"],"default":"today","tsType":"string"},"deload":{"editor":"boolean","default":false,"tsType":"boolean"},"$preview":{"width":390,"height":844}}'>
+var GEO = {
+  chest:      { side: 'front', d: ['M43,45 L59,48 L59,68 L43,66 Z', 'M77,45 L61,48 L61,68 L77,66 Z'] },
+  ant_delt:   { side: 'front', d: ['M26,48 L40,43 L43,58 L28,60 Z', 'M94,48 L80,43 L77,58 L92,60 Z'] },
+  lat_delt:   { side: 'front', d: ['M23,54 L27,45 L31,47 L29,61 L24,61 Z', 'M97,54 L93,45 L89,47 L91,61 L96,61 Z'] },
+  biceps:     { side: 'front', d: ['M26,62 L38,62 L36,86 L26,86 Z', 'M94,62 L82,62 L84,86 L94,86 Z'] },
+  forearms:   { side: 'front', d: ['M26,88 L36,88 L34,110 L27,110 Z', 'M94,88 L84,88 L86,110 L93,110 Z'] },
+  rectus:     { side: 'front', d: ['M51,70 L69,70 L68,102 L52,102 Z'] },
+  obliques:   { side: 'front', d: ['M43,70 L50,70 L51,100 L45,96 Z', 'M77,70 L70,70 L69,100 L75,96 Z'] },
+  hipflex:    { side: 'front', d: ['M47,104 L73,104 L71,118 L49,118 Z'] },
+  quads:      { side: 'front', d: ['M44,120 L56,120 L55,164 L44,164 Z', 'M76,120 L64,120 L65,164 L76,164 Z'] },
+  adductors:  { side: 'front', d: ['M56,122 L64,122 L64,152 L56,152 Z'] },
+  traps:      { side: 'back',  d: ['M47,32 L73,32 L78,56 L42,56 Z'] },
+  post_delt:  { side: 'back',  d: ['M25,48 L38,44 L41,58 L27,60 Z', 'M95,48 L82,44 L79,58 L93,60 Z'] },
+  rotator:    { side: 'back',  d: ['M36,44 L45,44 L46,53 L37,53 Z', 'M84,44 L75,44 L74,53 L83,53 Z'] },
+  rhomboids:  { side: 'back',  d: ['M49,58 L71,58 L71,72 L49,72 Z'] },
+  lats:       { side: 'back',  d: ['M42,58 L48,60 L51,90 L42,86 Z', 'M78,58 L72,60 L69,90 L78,86 Z'] },
+  triceps:    { side: 'back',  d: ['M26,62 L38,62 L36,86 L26,86 Z', 'M94,62 L82,62 L84,86 L94,86 Z'] },
+  erectors:   { side: 'back',  d: ['M54,74 L66,74 L66,104 L54,104 Z'] },
+  glutes:     { side: 'back',  d: ['M44,106 L76,106 L74,128 L46,128 Z'] },
+  hamstrings: { side: 'back',  d: ['M46,130 L57,130 L56,166 L45,166 Z', 'M74,130 L63,130 L64,166 L75,166 Z'] },
+  calves:     { side: 'back',  d: ['M46,174 L56,174 L55,204 L47,204 Z', 'M74,174 L64,174 L65,204 L73,204 Z'] }
+};
+
+/* Real pull, docs in design/home-canvas/DATA.md. sets = working sets in the
+   42-day cycle; days = days since last stimulus (null = never in window). */
+var MUSCLES = [
+  { id: 'biceps',     name: 'Biceps',             sets: 69, days: 6 },
+  { id: 'traps',      name: 'Upper Back / Traps', sets: 54, days: 6 },
+  { id: 'triceps',    name: 'Triceps',            sets: 48, days: 7 },
+  { id: 'rhomboids',  name: 'Rhomboids',          sets: 46, days: 6 },
+  { id: 'ant_delt',   name: 'Anterior Deltoid',   sets: 39, days: 7 },
+  { id: 'lats',       name: 'Lats',               sets: 36, days: 6 },
+  { id: 'chest',      name: 'Chest',              sets: 28, days: 7 },
+  { id: 'forearms',   name: 'Forearms',           sets: 27, days: 6 },
+  { id: 'post_delt',  name: 'Posterior Deltoid',  sets: 25, days: 10 },
+  { id: 'rotator',    name: 'Rotator Cuff',       sets: 18, days: 10 },
+  { id: 'lat_delt',   name: 'Lateral Deltoid',    sets: 11, days: 15 },
+  { id: 'calves',     name: 'Calves',             sets: 6,  days: 30 },
+  { id: 'quads',      name: 'Quadriceps',         sets: 3,  days: 30 },
+  { id: 'adductors',  name: 'Adductors',          sets: 3,  days: 30 },
+  { id: 'glutes',     name: 'Glutes',             sets: 3,  days: 30 },
+  { id: 'hamstrings', name: 'Hamstrings',         sets: 3,  days: 30 },
+  { id: 'erectors',   name: 'Erectors',           sets: 3,  days: 30 },
+  { id: 'hipflex',    name: 'Hip Flexors',        sets: 0,  days: null },
+  { id: 'obliques',   name: 'Obliques',           sets: 0,  days: null },
+  { id: 'rectus',     name: 'Rectus Abdominis',   sets: 0,  days: null }
+];
+
+var CYCLE_TARGET = 60;   /* PLACEHOLDER — 10 sets/wk x 6 wk, not yet grounded */
+var RECOVER_DAYS = 2;    /* PLACEHOLDER — hours-to-recovered is ungrounded */
+
+/* Figure transforms inside the 336x224 map SVG: gx = t.x + vx * t.s */
+var FT = { x: 52,  y: 12, s: 0.85 };   /* front figure */
+var BT = { x: 150, y: 12, s: 0.85 };   /* back figure  */
+
+/* The ranked callouts — the former chip list, drawn onto the map.
+   vx/vy is the anchor point in the figure's own 120x250 viewBox.
+   minor = below the act-on-these cut, shown lighter and unnumbered. */
+var CALLOUTS = [
+  { rank: '1', id: 'rectus',     label: 'CORE',   sub: 'never trained', side: 'L', fig: 'F', vx: 60,   vy: 86,  minor: false },
+  { rank: '2', id: 'quads',      label: 'QUADS',  sub: '3 sets / 30 d', side: 'L', fig: 'F', vx: 50,   vy: 142, minor: false },
+  { rank: '3', id: 'glutes',     label: 'GLUTES', sub: '3 sets / 30 d', side: 'R', fig: 'B', vx: 66,   vy: 117, minor: false },
+  { rank: '4', id: 'hamstrings', label: 'HAMS',   sub: '3 sets / 30 d', side: 'R', fig: 'B', vx: 69,   vy: 148, minor: false },
+  { rank: '',  id: 'calves',     label: 'CALVES', sub: '6 sets / 30 d', side: 'R', fig: 'B', vx: 68.5, vy: 189, minor: true }
+];
+
+var NAV = [
+  { label: 'HOME',    icon: 'M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z', tone: '#1a1a1a' },
+  { label: 'WEIGHTS', icon: 'M5 9v6M19 9v6M8 7v10M16 7v10M8 12h8', tone: '#a8a8a8' },
+  { label: 'CARDIO',  icon: 'M3 12h4l2-5 3 10 2-5h7', tone: '#a8a8a8' },
+  { label: 'PROGRAM', icon: 'M6 4h12v16H6zM9 9h6M9 13h6', tone: '#a8a8a8' }
+];
+
+class Component extends DCLogic {
+  /* ink = training accumulated (flipped 2026-08-29): more sets = darker.
+     The gap is the LIGHT region — the callouts point at the emptiness. */
+  fillFor(sets) {
+    var c = sets / CYCLE_TARGET;
+    if (c < 0.10) return '#ececea';
+    if (c < 0.35) return '#c9c9c7';
+    if (c < 0.70) return '#8f8f8f';
+    return '#1f1f1f';
+  }
+
+  renderVals() {
+    var self = this;
+    var sc = this.props.scenario || 'today';
+    var deload = this.props.deload === true;
+    var zero = sc === 'zero-data';
+
+    /* --- systemic layer (kept from A) ---------------------------------- */
+    var readiness = 73, sleep = '73', hrv = '83', sleepPct = '73%', hrvPct = '76%';
+    if (sc === 'bad-recovery') { readiness = 31; sleep = '52'; hrv = '61'; sleepPct = '52%'; hrvPct = '38%'; }
+    if (sc === 'trained-yesterday') { readiness = 66; sleep = '73'; hrv = '78'; sleepPct = '73%'; hrvPct = '68%'; }
+
+    var gates = zero ? [
+      { label: 'SLEEP',  value: '—', pct: '0%', tone: '#d6d6d4' },
+      { label: 'HRV',    value: '—', pct: '0%', tone: '#d6d6d4' },
+      { label: 'WATER',  value: '—', pct: '0%', tone: '#d6d6d4' },
+      { label: 'BLOOD',  value: '—', pct: '0%', tone: '#d6d6d4' }
+    ] : [
+      { label: 'SLEEP',  value: sleep,     pct: sleepPct, tone: '#1a1a1a' },
+      { label: 'HRV',    value: hrv,       pct: hrvPct,   tone: '#1a1a1a' },
+      { label: 'WATER',  value: '15d old', pct: '12%',    tone: '#8f8f8f' },
+      { label: 'BLOOD',  value: 'clear',   pct: '100%',   tone: '#1a1a1a' }
+    ];
+
+    var gated = sc === 'bad-recovery';
+    if (gated) {
+      gates = gates.map(function (g) {
+        return { label: g.label, value: g.value, pct: g.pct,
+                 tone: g.tone === '#8f8f8f' ? '#a8a8a8' : '#ffffff' };
+      });
+    }
+
+    /* --- the verdict: instruction first, the TOP GAP as its reason ----- */
+    var verdict, verdictSub, gateBanner = '';
+    if (zero) {
+      verdict = 'Nothing logged yet.';
+      verdictSub = 'One session and this screen starts answering. Nothing here is guessed.';
+    } else if (gated) {
+      verdict = 'Hold. Walk or mobility only.';
+      verdictSub = 'Sleep 52 and HRV 61 — a bad night overrides the plan.';
+      gateBanner = 'Readiness 31 is below the push threshold (PLACEHOLDER). The gaps below stay open — today just isn’t the day to close them.';
+    } else if (sc === 'trained-yesterday') {
+      verdict = 'Push — core and legs.';
+      verdictSub = 'Arms and back were hit yesterday and are still recovering (PLACEHOLDER: ' + RECOVER_DAYS + ' days).';
+    } else {
+      verdict = deload ? 'Deload week — core and legs at half volume.' : 'Push. Core and legs are the gap.';
+      verdictSub = deload
+        ? 'Week 6 of the cycle. The gap stays the same; the volume cap is the only change.'
+        : 'Core: never trained this cycle. Legs: 3 sets in 42 days. Nothing is sore — nothing trained for 6 days.';
+    }
+
+    /* --- local muscle layer -------------------------------------------- */
+    var recovering = {};
+    if (sc === 'trained-yesterday') {
+      recovering = { biceps: 1, traps: 1, triceps: 1, rhomboids: 1, lats: 1, ant_delt: 1, forearms: 1 };
+    }
+
+    var front = [], back = [], frontH = [], backH = [];
+    MUSCLES.forEach(function (m) {
+      var g = GEO[m.id];
+      if (!g) return;
+      var fill = zero ? '#eeeeec' : self.fillFor(m.sets);
+      g.d.forEach(function (d) {
+        var shape = { d: d, fill: fill, pick: function () { self.setState({ open: m.id }); } };
+        if (g.side === 'front') { front.push(shape); } else { back.push(shape); }
+        if (recovering[m.id]) {
+          if (g.side === 'front') { frontH.push({ d: d }); } else { backH.push({ d: d }); }
+        }
+      });
+    });
+
+    /* --- the callouts: facts, so they NEVER change with readiness ------ */
+    var callouts = zero ? [] : CALLOUTS.map(function (c) {
+      var t = c.fig === 'F' ? FT : BT;
+      var dx = t.x + c.vx * t.s;
+      var dy = t.y + c.vy * t.s;
+      var left = c.side === 'L';
+      return {
+        dx: String(Math.round(dx * 10) / 10),
+        dy: String(Math.round(dy * 10) / 10),
+        lx: left ? '69' : '237',
+        tx: left ? '66' : '240',
+        ty: String(Math.round((dy + 3) * 10) / 10),
+        ty2: String(Math.round((dy + 13) * 10) / 10),
+        anchor: left ? 'end' : 'start',
+        text: c.rank ? c.rank + ' · ' + c.label : c.label,
+        sub: c.sub,
+        fw: c.minor ? '400' : '700',
+        tone: c.minor ? '#6b6b6b' : '#c2410c',
+        pick: function () { self.setState({ open: c.id }); }
+      };
+    });
+
+    /* --- whole-body: one state each (kept from B) ---------------------- */
+    /* untouched = empty square (outline only); a trained quality fills
+       with ink — same polarity as the map */
+    var empty = { fill: '#ffffff', edge: '#c2410c' };
+    var none  = { fill: '#ffffff', edge: '#e2e2e0' };
+    var qualities = [
+      { name: 'VO₂MAX',    note: 'never',    fill: empty.fill, edge: empty.edge },
+      { name: 'ANAEROBIC', note: 'never',    fill: empty.fill, edge: empty.edge },
+      { name: 'ENDURANCE', note: '53 d ago', fill: empty.fill, edge: empty.edge }
+    ];
+    if (zero) {
+      qualities = qualities.map(function (q) {
+        return { name: q.name, note: '—', fill: none.fill, edge: none.edge };
+      });
+    }
+
+    /* --- the three folds, as readiness inputs -------------------------- */
+    var folds = zero ? [
+      { label: 'WATER',  value: '—',  note: 'tap to log',   noteTone: '#8a8a8a' },
+      { label: 'WEIGHT', value: '—',  note: 'tap to log',   noteTone: '#8a8a8a' },
+      { label: 'BLOOD',  value: '—',  note: 'tap to log',   noteTone: '#8a8a8a' }
+    ] : [
+      { label: 'WATER',  value: '0.7 L',   note: 'stale 15d', noteTone: '#c2410c' },
+      { label: 'WEIGHT', value: '77.4 kg', note: '+3.4 kg',   noteTone: '#1a1a1a' },
+      { label: 'BLOOD',  value: '156 d',   note: 'eligible',  noteTone: '#8a8a8a' }
+    ];
+
+    /* --- drill-in sheet ------------------------------------------------ */
+    var openId = this.state && this.state.open;
+    var sheet = { name: '', state: '', sets: '', since: '' };
+    if (openId) {
+      var m = MUSCLES.filter(function (x) { return x.id === openId; })[0];
+      if (m) {
+        sheet.name = m.name;
+        sheet.sets = String(m.sets);
+        sheet.since = m.days === null ? 'never' : m.days + ' d';
+        sheet.state = recovering[m.id]
+          ? 'Recently hit — still recovering (PLACEHOLDER: ' + RECOVER_DAYS + ' days)'
+          : (m.sets < 6 ? 'Fresh and under-stimulated — train it' : 'Recovered, close to target');
+      }
+    }
+
+    return {
+      cycleLabel: deload ? 'Cycle 5 · week 6 · DELOAD' : 'Cycle 5 · week 5 · no active program',
+      verdict: verdict,
+      verdictSub: verdictSub,
+      readinessNum: zero ? '—' : String(readiness),
+      readinessLabel: zero ? 'no readiness data' : 'readiness',
+      gates: gates,
+      gated: gated,
+      gateBanner: gateBanner,
+      sysBg: gated ? '#1a1a1a' : '#ffffff',
+      sysFg: gated ? '#ffffff' : '#1a1a1a',
+      sysDiv: gated ? '#4a4a4a' : '#e2e2e0',
+      sysMuted: gated ? '#a8a8a8' : '#8a8a8a',
+      sysTrack: gated ? '#4a4a4a' : '#e2e2e0',
+      frontShapes: front,
+      backShapes: back,
+      frontHatch: frontH,
+      backHatch: backH,
+      callouts: callouts,
+      powerLine: zero ? 'POWER — no data yet' : 'POWER — 0 sets, any muscle · muscle-linked, reads per muscle in the drill-in',
+      qualities: qualities,
+      folds: folds,
+      nav: NAV,
+      sheetOpen: !!openId,
+      sheet: sheet,
+      closeSheet: function () { self.setState({ open: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>
