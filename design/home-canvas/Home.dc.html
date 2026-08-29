@@ -117,8 +117,8 @@
       <!-- legend: two dimensions in one map -->
       <div style="display: flex; align-items: center; gap: 10px; margin-top: 3px; padding-top: 4px; border-top: 1px solid #eeeeec;">
         <div style="display: flex; align-items: center; gap: 4px;">
-          <svg width="46" height="8"><rect x="0" y="0" width="11" height="8" fill="#1f1f1f"/><rect x="11.5" y="0" width="11" height="8" fill="#4a4a4a"/><rect x="23" y="0" width="11" height="8" fill="#8f8f8f"/><rect x="34.5" y="0" width="11" height="8" fill="#d8d8d8"/></svg>
-          <span style="font-size: 9px; color: #6b6b6b;">darker = bigger gap</span>
+          <svg width="46" height="8"><rect x="0" y="0" width="11" height="8" fill="#ececea"/><rect x="11.5" y="0" width="11" height="8" fill="#c9c9c7"/><rect x="23" y="0" width="11" height="8" fill="#8f8f8f"/><rect x="34.5" y="0" width="11" height="8" fill="#1f1f1f"/></svg>
+          <span style="font-size: 9px; color: #6b6b6b;">darker = more trained · light = the gap</span>
         </div>
         <div style="display: flex; align-items: center; gap: 4px;">
           <svg width="11" height="8"><defs><pattern id="lgHM" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="0" y2="4" stroke="#ffffff" stroke-width="1.6"/></pattern></defs><rect x="0" y="0" width="11" height="8" fill="#4a4a4a"/><rect x="0" y="0" width="11" height="8" fill="url(#lgHM)"/></svg>
@@ -286,12 +286,14 @@ var NAV = [
 ];
 
 class Component extends DCLogic {
+  /* ink = training accumulated (flipped 2026-08-29): more sets = darker.
+     The gap is the LIGHT region — the callouts point at the emptiness. */
   fillFor(sets) {
     var c = sets / CYCLE_TARGET;
-    if (c < 0.10) return '#1f1f1f';
-    if (c < 0.35) return '#4a4a4a';
+    if (c < 0.10) return '#ececea';
+    if (c < 0.35) return '#c9c9c7';
     if (c < 0.70) return '#8f8f8f';
-    return '#d8d8d8';
+    return '#1f1f1f';
   }
 
   renderVals() {
@@ -387,12 +389,14 @@ class Component extends DCLogic {
     });
 
     /* --- whole-body: one state each (kept from B) ---------------------- */
-    var dark = { fill: '#1f1f1f', edge: '#1f1f1f' };
-    var none = { fill: '#ffffff', edge: '#e2e2e0' };
+    /* untouched = empty square (outline only); a trained quality fills
+       with ink — same polarity as the map */
+    var empty = { fill: '#ffffff', edge: '#8f8f8f' };
+    var none  = { fill: '#ffffff', edge: '#e2e2e0' };
     var qualities = [
-      { name: 'VO₂MAX',    note: 'never',    fill: dark.fill, edge: dark.edge },
-      { name: 'ANAEROBIC', note: 'never',    fill: dark.fill, edge: dark.edge },
-      { name: 'ENDURANCE', note: '53 d ago', fill: dark.fill, edge: dark.edge }
+      { name: 'VO₂MAX',    note: 'never',    fill: empty.fill, edge: empty.edge },
+      { name: 'ANAEROBIC', note: 'never',    fill: empty.fill, edge: empty.edge },
+      { name: 'ENDURANCE', note: '53 d ago', fill: empty.fill, edge: empty.edge }
     ];
     if (zero) {
       qualities = qualities.map(function (q) {
