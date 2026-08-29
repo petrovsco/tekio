@@ -106,7 +106,7 @@
       "y": 420,
       "w": 340,
       "page": "page-1",
-      "text": "FORK 1 — where readiness sits\n\nA: readiness GATES THE INSTRUCTION. The screen fuses both signals into one verdict — on a bad day it says Hold, the readiness card takes the emphasis, and every gap flips from “train this” (solid) to “held” (hollow). Nothing is hidden or dimmed: the gate changes the instruction, never the facts.\n\nB: readiness sits ALONGSIDE. Two facts, equal weight, and you combine them yourself. The screen never issues a verdict.\n\nSecond question, answered differently in each: the six whole-body qualities get ONE combined read in A, ONE STATE EACH in B."
+      "text": "FORK 1 — where readiness sits\n\nA: readiness GATES THE INSTRUCTION. The screen fuses both signals into one verdict — on a bad day it says Hold, the readiness card takes the emphasis, and every gap flips from “train this” (solid) to “held” (hollow). Nothing is hidden or dimmed: the gate changes the instruction, never the facts.\n\nB: readiness sits ALONGSIDE. Two facts, equal weight, and you combine them yourself. The screen never issues a verdict.\n\nSecond question, answered differently in each: the three whole-body qualities — all cardio, after the 2026-08-29 simplification — get ONE combined read in A, ONE STATE EACH in B."
     },
     {
       "id": "held-state",
@@ -139,6 +139,14 @@
       "w": 340,
       "page": "page-1",
       "text": "FORK 2 — when the capture control exists\n\nThe same fork three times: always-visible quick-add (T1) vs revealed-on-intent (T2). Both work on all three artboards — tap them.\n\nWater is logged daily. Donation three times a year. Body weight twice a month. One answer has to cover all three, and it decides three folds at once."
+    },
+    {
+      "id": "adaptation-model",
+      "x": 1410,
+      "y": 760,
+      "w": 320,
+      "page": "page-1",
+      "text": "THE MODEL, SIMPLIFIED (2026-08-29)\n\nNine adaptations became seven.\n\n· SPEED — dropped. Pure speed isn\u2019t trained here.\n· SKILL — dropped for now. Too broad for an app to track honestly; maybe per-exercise recommendations later.\n· POWER — reclassified: force × velocity of a specific muscle group, so it reads PER MUSCLE (drill-in quality mix), not whole-body.\n\nWhat\u2019s left splits cleanly: four muscle-linked qualities (strength, hypertrophy, muscular endurance, power) on the map and drill-in; three whole-body ones (VO\u2082max, anaerobic, endurance) — all cardio — in the strip.\n\nApp-side execution: roadmap 019."
     },
     {
       "id": "placeholders",

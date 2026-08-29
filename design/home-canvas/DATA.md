@@ -47,6 +47,10 @@ core never touched.** Nothing has been trained in 6 days.
 
 Six of nine adaptations are at **zero** this cycle.
 
+> **Model change 2026-08-29 (roadmap 019):** Speed and Skill are dropped and
+> Power is muscle-linked — seven adaptations now. The table above is the raw
+> 2026-08-27 pull and predates the change.
+
 ## Recovery — systemic inputs
 
 Sleep (Garmin, live):

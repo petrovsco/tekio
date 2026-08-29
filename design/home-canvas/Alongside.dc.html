@@ -129,12 +129,12 @@
   <div style="margin: 8px 16px 0 16px; background: #ffffff; border: 1px solid #e2e2e0; border-radius: 3px; padding: 7px 10px 8px 10px;">
     <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px;">
       <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #8a8a8a;">WHOLE-BODY QUALITIES</span>
-      <span style="font-size: 9px; color: #a8a8a8;">— one state each</span>
+      <span style="font-size: 9px; color: #a8a8a8;">— all cardio · one state each</span>
       <span style="flex-grow: 1;"></span>
       <span style="font-size: 7px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 1px 4px; border-radius: 2px;">T1</span>
     </div>
     <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
-      <sc-for list="{{ qualities }}" as="q" hint-placeholder-count="6">
+      <sc-for list="{{ qualities }}" as="q" hint-placeholder-count="3">
         <div style="border: 1px solid #e2e2e0; border-radius: 2px; padding: 4px 5px 5px 5px;">
           <div style="display: flex; align-items: center; gap: 4px;">
             <svg width="8" height="8"><rect x="0" y="0" width="8" height="8" rx="1" fill="{{ q.fill }}" stroke="{{ q.edge }}" stroke-width="1"/></svg>
@@ -328,19 +328,15 @@ class Component extends DCLogic {
 
     var missing = zero
       ? [{ text: 'no data' }]
-      : [{ text: 'Quads 3' }, { text: 'Glutes 3' }, { text: 'Hams 3' }, { text: 'Core 0' }, { text: 'Calves 6' }];
+      : [{ text: 'Quads 3' }, { text: 'Glutes 3' }, { text: 'Hams 3' }, { text: 'Core 0' }, { text: 'Calves 6' }, { text: 'Power 0' }];
 
-    /* VARIANT B ANSWER: six whole-body qualities, one state each */
+    /* VARIANT B ANSWER: three whole-body qualities (all cardio), one state each */
     var dark = { fill: '#1f1f1f', edge: '#1f1f1f' };
-    var mid  = { fill: '#8f8f8f', edge: '#8f8f8f' };
     var none = { fill: '#ffffff', edge: '#e2e2e0' };
     var qualities = [
-      { name: 'SPEED',     note: 'never',     fill: dark.fill, edge: dark.edge },
-      { name: 'POWER',     note: 'never',     fill: dark.fill, edge: dark.edge },
-      { name: 'VO₂MAX',    note: 'never',     fill: dark.fill, edge: dark.edge },
-      { name: 'ANAEROBIC', note: 'never',     fill: dark.fill, edge: dark.edge },
-      { name: 'ENDURANCE', note: '53 d ago',  fill: dark.fill, edge: dark.edge },
-      { name: 'SKILL',     note: 'Tennis 16d', fill: mid.fill, edge: mid.edge }
+      { name: 'VO₂MAX',    note: 'never',    fill: dark.fill, edge: dark.edge },
+      { name: 'ANAEROBIC', note: 'never',    fill: dark.fill, edge: dark.edge },
+      { name: 'ENDURANCE', note: '53 d ago', fill: dark.fill, edge: dark.edge }
     ];
     if (zero) {
       qualities = qualities.map(function (q) {

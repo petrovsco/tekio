@@ -1,8 +1,8 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
-**Status:** round 1b published 2026-08-29 — the good/bad-day 2×2, the held-state
-redesign, and the exercise-first log flow. Next: the five-second test and the
-§6 pick (steps 2–3).
+**Status:** round 1c published 2026-08-29 — the adaptation model simplified to
+seven (Speed and Skill dropped, Power per-muscle; doctrine amended, app-side
+work is roadmap 019). Next: the five-second test and the §6 pick (steps 2–3).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -148,8 +148,9 @@ Artboards 4–6 each carry the same secondary fork, shown rather than asked:
 its most concrete form, and it decides three folds at once. It is an interaction
 question, so on these three the reveal has to actually work.
 
-**Two variants of the whole-body read** (speed, power, VO₂max, anaerobic,
-cardio-endurance, skill) must appear across variants A and B, since §6's second
+**Two variants of the whole-body read** (VO₂max, anaerobic, cardio-endurance —
+all cardio since the 2026-08-29 model simplification, roadmap 019; power reads
+per muscle in the drill-in) must appear across variants A and B, since §6's second
 question is whether they get one combined read or one state each. P2 forbids
 putting them on the silhouette.
 
@@ -227,7 +228,7 @@ existing app pixel-perfectly without being asked, and here that is exactly wrong
 there is no design system to match. `src/constants/colors.ts` is a flat token bag
 (slate + `#6366f1` indigo), `src/index.css` is Tailwind v4 plus four keyframes,
 and there is no `tailwind.config.*` at all. Read the code for **structure, the
-nine adaptations, the muscle list and the real numbers**; inherit **none of the
+seven adaptations, the muscle list and the real numbers**; inherit **none of the
 look**.
 
 If saving turns out not to be enabled for this account, the canvas is still
@@ -310,7 +311,7 @@ Rounds 2 and 3 do not re-paste this; they carry only what changed.
 > no colour or type decisions yet, those are round 2.
 >
 > **The one sentence the app exists for:** *Tekiō tells me what's missing.*
-> Whether my training is balanced across nine adaptations and the muscles that
+> Whether my training is balanced across seven adaptations and the muscles that
 > serve them, and whether I'm recovered enough to close the gap today.
 >
 > **The screen succeeds only if:** I open it and, without tapping anything, know
@@ -320,8 +321,9 @@ Rounds 2 and 3 do not re-paste this; they carry only what changed.
 > does not get shown.
 >
 > **The data has two shapes and one picture cannot carry both honestly.**
-> Muscles are spatial — a body map is honest for them. Speed, power, VO₂max,
-> anaerobic capacity, cardio-endurance and skill are whole-body qualities;
+> Muscles are spatial — a body map is honest for them, and the four muscle-linked
+> qualities (strength, hypertrophy, muscular endurance, power) read per muscle.
+> VO₂max, anaerobic capacity and cardio-endurance are whole-body qualities;
 > putting them on a silhouette would be a beautiful lie. Use two reads.
 >
 > **Stimulus and recovery are two dimensions of one read, not two places.** More
@@ -347,7 +349,7 @@ Rounds 2 and 3 do not re-paste this; they carry only what changed.
 > **Do not match the existing app, and say so back to me.** There is no design
 > system to lift: no `tailwind.config.*`, `src/constants/colors.ts` is a flat
 > slate-plus-indigo token bag, and the current look is Tailwind defaults plus
-> emoji that was never designed. Read the code for structure, the nine
+> emoji that was never designed. Read the code for structure, the seven
 > adaptations, the muscle list and the real numbers. Inherit none of the styling.
 > Build a visual language that serves a five-second glanceable read.
 >

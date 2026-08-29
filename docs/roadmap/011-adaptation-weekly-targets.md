@@ -39,7 +39,7 @@ their nine shadow rows in the `adaptation_targets` table, and the hypertrophy
 `rx.sets` conflict (inventory row 3.5).
 
 **Out, deliberately:** row 1.6 (skill = 3 sessions/week) is blocked on a product
-decision in [006-skill-adaptation-data-source.md](006-skill-adaptation-data-source.md),
+decision in [006-skill-adaptation-data-source.md](done/006-skill-adaptation-data-source.md),
 not on evidence — grounding a target for an adaptation whose data source is
 undecided would be grounding the wrong question. §4 recovery weights and §5
 cycle/deload are separate runs, later. The nine `0` sentinels (row 1.10) assert
@@ -356,7 +356,7 @@ picks a side and records it.
 | 1 | **Session-counting for resistance adaptations**, so speed and power can move to `weeklySessionTarget` and stop being measured with a fatigue-shaped metric. | Not a constant edit — `volume[a]` counts sets, `unit` derives from `modality`. Code change, outside this run's one question. **Now briefed in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md)** — #1, #2 and #3 are one problem, not three. |
 | 2 | **Weekly-minutes target for endurance**, replacing the session count, and picking a side in the Attia/Galpin fork. Garmin already supplies duration. | Same class as #1: a shape change to the target model, not a value. **Briefed in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md).** |
 | 3 | **Anaerobic capacity as a block-periodised quality** rather than a standing weekly target. | A periodisation feature, not a number. Carried as an open question in [012-adaptation-target-shapes.md](012-adaptation-target-shapes.md) §5. |
-| 4 | **Row 1.6 — skill = 3 sessions/week.** | Deliberately deferred: blocked on the product decision in [006-skill-adaptation-data-source.md](006-skill-adaptation-data-source.md), not on evidence. |
+| 4 | **Row 1.6 — skill = 3 sessions/week.** | Deliberately deferred: blocked on the product decision in [006-skill-adaptation-data-source.md](done/006-skill-adaptation-data-source.md), not on evidence. |
 | 5 | **Tighten the VO₂max classifier's intensity criterion.** | Belongs to [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md). |
 | 6 | **An RIR / effort field.** | Named as the single change that would make Tekiō's "set" mean what the literature's "set" means. Not urgent — ACSM 2026 reports training to momentary fatigue did not consistently affect outcomes. |
 

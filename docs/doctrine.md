@@ -5,6 +5,8 @@ every time a feature is proposed, and it is only useful if it can say **no** to
 something I want.
 
 Established 2026-08-26. Amend it deliberately; don't drift past it.
+Amended 2026-08-29: nine adaptations → seven — Speed and Skill dropped,
+Power reclassified as muscle-linked (execution: roadmap 019).
 
 ---
 
@@ -12,8 +14,8 @@ Established 2026-08-26. Amend it deliberately; don't drift past it.
 
 > **Tekiō tells me what's missing.**
 
-Whether my training is balanced across the nine adaptations and the muscles that
-serve them, and whether I'm recovered enough to close the gap today.
+Whether my training is balanced across the seven adaptations and the muscles
+that serve them, and whether I'm recovered enough to close the gap today.
 
 Everything else is judged against that sentence. Two consequences follow
 immediately, and they do most of the work:
@@ -31,10 +33,12 @@ needed (inline on the surface that raised the question), and what isn't needed
 now isn't loaded now. The UX face and the performance face are the same rule.
 
 **P2 — Honest reads beat pretty ones.** A visualization must fit the shape of
-its data. Muscles are spatial; a body map is honest for them. Speed, power,
-VO₂max, anaerobic, cardio-endurance and skill are whole-body qualities — putting
-them on a silhouette would be a beautiful lie. When one picture can't answer two
-questions, use two reads.
+its data. Muscles are spatial; a body map is honest for them — and the four
+muscle-linked qualities (strength, hypertrophy, muscular endurance, power) read
+per muscle, because power is the force × velocity a specific muscle group can
+produce, not a body-wide trait. VO₂max, anaerobic capacity and cardio-endurance
+are whole-body qualities — putting them on a silhouette would be a beautiful
+lie. When one picture can't answer two questions, use two reads.
 
 **P3 — Fold before you add.** A new signal is usually an *input to an existing
 read*, not a new destination. Blood donation isn't a section; it's a readiness
@@ -58,9 +62,7 @@ levels:
   per muscle, computed from logged sets. Answers *what can I train today?*
 
 Never split a systemic number N ways and present it as N per-adaptation facts;
-that is one fact wearing a costume (P2). Skill is exempt from *local muscular*
-recovery only — motor consolidation is sleep-dependent, so it leans hardest on the
-systemic side. Any number encoding that needs §4 grounding first.
+that is one fact wearing a costume (P2).
 
 ## 3. Rules with teeth
 
@@ -114,7 +116,7 @@ Pending work lives in `docs/roadmap/`, never in this file (house rule
 | Surface | Verdict | Note |
 |---|---|---|
 | Home (Overview) | **Core — read** | The product. Answers "what's missing" without tapping. |
-| Adaptations | **Core — read** | The nine qualities. |
+| Adaptations | **Core — read** | The seven qualities (simplified 2026-08-29 — roadmap 019). |
 | Weights | **Core — capture** | Primary stimulus source. |
 | Cardio | **Core — capture** | Endurance / VO₂max / anaerobic stimulus. |
 | Mobility | **Core — capture** | Recovery-axis input with its own volume model. |

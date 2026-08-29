@@ -325,7 +325,7 @@ before implementation.
 - The ≥25 min classification threshold (§6) — belongs to
   [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md).
 - Row 1.6, skill = 3 sessions/week — still blocked on the product decision in
-  [006-skill-adaptation-data-source.md](006-skill-adaptation-data-source.md).
+  [006-skill-adaptation-data-source.md](done/006-skill-adaptation-data-source.md).
 - Any change to the strength, hypertrophy or muscular-endurance targets. Their
   shape is already right.
 

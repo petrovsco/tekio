@@ -109,6 +109,27 @@
       </div>
     </div>
 
+    <!-- the four muscle-linked qualities, per muscle. Power lives HERE now —
+         a per-muscle quality, not a whole-body one. Hidden while the log
+         flow is open: capture takes the room. -->
+    <sc-if value="{{ stageButton }}" hint-placeholder-val="{{ true }}">
+      <div style="margin-top: 10px;">
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 5px;">
+          <span style="font-size: 8px; font-weight: 700; letter-spacing: 0.12em; color: #8a8a8a;">QUALITY MIX, THIS CYCLE</span>
+          <span style="flex-grow: 1;"></span>
+          <span style="font-size: 8px; color: #8a8a8a;">split is <strong style="color: #1a1a1a;">SAMPLE</strong> data</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <sc-for list="{{ mix }}" as="q" hint-placeholder-count="4">
+            <div style="flex-grow: 1; border: 1px solid #e2e2e0; border-radius: 2px; padding: 4px 6px 5px 6px; text-align: center;">
+              <div style="font-size: 13px; font-weight: 700; color: {{ q.tone }};">{{ q.v }}</div>
+              <div style="font-size: 7px; color: #8a8a8a; letter-spacing: 0.04em; margin-top: 1px;">{{ q.name }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
     <!-- INLINE CAPTURE — the JIT rule made concrete: capture appears on the
          surface that raised the question. A set can only be logged THROUGH AN
          EXERCISE: sets classify into adaptations by rep range, so a bare
@@ -203,6 +224,7 @@ var DATA = {
   'Quadriceps': {
     sets: 3, days: 30, weeks: [0, 0, 0, 0, 3, 0],
     sources: [{ name: 'Goblet Squat', sets: '3 sets · 28 Jul' }, { name: '— nothing since', sets: '0' }],
+    mix: { str: 0, hyp: 3, end: 0, pow: 0 },
     verdict: 'Train it.',
     verdictSub: 'Fully recovered and far under target: 3 sets in 42 days, last stimulus 30 days ago.',
     tone: 'gap'
@@ -210,6 +232,7 @@ var DATA = {
   'Biceps': {
     sets: 69, days: 6, weeks: [14, 12, 11, 13, 12, 7],
     sources: [{ name: 'Chin-up', sets: '24 sets' }, { name: 'Incline Curl', sets: '21 sets' }, { name: 'Hammer Curl', sets: '15 sets' }, { name: 'Row', sets: '9 sets' }],
+    mix: { str: 0, hyp: 55, end: 14, pow: 0 },
     verdict: 'Recovered — but back off.',
     verdictSub: 'At 115% of the cycle target with 69 sets. Recovered 6 days ago, so it is available; it is just not what is missing.',
     tone: 'over'
@@ -217,6 +240,7 @@ var DATA = {
   'Rectus Abdominis': {
     sets: 0, days: null, weeks: [0, 0, 0, 0, 0, 0],
     sources: [{ name: '— no exercise has ever fed it', sets: '0' }],
+    mix: { str: 0, hyp: 0, end: 0, pow: 0 },
     verdict: 'Never trained.',
     verdictSub: 'Zero sets in the cycle and no logged history. The biggest single gap on the map.',
     tone: 'never'
@@ -265,6 +289,16 @@ class Component extends DCLogic {
       };
     });
 
+    /* the four muscle-linked qualities. Power reads PER MUSCLE — it is
+       force × velocity of a specific muscle group, not a whole-body trait
+       (decided 2026-08-29). */
+    var mix = [
+      { name: 'STRENGTH', v: d.mix.str }, { name: 'HYPERTROPHY', v: d.mix.hyp },
+      { name: 'MUSC. END', v: d.mix.end }, { name: 'POWER', v: d.mix.pow }
+    ].map(function (q) {
+      return { name: q.name, v: String(q.v), tone: q.v === 0 ? '#a8a8a8' : '#1a1a1a' };
+    });
+
     var bg = '#ffffff', fg = '#1a1a1a', icon = 'M5 12l5 5L19 7';
     if (d.tone === 'gap' || d.tone === 'never') { bg = '#1a1a1a'; fg = '#ffffff'; icon = 'M12 5v14M5 12h14'; }
     if (d.tone === 'over') { bg = '#ffffff'; fg = '#1a1a1a'; icon = 'M5 12h14'; }
@@ -307,6 +341,7 @@ class Component extends DCLogic {
       sinceUnit: d.days === null ? 'never trained' : 'days ago',
       recPct: recPct,
       recTone: recTone,
+      mix: mix,
       verdict: d.verdict,
       verdictSub: d.verdictSub,
       verdictBg: bg,

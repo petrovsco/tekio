@@ -1,6 +1,8 @@
 # Roadmap: Give the "Skill" adaptation a real data source (or retire it)
 
-**Status:** TBC — needs a product decision before building
+**Status:** Resolved 2026-08-29 — option 3 (retire `skill`) chosen, as part of
+the nine→seven model simplification. Execution folded into
+[019-adaptation-model-simplification.md](../019-adaptation-model-simplification.md).
 
 ## Goal
 
@@ -12,7 +14,7 @@ dashboard) now that sport sessions have been rerouted to **cardio** adaptations.
 As of the July 2026 Skills→Sports work, a logged sport session (Tennis, Swimming,
 Volleyball…) is classified into a **cardio** adaptation (Endurance / VO₂max /
 Anaerobic) by its duration — see `classifyCardioByDuration` in
-[src/lib/adaptations.ts](../../src/lib/adaptations.ts). Sport sessions used to be
+[src/lib/adaptations.ts](../../../src/lib/adaptations.ts). Sport sessions used to be
 the **only** thing incrementing `volume.skill`, so the `skill` adaptation now has
 no data source and always renders `0` / untouched on the dashboard.
 

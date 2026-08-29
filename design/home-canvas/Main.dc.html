@@ -144,12 +144,12 @@
     <div style="margin-top: 10px; background: #ffffff; border: 1px solid #e2e2e0; border-radius: 3px; padding: 8px 10px 9px 10px;">
       <div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px;">
         <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #8a8a8a;">WHOLE-BODY QUALITIES</span>
-        <span style="font-size: 9px; color: #a8a8a8;">— one combined read</span>
+        <span style="font-size: 9px; color: #a8a8a8;">— all cardio · one combined read</span>
         <span style="flex-grow: 1;"></span>
         <span style="font-size: 13px; font-weight: 700;">{{ wbScore }}</span>
       </div>
       <div style="display: flex; gap: 3px;">
-        <sc-for list="{{ wbSegs }}" as="w" hint-placeholder-count="6">
+        <sc-for list="{{ wbSegs }}" as="w" hint-placeholder-count="3">
           <div style="flex-grow: 1;">
             <div style="height: 16px; border-radius: 2px; background: {{ w.fill }}; border: 1px solid {{ w.edge }};"></div>
             <div style="font-size: 8px; color: #8a8a8a; margin-top: 3px; text-align: center; letter-spacing: 0.02em;">{{ w.short }}</div>
@@ -366,17 +366,15 @@ class Component extends DCLogic {
     var missing = (zero
       ? [{ text: 'No muscle data yet' }]
       : [{ text: 'Quads · 3 sets / 30d' }, { text: 'Glutes · 3 sets / 30d' },
-         { text: 'Hamstrings · 3 sets / 30d' }, { text: 'Core · never' }, { text: 'Calves · 6 sets' }]
+         { text: 'Hamstrings · 3 sets / 30d' }, { text: 'Core · never' }, { text: 'Calves · 6 sets' },
+         { text: 'Power · 0 sets, any muscle' }]
     ).map(function (m) { return { text: m.text, bg: chipBg, fg: chipFg }; });
 
     /* --- whole-body read: VARIANT A ANSWER = ONE COMBINED READ --------- */
     var wbSegs = [
-      { short: 'SPD', fill: '#1f1f1f', edge: '#1f1f1f' },
-      { short: 'PWR', fill: '#1f1f1f', edge: '#1f1f1f' },
-      { short: 'VO₂', fill: '#1f1f1f', edge: '#1f1f1f' },
-      { short: 'ANA', fill: '#1f1f1f', edge: '#1f1f1f' },
-      { short: 'END', fill: '#1f1f1f', edge: '#1f1f1f' },
-      { short: 'SKL', fill: '#8f8f8f', edge: '#8f8f8f' }
+      { short: 'VO₂MAX', fill: '#1f1f1f', edge: '#1f1f1f' },
+      { short: 'ANAEROBIC', fill: '#1f1f1f', edge: '#1f1f1f' },
+      { short: 'ENDURANCE', fill: '#1f1f1f', edge: '#1f1f1f' }
     ];
     if (zero) { wbSegs = wbSegs.map(function (w) { return { short: w.short, fill: '#ffffff', edge: '#e2e2e0' }; }); }
 
@@ -426,8 +424,8 @@ class Component extends DCLogic {
       frontHatch: frontH,
       backHatch: backH,
       wbSegs: wbSegs,
-      wbScore: zero ? '—' : '1 / 6',
-      wbSub: zero ? 'No cardio, sport or skill sessions logged.' : 'Only skill has any exposure — Tennis, 16 days ago. Five qualities are untouched this cycle.',
+      wbScore: zero ? '—' : '0 / 3',
+      wbSub: zero ? 'No cardio or sport sessions logged.' : 'All three untouched — last cardio 53 days ago. Tennis should classify here by duration; re-check at the round-3 pull.',
       folds: folds,
       nav: NAV,
       sheetOpen: !!openId,
