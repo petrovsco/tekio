@@ -11,10 +11,11 @@ answers are recorded in [010-home-fused-reads.md](010-home-fused-reads.md) §6
 (the gate changes the instruction only and is advisory — capture never locks;
 one state each, with per-quality staleness windows as science-gated
 placeholders) and 010 is agreed. Round 2 is live (2026-08-29): page-2 “Look”
-carries three visual directions on the fused board — SIGNAL (monochrome +
+carries four visual directions on the fused board — SIGNAL (monochrome +
 one action accent), HEAT (a sequential teal ramp carries the state), NIGHT
-(dark ground, work glows) — awaiting Peter’s pick (step 4); a hybrid is a
-legal answer this round.
+(dark ground, work glows), WASHI (Peter’s palette, added same day: rice
+paper, sumi-ink stimulus ramp, vermillion = action, teal = readiness) —
+awaiting Peter’s pick (step 4); a hybrid is a legal answer this round.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,

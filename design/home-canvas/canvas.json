@@ -140,6 +140,17 @@
       "page": "page-2",
       "is_interactive": true
     }
+,
+    {
+      "file": "LookWashi.dc.html",
+      "title": "R2 \u00b7 4 WASHI \u2014 paper, ink & seal",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-2",
+      "is_interactive": true
+    }
   ],
   "annotations": [
     {
@@ -148,7 +159,7 @@
       "y": 0,
       "w": 340,
       "page": "page-2",
-      "text": "ROUND 2 \u2014 LOOK\n\nThree visual directions on the picked structure. Same data, same logic, same layout on all three \u2014 only the language changes. Each is named by its axis:\n\n1 \u00b7 SIGNAL \u2014 what colour is allowed to mean. Monochrome paper; one orange accent only where action lives.\n\n2 \u00b7 HEAT \u2014 where the state lives. A single sequential teal ramp IS the read; chrome recedes.\n\n3 \u00b7 NIGHT \u2014 figure-ground. Dark dashboard, work glows, the gap is a void. Note: this inverts the ink-polarity you just chose.\n\nStanding rules, honoured by all three: colour on the map = stimulus only; recovery keeps its own channel (the hatch); systemic readiness never colours the map (P5); every direction is colourblind-safe by construction (one accent / one hue / luminance only).\n\nPick one \u2014 or name the hybrid (\u201c2\u2019s map with 1\u2019s accent\u201d is a legal answer here, unlike in round 1). Round 3 refines the winner into the build spec."
+      "text": "ROUND 2 \u2014 LOOK\n\nFour visual directions on the picked structure. Same data, same logic, same layout on all three \u2014 only the language changes. Each is named by its axis:\n\n1 \u00b7 SIGNAL \u2014 what colour is allowed to mean. Monochrome paper; one orange accent only where action lives.\n\n2 \u00b7 HEAT \u2014 where the state lives. A single sequential teal ramp IS the read; chrome recedes.\n\n3 \u00b7 NIGHT \u2014 figure-ground. Dark dashboard, work glows, the gap is a void. Note: this inverts the ink-polarity you just chose.\n\n4 \u00b7 WASHI \u2014 identity. Peter\u2019s palette (2026-08-29): rice paper, sumi-ink ramp, a vermillion seal, serif numerals. Three channels, one meaning each \u2014 ink = stimulus, vermillion = act on this, teal = systemic readiness.\n\nStanding rules, honoured by all three: colour on the map = stimulus only; recovery keeps its own channel (the hatch); systemic readiness never colours the map (P5); every direction is colourblind-safe by construction (one accent / one hue / luminance only / red and teal never sharing an element).\n\nPick one \u2014 or name the hybrid (\u201c2\u2019s map with 1\u2019s accent\u201d is a legal answer here, unlike in round 1). Round 3 refines the winner into the build spec."
     },
     {
       "id": "the-pick",
