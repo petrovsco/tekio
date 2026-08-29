@@ -1,15 +1,17 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
 **Label:** feature
-**Status:** the pick made 2026-08-29 — Peter kept A’s gated verdict header +
-readiness card, the body map, B’s one-state-each whole-body strip and the T2
-fold stats. The What-is-missing chip section is dissolved: ranked callouts
-drawn on the map are the list (direction B of three explored), the verdict
-names the top gap, and Power sits as a footnote under the map. Fused boards
-`Home` / `HomeHeld` published at the top of the canvas. The implied §6 answers
-(readiness gates; whole-body one state each) still need Peter’s confirmation
-before they are recorded in 010. Next: the five-second test on the fused
-boards, then round-2 visual directions.
+**Status:** structure settled 2026-08-29. The pick: A’s gated verdict header +
+readiness card, the body map with ranked callouts (What-is-missing dissolved
+into the map; polarity flipped — ink = trained, light = the gap), B’s
+one-state-each whole-body strip and the T2 fold stats. Fused boards `Home` /
+`HomeHeld` sit at the top of the canvas. **Five-second test #1: performed by
+Peter on the fused boards, passed** (“five-second test is ok”). Both §6
+answers are recorded in [010-home-fused-reads.md](010-home-fused-reads.md) §6
+(the gate changes the instruction only and is advisory — capture never locks;
+one state each, with per-quality staleness windows as science-gated
+placeholders) and 010 is agreed. Next: round 2 — visual directions on the
+fused board (step 4).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,

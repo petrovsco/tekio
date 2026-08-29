@@ -1,8 +1,9 @@
 # Roadmap: Home as fused stimulus × recovery reads
 
 **Label:** feature
-**Status:** proposed (2026-08-26) — model sketched in conversation, **not yet
-agreed**. Do not build from this until the two-level model in §2 is confirmed.
+**Status:** agreed 2026-08-29 — the two-level model was confirmed by picking
+it on the 018 canvas (fused boards `Home` / `HomeHeld`), and both §6 design
+questions are answered there. Implementation stays gated on §4 grounding.
 **Origin:** fell out of writing [../doctrine.md](../doctrine.md); the user's point
 that recovery and stimulus must both be present for sustainable progress forced
 a rethink of how recovery is represented.
@@ -24,7 +25,7 @@ Equally, the natural fix — "make recovery the opposite end of the adaptation
 axis" — encodes a falsehood: more rest is not less training. They are two
 dimensions, not two poles.
 
-## 2. Proposed model (needs confirmation)
+## 2. The model (confirmed 2026-08-29 via the 018 canvas)
 
 Two levels, each honest about its own scope:
 
@@ -43,15 +44,17 @@ the two-sided sustainability requirement expressed as one read instead of two
 competing ones — and it costs zero new sections.
 
 **Skill** is exempt from *local muscular* recovery only. Motor consolidation is
-sleep-dependent, so skill leans hardest on the systemic side.
+sleep-dependent, so skill leans hardest on the systemic side. *(Obsolete
+2026-08-29: the skill adaptation was dropped — roadmap 019.)*
 
 ## 3. What Home becomes
 
 Per the doctrine's purpose ("tell me what's missing") and P2 (honest reads):
 
 - **A body map** — spatial, coloured by the fused *state* above, not by set count.
-- **A non-spatial read** for whole-body qualities (speed, power, VO₂max,
-  anaerobic, cardio-endurance, skill) that a silhouette cannot honestly carry.
+- **A non-spatial read** for the whole-body qualities (VO₂max, anaerobic
+  capacity, cardio-endurance — all cardio since the seven-model simplification,
+  roadmap 019; power reads per muscle) that a silhouette cannot honestly carry.
 - **One systemic readiness element** — small, global, gating both.
 - **Tap to drill** — detail and capture appear at the point of need (P1). This is
   the just-in-time layer; nothing else is loaded until asked for.
@@ -97,11 +100,28 @@ requirement and the order in which `/ground` runs.
 These are **this brief's** kickoff questions, not blockers on the `science-scout`
 work — that is tooling, and this brief is a consumer of it.
 
-- **Design, decide at kickoff:** does the systemic number *gate* the local read
-  (grey everything out on a bad recovery day), or sit alongside it as a separate
-  signal? Easier to answer with the fused state concrete than in the abstract.
-- **Design, decide at kickoff:** whole-body qualities — one combined read, or does
-  each get its own state?
+- **Resolved 2026-08-29 (018 canvas, fused boards `Home` / `HomeHeld`): the
+  systemic number GATES the instruction — and only the instruction.** One
+  verdict, never two signals the reader must combine: on a bad day the headline
+  flips to "Hold", the readiness card takes the emphasis, and a banner names
+  the cause. Three limits define the gate:
+  1. **It never touches the facts.** The map, the ranked callouts and every
+     number render identically on a Hold day. (The "grey everything out"
+     phrasing in the old question died in review — it read as broken, not as
+     not-recovered.)
+  2. **It is advisory, not enforcing.** Capture is never blocked or hidden;
+     training and logging on a Hold day work exactly as on a Push day. Peter,
+     2026-08-29: it shows a recommendation, but the user decides how they
+     actually feel.
+  3. Its push threshold is a PLACEHOLDER until `/ground` runs (018 step 7).
+- **Resolved 2026-08-29 (same pick): whole-body qualities get ONE STATE EACH**
+  (VO₂max, anaerobic capacity, cardio-endurance — the strip on the fused
+  board), not one combined score. The open remainder *inside* this decision:
+  **when does a state flip** from fed to missing? Each quality gets its own
+  staleness window (days since last effective stimulus — the honest cadence
+  differs per quality; for some it may be roughly weekly), and those windows
+  are physiological numbers: PLACEHOLDER until the same `/ground` run. Today
+  the canvas shows raw facts ("never", "53 d ago") and claims no flip logic.
 - **Resolved 2026-08-26 by P5:** systemic chronic load is Garmin's acute load —
   consume `daily_metrics.acute_load` from
   [008-garmin-recovery-load-axis.md](008-garmin-recovery-load-axis.md), do not recompute it
