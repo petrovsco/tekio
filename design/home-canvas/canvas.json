@@ -1,14 +1,95 @@
 {
-  "pages": [
-    { "id": "page-1", "name": "Structure" }
-  ],
   "artboards": [
-    { "file": "Main.dc.html",          "title": "A — readiness gates the read",   "x": 0,    "y": 0,    "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
-    { "file": "Alongside.dc.html",     "title": "B — readiness sits alongside",   "x": 470,  "y": 0,    "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
-    { "file": "MuscleDrillIn.dc.html", "title": "Muscle drill-in (T2)",           "x": 940,  "y": 0,    "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
-    { "file": "Water.dc.html",         "title": "Water inline",                   "x": 0,    "y": 1000, "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
-    { "file": "Donations.dc.html",     "title": "Donations inline",               "x": 470,  "y": 1000, "w": 390, "h": 844, "page": "page-1", "is_interactive": true },
-    { "file": "BodyWeight.dc.html",    "title": "Body Weight inline",             "x": 940,  "y": 1000, "w": 390, "h": 844, "page": "page-1", "is_interactive": true }
+    {
+      "file": "Main.dc.html",
+      "title": "A — good day",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "Alongside.dc.html",
+      "title": "B — good day",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "MainHeld.dc.html",
+      "title": "A — bad day (held)",
+      "x": 0,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "AlongsideBad.dc.html",
+      "title": "B — bad day",
+      "x": 470,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "MuscleDrillIn.dc.html",
+      "title": "Muscle drill-in (T2)",
+      "x": 0,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "LogSets.dc.html",
+      "title": "Log sets — what opens",
+      "x": 470,
+      "y": 2000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "Water.dc.html",
+      "title": "Water inline",
+      "x": 0,
+      "y": 3000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "Donations.dc.html",
+      "title": "Donations inline",
+      "x": 470,
+      "y": 3000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    },
+    {
+      "file": "BodyWeight.dc.html",
+      "title": "Body Weight inline",
+      "x": 940,
+      "y": 3000,
+      "w": 390,
+      "h": 844,
+      "page": "page-1",
+      "is_interactive": true
+    }
   ],
   "annotations": [
     {
@@ -17,23 +98,23 @@
       "y": 0,
       "w": 340,
       "page": "page-1",
-      "text": "ROUND 1 — STRUCTURE\n\nGrey boxes, real numbers, one type weight. No colour or type decisions yet — those are round 2.\n\nRun the five-second test BEFORE tapping anything: open A, then B, five seconds each. Can you name (1) which muscles are under-stimulated, (2) which adaptations are untouched, (3) whether to push today?\n\nWrite the answer down. Then start tapping."
+      "text": "ROUND 1 — STRUCTURE\n\nGrey boxes, real numbers, one type weight. No colour or type decisions yet — those are round 2.\n\nThe five-second test needs NO tapping and NO switches: row 1 is a good day, row 2 is the same two screens on a bad day.\n\nLook at each for five seconds. Can you name (1) which muscles are under-stimulated, (2) which adaptations are untouched, (3) whether to push today?\n\nWrite the answer down. Then start tapping."
     },
     {
       "id": "fork-1",
       "x": -420,
-      "y": 300,
+      "y": 420,
       "w": 340,
       "page": "page-1",
-      "text": "FORK 1 — where readiness sits\n\nA: readiness GATES the local read. One instruction, never two. On a bad day the gap is dimmed.\n\nB: readiness sits ALONGSIDE. The gap is never hidden; you combine the two signals yourself.\n\nSecond question, answered differently in each: the six whole-body qualities get ONE combined read in A, ONE STATE EACH in B."
+      "text": "FORK 1 — where readiness sits\n\nA: readiness GATES THE INSTRUCTION. The screen fuses both signals into one verdict — on a bad day it says Hold, the readiness card takes the emphasis, and every gap flips from “train this” (solid) to “held” (hollow). Nothing is hidden or dimmed: the gate changes the instruction, never the facts.\n\nB: readiness sits ALONGSIDE. Two facts, equal weight, and you combine them yourself. The screen never issues a verdict.\n\nSecond question, answered differently in each: the six whole-body qualities get ONE combined read in A, ONE STATE EACH in B."
     },
     {
-      "id": "fork-2",
-      "x": -420,
+      "id": "held-state",
+      "x": 940,
       "y": 1000,
       "w": 340,
       "page": "page-1",
-      "text": "FORK 2 — when the capture control exists\n\nThe same fork three times: always-visible quick-add (T1) vs revealed-on-intent (T2). Both work on all three artboards — tap them.\n\nWater is logged daily. Donation three times a year. Body weight twice a month. One answer has to cover all three, and it decides three folds at once."
+      "text": "THE HELD STATE (row 2, screen A)\n\nAn earlier draft dimmed the whole local read to 34% and struck through the gap chips. That read as “broken / no data”, not “don’t push” — and it violated the map’s own rule that darker = bigger gap.\n\nThe redesign: recovery gates the ACTION, never the FACT. The map keeps full contrast, the legend stays crisp, and a chip is never crossed out — it goes hollow, with a HELD tag, because the gap is still true.\n\nCompare with B beside it: B changes nothing at all on a bad day. That is the fork."
     },
     {
       "id": "tiers",
@@ -44,13 +125,38 @@
       "text": "THE TIERS\n\nT1 — on screen the moment Home paints. This is the entire five-second answer and nothing else. Ships in the initial chunk.\n\nT2 — appears when the read raises a question: a drill-in, a detail, an inline capture. Lazy chunk, prefetched on hover.\n\nT3 — reached by an explicit destination change. Lazy chunk, no prefetch.\n\nIf the glance needs a tap, T1 is wrong. If every chart is in T1, the bundle is wrong."
     },
     {
+      "id": "log-flow",
+      "x": 940,
+      "y": 2000,
+      "w": 340,
+      "page": "page-1",
+      "text": "LOGGING GOES THROUGH AN EXERCISE\n\n“Log sets for Quads” cannot just add a count: sets classify into adaptations BY REP RANGE, so a bare +3 would write sets no read can use. (The earlier +1/+3/+5 idea is dead for this reason.)\n\nSo the button opens a ranked list of the exercises that already feed this muscle — most recent first, one tap repeats the last scheme — then a prefilled sets grid. “Something else” hands off to the full exercise list (T3).\n\nExercise names are real; the rep/load schemes are SAMPLE values (per-set history wasn’t in the step-0 pull).\n\nTap through it on the left artboard; the right one shows the flow already open."
+    },
+    {
+      "id": "fork-2",
+      "x": -420,
+      "y": 3000,
+      "w": 340,
+      "page": "page-1",
+      "text": "FORK 2 — when the capture control exists\n\nThe same fork three times: always-visible quick-add (T1) vs revealed-on-intent (T2). Both work on all three artboards — tap them.\n\nWater is logged daily. Donation three times a year. Body weight twice a month. One answer has to cover all three, and it decides three folds at once."
+    },
+    {
       "id": "placeholders",
       "x": 1410,
       "y": 360,
       "w": 320,
       "page": "page-1",
-      "text": "PLACEHOLDERS\n\nEvery physiological threshold on this canvas is marked PLACEHOLDER and is NOT decided:\n\n· 60 sets per muscle per cycle\n· recovered after 48 h\n· 3.0 L hydration target\n· donation windows 14 / 56 days\n· the readiness push threshold\n\n/ground runs before any of these becomes code."
+      "text": "PLACEHOLDERS\n\nEvery physiological threshold on this canvas is marked PLACEHOLDER and is NOT decided:\n\n· 60 sets per muscle per cycle\n· recovered after 48 h\n· 3.0 L hydration target\n· donation windows 14 / 56 days\n· the readiness push threshold\n\n/ground runs before any of these becomes code.\n\nRep/load schemes in the log flow are sample values, not history."
     }
   ],
-  "launch": { "view": "canvas", "page": "page-1" }
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Structure"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
 }
