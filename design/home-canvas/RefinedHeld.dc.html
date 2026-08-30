@@ -154,8 +154,10 @@
   </div>
 
   <!-- ============ READINESS INPUTS (the three folds) — T2. Capture is
-       revealed on intent: tap a stat and the control appears in place,
-       floating above the nav so the T1 read never reflows (P1). ====== -->
+       revealed on intent: tap a stat and the control opens as an
+       overlay, so the T1 read never reflows (P1). On the device this
+       would be a bottom sheet; it is CENTRED here because the canvas
+       viewer's Play toolbar floats over the bottom of the frame. ==== -->
   <div style="display: flex; gap: 6px; padding: 8px 16px 6px 16px;">
     <sc-for list="{{ folds }}" as="f" hint-placeholder-count="3">
       <div onClick="{{ f.pick }}" style="cursor: pointer; flex-grow: 1; background: #ffffff; border: 1px solid {{ f.edge }}; border-radius: 3px; padding: 4px 7px 5px 7px;">
@@ -169,7 +171,10 @@
     </sc-for>
   </div>
   <sc-if value="{{ foldOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; left: 16px; right: 16px; bottom: 56px; background: #ffffff; border: 1px solid #1a1a1a; border-radius: 3px; padding: 7px 10px 8px 10px; box-shadow: 0 4px 16px rgba(26,26,26,0.18);">
+    <div style="position: absolute; inset: 0; background: rgba(26,26,26,0.34);" onClick="{{ closeFold }}"></div>
+  </sc-if>
+  <sc-if value="{{ foldOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 16px; right: 16px; top: 50%; transform: translateY(-50%); background: #ffffff; border: 1px solid #1a1a1a; border-radius: 3px; padding: 7px 10px 8px 10px; box-shadow: 0 4px 16px rgba(26,26,26,0.18);">
       <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
         <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.14em; color: #8a8a8a;">LOG {{ foldTitle }}</span>
         <span style="font-size: 7px; font-weight: 700; color: #8a8a8a; border: 1px solid #d6d6d4; padding: 0px 3px; border-radius: 2px;">T2</span>
@@ -180,7 +185,7 @@
       </div>
       <div style="display: flex; gap: 6px; flex-wrap: wrap;">
         <sc-for list="{{ foldActions }}" as="a" hint-placeholder-count="3">
-          <div onClick="{{ a.act }}" style="cursor: pointer; font-size: 11px; font-weight: 600; border: 1px solid #1a1a1a; border-radius: 3px; padding: 5px 10px; background: #ffffff;">{{ a.label }}</div>
+          <div onClick="{{ a.act }}" style="cursor: pointer; font-size: 11px; font-weight: 600; border: 1px solid #1a1a1a; border-radius: 3px; padding: 5px 10px; background: {{ a.bg }}; color: {{ a.fg }};">{{ a.label }}</div>
         </sc-for>
       </div>
       <div style="font-size: 9px; color: #8a8a8a; margin-top: 6px;">{{ foldNote }}</div>
@@ -205,12 +210,13 @@
     </sc-for>
   </div>
 
-  <!-- ============ MUSCLE DRILL-IN — T2, opens on tap ============ -->
+  <!-- ============ MUSCLE DRILL-IN — T2, opens on tap. On the device: a
+       bottom sheet; centred here so the Play toolbar never covers it. -->
   <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; background: rgba(26,26,26,0.34);" onClick="{{ closeSheet }}"></div>
   </sc-if>
   <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #ffffff; border-top: 2px solid #1a1a1a; border-radius: 6px 6px 0 0; padding: 12px 16px 18px 16px;">
+    <div style="position: absolute; left: 12px; right: 12px; top: 50%; transform: translateY(-50%); background: #ffffff; border: 2px solid #1a1a1a; border-radius: 6px; padding: 12px 16px 16px 16px;">
       <div style="display: flex; align-items: center; gap: 7px;">
         <span style="font-size: 18px; font-weight: 700; letter-spacing: -0.01em;">{{ sheet.name }}</span>
         <span style="font-size: 9px; font-weight: 700; letter-spacing: 0.08em; color: #ffffff; background: #1a1a1a; padding: 2px 5px; border-radius: 2px;">T2</span>
@@ -442,6 +448,8 @@ class Component extends DCLogic {
        place, so the prototype proves the flow, not just the layout. --- */
     var addedMl = (this.state && this.state.waterMl) || 0;
     var wLogged = !!(this.state && this.state.weightLogged);
+    var wTenths = (this.state && this.state.wTenths) || 0;  /* stepper offset from yesterday, 0.1 kg units */
+    var wKg = ((824 + wTenths) / 10).toFixed(1);
     var donated = !!(this.state && this.state.donated);
     var waterVal = ((700 + addedMl) / 1000).toFixed(1) + ' L';
     var mkFold = function (id, label, value, note, noteTone) {
@@ -453,7 +461,7 @@ class Component extends DCLogic {
       addedMl ? mkFold('water', 'WATER', waterVal, 'logged just now', '#8a8a8a')
               : (zero ? mkFold('water', 'WATER', '—', 'tap to log', '#8a8a8a')
                       : mkFold('water', 'WATER', '0.7 L', 'stale 15d', '#c2410c')),
-      wLogged ? mkFold('weight', 'WEIGHT', '77.4 kg', 'logged today', '#8a8a8a')
+      wLogged ? mkFold('weight', 'WEIGHT', wKg + ' kg', 'logged just now', '#8a8a8a')
               : (zero ? mkFold('weight', 'WEIGHT', '—', 'tap to log', '#8a8a8a')
                       : mkFold('weight', 'WEIGHT', '77.4 kg', '+3.4 kg', '#1a1a1a')),
       donated ? mkFold('blood', 'BLOOD', '0 d', 'ineligible 56 d · PLACEHOLDER', '#c2410c')
@@ -473,17 +481,27 @@ class Component extends DCLogic {
       });
     } else if (foldId === 'weight') {
       foldTitle = 'WEIGHT';
-      foldNote = 'yesterday 82.4 kg · a stepper replaces the chips in the app';
+      foldNote = 'prefilled from yesterday (82.4 kg) — step to today, then log';
+      var stepW = function (d) { return function () { self.setState({ wTenths: wTenths + d }); }; };
       foldActions = [
-        { label: 'log 77.4 kg', act: function () { self.setState({ weightLogged: true, fold: null }); } }
+        { label: '− 1', act: stepW(-10) },
+        { label: '− 0.1', act: stepW(-1) },
+        { label: '+ 0.1', act: stepW(1) },
+        { label: '+ 1', act: stepW(10) },
+        { label: 'log ' + wKg + ' kg', solid: true, act: function () { self.setState({ weightLogged: true, fold: null }); } }
       ];
     } else if (foldId === 'blood') {
       foldTitle = 'BLOOD';
       foldNote = 'a full donation suppresses endurance for weeks — window is PLACEHOLDER until /ground';
       foldActions = [
-        { label: 'full donation — today', act: function () { self.setState({ donated: true, fold: null }); } }
+        { label: 'full donation — today', solid: true, act: function () { self.setState({ donated: true, fold: null }); } }
       ];
     }
+    foldActions = foldActions.map(function (a) {
+      return { label: a.label, act: a.act,
+               bg: a.solid ? '#1a1a1a' : '#ffffff',
+               fg: a.solid ? '#ffffff' : '#1a1a1a' };
+    });
 
     /* --- drill-in sheet ------------------------------------------------ */
     var openId = this.state && this.state.open;

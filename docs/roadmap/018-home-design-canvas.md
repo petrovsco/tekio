@@ -24,7 +24,14 @@ veto), a `post-donation` scenario, and a tier label on every component.
 passed** (“The 5 second test pases”, 2026-08-30) — both required test
 runs are now on record. Taps live behind the artboard’s Play button
 (canvas clicks select for editing); Peter’s hands-on check of the
-inline capture (and the fork-2 veto window) is still open. Then
+inline capture (and the fork-2 veto window) is still open. Play fixes
+(2026-08-30, after Peter’s first Play run): reveals open **centred**
+— the viewer’s floating toolbar covers the bottom of the frame, which
+hid the bottom-anchored sheets (on the device they would anchor to the
+bottom edge); and WEIGHT logs through a **stepper prefilled from
+yesterday** (− 1 / − 0.1 / + 0.1 / + 1, then log) instead of a preset
+chip — body weight moves daily, a preset can’t capture it. Both carry
+into the design system. Then
 `docs/design-system.md` (step 6) and `/ground` (step 7).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
