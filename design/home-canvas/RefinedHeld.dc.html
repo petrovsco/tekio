@@ -180,7 +180,7 @@
       </div>
       <div style="display: flex; gap: 6px; flex-wrap: wrap;">
         <sc-for list="{{ foldActions }}" as="a" hint-placeholder-count="3">
-          <div onClick="{{ a.do }}" style="cursor: pointer; font-size: 11px; font-weight: 600; border: 1px solid #1a1a1a; border-radius: 3px; padding: 5px 10px; background: #ffffff;">{{ a.label }}</div>
+          <div onClick="{{ a.act }}" style="cursor: pointer; font-size: 11px; font-weight: 600; border: 1px solid #1a1a1a; border-radius: 3px; padding: 5px 10px; background: #ffffff;">{{ a.label }}</div>
         </sc-for>
       </div>
       <div style="font-size: 9px; color: #8a8a8a; margin-top: 6px;">{{ foldNote }}</div>
@@ -469,19 +469,19 @@ class Component extends DCLogic {
       foldTitle = 'WATER';
       foldNote = 'goal 3.0 L · PLACEHOLDER — an FRS input, not a score';
       foldActions = [100, 250, 500].map(function (n) {
-        return { label: '+ ' + n + ' ml', do: function () { self.setState({ waterMl: addedMl + n }); } };
+        return { label: '+ ' + n + ' ml', act: function () { self.setState({ waterMl: addedMl + n }); } };
       });
     } else if (foldId === 'weight') {
       foldTitle = 'WEIGHT';
       foldNote = 'yesterday 82.4 kg · a stepper replaces the chips in the app';
       foldActions = [
-        { label: 'log 77.4 kg', do: function () { self.setState({ weightLogged: true, fold: null }); } }
+        { label: 'log 77.4 kg', act: function () { self.setState({ weightLogged: true, fold: null }); } }
       ];
     } else if (foldId === 'blood') {
       foldTitle = 'BLOOD';
       foldNote = 'a full donation suppresses endurance for weeks — window is PLACEHOLDER until /ground';
       foldActions = [
-        { label: 'full donation — today', do: function () { self.setState({ donated: true, fold: null }); } }
+        { label: 'full donation — today', act: function () { self.setState({ donated: true, fold: null }); } }
       ];
     }
 
