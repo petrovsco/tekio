@@ -1,9 +1,8 @@
 # Roadmap: Home as fused stimulus × recovery reads
 
 **Label:** feature
-**Status:** agreed 2026-08-29 — the two-level model was confirmed by picking
-it on the 018 canvas (fused boards `Home` / `HomeHeld`), and both §6 design
-questions are answered there. Implementation stays gated on §4 grounding.
+**Status:** planned — the two-level model was agreed 2026-08-29 and the grounding blocks have landed. Waits on 018 for the visual spec it builds against.
+**Depends:** 018
 **Origin:** fell out of writing [../doctrine.md](../doctrine.md); the user's point
 that recovery and stimulus must both be present for sustainable progress forced
 a rethink of how recovery is represented.

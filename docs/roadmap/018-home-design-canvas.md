@@ -1,42 +1,8 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
 **Label:** feature
-**Status:** structure settled 2026-08-29; look settled 2026-08-30. The pick: A’s gated verdict header +
-readiness card, the body map with ranked callouts (What-is-missing dissolved
-into the map; polarity flipped — ink = trained, light = the gap), B’s
-one-state-each whole-body strip and the T2 fold stats. Fused boards `Home` /
-`HomeHeld` sit at the top of the canvas. **Five-second test #1: performed by
-Peter on the fused boards, passed** (“five-second test is ok”). Both §6
-answers are recorded in [010-home-fused-reads.md](010-home-fused-reads.md) §6
-(the gate changes the instruction only and is advisory — capture never locks;
-one state each, with per-quality staleness windows as science-gated
-placeholders) and 010 is agreed. Round 2 is live (2026-08-29): page-2 “Look”
-carries four visual directions on the fused board — SIGNAL (monochrome +
-one action accent), HEAT (a sequential teal ramp carries the state), NIGHT
-(dark ground, work glows), WASHI (Peter’s palette: rice paper, sumi-ink
-ramp, vermillion seal). **Peter picked SIGNAL (2026-08-30).** Round 3 is
-live: page-3 “Refined” holds the build-spec boards (`Refined` /
-`RefinedHeld`, the latter derived via `make-derived.sh`) — SIGNAL language
-on the fused structure, plus working inline capture on the fold stats
-(fork 2 answered as revealed-on-intent, implied by the pick — open to
-veto), a `post-donation` scenario, and a tier label on every component.
-**Five-second test #2: performed by Peter on the Refined boards,
-passed** (“The 5 second test pases”, 2026-08-30) — both required test
-runs are now on record. Taps live behind the artboard’s Play button
-(canvas clicks select for editing). **Phase confirmed by Peter
-2026-08-30** (“I think we're ok with that phase”) — the Play round and
-the revealed-on-intent capture (fork 2) both stand. Play fixes
-(2026-08-30, after Peter’s first Play run): reveals open **centred**
-— the viewer’s floating toolbar covers the bottom of the frame, which
-hid the bottom-anchored sheets (on the device they would anchor to the
-bottom edge); and WEIGHT logs through a **stepper prefilled from
-yesterday** (− 1 / − 0.1 / + 0.1 / + 1, then log) instead of a preset
-chip — body weight moves daily, a preset can’t capture it. Both are
-carried into [docs/design-system.md](../design-system.md) (step 6 —
-**done 2026-08-30**, reference-only). `/ground` ran the same day (step 7
-— **done**): five scout blocks landed in
-[010 §Grounding](010-home-fused-reads.md#grounding), verdicts recorded in
-the grounding inventory. Next: code (step 8).
+**Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
+five-second tests passed. Step 8, the build, is what is left.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -54,6 +20,50 @@ design system it needs.
 R1's cap of four menu sections.
 
 ---
+
+## Progress log
+
+The decision record, newest last. Read the `**Status:**` line for where it
+stands; read this for how it got there.
+
+- **2026-08-29 — structure settled (round 1).** The pick: A's gated verdict
+  header + readiness card, the body map with ranked callouts (What-is-missing
+  dissolved into the map; polarity flipped — ink = trained, light = the gap),
+  B's one-state-each whole-body strip and the T2 fold stats. Fused boards
+  `Home` / `HomeHeld` sit at the top of the canvas.
+- **2026-08-29 — five-second test #1 passed**, performed by Peter on the fused
+  boards ("five-second test is ok"). Both §6 answers are recorded in
+  [010-home-fused-reads.md](010-home-fused-reads.md) §6 — the gate changes the
+  instruction only and is advisory, capture never locks; one state each, with
+  per-quality staleness windows as science-gated placeholders — and 010 is agreed.
+- **2026-08-29 — round 2 published.** Page-2 "Look" carried four visual
+  directions on the fused board: SIGNAL (monochrome + one action accent), HEAT
+  (a sequential teal ramp carries the state), NIGHT (dark ground, work glows),
+  WASHI (Peter's palette: rice paper, sumi-ink ramp, vermillion seal).
+- **2026-08-30 — Peter picked SIGNAL.**
+- **2026-08-30 — round 3 published.** Page-3 "Refined" holds the build-spec
+  boards (`Refined` / `RefinedHeld`, the latter derived via `make-derived.sh`) —
+  SIGNAL language on the fused structure, plus working inline capture on the
+  fold stats (fork 2 answered as revealed-on-intent, implied by the pick — open
+  to veto), a `post-donation` scenario, and a tier label on every component.
+- **2026-08-30 — five-second test #2 passed**, performed by Peter on the Refined
+  boards ("The 5 second test pases"). Both required test runs are now on record.
+  Taps live behind the artboard's Play button; canvas clicks select for editing.
+- **2026-08-30 — phase confirmed by Peter** ("I think we're ok with that phase"):
+  the Play round and the revealed-on-intent capture (fork 2) both stand.
+- **2026-08-30 — Play fixes**, after Peter's first Play run. Reveals open
+  **centred**: the viewer's floating toolbar covers the bottom of the frame,
+  which hid the bottom-anchored sheets (on the device they would anchor to the
+  bottom edge). And WEIGHT logs through a **stepper prefilled from yesterday**
+  (− 1 / − 0.1 / + 0.1 / + 1, then log) instead of a preset chip — body weight
+  moves daily, a preset can't capture it.
+- **2026-08-30 — step 6 done:** both fixes carried into
+  [docs/design-system.md](../design-system.md) (reference-only).
+- **2026-08-30 — step 7 done:** `/ground` ran; five scout blocks landed in
+  [010 §Grounding](010-home-fused-reads.md#grounding), verdicts recorded in the
+  grounding inventory.
+
+**Next: step 8 — code.**
 
 ## The plain summary
 
@@ -412,12 +422,17 @@ Rounds 2 and 3 do not re-paste this; they carry only what changed.
 
 ## Acceptance
 
-- Six artboards exist on one published canvas, using real data, and its URL is
+- [x] Six artboards exist on one published canvas, using real data, and its URL is
   recorded at the top of this file.
-- `design/home-canvas/` is committed and re-seeds the canvas.
-- The five-second test has actually been performed **twice** — round 1 and round
+- [x] `design/home-canvas/` is committed and re-seeds the canvas.
+- [x] The five-second test has actually been performed **twice** — round 1 and round
   3 — and both results are written down, not reasoned about.
-- Both §6 questions are answered in `010-home-fused-reads.md` with the canvas cited.
-- Every component on the refined artboard carries a T1/T2/T3 label, and the T1
+- [x] Both §6 questions are answered in `010-home-fused-reads.md` with the canvas cited.
+- [x] Every component on the refined artboard carries a T1/T2/T3 label, and the T1
   set is small enough to defend as an initial chunk.
-- `docs/design-system.md` exists and is reference-only.
+- [x] `docs/design-system.md` exists and is reference-only.
+- [ ] **Step 8 — built.** The refined design is implemented on Home. This is
+      the one criterion still open, and it is shared with
+      [010-home-fused-reads.md](010-home-fused-reads.md) (the fused read) and
+      [014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md) (the
+      three folds that land on it).

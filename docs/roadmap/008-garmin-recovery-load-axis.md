@@ -1,7 +1,7 @@
 # Roadmap: Garmin daily load & readiness → Recovery axis (Garmin sync Phase 2)
 
 **Label:** feature
-**Status:** planned
+**Status:** backlog — phase 1 code shipped but has never produced a row, so the field names are unverified; phase 2 is the recovery-load axis.
 
 ## Goal
 

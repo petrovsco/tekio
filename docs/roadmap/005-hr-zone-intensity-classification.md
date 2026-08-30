@@ -1,7 +1,8 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** planned
+**Status:** backlog — needs Garmin HR data actually flowing (008 phase 1 has never produced a row), so it cannot be built or checked today.
+**Depends:** 008
 
 ## Goal
 

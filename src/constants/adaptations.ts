@@ -83,7 +83,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * the honest unit is contacts/sprints per session. This is an exposure
      * counter (2 sessions × 3 sets), not a dose. Was 3 — below one session of
      * its own rx, so a single session turned a muscle green.
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
@@ -109,7 +109,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * supports speed and power carrying different numbers (Galpin prescribes
      * both identically), so the old 3-vs-4 split was invented. Exposure
      * counter, not a dose. Was 4.
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
@@ -140,7 +140,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * Pelland 2026; low volume already captured ~80% of the effect — Ralston
      * 2017), so the strength floor must sit below hypertrophy's 10.
      * If sessions ever run 2+ exercises per muscle, 8–12 becomes correct again.
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
@@ -168,7 +168,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * grow", 10–20 = "where growth is actually driven". They are ONE claim —
      * never edit one without the other. If the floor moves to 12 (Baz-Valle's
      * optimum for trained men), rx.sets becomes '12–20 / muscle / week'.
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklyMuscleTarget: 10,
     weeklySessionTarget: 0,
@@ -194,7 +194,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * not weekly sets, in both the 2009 and 2026 ACSM position stands. Value
      * unchanged; it is anchored to Israetel's maintenance-volume heuristic
      * (a single-practitioner model, not a measurement).
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
@@ -221,7 +221,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * non-competitive trained adult: the improvement studies are block-shaped
      * (SIT trials run 3×/wk for 4–7 weeks) and the quality detrains slowly. This
      * is a scheduling convention for keeping anaerobic work in rotation, not a
-     * physiological floor. See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * physiological floor. See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 1,
     rx: {
@@ -252,7 +252,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * EVERY frequency including 1/wk, with CIs crossing zero.
      * The real risk here is the classifier, not the count — a session typed
      * VO₂max from Garmin zones may never have reached 90–100% HRmax.
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 1,
     rx: {
@@ -283,7 +283,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * a more plausible number without making it true. The fix is a weekly-minutes
      * target (Garmin already supplies duration), which also forces a choice in
      * the Attia-vs-Galpin bout-length split.
-     * See docs/roadmap/011-adaptation-weekly-targets.md#grounding
+     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 2,
     rx: {

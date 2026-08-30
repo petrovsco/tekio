@@ -1,10 +1,10 @@
 # Roadmap: Nutrition → Food Recovery Score (recovery-axis sub-project)
 
 **Label:** feature
-**Status:** planned — model validated, app integration not started
+**Status:** backlog — phase 1 (the FRS bench) shipped 2026-07-14; phase 2, the app integration, is not started and is not committed to yet.
 **Kickoff:** start a fresh session with this file as the brief.
 **Origin:** 2026-07-14, spun out of the recovery-axis food/nutrition follow-up
-([002-recovery-axis.md](002-recovery-axis.md)) once the user specified a full scoring
+([002-recovery-axis.md](done/002-recovery-axis.md)) once the user specified a full scoring
 model. This is the "its own sub-project" the recovery axis deferred.
 
 ## Phase 1 — DONE (2026-07-14)

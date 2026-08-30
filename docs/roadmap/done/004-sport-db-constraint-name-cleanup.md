@@ -1,6 +1,7 @@
 # Roadmap: Rename leftover skill_* constraint / index names to sport_*
 
-**Status:** DONE — 2026-07-10, migration `20260710120000_rename_skill_constraints_indexes_to_sport`.
+**Label:** bug
+**Status:** done — 2026-07-10, migration `20260710120000_rename_skill_constraints_indexes_to_sport`.
 
 ## Outcome
 

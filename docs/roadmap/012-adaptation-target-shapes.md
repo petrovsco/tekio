@@ -1,9 +1,10 @@
 # Roadmap: Adaptation target shapes — one gap, not three follow-ups
 
 **Label:** feature
-**Status:** proposed — kickoff-ready. No code yet.
+**Status:** planned — kickoff-ready, no code. 019 removes two of the qualities it reshapes, so it runs after.
+**Depends:** 019
 **Origin:** follow-ups #1, #2 and #3 of
-[011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md), promoted out of
+[011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md), promoted out of
 that brief's table so they do not get lost.
 **Covers inventory rows:** 1.1, 1.2, 1.7, 1.9 in
 [grounding-inventory.md](../grounding-inventory.md) — the *shape* of those four
@@ -32,7 +33,7 @@ them are questions about *what the number counts*. Fix the shape once and all
 four become answerable.
 
 **This brief does not pick the numbers.** They are already decided and sourced in
-[011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md). This brief is about
+[011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md). This brief is about
 the container they go in — with one exception, flagged in §6, where a real new
 decision hides.
 
@@ -83,7 +84,7 @@ But nothing else changes. `volume` is still counting sets, and `unit` still says
 `'sets'`. The result is an app that **compares a set count against a session
 target and prints the word "sets" next to it** — silently wrong, and worse than
 the ungrounded number it replaced. This is exactly why
-[011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md) refused to make the
+[011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) refused to make the
 change as a constant edit. The door is open; there is no floor behind it.
 
 **What a real fix needs:** a way to count *sessions* for lifting adaptations
@@ -100,7 +101,7 @@ those rows **win** over the constants
 ([adaptations.ts:272-273](../../src/lib/adaptations.ts#L272)). A minutes target
 is therefore a migration too, not just a TypeScript change. Whatever shape is
 chosen has to land in both places in the same commit — the rule
-[011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md) already set.
+[011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) already set.
 
 ---
 
@@ -118,7 +119,7 @@ The literature agrees on the unit, and it is not sets per muscle. It doses these
 qualities in **contacts or sprints per session, and sessions per week** — jump
 contacts per session and total touches across 2–4 sessions/week for plyometrics;
 maximal-velocity exposure for sprint work. The evidence and citations are already
-in [011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md) and are not
+in [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) and are not
 repeated here.
 
 **Target shape:** `weeklyMuscleTarget: 0` + `weeklySessionTarget: 2`, following
@@ -223,7 +224,7 @@ container to another without asserting anything new:
 
 | Change | Already grounded where | New claim? |
 |---|---|---|
-| speed, power → `weeklySessionTarget: 2` | named explicitly in the resistance scout block in [011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md) as the preferred shape | no |
+| speed, power → `weeklySessionTarget: 2` | named explicitly in the resistance scout block in [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) as the preferred shape | no |
 | endurance → weekly minutes | the cardio scout block gives WHO 150–300, Galpin 150–200, Attia 180–240 | no |
 | endurance floor of **150** | inside that grounded range — **exemption 3**, rounding inside an already-grounded range | no |
 | anaerobic → no standing target (`0`) | a `0` sentinel asserts nothing; inventory row 1.10 already treats the nine `0`s as ungated | no |
@@ -278,7 +279,7 @@ those four say something true.
 - Stop treating "2 endurance sessions" as a satisfied target when it represents
   about a third of every published minimum.
 - Retires follow-ups #1, #2 and #3 of
-  [011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md) in one change
+  [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) in one change
   instead of three.
 - Removes the reason the speed/power reshape was deferred, so those constants
   stop being "an exposure counter, not a dose".
@@ -350,10 +351,10 @@ before implementation.
       duration floor **before** it was implemented (§6).
 - [ ] Constants and their `adaptation_targets` rows changed in the same commit
       and verified by query — the rule set by
-      [011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md).
+      [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md).
 - [ ] Inventory rows 1.1, 1.2, 1.7 and 1.9 updated to the new shapes.
 - [ ] Follow-ups #1, #2 and #3 in
-      [011-adaptation-weekly-targets.md](011-adaptation-weekly-targets.md) closed.
+      [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) closed.
 
 ---
 

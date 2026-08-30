@@ -1,7 +1,7 @@
 # Roadmap: `/ground` Step 0 — eight trigger-spec fixes
 
 **Label:** infra
-**Status:** planned — eight findings, each with a proposed `SKILL.md` edit. **None are applied.** No research needed; this is spec surgery, not a scout run.
+**Status:** planned — eight findings, each with a proposed `SKILL.md` edit. None are applied. No research needed; this is spec surgery.
 
 Moved here 2026-08-26 from `docs/grounding-inventory.md` §13, under the
 `pending-work-in-roadmap` house rule: the inventory is an *index* of the 75
@@ -34,11 +34,11 @@ Apply in any order — they touch different parts of the skill and do not confli
 
 ## Acceptance
 
-- All seven wording edits are in `SKILL.md`, and 13.7's option is chosen and applied.
-- A reader who knows only `SKILL.md` would gate `reps <= 5` at
+- [ ] All seven wording edits are in `SKILL.md`, and 13.7's option is chosen and applied.
+- [ ] A reader who knows only `SKILL.md` would gate `reps <= 5` at
   [lib/adaptations.ts:26](../../src/lib/adaptations.ts#L26), the Epley/Brzycki
   blend, and `ADAPTATION_PRINCIPLE` — the three classes the current spec misses.
-- The inventory's `†` rows can be marked `n/a — definitional` without inventing a
+- [ ] The inventory's `†` rows can be marked `n/a — definitional` without inventing a
   fifth scout verdict.
 
 ---

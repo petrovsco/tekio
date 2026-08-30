@@ -1,10 +1,8 @@
 # Roadmap: Execute the doctrine ledger — four folds and the Habits shelf
 
 **Label:** feature
-**Status:** in progress (2026-08-27) — **step 1 and the Sports fold shipped**; the
-remaining three folds are re-scoped as blocked (see §"Why the folds are not
-parallel after all"). The ledger records the verdicts; this brief is the work
-they create.
+**Status:** blocked — step 1 and the Sports fold shipped 2026-08-27 (menu sections 8 → 6). The remaining three folds all inherit the RECOVERY_WEIGHTS surgery, which cannot be done twice — so they wait on 010.
+**Depends:** 010
 
 [doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. Before
 2026-08-27 the code shipped all five: `DEFAULTS` in
@@ -182,10 +180,10 @@ plus [src/test/habits.test.ts](../../src/test/habits.test.ts).
 
 ## Acceptance
 
-- `DEFAULTS` seeds at most four menu sections, and R1 is satisfied for the first
+- [ ] `DEFAULTS` seeds at most four menu sections, and R1 is satisfied for the first
   time.
-- Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
+- [ ] Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
   logging capability is lost, only destinations.
-- `ExerciseMuscleEditor` is under Admin and the body map still renders.
-- Readiness scores computed before and after the reweight are compared on real
+- [ ] `ExerciseMuscleEditor` is under Admin and the body map still renders.
+- [ ] Readiness scores computed before and after the reweight are compared on real
   data, and the difference is explained rather than discovered.

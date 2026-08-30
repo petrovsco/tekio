@@ -1,7 +1,7 @@
 # Roadmap: Companion service — live session sync/notifications
 
 **Label:** backlog
-**Status:** proposed 2026-08-30 (by a the personal knowledge base session, at Peter's direction) — parked until scoped against doctrine §4 in a tekio session; tekio-the-product has not committed to it yet.
+**Status:** backlog — raised 2026-08-30 elsewhere. Parked until it is scoped against doctrine section 4 — the product has not committed to it yet.
 
 ## The idea
 

@@ -1,8 +1,7 @@
 # Roadmap: Give the "Skill" adaptation a real data source (or retire it)
 
-**Status:** Resolved 2026-08-29 — option 3 (retire `skill`) chosen, as part of
-the nine→seven model simplification. Execution folded into
-[019-adaptation-model-simplification.md](../019-adaptation-model-simplification.md).
+**Label:** feature
+**Status:** done — resolved 2026-08-29: option 3 (retire `skill`) chosen, as part of the nine → seven adaptation simplification. The code change it implies is [019-adaptation-model-simplification.md](../019-adaptation-model-simplification.md).
 
 ## Goal
 

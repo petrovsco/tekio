@@ -1,7 +1,7 @@
 # Roadmap: Simplify the adaptation model — nine → seven
 
 **Label:** feature
-**Status:** Ready — decision made 2026-08-29; app-side code not started
+**Status:** planned — decision made 2026-08-29; app-side code not started — `src/types/index.ts` still declares nine adaptations.
 
 ## The decision (2026-08-29, during the roadmap-018 canvas review)
 

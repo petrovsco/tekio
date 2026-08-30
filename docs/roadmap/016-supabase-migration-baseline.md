@@ -1,7 +1,7 @@
 # Roadmap: Baseline the Supabase schema into the repo
 
 **Label:** infra
-**Status:** planned — **needs the user to run it.** Requires the project access token and DB password, so an agent cannot do this half.
+**Status:** blocked — **needs Peter to run it.** Requires the project access token and the DB password, so an agent cannot do this half.
 
 [supabase/README.md](../../supabase/README.md) documents a one-time "adopt the
 existing schema as a baseline" step. It has never been run: there is no
@@ -57,8 +57,8 @@ baseline may include RLS policies that are deliberately wide open
 
 ## Acceptance
 
-- `supabase/migrations/` contains a `_remote_schema.sql` baseline, committed.
-- A fresh `supabase db diff` against the linked project reports no drift.
-- The two data migrations are either committed as files or explicitly recorded as
+- [ ] `supabase/migrations/` contains a `_remote_schema.sql` baseline, committed.
+- [ ] A fresh `supabase db diff` against the linked project reports no drift.
+- [ ] The two data migrations are either committed as files or explicitly recorded as
   server-only, and the README's "Applied this session" section is reduced to a
   pointer.

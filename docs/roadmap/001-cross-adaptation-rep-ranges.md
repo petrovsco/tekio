@@ -1,7 +1,8 @@
 # Roadmap: Cross-adaptation set/rep classification — TBC
 
 **Label:** backlog
-**Status:** TBC — captured for context, not yet decided.
+**Status:** backlog — the rep-range question is captured, not decided. Blocked on 019 reshaping the adaptation set it would apply to.
+**Depends:** 019
 **Kickoff:** start a fresh session with this file as the brief.
 
 ## The context we don't want to lose

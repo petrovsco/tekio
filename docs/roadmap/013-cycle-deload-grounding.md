@@ -1,7 +1,7 @@
 # Roadmap: Ground the 6-week cycle and the week-6 deload
 
 **Label:** feature
-**Status:** planned — no scout run yet. Created 2026-08-26 because inventory §5 is the one domain where **every row said `(no brief)`**: there was nowhere for a `## Grounding` block to land.
+**Status:** planned — kickoff-ready. No scout run yet — inventory section 5 is the last domain with no grounding block anywhere.
 
 The de-duplication is already done (three bugs fixed 2026-08-26). What is left is
 the claim itself, which no one has ever checked: **a training block is 6 weeks,
@@ -65,11 +65,11 @@ the app keeps the ungrounded number.
 
 ## Acceptance
 
-- A `## Grounding` section here carries the scout's verdict and provenance tags
+- [ ] A `## Grounding` section here carries the scout's verdict and provenance tags
   for all three rows, with citations verified against NCBI eutils before pasting.
-- Source comments on all three constants in
+- [ ] Source comments on all three constants in
   [src/constants/app.ts](../../src/constants/app.ts) point back here.
-- Inventory §5's `(no brief)` column names this file, and the rows carry a real
+- [ ] Inventory §5's `(no brief)` column names this file, and the rows carry a real
   state instead of `unknown`.
-- If a value changes, the DB defaults change in the same commit and are verified
+- [ ] If a value changes, the DB defaults change in the same commit and are verified
   by query.

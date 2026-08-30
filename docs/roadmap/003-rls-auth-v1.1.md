@@ -1,7 +1,7 @@
 # Roadmap: v1.1 — Real RLS + Auth
 
 **Label:** infra
-**Status:** planned — not started
+**Status:** backlog — v1.1, explicitly post-MVP. Nothing starts it before launch.
 **Kickoff:** start a fresh session with this file as the brief.
 **Origin:** 2026-07-08 Supabase security alert (`rls_disabled_in_public`). The
 critical error was cleared (RLS enabled on `adaptation_targets`), but the
