@@ -12,6 +12,28 @@ ledger for every surface. It is imported below so it is always in context.
 
 @docs/doctrine.md
 
+## Branching and versioning
+
+**Push to `develop`.** `master` holds the last released state and is not pushed
+to directly any more. Everything — code, docs, roadmap briefs — lands on
+`develop`, which is where 2.0.0 is being assembled. `master` moves again only
+when a version is released onto it.
+
+**Every push bumps `version` in `package.json`**, in the same commit as the
+change it ships. If it is worth pushing, it is worth a version.
+
+| Bump | For |
+|---|---|
+| **patch** (1.1.0 → 1.1.1) | bug fixes, small changes, roadmap and other documentation edits |
+| **minor** (1.1.1 → 1.2.0) | new features, page redesigns |
+| **major** (1.x.y → 2.0.0) | only when Peter says in a message that a whole concept is validated |
+
+The major digit is his call, never a judgement call made here — a big-feeling
+change is still a minor bump until he confirms the concept.
+
+**Tags:** minor and major bumps get an annotated tag (`v1.2.0`, `v2.0.0`) pushed
+with the commit. Patch bumps are not tagged.
+
 ## Commands
 
 ```bash
@@ -89,7 +111,8 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 @~/.claude/modus/rules/pending-work-in-roadmap.md
 
 Repo specifics for those rules: this repo is the working directory, so all paths
-are repo-relative — run `npm run build` here; "main branch" means `master`;
+are repo-relative — run `npm run build` here; "main branch" means `develop`
+(see Branching and versioning above — every push bumps the version too);
 roadmap briefs go to `docs/roadmap/` (the context guard is pointed there via
 `CTX_GUARD_ROADMAP_DIR` in `.claude/settings.local.json`). Every brief
 carries a `**Label:**` line — bug / infra / feature / backlog — defined in
