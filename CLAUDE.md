@@ -34,6 +34,20 @@ change is still a minor bump until he confirms the concept.
 **Tags:** minor and major bumps get an annotated tag (`v1.2.0`, `v2.0.0`) pushed
 with the commit. Patch bumps are not tagged.
 
+**Where each branch deploys** (one Vercel project, `bubolazi-projects/tekio`):
+
+| Branch | URL | Vercel target |
+|---|---|---|
+| `master` | https://tekio.shamatoff.com | production |
+| `develop` | https://stg-tekio.shamatoff.com | preview |
+
+Both sit behind the same cookie gate in [middleware.ts](middleware.ts) —
+`BASIC_AUTH_ENABLED` is one environment variable covering Preview *and*
+Production, so a change to it changes both. Vercel Authentication is off; that
+gate is the only door. Staging talks to the **same Supabase project as
+production** — the risks that creates, and the work that pays them, are
+[roadmap/024-staging-shared-database-safety.md](docs/roadmap/024-staging-shared-database-safety.md).
+
 ## Commands
 
 ```bash
