@@ -168,7 +168,7 @@ decides the verdict, and therefore what the source comment has to say in Step 3.
 
 ## Step 3 — Land it in the repo
 
-In six months nobody remembers why sleep weight is 0.45. Three destinations, in
+In six months nobody remembers why sleep weight is 0.45. Four destinations, in
 order:
 
 **1. The brief** — paste the scout's block verbatim as `## Grounding`,
@@ -182,7 +182,13 @@ records a real design fork.
 /** 0.45 — sleep dominates systemic readiness; see docs/roadmap/<brief>.md#grounding */
 ```
 
-**3. the user's own knowledge base** — *only* if the finding is durable life-knowledge
+**3. The decisions ledger** — one row per *decision* the run produced (a
+design call, a semantic choice, a deliberate non-change) in
+[docs/grounding-inventory.md](../../../docs/grounding-inventory.md#decisions-from-scout-runs),
+with its load-bearing sources and a link to the full record. Numbers get
+inventory rows; decisions get ledger rows.
+
+**4. the user's own knowledge base** — *only* if the finding is durable life-knowledge
 beyond Tekiō (e.g. "full-blood donation suppresses endurance performance for
 weeks"). Draft it there for `/ingest` → `wiki/health/`. The *why* behind the
 number stays next to the number regardless; the inbox is not a substitute for
