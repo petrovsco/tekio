@@ -23,16 +23,18 @@ veto), a `post-donation` scenario, and a tier label on every component.
 **Five-second test #2: performed by Peter on the Refined boards,
 passed** (“The 5 second test pases”, 2026-08-30) — both required test
 runs are now on record. Taps live behind the artboard’s Play button
-(canvas clicks select for editing); Peter’s hands-on check of the
-inline capture (and the fork-2 veto window) is still open. Play fixes
+(canvas clicks select for editing). **Phase confirmed by Peter
+2026-08-30** (“I think we're ok with that phase”) — the Play round and
+the revealed-on-intent capture (fork 2) both stand. Play fixes
 (2026-08-30, after Peter’s first Play run): reveals open **centred**
 — the viewer’s floating toolbar covers the bottom of the frame, which
 hid the bottom-anchored sheets (on the device they would anchor to the
 bottom edge); and WEIGHT logs through a **stepper prefilled from
 yesterday** (− 1 / − 0.1 / + 0.1 / + 1, then log) instead of a preset
-chip — body weight moves daily, a preset can’t capture it. Both carry
-into the design system. Then
-`docs/design-system.md` (step 6) and `/ground` (step 7).
+chip — body weight moves daily, a preset can’t capture it. Both are
+carried into [docs/design-system.md](../design-system.md) (step 6 —
+**done 2026-08-30**, reference-only). Next: `/ground` (step 7), then
+code (step 8).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,

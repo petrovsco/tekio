@@ -99,5 +99,6 @@ carries a `**Label:**` line — bug / infra / feature / backlog — defined in
 a "proposed edit" or a next step; those go to `docs/roadmap/` instead:
 [docs/doctrine.md](docs/doctrine.md) (decisions),
 [docs/grounding-inventory.md](docs/grounding-inventory.md) (an index of the 75
-numbers), [supabase/README.md](supabase/README.md) and
+numbers), [docs/design-system.md](docs/design-system.md) (the visual
+language), [supabase/README.md](supabase/README.md) and
 [scripts/garmin-sync/README.md](scripts/garmin-sync/README.md) (how things work).
