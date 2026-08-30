@@ -33,8 +33,10 @@ bottom edge); and WEIGHT logs through a **stepper prefilled from
 yesterday** (− 1 / − 0.1 / + 0.1 / + 1, then log) instead of a preset
 chip — body weight moves daily, a preset can’t capture it. Both are
 carried into [docs/design-system.md](../design-system.md) (step 6 —
-**done 2026-08-30**, reference-only). Next: `/ground` (step 7), then
-code (step 8).
+**done 2026-08-30**, reference-only). `/ground` ran the same day (step 7
+— **done**): five scout blocks landed in
+[010 §Grounding](010-home-fused-reads.md#grounding), verdicts recorded in
+the grounding inventory. Next: code (step 8).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,

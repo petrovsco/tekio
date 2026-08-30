@@ -24,6 +24,11 @@ targets in §1 are no longer `unknown` — four are `grounded`, five are
 is still `unknown`. The blocks live in
 [roadmap/011-adaptation-weekly-targets.md](roadmap/011-adaptation-weekly-targets.md).
 
+**Updated 2026-08-30 by the 010 runs** (018 step 7): rows 10.2–10.4 and
+4.12 are now `convention`; the §12 not-yet-in-app numbers (recovery window,
+staleness windows, push threshold, donation suppression) are grounded —
+blocks in [010 §Grounding](roadmap/010-home-fused-reads.md#grounding).
+
 Rows marked **†** are ones I would *not* spend a scout run on — see
 [§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
@@ -129,7 +134,7 @@ sharpest debt in the app because they read as settled fact.
 | 4.9 | `0.15` | [app.ts:82](../src/constants/app.ts#L82) | Cold is 15% | named | unknown | home-fused-reads **(due)** |
 | 4.10 | `0.10` | [app.ts:83](../src/constants/app.ts#L83) | Habits are 10% — **the input being dropped**; its removal is what renormalises 4.6–4.9 | named | unknown | home-fused-reads **(due)** |
 | 4.11 | `score / 100` | [RecoveryCard.tsx:65](../src/components/tabs/home/RecoveryCard.tsx#L65) | Garmin's 0–100 sleep score maps linearly onto the sub-score **and supersedes duration-vs-target when present** — two different sleep models, silently switched per night | unnamed | unknown | home-fused-reads **(due)** |
-| 4.12 | `80` / `50` | [RecoveryCard.tsx:20-21](../src/components/tabs/home/RecoveryCard.tsx#L20) | ≥80% readiness is green (push), 50–79 amber, <50 red. **This is the app's answer to "am I recovered enough to push today?"** | unnamed | unknown | home-fused-reads **(due)** |
+| 4.12 | `80` / `50` | [RecoveryCard.tsx:20-21](../src/components/tabs/home/RecoveryCard.tsx#L20) | ≥80% readiness is green (push), 50–79 amber, <50 red. **This is the app's answer to "am I recovered enough to push today?"** | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — any fixed cutoff on a 0–100 composite is convention; grounded method is baseline-relative HRV |
 | 4.13 | `sub >= 1` | [RecoveryCard.tsx:239](../src/components/tabs/home/RecoveryCard.tsx#L239) | A modality is "on target" at exactly 100% of its weekly target — no credit above, no partial band | unnamed | unknown † | home-fused-reads |
 | 4.14 | `80` °C / `10` °C | [RecoveryCard.tsx:177](../src/components/tabs/home/RecoveryCard.tsx#L177), [:201](../src/components/tabs/home/RecoveryCard.tsx#L201) | Placeholder temperatures for a sauna / cold session. Stored, never scored | ? | unknown † | — |
 
@@ -201,9 +206,9 @@ fold.
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
 | 10.1 | `2500` ml | [app.ts:5](../src/constants/app.ts#L5) | Daily hydration target | unnamed | unknown | home-fused-reads **(due — folding)** |
-| 10.2 | `56` days | [app.ts:45](../src/constants/app.ts#L45) | Full-blood donation interval | unnamed | unknown | home-fused-reads **(due — folding)** |
-| 10.3 | `14` days | [app.ts:46](../src/constants/app.ts#L46) | Plasma donation interval | unnamed | unknown | home-fused-reads **(due — folding)** |
-| 10.4 | `56 * 86400000` | [OverviewTab.tsx:151](../src/components/tabs/OverviewTab.tsx#L151) | Duplicate of 10.2 as a magic literal, bypassing the constant | unnamed | unknown | home-fused-reads **(due — folding)** |
+| 10.2 | `56` days | [app.ts:45](../src/constants/app.ts#L45) | Full-blood donation interval | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.3 | `14` days | [app.ts:46](../src/constants/app.ts#L46) | Plasma donation interval | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.4 | `56 * 86400000` | [OverviewTab.tsx:151](../src/components/tabs/OverviewTab.tsx#L151) | Duplicate of 10.2 as a magic literal, bypassing the constant | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
 | 10.5 | `[100…500]` | [OverviewTab.tsx:59](../src/components/tabs/OverviewTab.tsx#L59) | Quick-add water increments — UI affordance | no | unknown † | — |
 
 ## 11. Correctly not gated
@@ -229,9 +234,19 @@ they were missed.
   smoothing 0.5/0.3/0.2, alcohol ×0.85 …) live only in
   [roadmap/007-nutrition-food-recovery-score.md](roadmap/007-nutrition-food-recovery-score.md)
   and its bench artifact. State: `unknown`, all of them.
-- **Local recovery windows** — "commonly cited as 48–72 h"
-  ([roadmap/010-home-fused-reads.md](roadmap/010-home-fused-reads.md)). That brief
-  already says it requires `## Grounding` before implementation.
+- **Local recovery windows** — **grounded 2026-08-30**: 48–72 h band,
+  48 h default, dose-dependent
+  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+- **Per-quality staleness windows** — **grounded 2026-08-30**: VO₂max 14 d,
+  endurance 14 d, anaerobic 28 d
+  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+- **Push threshold (planned constant, 33)** — **convention 2026-08-30**: no
+  literature supports an absolute cutoff on a composite score; the grounded
+  method is baseline-relative HRV
+  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+- **Donation suppression window** — **grounded 2026-08-30**: 48 h acute +
+  21 d aerobic-only tail, whole blood only; plasma none
+  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
 
 ---
 

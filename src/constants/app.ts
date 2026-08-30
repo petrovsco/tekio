@@ -54,6 +54,10 @@ export const DONATION_ICONS: Record<string, string> = {
   'Full Blood': '🩸',
   Plasma: '💉',
 }
+/** 56 / 14 — donation-service eligibility rules, convention only (FDA 21 CFR
+ * 630.15; the plasma interval is national convention, 72 h-14 d across
+ * Europe), NOT physiology. Calendar countdown only - must not feed the
+ * readiness gate. See docs/roadmap/010-home-fused-reads.md#grounding */
 export const DONATION_ELIGIBILITY_DAYS: Record<string, number> = {
   'Full Blood': 56,
   Plasma: 14,
