@@ -2,7 +2,8 @@
 
 **Label:** feature
 **Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
-five-second tests passed. Step 8, the build, is what is left.
+five-second tests passed. Step 8 is underway: unit 1 (constants + fused-read
+library) shipped in v1.1.6; units 2–6 remain.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -67,7 +68,21 @@ stands; read this for how it got there.
   below, so the building session starts from the plan, not from re-reading the
   codebase.
 
-**Next: step 8 — code. Start from the build plan below.**
+- **2026-08-30 — step 8 unit 1 shipped** (v1.1.6, commit `8704742`): the five
+  grounded constants landed in `src/constants/app.ts` with their source
+  comments, and `src/lib/fusedRead.ts` carries the pure fused-read layer
+  (per-muscle state + gap ranking, quality staleness, systemic readiness,
+  donation/water status, Push/Hold verdict) with 27 tests. The HRV question
+  is resolved: `sleep_logs` has live `hrv`/`resting_hr` columns, so
+  `SleepEntry`/`SLEEP_COLS` now select them. Readiness = last night's sleep
+  score blended 50/50 with a baseline-relative HRV sub-score (7-day rolling
+  vs 60-day baseline in SD units, SD floored at 5% — the grounded
+  Vesterinen/Buchheit shape; the blend itself is convention, commented as
+  such). Degrades to sleep-only without a baseline, null without a fresh
+  night — a missing readiness never gates.
+
+**Next: step 8, unit 2 — SIGNAL tokens + the T1 surface. Remember the open
+call on the bottom nav: ask Peter before wiring it.**
 
 ## Step 8 — build plan (code survey 2026-08-30)
 
