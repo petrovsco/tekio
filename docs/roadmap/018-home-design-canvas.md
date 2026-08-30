@@ -20,8 +20,12 @@ live: page-3 “Refined” holds the build-spec boards (`Refined` /
 on the fused structure, plus working inline capture on the fold stats
 (fork 2 answered as revealed-on-intent, implied by the pick — open to
 veto), a `post-donation` scenario, and a tier label on every component.
-Awaiting five-second test #2 (step 5); then `docs/design-system.md`
-(step 6) and `/ground` (step 7).
+**Five-second test #2: performed by Peter on the Refined boards,
+passed** (“The 5 second test pases”, 2026-08-30) — both required test
+runs are now on record. Taps live behind the artboard’s Play button
+(canvas clicks select for editing); Peter’s hands-on check of the
+inline capture (and the fork-2 veto window) is still open. Then
+`docs/design-system.md` (step 6) and `/ground` (step 7).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
