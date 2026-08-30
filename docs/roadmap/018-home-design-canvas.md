@@ -62,8 +62,120 @@ stands; read this for how it got there.
 - **2026-08-30 — step 7 done:** `/ground` ran; five scout blocks landed in
   [010 §Grounding](010-home-fused-reads.md#grounding), verdicts recorded in the
   grounding inventory.
+- **2026-08-30 — step 8 build plan written.** A full code survey was done and
+  banked as [§Step 8 — build plan](#step-8--build-plan-code-survey-2026-08-30)
+  below, so the building session starts from the plan, not from re-reading the
+  codebase.
 
-**Next: step 8 — code.**
+**Next: step 8 — code. Start from the build plan below.**
+
+## Step 8 — build plan (code survey 2026-08-30)
+
+The spec triangle: `design/home-canvas/Refined.dc.html` (+ `RefinedHeld`) is
+the picture, [docs/design-system.md](../design-system.md) is the rulebook, and
+[010 §Grounding](010-home-fused-reads.md#grounding) holds the numbers. Build in
+these units; each one passes `npm run build`, is committed and pushed before
+the next starts (session wrap-up rule).
+
+### Unit 1 — grounded constants + the fused-read library (no UI)
+
+- Add to `src/constants/app.ts`, each with its source comment from 010
+  §Grounding: `RECOVER_DAYS = 2` (48 h floor), `PUSH_THRESHOLD = 33`
+  (convention), staleness windows `{ vo2max: 14, endurance: 14,
+  anaerobic_capacity: 28 }`, `CYCLE_SET_TARGET = 60` (10 fractional
+  sets/muscle/week × 6 — the grounding's deload caveat says the honest band is
+  50–60), donation suppression `{ acuteHours: 48, aerobicTailDays: 21 }`
+  (whole blood only, aerobic-only; plasma 0 — never a global hold).
+- New `src/lib/fusedRead.ts` — pure functions, unit-tested like `utils.ts`:
+  - **Per-muscle state** over the 42-day window: fractional sets (reuse the
+    `LEVEL_WEIGHT` logic of `muscleCoverage()` in `src/lib/utils.ts`, windowed
+    42 d instead of weekly), days since last stimulus, `recovering`
+    (< `RECOVER_DAYS`), and a callout rank (never-trained first, then fewest
+    sets).
+  - **Whole-body quality states** from `classifyCardioAdaptations()`
+    (`src/lib/adaptations.ts`) plus sport sessions: days since the last
+    qualifying session per quality, against its staleness window.
+  - **Systemic readiness + verdict**: readiness is the sleep+HRV roll-up per
+    the 010 grounding; the verdict is push/hold with the top gap as its
+    reason; hold below `PUSH_THRESHOLD`, advisory only — capture never locks.
+    Donation: < 48 h → hold flag; ≤ 21 d → aerobic-scoped note only.
+- **Resolve first — HRV.** The gate card shows SLEEP and HRV, but `SLEEP_COLS`
+  in `src/lib/db/recovery.ts` does not select an HRV column. The 2026-08-27
+  pull ([DATA.md](../../design/home-canvas/DATA.md)) lists per-night HRV and
+  resting HR, so the Garmin sync likely writes columns the app never reads.
+  Check the live `sleep_logs` schema; if present, extend `SleepEntry` and the
+  mapper. If absent, readiness degrades to the sleep score alone and the HRV
+  bar shows "—".
+
+### Unit 2 — SIGNAL tokens + the T1 surface
+
+- New tokens per design-system §§1–7 (paper `#faf9f7`, the four-ink text set,
+  accent `#c2410c`, serif for the verdict only) into `src/index.css` `@theme`.
+  The old slate/indigo tokens stay until the old tabs are restyled or retired.
+- New Home surface (under `src/components/tabs/home/`) replacing `OverviewTab`
+  as the Home tab: header (TEKIŌ + cycle label), verdict block, systemic gate
+  card (inverts to ink when gated; banner on hold days), body map with the
+  stimulus ramp + white 45° recovery hatch + ranked callouts, whole-body strip
+  (three squares). **Reuse the anatomical SVG in
+  `src/components/tabs/home/BodyMap.tsx`** — its zones are keyed by DB muscle
+  names and are better drawings than the canvas GEO rectangles; recolour by
+  the ramp in design-system §4.
+- No charts, no Recharts, no `useCountUp` in T1. The five-second answer only.
+- Callout *ranking* is mechanical (unit 1); the label text is editorial per
+  the board ("1 · CORE — never trained").
+
+### Unit 3 — T2 reveals (lazy)
+
+- Fold-stat row (WATER / WEIGHT / BLOOD) + bottom-sheet capture per
+  design-system §8: water outline chips (+100/+250/+500), weight stepper
+  prefilled from the last entry (−1 / −0.1 / +0.1 / +1; the solid confirm
+  shows the exact value it logs), blood full-donation confirm. The store
+  actions already exist (`addWaterEntry`, `addBodyweightEntry`,
+  `addDonationEntry`).
+- Muscle drill-in sheet on map tap: state line, sets/cycle, last stimulus,
+  target, then the ranked exercise list + prefilled sets grid per
+  `LogSets.dc.html` (exercise-first — sets classify by rep range).
+- All T2 behind `React.lazy`; prefetch on first pointer-down on the surface.
+
+### Unit 4 — the three folds + DEFAULTS to four (014's remainder)
+
+- Remove Water / Donations / Body Weight from `DRAWER_TABS`
+  (`src/App.tsx:19`) and from `DEFAULTS` (`src/lib/db/sectionConfig.ts`).
+  Mind the trap noted there: the *old* OverviewTab renders a **missing** row
+  as visible — the new Home doesn't use `homeOn()`, so the trap dies with it.
+  Flip the live `user_section_config` rows to match.
+- `RECOVERY_WEIGHTS` surgery: the weekly-rollup readiness (`RecoveryCard`) is
+  replaced by the sleep+HRV gate, so the five weights and `RECOVERY_TARGETS`
+  likely go entirely rather than being reweighted — but 014's acceptance
+  requires the before/after readiness comparison on real data either way.
+  Sauna / cold / sleep capture (quick-adds now on RecoveryCard) must survive
+  somewhere reachable; mobility has its own tab.
+- End state: `DEFAULTS` seeds Weights, Cardio, Mobility (+ the shelved Habits
+  row); R1 satisfied with one slot free.
+
+### Unit 5 — T3 code splitting
+
+- `React.lazy` every tab component in `App.tsx` — behind nav/drawer is T3 by
+  definition. Suspense fallback: the `HomeSkeleton` pattern.
+- Measure before/after with `npm run build` (baseline 2026-08-27: one chunk,
+  1,142 kB / 322 kB gzip). The T1 chunk must exclude Recharts, dnd-kit and
+  the tabs. Record the numbers here.
+
+### Unit 6 — verify + close
+
+- Browser regression pass per the house rule (system-wide change): Home in
+  both gate states, drill-in, the three captures, Weights / Cardio / Mobility
+  tabs, Profile section toggles.
+- Write the readiness before/after comparison into 014.
+- Tick acceptance across 018 / 010 / 014; move finished briefs to `done/`.
+
+### Open calls for the building session
+
+- **Bottom nav.** The board shows HOME / WEIGHTS / CARDIO / PROGRAM; today's
+  nav is Home / Adapt / Program / More. Where Adaptations, Mobility and the
+  drawer land is a build-time decision — ask Peter before wiring it.
+- **019 is planned, not shipped.** Home must not wait for it: the strip and
+  the power line don't depend on the Adaptations tab still enumerating nine.
 
 ## The plain summary
 
