@@ -11,11 +11,13 @@ type SleepRow = {
   quality: number | null
   sleep_score: number | null
   sleep_score_qualifier: string | null
+  hrv: number | null
+  resting_hr: number | null
   source: string | null
   notes: string | null
 }
 
-const SLEEP_COLS = 'id, log_date, duration_hours, quality, sleep_score, sleep_score_qualifier, source, notes'
+const SLEEP_COLS = 'id, log_date, duration_hours, quality, sleep_score, sleep_score_qualifier, hrv, resting_hr, source, notes'
 
 function mapSleep(r: SleepRow): SleepEntry {
   return {
@@ -25,6 +27,8 @@ function mapSleep(r: SleepRow): SleepEntry {
     quality: r.quality != null ? (r.quality as SleepQuality) : undefined,
     score: r.sleep_score != null ? Number(r.sleep_score) : undefined,
     scoreQualifier: r.sleep_score_qualifier ?? undefined,
+    hrv: r.hrv != null ? Number(r.hrv) : undefined,
+    restingHr: r.resting_hr != null ? Number(r.resting_hr) : undefined,
     source: r.source === 'garmin' ? 'garmin' : 'manual',
     notes: r.notes ?? undefined,
   }

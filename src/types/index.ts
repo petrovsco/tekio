@@ -151,6 +151,10 @@ export interface SleepEntry {
   score?: number
   /** Garmin's categorical label (EXCELLENT / GOOD / FAIR / POOR). */
   scoreQualifier?: string
+  /** Overnight average heart-rate variability in ms (Garmin nights only). */
+  hrv?: number
+  /** Overnight resting heart rate in bpm (Garmin nights only). */
+  restingHr?: number
   /** Row provenance: hand-logged vs. pulled from the Garmin daily sync. */
   source?: 'manual' | 'garmin'
   notes?: string
