@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom'
 import { useAppStore } from './store/app'
 import { AppShell } from './components/layout/AppShell'
 import { AdaptationsTab } from './components/tabs/AdaptationsTab'
-import { OverviewTab } from './components/tabs/OverviewTab'
+import { HomeTab } from './components/tabs/home/HomeTab'
 import { WeightsTab } from './components/tabs/weights/WeightsTab'
 import { BodyWeightTab } from './components/tabs/BodyWeightTab'
 import { CardioTab } from './components/tabs/CardioTab'
@@ -22,7 +22,7 @@ type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
 
 function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) {
   switch (tab) {
-    case 'Home': return <OverviewTab setTab={setTab} />
+    case 'Home': return <HomeTab />
     case 'Adaptations': return <AdaptationsTab setTab={setTab} />
     case 'Program': return <ProgramTab />
     case 'Weights': return <WeightsTab />
@@ -36,7 +36,7 @@ function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) 
     case 'Admin': return <AdminTab />
     // Recovery has no dedicated tab (Home-only card); fall back to Home so a stray
     // section key can never render a blank screen.
-    default: return <OverviewTab setTab={setTab} />
+    default: return <HomeTab />
   }
 }
 

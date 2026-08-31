@@ -42,6 +42,19 @@
 }
 
 @theme {
+  /* SIGNAL — the Home design language (docs/design-system.md §§1–7).
+     The slate/indigo tokens below stay until the old tabs are restyled or retired. */
+  --color-paper: #faf9f7;      /* page ground */
+  --color-ink: #1a1a1a;        /* primary text; inverted-card ground */
+  --color-ink-2: #6b6b6b;      /* secondary text */
+  --color-ink-3: #8a8a8a;      /* labels */
+  --color-ink-4: #a8a8a8;      /* asides / disabled */
+  --color-signal: #c2410c;     /* the one accent: action lives here / urgency */
+  --color-line: #e2e2e0;       /* card border */
+  --color-hairline: #eeeeec;   /* hairline inside a card */
+  --color-chrome: #d6d6d4;     /* chrome hairline (nav border) */
+  --color-invert-line: #4a4a4a; /* dividers and bar tracks on the inverted card */
+
   --color-bg: #f1f5f9;
   --color-surface: #ffffff;
   --color-primary: #1e293b;

@@ -7,19 +7,19 @@ const UNTOUCHED = '#cbd5e1'
 
 /** Left half of the body outline, closed along the x=60 center seam; rendered
  *  twice (identity + mirror) so the silhouette stays symmetric for free. */
-const HALF =
+export const HALF =
   'M60,24 L55,24 Q54,29 53.5,32 Q46,35 38,40 Q31,42 30,50 ' +
   'L27,79 Q24,95 22,108 Q19,113 20,119 Q22,126 25,123 Q28,117 29,110 ' +
   'L32,85 L38,63 Q41,61 42,63 Q44,82 46,94 Q43,104 42,115 ' +
   'Q42,142 45,168 Q42,184 46,203 L48,220 L46,227 Q45,233 51,233 ' +
   'L55,225 L55,221 Q58,198 56,172 Q57,148 59,124 L60,121 Z'
 
-const MIRROR = 'translate(120,0) scale(-1,1)'
+export const MIRROR = 'translate(120,0) scale(-1,1)'
 
 /** Rectus abdominis segment detail (front only). */
-const ABS_LINES = 'M60,70 L60,108 M54,79.5 L66,79.5 M53.5,89 L66.5,89 M54,97.5 L66,97.5'
+export const ABS_LINES = 'M60,70 L60,108 M54,79.5 L66,79.5 M53.5,89 L66.5,89 M54,97.5 L66,97.5'
 
-interface Zone {
+export interface Zone {
   /** DB muscle-group name this zone represents (child, or top-level for Chest). */
   muscle: string
   /** Top-level group used as fallback when the muscle has no row of its own. */
@@ -32,7 +32,7 @@ interface Zone {
 /* Anatomical zones, drawn in paint order (deeper muscles first so e.g. the
  * traps overlay the rhomboids). Mirrored zones are authored on the figure's
  * right (viewer-left) side; overshoot past the outline is clipped away. */
-const FRONT_ZONES: Zone[] = [
+export const FRONT_ZONES: Zone[] = [
   { muscle: 'Upper Back / Traps', parent: 'Back', mirrored: true, d: 'M54,32 Q47.5,34.5 42,40 L52,41.5 Q54,37 54,32 Z' },
   { muscle: 'Anterior Deltoid', parent: 'Shoulders', mirrored: true, d: 'M46,42.5 Q40,40.5 36,44 L35,58 Q40,61 44,58 Q46,50 46,42.5 Z' },
   { muscle: 'Lateral Deltoid', parent: 'Shoulders', mirrored: true, d: 'M36,44 Q31,45 30,50 Q29,56 32,60 Q34,62 35,58 L36,44 Z' },
@@ -47,7 +47,7 @@ const FRONT_ZONES: Zone[] = [
   { muscle: 'Calves', parent: 'Legs', mirrored: true, d: 'M46.5,174 Q43.5,184 45,198 Q46,204 48.5,202 Q47.5,188 48.5,176 Q47.5,172.5 46.5,174 Z M54.5,174 Q56.5,184 55.5,198 Q54.5,203.5 52.5,201.5 Q54,188 53,176 Q53.5,172.5 54.5,174 Z' },
 ]
 
-const BACK_ZONES: Zone[] = [
+export const BACK_ZONES: Zone[] = [
   { muscle: 'Lats', parent: 'Back', mirrored: true, d: 'M43,58 Q40,68 44,80 Q50,90 57,96 L58.5,98 L58.5,72 Q56,66 52,62 Q47,59 43,58 Z' },
   { muscle: 'Rhomboids', parent: 'Back', mirrored: true, d: 'M58.5,54 L58.5,70 Q52,66 49.5,59 Q54,55 58.5,54 Z' },
   { muscle: 'Rotator Cuff', parent: 'Shoulders', mirrored: true, d: 'M47.5,52 Q43.5,56 44.5,63 Q47.5,67 50.5,63.5 Q51.5,56 49.5,52 Z' },

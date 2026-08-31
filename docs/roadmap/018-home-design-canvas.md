@@ -2,8 +2,8 @@
 
 **Label:** feature
 **Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
-five-second tests passed. Step 8 is underway: unit 1 (constants + fused-read
-library) shipped in v1.1.6; units 2–6 remain.
+five-second tests passed. Step 8 is underway: units 1–2 shipped (v1.1.6 constants
++ fused-read library; v1.2.0 SIGNAL tokens + the T1 surface); units 3–6 remain.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -81,8 +81,26 @@ stands; read this for how it got there.
   such). Degrades to sleep-only without a baseline, null without a fresh
   night — a missing readiness never gates.
 
-**Next: step 8, unit 2 — SIGNAL tokens + the T1 surface. Remember the open
-call on the bottom nav: ask Peter before wiring it.**
+- **2026-08-31 — step 8 unit 2 shipped** (v1.2.0): SIGNAL tokens joined the
+  Tailwind `@theme` (`src/index.css`; the slate/indigo set stays for the
+  unrestyled tabs), and the T1 surface replaced `OverviewTab` as the Home tab —
+  `src/components/tabs/home/HomeTab.tsx` (header, serif verdict, systemic gate
+  card that inverts + banners on a held day, whole-body strip, power line) and
+  `GapMap.tsx` (the anatomical `BodyMap` zones, now exported and reused,
+  recoloured by the stimulus ramp, white 45° recovery hatch, ranked worst-first
+  callouts: top 4 numbered accent, a fifth minor in grey). `powerSetCount`
+  joined `fusedRead.ts` (+2 tests, 28 total). `AppShell` hides its own header
+  on Home and grounds it in paper — the surface carries TEKIŌ + the cycle
+  label; drawer and Profile stay reachable through the bottom nav's More. Tier
+  chips from the boards were left off the shipped surface — they are canvas
+  annotations, not app chrome. Verified in the browser at 390×844 against live
+  data (verdict, gate numbers, callout ranks, strip states all correct).
+  **Carried gap for units 3/4:** `RecoveryCard` (sauna / cold / manual-sleep
+  quick-adds) is unreachable on the new Home until capture is re-homed —
+  production still has the old surface, so logging continues there.
+
+**Next: step 8, unit 3 — T2 reveals (fold-stat row + capture sheets, muscle
+drill-in). The bottom-nav open call is still open: ask Peter before wiring it.**
 
 ## Step 8 — build plan (code survey 2026-08-30)
 

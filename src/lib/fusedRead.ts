@@ -1,13 +1,16 @@
 import type {
-  WeightEntry, CardioEntry, SportEntry, DonationEntry, WaterEntry, SleepEntry,
-  ExerciseMuscleLink, MuscleGroup,
+  Adaptation, WeightEntry, CardioEntry, SportEntry, DonationEntry, WaterEntry,
+  SleepEntry, ExerciseMuscleLink, MuscleGroup,
 } from '../types'
 import {
   CYCLE, RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS,
   CYCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
 } from '../constants/app'
 import { LEVEL_WEIGHT, today } from './utils'
-import { classifyCardioAdaptations, classifyCardioByDuration } from './adaptations'
+import {
+  classifyCardioAdaptations, classifyCardioByDuration,
+  classifyWeightSet, resolveExerciseAdaptation,
+} from './adaptations'
 
 // The pure functions behind the fused Home read (roadmap 010/018): per-muscle
 // state, whole-body quality state, systemic readiness, and the Push/Hold
@@ -157,6 +160,26 @@ export function qualityStates(
     const daysSince = d ? daysBetween(d, date) : null
     return { key, daysSince, windowDays, stale: daysSince === null || daysSince > windowDays }
   })
+}
+
+/**
+ * Working sets classified as power within the cycle window, across all muscles.
+ * Power is muscle-linked (doctrine P2) and reads per muscle in the drill-in;
+ * the T1 line only reports whether any power work exists at all. Uses the same
+ * override-aware set classification as the Adaptations dashboard.
+ */
+export function powerSetCount(
+  weights: WeightEntry[],
+  overrides?: Record<string, Adaptation>,
+  date: string = today(),
+): number {
+  let n = 0
+  for (const w of weights) {
+    if (w.date > date || daysBetween(w.date, date) >= CYCLE_WINDOW_DAYS) continue
+    const override = resolveExerciseAdaptation(w.exercise, overrides)
+    for (const s of w.sets) if (classifyWeightSet(s.reps, override) === 'power') n++
+  }
+  return n
 }
 
 // ── Systemic: readiness + verdict ───────────────────────────────────────────

@@ -49,8 +49,13 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
     ? 'bg-dl-bg border-b border-dl-bd sticky top-0 z-50'
     : 'bg-surface border-b border-border sticky top-0 z-50'
 
+  // The SIGNAL Home surface carries its own header (TEKIŌ + cycle label) and
+  // paper ground; the shell chrome would double it. Drawer and Profile stay
+  // reachable via the bottom nav's More on Home.
+  const isHome = tab === 'Home'
+
   return (
-    <div className="min-h-screen bg-bg">
+    <div className={`min-h-screen ${isHome ? 'bg-paper' : 'bg-bg'}`}>
       <Toast />
       <EditModal />
 
@@ -62,6 +67,7 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
       />
 
       {/* Header */}
+      {!isHome && (
       <header className={headerClass}>
         <div className="flex items-center justify-between px-4 py-3 max-w-[600px] mx-auto">
           <button
@@ -89,6 +95,7 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
           </div>
         </div>
       </header>
+      )}
 
       {/* Main content */}
       <main className="max-w-[600px] mx-auto px-4 py-4 pb-24">
