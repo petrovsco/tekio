@@ -4,7 +4,6 @@ import { USER_ID } from '../../constants/app'
 export interface SectionConfig {
   sectionKey: string
   showInMenu: boolean
-  showInHome: boolean
   sortOrder: number
 }
 
@@ -14,15 +13,19 @@ export interface SectionConfig {
 // and capture on Home. Their live rows survive in the DB and are simply
 // ignored — App.tsx falls back to Home for any key it cannot render.
 //
-// `showInHome` has no consumer since the fused Home replaced OverviewTab; it
-// is carried here only because the column and the type still exist.
+// `show_in_home` died with OverviewTab: the fused Home is not a list of section
+// cards, so nothing reads it. The app no longer writes or selects it (roadmap
+// 018 unit 6); the column itself is NOT NULL DEFAULT true, so it keeps filling
+// itself in until it is dropped. The DROP waits for 2.0.0 to reach master —
+// production still runs code that selects it, and both branches share one
+// database. It is queued in docs/roadmap/025-release-blocked-schema-drops.md.
 const DEFAULTS: SectionConfig[] = [
-  { sectionKey: 'Weights',     showInMenu: true, showInHome: true, sortOrder: 0 },
-  { sectionKey: 'Cardio',      showInMenu: true, showInHome: true, sortOrder: 2 },
-  { sectionKey: 'Mobility',    showInMenu: true, showInHome: true, sortOrder: 3 },
+  { sectionKey: 'Weights',     showInMenu: true, sortOrder: 0 },
+  { sectionKey: 'Cardio',      showInMenu: true, sortOrder: 2 },
+  { sectionKey: 'Mobility',    showInMenu: true, sortOrder: 3 },
   // Habits is shelved (doctrine R2, decided 2026-08-26; delete by 2026-10-07).
   // Shelved, not folded — the row keeps a Profile toggle that brings it back.
-  { sectionKey: 'Habits',      showInMenu: false, showInHome: false, sortOrder: 7 },
+  { sectionKey: 'Habits',      showInMenu: false, sortOrder: 7 },
 ]
 
 export async function loadSectionConfig(): Promise<SectionConfig[]> {
@@ -34,7 +37,6 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
         user_id:      USER_ID,
         section_key:  d.sectionKey,
         show_in_menu: d.showInMenu,
-        show_in_home: d.showInHome,
         sort_order:   d.sortOrder,
       })),
       { onConflict: 'user_id,section_key', ignoreDuplicates: true }
@@ -42,7 +44,7 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
 
   const { data, error } = await supabase
     .from('user_section_config')
-    .select('section_key, show_in_menu, show_in_home, sort_order')
+    .select('section_key, show_in_menu, sort_order')
     .eq('user_id', USER_ID)
     .order('sort_order', { ascending: true })
 
@@ -51,18 +53,16 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
   return (data ?? []).map(row => ({
     sectionKey:  row.section_key,
     showInMenu:  row.show_in_menu,
-    showInHome:  row.show_in_home,
     sortOrder:   row.sort_order,
   }))
 }
 
 export async function updateSectionField(
   sectionKey: string,
-  patch: Partial<Pick<SectionConfig, 'showInMenu' | 'showInHome' | 'sortOrder'>>
+  patch: Partial<Pick<SectionConfig, 'showInMenu' | 'sortOrder'>>
 ): Promise<void> {
   const update: Record<string, unknown> = {}
   if (patch.showInMenu !== undefined) update.show_in_menu = patch.showInMenu
-  if (patch.showInHome !== undefined) update.show_in_home = patch.showInHome
   if (patch.sortOrder  !== undefined) update.sort_order   = patch.sortOrder
 
   const { error } = await supabase
@@ -82,7 +82,6 @@ export async function saveSectionConfig(configs: SectionConfig[]): Promise<void>
         user_id:      USER_ID,
         section_key:  c.sectionKey,
         show_in_menu: c.showInMenu,
-        show_in_home: c.showInHome,
         sort_order:   c.sortOrder,
       })),
       { onConflict: 'user_id,section_key' }

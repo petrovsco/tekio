@@ -313,7 +313,7 @@ export function muscleQualityMix(
  * in SD units. 50 = at baseline; a rolling mean 1 SD below scores 0. Single
  * bad nights barely move it — the literature calls them too noisy to act on.
  * The 0–100 shape and the 50/50 blend with sleep are convention, see
- * docs/roadmap/010-home-fused-reads.md#grounding */
+ * docs/roadmap/done/010-home-fused-reads.md#grounding */
 const HRV_ROLLING_DAYS = 7
 const HRV_BASELINE_DAYS = 60
 const MIN_HRV_BASELINE_SAMPLES = 7

@@ -1,9 +1,9 @@
 # Roadmap: Home as fused stimulus × recovery reads
 
 **Label:** feature
-**Status:** planned — the two-level model was agreed 2026-08-29 and the grounding blocks have landed. Waits on 018 for the visual spec it builds against.
+**Status:** done — built and shipped 2026-08-31 as roadmap 018 step 8 (v1.1.6 → v1.4.2). The fused Home is the app's Home tab: one gated verdict, the body map coloured by fused state, the whole-body strip, and drill-in on tap.
 **Depends:** 018
-**Origin:** fell out of writing [../doctrine.md](../doctrine.md); the user's point
+**Origin:** fell out of writing [../doctrine.md](../../doctrine.md); the user's point
 that recovery and stimulus must both be present for sustainable progress forced
 a rethink of how recovery is represented.
 
@@ -127,7 +127,7 @@ work — that is tooling, and this brief is a consumer of it.
   the canvas shows raw facts ("never", "53 d ago") and claims no flip logic.
 - **Resolved 2026-08-26 by P5:** systemic chronic load is Garmin's acute load —
   consume `daily_metrics.acute_load` from
-  [008-garmin-recovery-load-axis.md](008-garmin-recovery-load-axis.md), do not recompute it
+  [008-garmin-recovery-load-axis.md](../008-garmin-recovery-load-axis.md), do not recompute it
   (that brief also rules it informational context, not a recovery-% input).
   Per-muscle chronic load is a *different scope*, computed from logged sets, and
   stays here. Whether it needs a rolling window at all — and what window — is the
@@ -302,3 +302,21 @@ The volume literature has a real fork: the meta-analytic reading (Schoenfeld, Pe
 // qualities only; plasma = 0 d. Endpoint contested (Ziegler 14 d / Judd 21 d /
 // Meurrens 28 d). See docs/roadmap/010-home-fused-reads.md#grounding
 ```
+
+## Acceptance
+
+Added 2026-08-31 when the brief closed — it predates the checkbox convention.
+
+- [x] The two-level model (systemic gate + per-muscle local state) is agreed and
+      written down. **§2, agreed 2026-08-29 against the 018 canvas.**
+- [x] Both §6 design questions are answered with the canvas as evidence.
+      **The gate changes the instruction only and is advisory; whole-body
+      qualities get one state each.**
+- [x] Every physiological number this brief needs carries a `## Grounding`
+      block. **Five scout runs, 2026-08-30.**
+- [x] Home renders the fused read: body map coloured by state, a non-spatial
+      whole-body read, one systemic readiness element, and tap-to-drill.
+      **Shipped in 018 units 2–4; `src/lib/fusedRead.ts` is the pure layer,
+      34 tests.**
+- [x] Nothing else in the app claims to answer the same question twice.
+      **`OverviewTab`, `RecoveryCard` and the three folded tabs are deleted.**

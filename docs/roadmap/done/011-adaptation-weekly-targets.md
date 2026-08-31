@@ -14,7 +14,7 @@ back-fill scout runs. Scope set by [grounding-inventory.md](../../grounding-inve
 `/ground` Mode B says a one-decision brief is legitimate for a back-fill, and
 this is the case it was written for.
 
-[010-home-fused-reads.md](../010-home-fused-reads.md) is the natural-looking home — the
+[010-home-fused-reads.md](010-home-fused-reads.md) is the natural-looking home — the
 inventory points nine rows at it — but it is the wrong place, for three reasons:
 
 1. It is marked **"proposed — do not build from this until the two-level model in
@@ -149,7 +149,7 @@ is a code change well outside this run's one question.
 So `6` is taken as the scout's own stated fallback, and recorded for what it is:
 **an exposure counter, not a dose.** The reshape is the real fix and belongs in
 whichever brief rebuilds the adaptation reads — most likely
-[010-home-fused-reads.md](../010-home-fused-reads.md).
+[010-home-fused-reads.md](010-home-fused-reads.md).
 
 ---
 

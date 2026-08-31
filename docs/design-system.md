@@ -6,7 +6,7 @@ in them.
 
 Distilled 2026-08-30 from the picked build-spec boards (page-3 "Refined",
 language **SIGNAL**, picked 2026-08-30) on the Tekio Home design canvas —
-[roadmap 018](roadmap/018-home-design-canvas.md), canvas:
+[roadmap 018](roadmap/done/018-home-design-canvas.md), canvas:
 <https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee>.
 The boards are the picture; this doc is the rulebook. When they disagree,
 fix one of them deliberately.

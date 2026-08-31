@@ -1,11 +1,14 @@
 # Roadmap: Home design canvas — a JIT design system for the fused read
 
 **Label:** feature
-**Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
-five-second tests passed. Step 8 is underway: units 1–5 shipped (v1.1.6 constants
-+ fused-read library; v1.2.0 SIGNAL tokens + the T1 surface; v1.2.1 + v1.3.0 the
-T2 sheets; v1.4.0 the three folds, the recovery sheet and R1's cap met; v1.4.1 the
-T3 split — T1 is now 554 kB / 161 kB gzip, half the old bundle); unit 6 remains.
+**Status:** done — rounds 1–3 settled the design, both five-second tests passed,
+and step 8 shipped it in six units (v1.1.6 constants + fused-read library;
+v1.2.0 SIGNAL tokens + the T1 surface; v1.2.1 + v1.3.0 the T2 sheets; v1.4.0 the
+three folds, the recovery sheet and R1's cap met; v1.4.1 the T3 split, T1 halved
+to 554 kB / 161 kB gzip; v1.4.2 the regression pass and `show_in_home`). One
+piece of it is deliberately parked, not dropped: the `show_in_home` **column**
+cannot go until 2.0.0 reaches master, and waits in
+[025-release-blocked-schema-drops.md](../025-release-blocked-schema-drops.md).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -19,7 +22,7 @@ questions are "easier to answer with the fused state concrete than in the
 abstract." That is a request for a mockup. This brief is that mockup, plus the
 design system it needs.
 **Blocks:** the three remaining folds in
-[014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md) and, through them,
+[014-doctrine-ledger-execution.md](../014-doctrine-ledger-execution.md) and, through them,
 R1's cap of four menu sections.
 
 ---
@@ -61,7 +64,7 @@ stands; read this for how it got there.
   (− 1 / − 0.1 / + 0.1 / + 1, then log) instead of a preset chip — body weight
   moves daily, a preset can't capture it.
 - **2026-08-30 — step 6 done:** both fixes carried into
-  [docs/design-system.md](../design-system.md) (reference-only).
+  [docs/design-system.md](../../design-system.md) (reference-only).
 - **2026-08-30 — step 7 done:** `/ground` ran; five scout blocks landed in
   [010 §Grounding](010-home-fused-reads.md#grounding), verdicts recorded in the
   grounding inventory.
@@ -148,7 +151,7 @@ stands; read this for how it got there.
   `DonationsTab`, `BodyWeightTab`, and `RECOVERY_WEIGHTS` / `RECOVERY_TARGETS` /
   `RECOVERY_ICONS` — retired rather than reweighted, with the before/after
   comparison on live data written into
-  [014](014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4).
+  [014](../014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4).
   Live `user_section_config` flipped to match (three menu rows: Weights,
   Cardio, Mobility). Browser-verified at 390×844 against live data: recovery
   sheet logged a real sauna session end to end (test row then deleted from the
@@ -183,15 +186,35 @@ stands; read this for how it got there.
   console error is the pre-existing `/favicon.ico` 404 (no `public/`, no icon
   link in `index.html`). 130 tests pass.
 
-**Next: unit 6 (regression pass + close).**
-Carried into unit 6: `show_in_home` lost its last consumer with `OverviewTab`
-— the Profile toggle is gone, but the DB column and the `SectionConfig` field
-are still there and should be dropped.
+- **2026-08-31 — step 8 unit 6 shipped** (v1.4.2): the regression pass and the
+  close. `show_in_home` is gone from the app — the `SectionConfig` field, the
+  `DEFAULTS` rows, the `select`, the mapper, the `updateSectionField` patch type
+  and the `saveSectionConfig` upsert. The **column** stays: production still
+  runs code that selects it and both branches share one database, so dropping it
+  would break prod's `bootstrap()` until 2.0.0 lands on master. It is
+  `NOT NULL DEFAULT true`, so it fills itself in while it waits, and the drop is
+  queued in [025](../025-release-blocked-schema-drops.md) — Peter's call,
+  2026-08-31, taken rather than left in a code comment.
+  **Regression pass** (browser, 390×844, live data, no console errors beyond the
+  pre-existing `/favicon.ico` 404): Home paints requesting no tab module; the
+  muscle drill-in opens with all its sections; all four T2 sheets open and
+  prefill correctly (water +100/+250/+500 with today's line, weight stepper at
+  77.4 kg from 2026-08-17, blood with the 48 h / 21 d placeholder note, recovery
+  with sauna / cold / the 7.7 h sleep stepper and its edit strip); Weights,
+  Cardio, Program, Mobility, Adaptations and Profile all load their lazy chunks
+  and render; the Profile section toggle was flipped ON — Habits appeared in the
+  drawer — and flipped back OFF, so `updateSectionField` was exercised end to
+  end after the field removal and the live config was restored (three menu rows:
+  Weights, Cardio, Mobility). Captures were opened, not saved: the write paths
+  were already exercised end to end in units 3 and 4, and this database is the
+  real training log. The **held** verdict was not re-exercised — it needs a
+  fresh donation row; it was verified in unit 3 and nothing in units 5–6 touches
+  verdict rendering. Build green, 130 tests pass.
 
 ## Step 8 — build plan (code survey 2026-08-30)
 
 The spec triangle: `design/home-canvas/Refined.dc.html` (+ `RefinedHeld`) is
-the picture, [docs/design-system.md](../design-system.md) is the rulebook, and
+the picture, [docs/design-system.md](../../design-system.md) is the rulebook, and
 [010 §Grounding](010-home-fused-reads.md#grounding) holds the numbers. Build in
 these units; each one passes `npm run build`, is committed and pushed before
 the next starts (session wrap-up rule).
@@ -220,7 +243,7 @@ the next starts (session wrap-up rule).
     Donation: < 48 h → hold flag; ≤ 21 d → aerobic-scoped note only.
 - **Resolve first — HRV.** The gate card shows SLEEP and HRV, but `SLEEP_COLS`
   in `src/lib/db/recovery.ts` does not select an HRV column. The 2026-08-27
-  pull ([DATA.md](../../design/home-canvas/DATA.md)) lists per-night HRV and
+  pull ([DATA.md](../../../design/home-canvas/DATA.md)) lists per-night HRV and
   resting HR, so the Garmin sync likely writes columns the app never reads.
   Check the live `sleep_logs` schema; if present, extend `SleepEntry` and the
   mapper. If absent, readiness degrades to the sleep score alone and the HRV
@@ -336,18 +359,18 @@ against the boards and the shipped code — build from this, don't re-derive:
   gzip)**, Recharts and dnd-kit confirmed absent from T1. Full numbers in the
   progress log above.
 
-### Unit 6 — verify + close
+### Unit 6 — verify + close — **shipped v1.4.2**
 
-- Browser regression pass per the house rule (system-wide change): Home in
-  both gate states, drill-in, the three captures, Weights / Cardio / Mobility
-  tabs, Profile section toggles.
+- ~~Browser regression pass~~ — done; what was walked, and the two things
+  deliberately not re-run, are in the progress log above.
 - ~~Write the readiness before/after comparison into 014.~~ **Done in unit 4.**
-- Drop `show_in_home`: the `user_section_config` column, the `SectionConfig`
-  field and the `saveSectionConfig` / `loadSectionConfig` handling. Its last
-  consumer died with `OverviewTab`; the Profile toggle is already gone.
-- Tick acceptance across 018 / 010 / 014; move finished briefs to `done/`.
-  014 keeps one open box on purpose — `ExerciseMuscleEditor` moves with the
-  Habits deletion at expiry (2026-10-07), not with the folds.
+- ~~Drop `show_in_home`~~ — the app side is done. The **column** is release-
+  blocked and queued in
+  [025-release-blocked-schema-drops.md](../025-release-blocked-schema-drops.md).
+- ~~Tick acceptance across 018 / 010 / 014; move finished briefs to `done/`.~~
+  010 and 018 are closed and moved. 014 keeps one open box on purpose —
+  `ExerciseMuscleEditor` moves with the Habits deletion at expiry
+  (2026-10-07), not with the folds.
 
 ### Open calls for the building session
 
@@ -725,8 +748,9 @@ Rounds 2 and 3 do not re-paste this; they carry only what changed.
 - [x] Every component on the refined artboard carries a T1/T2/T3 label, and the T1
   set is small enough to defend as an initial chunk.
 - [x] `docs/design-system.md` exists and is reference-only.
-- [ ] **Step 8 — built.** The refined design is implemented on Home. This is
-      the one criterion still open, and it is shared with
-      [010-home-fused-reads.md](010-home-fused-reads.md) (the fused read) and
-      [014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md) (the
-      three folds that land on it).
+- [x] **Step 8 — built.** The refined design is implemented on Home, in six
+      units ending v1.4.2. Shared with
+      [010-home-fused-reads.md](010-home-fused-reads.md) (the fused read —
+      closed with this) and
+      [014-doctrine-ledger-execution.md](../014-doctrine-ledger-execution.md) (the
+      three folds landed; 014 keeps one box open for the Habits expiry).

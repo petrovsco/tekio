@@ -53,7 +53,7 @@ This brief originally said "steps 1 and 2 are independent of the four folds —
 the folds can proceed in parallel." **That is wrong for three of the four**, and
 the brief's own reasoning is what refutes it.
 
-Step 3 is blocked on [010-home-fused-reads.md](010-home-fused-reads.md) because
+Step 3 is blocked on [010-home-fused-reads.md](done/010-home-fused-reads.md) because
 rebalancing today's recovery weights is wasted if the recovery read is about to
 be rebuilt. The same argument applies to the fold *destinations*:
 
@@ -94,7 +94,7 @@ Recovery still Home-only (the precedent the folds follow).
 
 ## Sequencing — this is the part that matters
 
-[010-home-fused-reads.md](010-home-fused-reads.md) §5 sets the order, and it exists to
+[010-home-fused-reads.md](done/010-home-fused-reads.md) §5 sets the order, and it exists to
 stop one specific mistake:
 
 1. **Shelf the Habits *tab*** — config-level, reversible, no numbers touched.
@@ -251,7 +251,7 @@ The `/ground` trap in §"The grounding trap" is **not** triggered: no weight was
 renormalised, so exemption 1 was never invoked. Inventory rows 4.6–4.9 do not
 clear — they retire with the constant. `PUSH_THRESHOLD` and the sleep/HRV blend
 carry their own grounding in
-[010 §Grounding](010-home-fused-reads.md#grounding).
+[010 §Grounding](done/010-home-fused-reads.md#grounding).
 
 ## Acceptance
 

@@ -70,7 +70,7 @@ pushback rather than inside an index. Ordered by the priority already agreed
 | # | Domain | Where the block lands | Status |
 |---|---|---|---|
 | 1 | **§1 adaptation targets** (9 numbers + the DB shadow) — the fused Home read rewrites them, and Home's "what's missing" is denominated in them. One scout run: *weekly sets per muscle group for a trained adult*. Row 3.5 resolves in the same run. | [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) | **DONE (2026-08-26)** |
-| 2 | **§4 recovery weights** (4.6–4.10) — the Habits reweight touches them, though per §13.7 the reweight itself does not ground them. Rows 4.11 and 4.12 belong in the same brief: they decide what the readiness number *means*. | [010-home-fused-reads.md](010-home-fused-reads.md) | pending — **but see below** |
+| 2 | **§4 recovery weights** (4.6–4.10) — the Habits reweight touches them, though per §13.7 the reweight itself does not ground them. Rows 4.11 and 4.12 belong in the same brief: they decide what the readiness number *means*. | [010-home-fused-reads.md](done/010-home-fused-reads.md) | pending — **but see below** |
 | 3 | **§5 cycle & deload** — the disagreements (four cycle-length copies saying `6, 6, 6, 4`; two deload models one screen apart) were bugs findable without research, and were fixed 2026-08-26. The claim itself is still untouched. | [013-cycle-deload-grounding.md](013-cycle-deload-grounding.md) — **created 2026-08-26**, closing the last `(no brief)` domain in the inventory | pending |
 | 4 | **3.4 / 3.8 cues** — the known debt, plus its twin. Cheapest possible run: both are named protocols, and the only question is who said it and on what. | [001-cross-adaptation-rep-ranges.md](001-cross-adaptation-rep-ranges.md) (3.4) · [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md) (3.8) | pending |
 
@@ -86,7 +86,7 @@ recovery weights in.
 Decided 2026-08-26 while writing `docs/doctrine.md`; each needs its own brief.
 
 - **Home redesign + the stimulus/recovery model** — written up as
-  [010-home-fused-reads.md](010-home-fused-reads.md) (proposed, not agreed). Recovery stops
+  [010-home-fused-reads.md](done/010-home-fused-reads.md) (proposed, not agreed). Recovery stops
   being a parallel axis and becomes the second dimension of the muscle and
   adaptation reads: one systemic number (can I push today?) plus per-muscle local
   recovery from logged-set history (what can I train today?). Its recovery-window

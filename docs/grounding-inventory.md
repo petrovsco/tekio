@@ -27,7 +27,7 @@ is still `unknown`. The blocks live in
 **Updated 2026-08-30 by the 010 runs** (018 step 7): rows 10.2–10.4 and
 4.12 are now `convention`; the §12 not-yet-in-app numbers (recovery window,
 staleness windows, push threshold, donation suppression) are grounded —
-blocks in [010 §Grounding](roadmap/010-home-fused-reads.md#grounding).
+blocks in [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding).
 
 Rows marked **†** are ones I would *not* spend a scout run on — see
 [§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
@@ -71,13 +71,13 @@ briefs). `/ground` Step 3 adds a row here whenever a run's block lands.
 | D3 | Hypertrophy floor `10` and `rx` range `10–20` are **one claim, locked**: if the floor moves to 12, the range moves to 12–20 in the same edit (2026-08-26) | [Schoenfeld 2017](https://pubmed.ncbi.nlm.nih.gov/27433992/); [Baz-Valle 2022](https://pubmed.ncbi.nlm.nih.gov/35291645/) | [011 §Decisions](roadmap/done/011-adaptation-weekly-targets.md#decisions-taken--recorded-before-the-constants-moved) |
 | D4 | VO₂max stays **1/wk** — the scout's own raise-to-2 recommendation was withdrawn when the Step 2 check exposed its citations (exploratory design read as randomised; one misattributed paper). "1 maintains, 2 is where gains appear" is app copy, not a target (2026-08-26) | [Lenk 2025](https://pubmed.ncbi.nlm.nih.gov/40976973/) (correctly read); maintenance literature | [011 §cardio decision](roadmap/done/011-adaptation-weekly-targets.md#decision--cardio-weekly-session-targets-rows-1719) |
 | D5 | Endurance target **deliberately left at a known-wrong value** (2 sessions ≈ 50 min/wk): the *unit* is wrong, not the integer, and moving the integer would fake plausibility. The fix is the shape change owned by 012; the Attia-vs-Galpin bout fork is decided there (2026-08-26) | [Murphy 2019](https://pubmed.ncbi.nlm.nih.gov/31267483/); WHO 150–300 min/wk | [011 §endurance](roadmap/done/011-adaptation-weekly-targets.md#endurance-the-value-is-fine-the-unit-is-wrong) |
-| D6 | Muscle recovery flag = fixed **48 h** for v1 (floor of the 48–72 h band); dose-modulation (volume / proximity to failure) is the named upgrade path, not built. No 60 h midpoint — nobody holds it (2026-08-30) | [Morán-Navarro 2017](https://link.springer.com/article/10.1007/s00421-017-3725-7); [Bartolomei 2017](https://pubmed.ncbi.nlm.nih.gov/28447186/) | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
-| D7 | The Hold verdict means **modify, not rest** — in every trial the winning low-readiness response was "train easy today", never "don't train"; the gate stays advisory (2026-08-30) | [Vesterinen 2016](https://pubmed.ncbi.nlm.nih.gov/26909534/); [Saw 2016](https://pubmed.ncbi.nlm.nih.gov/26423706/) | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
-| D8 | Push threshold ships as **33, convention** (industry red-zone boundary); the *grounded* method is baseline-relative HRV (7-day rolling vs own baseline − 0.5 × SD), which would retire the constant (2026-08-30) | [Whoop recovery zones](https://support.whoop.com/s/article/WHOOP-Recovery?language=en_US) (convention); [Buchheit 2014](https://internal-journal.frontiersin.org/articles/10.3389/fphys.2014.00073/full); Vesterinen 2016 | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
-| D9 | Staleness flags mean "**you are now losing it**" — VO₂max 14 d, endurance 14 d, anaerobic 28 d — not "you missed the ~7-day feeding cadence"; the semantic fork was chosen, not inherited (2026-08-30) | [Coyle 1984](https://journals.physiology.org/doi/abs/10.1152/jappl.1984.57.6.1857); [Houmard 1992](https://pubmed.ncbi.nlm.nih.gov/1487339/); [Simoneau 1987](https://pubmed.ncbi.nlm.nih.gov/3653091/) | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
-| D10 | A full map bar means **adequate, not maximized**: anchor at 10 fractional sets/muscle/week (floor of the 10–20 band); sets are counted fractionally; the honest cycle target is 50–60 because week 6 deloads (2026-08-30) | [Schoenfeld 2017](https://pubmed.ncbi.nlm.nih.gov/27433992/); [Pelland 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/); [Androulakis-Korakakis 2020](https://pubmed.ncbi.nlm.nih.gov/31797219/) | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
-| D11 | Donation suppression is **two-stage and aerobic-only**: 48 h acute (gates a Hold) + 21 d note on VO₂max/endurance only — it never dims strength or anaerobic reads; plasma gets no multi-week note at all (2026-08-30) | [Hill 2013](https://pubmed.ncbi.nlm.nih.gov/23668764/); [Ziegler 2015](https://pubmed.ncbi.nlm.nih.gov/25512178/); [Meurrens 2016](https://pmc.ncbi.nlm.nih.gov/articles/PMC5118378/) | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
-| D12 | Eligibility 56/14 is a **calendar chip only, never a readiness input** (P5): a per-service legal rule, not physiology — 21 d of suppression inside a 56 d gap means the countdown is never the binding constraint (2026-08-30) | [21 CFR 630.15](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-F/part-630/subpart-B/section-630.15); [INTERVAL trial](https://pubmed.ncbi.nlm.nih.gov/28941948/) | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) |
+| D6 | Muscle recovery flag = fixed **48 h** for v1 (floor of the 48–72 h band); dose-modulation (volume / proximity to failure) is the named upgrade path, not built. No 60 h midpoint — nobody holds it (2026-08-30) | [Morán-Navarro 2017](https://link.springer.com/article/10.1007/s00421-017-3725-7); [Bartolomei 2017](https://pubmed.ncbi.nlm.nih.gov/28447186/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D7 | The Hold verdict means **modify, not rest** — in every trial the winning low-readiness response was "train easy today", never "don't train"; the gate stays advisory (2026-08-30) | [Vesterinen 2016](https://pubmed.ncbi.nlm.nih.gov/26909534/); [Saw 2016](https://pubmed.ncbi.nlm.nih.gov/26423706/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D8 | Push threshold ships as **33, convention** (industry red-zone boundary); the *grounded* method is baseline-relative HRV (7-day rolling vs own baseline − 0.5 × SD), which would retire the constant (2026-08-30) | [Whoop recovery zones](https://support.whoop.com/s/article/WHOOP-Recovery?language=en_US) (convention); [Buchheit 2014](https://internal-journal.frontiersin.org/articles/10.3389/fphys.2014.00073/full); Vesterinen 2016 | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D9 | Staleness flags mean "**you are now losing it**" — VO₂max 14 d, endurance 14 d, anaerobic 28 d — not "you missed the ~7-day feeding cadence"; the semantic fork was chosen, not inherited (2026-08-30) | [Coyle 1984](https://journals.physiology.org/doi/abs/10.1152/jappl.1984.57.6.1857); [Houmard 1992](https://pubmed.ncbi.nlm.nih.gov/1487339/); [Simoneau 1987](https://pubmed.ncbi.nlm.nih.gov/3653091/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D10 | A full map bar means **adequate, not maximized**: anchor at 10 fractional sets/muscle/week (floor of the 10–20 band); sets are counted fractionally; the honest cycle target is 50–60 because week 6 deloads (2026-08-30) | [Schoenfeld 2017](https://pubmed.ncbi.nlm.nih.gov/27433992/); [Pelland 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/); [Androulakis-Korakakis 2020](https://pubmed.ncbi.nlm.nih.gov/31797219/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D11 | Donation suppression is **two-stage and aerobic-only**: 48 h acute (gates a Hold) + 21 d note on VO₂max/endurance only — it never dims strength or anaerobic reads; plasma gets no multi-week note at all (2026-08-30) | [Hill 2013](https://pubmed.ncbi.nlm.nih.gov/23668764/); [Ziegler 2015](https://pubmed.ncbi.nlm.nih.gov/25512178/); [Meurrens 2016](https://pmc.ncbi.nlm.nih.gov/articles/PMC5118378/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D12 | Eligibility 56/14 is a **calendar chip only, never a readiness input** (P5): a per-service legal rule, not physiology — 21 d of suppression inside a 56 d gap means the countdown is never the binding constraint (2026-08-30) | [21 CFR 630.15](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-F/part-630/subpart-B/section-630.15); [INTERVAL trial](https://pubmed.ncbi.nlm.nih.gov/28941948/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 
 ## 1. Adaptation targets — what Home calls "missing"
 
@@ -155,7 +155,7 @@ sharpest debt in the app because they read as settled fact.
 | 4.9 | `0.15` | [app.ts:82](../src/constants/app.ts#L82) | Cold is 15% | named | unknown | home-fused-reads **(due)** |
 | 4.10 | `0.10` | [app.ts:83](../src/constants/app.ts#L83) | Habits are 10% — **the input being dropped**; its removal is what renormalises 4.6–4.9 | named | unknown | home-fused-reads **(due)** |
 | 4.11 | `score / 100` | [RecoveryCard.tsx:65](../src/components/tabs/home/RecoveryCard.tsx#L65) | Garmin's 0–100 sleep score maps linearly onto the sub-score **and supersedes duration-vs-target when present** — two different sleep models, silently switched per night | unnamed | unknown | home-fused-reads **(due)** |
-| 4.12 | `80` / `50` | [RecoveryCard.tsx:20-21](../src/components/tabs/home/RecoveryCard.tsx#L20) | ≥80% readiness is green (push), 50–79 amber, <50 red. **This is the app's answer to "am I recovered enough to push today?"** | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — any fixed cutoff on a 0–100 composite is convention; grounded method is baseline-relative HRV |
+| 4.12 | `80` / `50` | [RecoveryCard.tsx:20-21](../src/components/tabs/home/RecoveryCard.tsx#L20) | ≥80% readiness is green (push), 50–79 amber, <50 red. **This is the app's answer to "am I recovered enough to push today?"** | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — any fixed cutoff on a 0–100 composite is convention; grounded method is baseline-relative HRV |
 | 4.13 | `sub >= 1` | [RecoveryCard.tsx:239](../src/components/tabs/home/RecoveryCard.tsx#L239) | A modality is "on target" at exactly 100% of its weekly target — no credit above, no partial band | unnamed | unknown † | home-fused-reads |
 | 4.14 | `80` °C / `10` °C | [RecoveryCard.tsx:177](../src/components/tabs/home/RecoveryCard.tsx#L177), [:201](../src/components/tabs/home/RecoveryCard.tsx#L201) | Placeholder temperatures for a sauna / cold session. Stored, never scored | ? | unknown † | — |
 
@@ -227,9 +227,9 @@ fold.
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
 | 10.1 | `2500` ml | [app.ts:5](../src/constants/app.ts#L5) | Daily hydration target | unnamed | unknown | home-fused-reads **(due — folding)** |
-| 10.2 | `56` days | [app.ts:45](../src/constants/app.ts#L45) | Full-blood donation interval | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
-| 10.3 | `14` days | [app.ts:46](../src/constants/app.ts#L46) | Plasma donation interval | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
-| 10.4 | `56 * 86400000` | [OverviewTab.tsx:151](../src/components/tabs/OverviewTab.tsx#L151) | Duplicate of 10.2 as a magic literal, bypassing the constant | unnamed | **convention** | [010 §Grounding](roadmap/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.2 | `56` days | [app.ts:45](../src/constants/app.ts#L45) | Full-blood donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.3 | `14` days | [app.ts:46](../src/constants/app.ts#L46) | Plasma donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.4 | `56 * 86400000` | [OverviewTab.tsx:151](../src/components/tabs/OverviewTab.tsx#L151) | Duplicate of 10.2 as a magic literal, bypassing the constant | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
 | 10.5 | `[100…500]` | [OverviewTab.tsx:59](../src/components/tabs/OverviewTab.tsx#L59) | Quick-add water increments — UI affordance | no | unknown † | — |
 
 ## 11. Correctly not gated
@@ -257,17 +257,17 @@ they were missed.
   and its bench artifact. State: `unknown`, all of them.
 - **Local recovery windows** — **grounded 2026-08-30**: 48–72 h band,
   48 h default, dose-dependent
-  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
 - **Per-quality staleness windows** — **grounded 2026-08-30**: VO₂max 14 d,
   endurance 14 d, anaerobic 28 d
-  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
 - **Push threshold (planned constant, 33)** — **convention 2026-08-30**: no
   literature supports an absolute cutoff on a composite score; the grounded
   method is baseline-relative HRV
-  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
 - **Donation suppression window** — **grounded 2026-08-30**: 48 h acute +
   21 d aerobic-only tail, whole blood only; plasma none
-  ([010 §Grounding](roadmap/010-home-fused-reads.md#grounding)).
+  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
 
 ---
 

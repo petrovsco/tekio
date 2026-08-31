@@ -12,7 +12,7 @@ interface PrefsStore {
   /** Muscle-group ids counted toward adaptation completion. Empty = count all. */
   trackedMuscleGroupIds: string[]
   loadPrefs: () => Promise<void>
-  setSection: (key: string, patch: Partial<Pick<SectionConfig, 'showInMenu' | 'showInHome'>>) => Promise<void>
+  setSection: (key: string, patch: Partial<Pick<SectionConfig, 'showInMenu'>>) => Promise<void>
   reorderSections: (newOrder: string[]) => Promise<void>
   setWeekStartDay: (value: WeekStartDay) => Promise<void>
   setTrackedMuscleGroupIds: (ids: string[]) => Promise<void>

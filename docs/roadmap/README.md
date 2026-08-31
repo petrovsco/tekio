@@ -67,7 +67,7 @@ after them.
 The `**Status:**` line says where a brief stands **now**. It is not a log. When a
 long brief accumulates decisions worth keeping — rounds, picks, dated
 confirmations — they go in a `## Progress log` section of dated bullets right
-after the header (see [018](018-home-design-canvas.md)), not in the status line.
+after the header (see [018](done/018-home-design-canvas.md)), not in the status line.
 A status line that has grown into three paragraphs is unreadable to both people
 and tools.
 
