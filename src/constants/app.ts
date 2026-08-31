@@ -102,36 +102,14 @@ export const CYCLE_SET_TARGET = 60
 export const DONATION_SUPPRESSION = { acuteHours: 48, aerobicTailDays: 21 } as const
 
 // ── Recovery / Readiness axis ───────────────────────────────────────────────
-// Recovery sits parallel to the nine adaptations (it is NOT a 10th adaptation).
-// The RecoveryCard rolls these weekly targets into a single readiness %.
-
-export const RECOVERY_ICONS = {
-  sleep: '😴',
-  mobility: '🧘',
-  sauna: '🧖',
-  cold: '🧊',
-  habits: '✅',
-} as const
-
-/** Weekly targets per modality; a modality's sub-score = achieved / target (capped at 1). */
-export const RECOVERY_TARGETS = {
-  /** Target average sleep hours per night. */
-  sleepHours: 8,
-  /** Target mobility minutes per week. */
-  mobilityMinutes: 30,
-  /** Target sauna sessions per week. */
-  saunaSessions: 2,
-  /** Target cold-exposure sessions per week. */
-  coldSessions: 2,
-  /** Target recovery-tagged manual habit bouts per week. */
-  recoveryHabitSets: 5,
-} as const
-
-/** Weights blending the per-modality sub-scores into the readiness roll-up (sum ≈ 1). */
-export const RECOVERY_WEIGHTS = {
-  sleep: 0.45,
-  mobility: 0.15,
-  sauna: 0.15,
-  cold: 0.15,
-  habits: 0.1,
-} as const
+// Recovery sits parallel to the adaptations (it is NOT another adaptation).
+//
+// RECOVERY_WEIGHTS / RECOVERY_TARGETS / RECOVERY_ICONS were removed 2026-08-31
+// with RecoveryCard (roadmap 014 step 3, 018 unit 4). They rolled five weekly
+// adherence targets — sleep .45 / mobility .15 / sauna .15 / cold .15 /
+// habits .10 — into one "readiness %". The fused Home replaced that with
+// `systemicReadiness()` in src/lib/fusedRead.ts: last night's sleep score
+// blended with a baseline-relative HRV sub-score. So the weights were not
+// reweighted, they were retired — the number they produced measured adherence
+// to a recovery routine, not recovery state. The before/after comparison on
+// real data is in docs/roadmap/014-doctrine-ledger-execution.md.

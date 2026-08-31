@@ -2,9 +2,10 @@
 
 **Label:** feature
 **Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
-five-second tests passed. Step 8 is underway: units 1–3 shipped (v1.1.6 constants
+five-second tests passed. Step 8 is underway: units 1–4 shipped (v1.1.6 constants
 + fused-read library; v1.2.0 SIGNAL tokens + the T1 surface; v1.2.1 + v1.3.0 the
-T2 sheets — fold captures, muscle drill-in, lazy + prefetch); units 4–6 remain.
+T2 sheets; v1.4.0 the three folds, the recovery sheet and R1's cap met); units 5–6
+remain.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -130,10 +131,35 @@ stands; read this for how it got there.
   exercised end to end, incl. the donation flipping the verdict to Hold — every
   test entry then deleted from the DB. 130 tests pass.
 
-**Next: unit 4 (the three folds + `DEFAULTS` to four, 014's remainder), then
-units 5–6. The carried RecoveryCard gap (sauna / cold / manual-sleep quick-adds
-unreachable on new Home) is unit 4's first concern. The bottom-nav open call is
-still open: ask Peter before wiring it.**
+- **2026-08-31 — step 8 unit 4 shipped** (v1.4.0): the three folds, and R1's cap
+  met for the first time. Both open calls were put to Peter and answered:
+  recovery capture goes **behind the gate card**, and the bottom nav becomes
+  **HOME / WEIGHTS / CARDIO / PROGRAM / MORE** (Adaptations and Mobility move
+  into More — they are detail on a read Home already carries).
+  `RecoverySheet.tsx` is the fourth T2 sheet (sauna / cold chips that log on
+  tap, a sleep stepper prefilled from the last night on record, each with a
+  recent · tap-to-edit strip); the SYSTEMIC READINESS card became a button with
+  a `+` affordance. `FoldSheet` grew the same edit strip, so the *correction*
+  path folded onto Home along with the capture — the deleted tabs were where a
+  mistyped entry got fixed. `DRAWER_TABS` and `DEFAULTS` dropped Water /
+  Donations / Body Weight; `Drawer` and `ProfileTab` now ignore any section key
+  they cannot render, so a leftover config row can never put a dead destination
+  back in the menu. Deleted: `OverviewTab`, `RecoveryCard`, `WaterTab`,
+  `DonationsTab`, `BodyWeightTab`, and `RECOVERY_WEIGHTS` / `RECOVERY_TARGETS` /
+  `RECOVERY_ICONS` — retired rather than reweighted, with the before/after
+  comparison on live data written into
+  [014](014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4).
+  Live `user_section_config` flipped to match (three menu rows: Weights,
+  Cardio, Mobility). Browser-verified at 390×844 against live data: recovery
+  sheet logged a real sauna session end to end (test row then deleted from the
+  DB), fold sheet edit strips render, all five nav slots route, drawer and
+  Profile show only the three live sections. Build green, 130 tests pass. New
+  chunk: `RecoverySheet` 3.3 kB.
+
+**Next: unit 5 (T3 code splitting), then unit 6 (regression pass + close).**
+Carried into unit 6: `show_in_home` lost its last consumer with `OverviewTab`
+— the Profile toggle is gone, but the DB column and the `SectionConfig` field
+are still there and should be dropped.
 
 ## Step 8 — build plan (code survey 2026-08-30)
 
@@ -288,14 +314,21 @@ against the boards and the shipped code — build from this, don't re-derive:
 - Browser regression pass per the house rule (system-wide change): Home in
   both gate states, drill-in, the three captures, Weights / Cardio / Mobility
   tabs, Profile section toggles.
-- Write the readiness before/after comparison into 014.
+- ~~Write the readiness before/after comparison into 014.~~ **Done in unit 4.**
+- Drop `show_in_home`: the `user_section_config` column, the `SectionConfig`
+  field and the `saveSectionConfig` / `loadSectionConfig` handling. Its last
+  consumer died with `OverviewTab`; the Profile toggle is already gone.
 - Tick acceptance across 018 / 010 / 014; move finished briefs to `done/`.
+  014 keeps one open box on purpose — `ExerciseMuscleEditor` moves with the
+  Habits deletion at expiry (2026-10-07), not with the folds.
 
 ### Open calls for the building session
 
-- **Bottom nav.** The board shows HOME / WEIGHTS / CARDIO / PROGRAM; today's
-  nav is Home / Adapt / Program / More. Where Adaptations, Mobility and the
-  drawer land is a build-time decision — ask Peter before wiring it.
+- ~~**Bottom nav.**~~ **Answered 2026-08-31:** HOME / WEIGHTS / CARDIO /
+  PROGRAM / MORE. Home names the gap; Weights and Cardio are where it gets
+  closed, so both sit one tap away. Adaptations and Mobility went behind More.
+- ~~**Where the sauna / cold / sleep capture lands.**~~ **Answered
+  2026-08-31:** a fourth T2 sheet behind the SYSTEMIC READINESS card.
 - **019 is planned, not shipped.** Home must not wait for it: the strip and
   the power line don't depend on the Adaptations tab still enumerating nine.
 

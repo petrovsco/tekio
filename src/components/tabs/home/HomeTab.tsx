@@ -18,8 +18,9 @@ import type { FoldKind } from './FoldSheet'
 
 const FoldSheet = lazy(() => import('./FoldSheet'))
 const MuscleSheet = lazy(() => import('./MuscleSheet'))
+const RecoverySheet = lazy(() => import('./RecoverySheet'))
 
-type OpenSheet = { fold: FoldKind } | { muscle: string }
+type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true }
 
 const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
@@ -120,6 +121,7 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
     prefetched.current = true
     import('./FoldSheet')
     import('./MuscleSheet')
+    import('./RecoverySheet')
   }
 
   const states = useMemo(
@@ -241,7 +243,11 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
 
       {/* Systemic gate — inverts to ink when the day is held; the gate changes
           the instruction, never the facts */}
-      <div className={`mt-3 rounded-[3px] border border-ink ${gated ? 'bg-ink text-white' : 'bg-white'}`}>
+      <button
+        onClick={() => setSheet({ recovery: true })}
+        aria-label="Log recovery inputs"
+        className={`mt-3 block w-full text-left rounded-[3px] border border-ink cursor-pointer ${gated ? 'bg-ink text-white' : 'bg-white'}`}
+      >
         <div className={`flex items-center gap-1.5 px-2.5 pt-[7px] pb-[5px] border-b ${gated ? 'border-invert-line' : 'border-line'}`}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10z" />
@@ -249,6 +255,14 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
           <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
+          {/* sauna / cold / manual sleep live behind this tap — the card that
+              raises "can I push?" is where the input belongs (P1) */}
+          <span
+            aria-hidden
+            className={`w-[15px] h-[15px] rounded-[2px] border flex items-center justify-center text-[11px] leading-none font-bold ${gated ? 'border-invert-line text-ink-4' : 'border-line text-ink-3'}`}
+          >
+            +
+          </span>
         </div>
         <div className="flex px-2.5 pt-[7px] pb-2">
           {gateCols.map(col => (
@@ -264,7 +278,7 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
             </div>
           ))}
         </div>
-      </div>
+      </button>
 
       {/* Gate banner — held days only */}
       {banner && (
@@ -331,13 +345,15 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
       <Suspense fallback={null}>
         {sheet && ('fold' in sheet
           ? <FoldSheet kind={sheet.fold} onClose={() => setSheet(null)} />
-          : (
-            <MuscleSheet
-              muscle={sheet.muscle}
-              onClose={() => setSheet(null)}
-              onSearchExercises={() => { setSheet(null); setTab('Weights') }}
-            />
-          ))}
+          : 'recovery' in sheet
+            ? <RecoverySheet onClose={() => setSheet(null)} />
+            : (
+              <MuscleSheet
+                muscle={sheet.muscle}
+                onClose={() => setSheet(null)}
+                onSearchExercises={() => { setSheet(null); setTab('Weights') }}
+              />
+            ))}
       </Suspense>
     </div>
   )

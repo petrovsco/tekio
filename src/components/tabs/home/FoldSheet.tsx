@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useAppStore } from '../../../store/app'
 import { WATER_GOAL_ML, DONATION_SUPPRESSION } from '../../../constants/app'
 import { today } from '../../../lib/utils'
@@ -37,10 +37,9 @@ export default function FoldSheet({ kind, onClose }: FoldSheetProps) {
 }
 
 function WaterCapture() {
-  const { water, addWaterEntry } = useAppStore()
-  const todayMl = water
-    .filter(w => w.date === today())
-    .reduce((s, w) => s + w.amountMl, 0)
+  const { water, addWaterEntry, openEditModal } = useAppStore()
+  const todayEntries = water.filter(w => w.date === today())
+  const todayMl = todayEntries.reduce((s, w) => s + w.amountMl, 0)
 
   return (
     <div>
@@ -55,6 +54,7 @@ function WaterCapture() {
         today {(todayMl / 1000).toFixed(1)} L
         <span className="text-ink-2 font-normal"> · goal {(WATER_GOAL_ML / 1000).toFixed(1)} L</span>
       </div>
+      <Recent entries={todayEntries} label={e => `${e.amountMl} ml`} onEdit={e => openEditModal({ type: 'water', record: e })} />
       <div className="text-[9px] text-ink-3 mt-1.5">
         An FRS input, not a score — each tap logs immediately.
       </div>
@@ -65,7 +65,7 @@ function WaterCapture() {
 const roundTenth = (v: number): number => Math.round(v * 10) / 10
 
 function WeightCapture({ onClose }: { onClose: () => void }) {
-  const { bodyweight, addBodyweightEntry } = useAppStore()
+  const { bodyweight, addBodyweightEntry, openEditModal } = useAppStore()
   // Store keeps bodyweight sorted newest-first; prefill from the last entry.
   const [kg, setKg] = useState(() => bodyweight[0]?.weight ?? 80.0)
   const last = bodyweight[0]
@@ -94,6 +94,11 @@ function WeightCapture({ onClose }: { onClose: () => void }) {
           Log {kg.toFixed(1)} kg
         </Chip>
       </div>
+      <Recent
+        entries={bodyweight.slice(0, 4)}
+        label={e => `${e.date.slice(5)} · ${e.weight.toFixed(1)}`}
+        onEdit={e => openEditModal({ type: 'bodyweight', record: e })}
+      />
       <div className="text-[9px] text-ink-3 mt-1.5">
         {last ? `prefilled from ${last.date} (${last.weight.toFixed(1)} kg) — step to today, then log` : 'no entries yet — step to today, then log'}
       </div>
@@ -102,7 +107,7 @@ function WeightCapture({ onClose }: { onClose: () => void }) {
 }
 
 function BloodCapture({ onClose }: { onClose: () => void }) {
-  const { addDonationEntry } = useAppStore()
+  const { donations, addDonationEntry, openEditModal } = useAppStore()
   return (
     <div>
       <Chip
@@ -114,11 +119,42 @@ function BloodCapture({ onClose }: { onClose: () => void }) {
       >
         Full donation — today
       </Chip>
+      <Recent
+        entries={donations.slice(0, 3)}
+        label={e => `${e.date} · ${e.type}`}
+        onEdit={e => openEditModal({ type: 'donation', record: e })}
+      />
       <div className="text-[9px] text-ink-3 mt-2 text-pretty">
         A full donation holds training for {DONATION_SUPPRESSION.acuteHours} h and
         suppresses aerobic work for ~{DONATION_SUPPRESSION.aerobicTailDays} d
         (PLACEHOLDER) — it lands on the readiness gate, not on the map.
       </div>
+    </div>
+  )
+}
+
+/** Recent entries, tap to edit. The fold moves the correction path with the
+ *  capture — the old tab was where a mistyped entry got fixed, and a wrong
+ *  donation date gates the day for 48 h. */
+function Recent<T extends { id: string }>({
+  entries, label, onEdit,
+}: {
+  entries: T[]
+  label: (e: T) => ReactNode
+  onEdit: (e: T) => void
+}) {
+  if (entries.length === 0) return null
+  return (
+    <div className="flex gap-1.5 flex-wrap mt-2">
+      {entries.map(e => (
+        <button
+          key={e.id}
+          onClick={() => onEdit(e)}
+          className="text-[9px] text-ink-2 border border-line rounded-[3px] px-1.5 py-[3px] cursor-pointer"
+        >
+          {label(e)}
+        </button>
+      ))}
     </div>
   )
 }

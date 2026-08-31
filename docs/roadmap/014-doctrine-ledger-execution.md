@@ -1,7 +1,7 @@
 # Roadmap: Execute the doctrine ledger — four folds and the Habits shelf
 
 **Label:** feature
-**Status:** blocked — step 1 and the Sports fold shipped 2026-08-27 (menu sections 8 → 6). The remaining three folds all inherit the RECOVERY_WEIGHTS surgery, which cannot be done twice — so they wait on 010.
+**Status:** in progress — the last three folds and the RECOVERY_WEIGHTS retirement shipped 2026-08-31 with roadmap 018 unit 4, so R1's cap is met for the first time (three menu sections, one slot free). Only the `ExerciseMuscleEditor` move to Admin is left, and it belongs with the Habits deletion at expiry.
 **Depends:** 010
 
 [doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. Before
@@ -178,12 +178,90 @@ plus [src/test/habits.test.ts](../../src/test/habits.test.ts).
 - Any new machinery for managing sections (tier fields, category admin). R3
   forbids it explicitly: that is solving feature bloat by adding features.
 
+## Shipped 2026-08-31 — the last three folds
+
+Menu sections went from **6 to 3**. R1's cap of four is met for the first time,
+with one slot free. Landed as roadmap 018 step 8 unit 4; see that brief for the
+Home-side detail.
+
+- **Water, Donations and Body Weight folded onto Home.** Their `DRAWER_TABS`
+  entries, `DEFAULTS` rows and tab components are gone; capture lives in the T2
+  `FoldSheet`, which also grew a *recent · tap to edit* strip so the correction
+  path moved with the capture — the old tabs were where a mistyped entry got
+  fixed, and a wrong donation date gates the day for 48 h.
+- **Sauna, cold and manual sleep** were unreachable between unit 2 and now
+  (`RecoveryCard` left the surface with `OverviewTab`). They are back as a
+  fourth T2 sheet behind the SYSTEMIC READINESS card — the card that raises
+  "can I push?" is where the input belongs (P1), and recovery stays a dimension
+  of the read rather than a destination (P5).
+- **Live `user_section_config` flipped** to match: Water, Body Weight,
+  Donations and Recovery set `show_in_menu = false`. Weights / Cardio /
+  Mobility are the three menu rows.
+- **Deleted:** `OverviewTab.tsx`, `RecoveryCard.tsx`, `WaterTab.tsx`,
+  `DonationsTab.tsx`, `BodyWeightTab.tsx`, and `RECOVERY_WEIGHTS` /
+  `RECOVERY_TARGETS` / `RECOVERY_ICONS`.
+- **`show_in_home` lost its last consumer** with `OverviewTab`, so the Profile
+  toggle that wrote it is gone (P4 — the fused Home is not configurable). The
+  column and the type field survive; dropping them is listed under 018 unit 6.
+
+## The readiness comparison (acceptance item 4)
+
+The brief expected a **reweight**: drop `habits` (0.10) and renormalise the
+other four. That is not what happened, and the reason matters.
+
+`RECOVERY_WEIGHTS` was retired, not reweighted. The number it produced —
+sleep .45 / mobility .15 / sauna .15 / cold .15 / habits .10, each measured
+against a weekly target — scored **adherence to a recovery routine**. The gate
+on the fused Home scores **recovery state**: last night's Garmin sleep score
+blended 50/50 with a baseline-relative HRV sub-score (`systemicReadiness()` in
+`src/lib/fusedRead.ts`). Renormalising four weights would have produced a
+better version of the wrong number.
+
+Computed on live data, 2026-08-31 (`sleep_logs`, `sauna_sessions`,
+`cold_sessions`, `mobility_sessions`; the habits sub-score is bounded rather
+than resolved, hence the range):
+
+| Week | Old readiness | New readiness (that week's days) |
+|---|---|---|
+| 2026-07-06 → 07-12 | 34 – 44 | 85 on 07-12 (sleep-only basis) |
+| 2026-08-24 → 08-30 | 37 – 47 | 84–85 across 08-28…08-30 |
+| 2026-08-31 (today) | 41 – 51 | **85** (sleep 91 + HRV sub-score 78) |
+
+**The difference is explained, not discovered.** Three of the old score's five
+inputs have **zero rows in the 120-day window** — no sauna session has ever been
+logged, no cold session has ever been logged, and the last mobility session
+predates the window. That is 0.45 of the weight sitting at zero permanently, so
+the old readiness could not exceed **55** on a flawless night and in practice
+sat in the 30s and 40s. It was reporting "barely recovered" during a week of
+84–91 Garmin sleep scores and an HRV rolling mean nearly 0.6 SD *above*
+baseline. The new number reads 85 on the same data because it measures the
+thing the verdict actually gates on.
+
+Two honest consequences of the swap:
+
+- **A missing input now degrades instead of dragging.** No HRV baseline (fewer
+  than 7 samples in 60 days) → sleep-only, which is why 2026-07-12 scores 85 on
+  basis `sleep`. No fresh night at all → `null`, and a null readiness never
+  gates the day. Under the old formula a missing input silently scored zero.
+- **Sauna and cold stopped being scored and became inputs to log.** They no
+  longer move a number; they are captured because the log is worth having.
+  If a future read wants them, it starts from data, not from a weight.
+
+The `/ground` trap in §"The grounding trap" is **not** triggered: no weight was
+renormalised, so exemption 1 was never invoked. Inventory rows 4.6–4.9 do not
+clear — they retire with the constant. `PUSH_THRESHOLD` and the sleep/HRV blend
+carry their own grounding in
+[010 §Grounding](010-home-fused-reads.md#grounding).
+
 ## Acceptance
 
-- [ ] `DEFAULTS` seeds at most four menu sections, and R1 is satisfied for the first
-  time.
-- [ ] Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
-  logging capability is lost, only destinations.
+- [x] `DEFAULTS` seeds at most four menu sections, and R1 is satisfied for the first
+  time. **Three, one slot free — 2026-08-31.**
+- [x] Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
+  logging capability is lost, only destinations. **Capture and edit both moved.**
 - [ ] `ExerciseMuscleEditor` is under Admin and the body map still renders.
-- [ ] Readiness scores computed before and after the reweight are compared on real
-  data, and the difference is explained rather than discovered.
+  Left open deliberately: it belongs with the Habits deletion at expiry
+  (2026-10-07), not with the folds.
+- [x] Readiness scores computed before and after the reweight are compared on real
+  data, and the difference is explained rather than discovered. **See above —
+  it was a retirement, not a reweight, and that is the finding.**

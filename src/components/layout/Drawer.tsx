@@ -1,14 +1,13 @@
 import { usePrefs } from '../../store/prefs'
 
+// Only sections that still have a destination. Body Weight, Donations, Water
+// and Recovery folded onto Home (doctrine §5) — a leftover config row for one
+// of them must not put its entry back in the menu.
 const NAV_META: Record<string, { icon: string; label: string }> = {
   Weights:      { icon: '🏋️', label: 'Weights' },
-  'Body Weight': { icon: '⚖️', label: 'Body Weight' },
   Cardio:       { icon: '❤️', label: 'Cardio' },
   Mobility:     { icon: '🧘', label: 'Mobility' },
-  Donations:    { icon: '🩸', label: 'Donations' },
-  Water:        { icon: '💧', label: 'Water' },
   Habits:       { icon: '✅', label: 'Habits' },
-  Recovery:     { icon: '🔋', label: 'Recovery' },
 }
 
 interface DrawerProps {
@@ -37,8 +36,8 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
   // Build ordered nav from prefs; fall back to default order if prefs not loaded yet
   const visibleNav = sections.length > 0
     ? sections
-        .filter(s => s.showInMenu)
-        .map(s => ({ key: s.sectionKey, ...NAV_META[s.sectionKey] ?? { icon: '📌', label: s.sectionKey } }))
+        .filter(s => s.showInMenu && s.sectionKey in NAV_META)
+        .map(s => ({ key: s.sectionKey, ...NAV_META[s.sectionKey] }))
     : Object.entries(NAV_META).map(([key, meta]) => ({ key, ...meta }))
 
   return (

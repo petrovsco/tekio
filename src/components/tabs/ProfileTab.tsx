@@ -26,13 +26,9 @@ import type { SectionConfig } from '../../lib/db/sectionConfig'
 
 const SECTION_META: Record<string, { icon: string; label: string }> = {
   Weights:      { icon: '🏋️', label: 'Weights' },
-  'Body Weight': { icon: '⚖️', label: 'Body Weight' },
   Cardio:       { icon: '❤️', label: 'Cardio' },
   Mobility:     { icon: '🧘', label: 'Mobility' },
-  Donations:    { icon: '🩸', label: 'Donations' },
-  Water:        { icon: '💧', label: 'Water' },
   Habits:       { icon: '✅', label: 'Habits' },
-  Recovery:     { icon: '🔋', label: 'Recovery' },
 }
 
 // ─── Toggle pill ────────────────────────────────────────────────────────────
@@ -106,18 +102,13 @@ function SortableRow({ section }: { section: SectionConfig }) {
           <span className="text-base">{meta.icon}</span>
           <span className="text-sm font-semibold text-primary">{meta.label}</span>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <Toggle
-            label="Show in menu"
-            value={section.showInMenu}
-            onChange={v => setSection(section.sectionKey, { showInMenu: v })}
-          />
-          <Toggle
-            label="Show in Home"
-            value={section.showInHome}
-            onChange={v => setSection(section.sectionKey, { showInHome: v })}
-          />
-        </div>
+        {/* "Show in Home" is gone: the fused Home is not section-configurable
+            (doctrine P4), so the toggle controlled nothing. */}
+        <Toggle
+          label="Show in menu"
+          value={section.showInMenu}
+          onChange={v => setSection(section.sectionKey, { showInMenu: v })}
+        />
       </div>
     </div>
   )
@@ -216,7 +207,7 @@ export function ProfileTab() {
       <div>
         <SecTitle>Sections</SecTitle>
         <p className="text-xs text-muted mb-3">
-          Drag ≡ to reorder. Changes are reflected in the menu and Home tab.
+          Drag ≡ to reorder. Changes are reflected in the menu.
         </p>
 
         <DndContext

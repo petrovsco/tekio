@@ -8,20 +8,21 @@ export interface SectionConfig {
   sortOrder: number
 }
 
+// Three menu sections, one slot of headroom — doctrine R1's cap of four, met
+// for the first time (roadmap 014). Body Weight, Donations, Water and Recovery
+// are gone from this list because they are no longer destinations: they read
+// and capture on Home. Their live rows survive in the DB and are simply
+// ignored — App.tsx falls back to Home for any key it cannot render.
+//
+// `showInHome` has no consumer since the fused Home replaced OverviewTab; it
+// is carried here only because the column and the type still exist.
 const DEFAULTS: SectionConfig[] = [
   { sectionKey: 'Weights',     showInMenu: true, showInHome: true, sortOrder: 0 },
-  { sectionKey: 'Body Weight', showInMenu: true, showInHome: true, sortOrder: 1 },
   { sectionKey: 'Cardio',      showInMenu: true, showInHome: true, sortOrder: 2 },
   { sectionKey: 'Mobility',    showInMenu: true, showInHome: true, sortOrder: 3 },
-  { sectionKey: 'Donations',   showInMenu: true, showInHome: true, sortOrder: 5 },
-  { sectionKey: 'Water',       showInMenu: true, showInHome: true, sortOrder: 6 },
   // Habits is shelved (doctrine R2, decided 2026-08-26; delete by 2026-10-07).
-  // Kept as a row rather than dropped: `homeOn()` in OverviewTab treats a MISSING
-  // section as visible, so removing the row would leave the Home card on screen.
+  // Shelved, not folded — the row keeps a Profile toggle that brings it back.
   { sectionKey: 'Habits',      showInMenu: false, showInHome: false, sortOrder: 7 },
-  // Recovery has no dedicated tab — it lives only as a Home card (quick-add inline),
-  // so it is seeded Home-only. showInMenu stays false (no drawer/tab destination).
-  { sectionKey: 'Recovery',    showInMenu: false, showInHome: true, sortOrder: 8 },
 ]
 
 export async function loadSectionConfig(): Promise<SectionConfig[]> {
