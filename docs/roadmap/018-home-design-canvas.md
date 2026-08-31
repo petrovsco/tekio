@@ -2,10 +2,9 @@
 
 **Label:** feature
 **Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
-five-second tests passed. Step 8 is underway: units 1–2 shipped (v1.1.6 constants
-+ fused-read library; v1.2.0 SIGNAL tokens + the T1 surface), unit 3's data layer
-+ tappable map shipped (v1.2.1); the unit-3 sheets remain (plan banked below),
-then units 4–6.
+five-second tests passed. Step 8 is underway: units 1–3 shipped (v1.1.6 constants
++ fused-read library; v1.2.0 SIGNAL tokens + the T1 surface; v1.2.1 + v1.3.0 the
+T2 sheets — fold captures, muscle drill-in, lazy + prefetch); units 4–6 remain.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -115,10 +114,26 @@ stands; read this for how it got there.
   browser pass. The session hit the context guard here; the sheet build is
   **banked in the unit-3 plan below, not started**.
 
-**Next: finish step 8 unit 3 from the banked plan under
-[Unit 3](#unit-3--t2-reveals-lazy) — the three sheets, the fold-stat row, the
-HomeTab wiring, lazy + prefetch, then browser-verify and minor-bump. The
-bottom-nav open call is still open: ask Peter before wiring it.**
+- **2026-08-31 — step 8 unit 3 shipped** (v1.3.0): the T2 sheets. `BottomSheet.tsx`
+  (SIGNAL sheet primitive + `SheetClose`/`Chip`), `FoldSheet.tsx` (water outline
+  chips that log on tap with a live today-line; the weight stepper prefilled from
+  the last entry; the blood full-donation confirm) and `MuscleSheet.tsx` (verdict
+  card with the five states, STIMULUS/RECOVERY split, six weekly bars, WHAT FED
+  IT, quality mix, and the exercise-first log flow — picker of top-3 sources by
+  repeat-last scheme, prefilled editable grid, "Same again", save keeps the sheet
+  open and re-shades the map; picked exercise tracked by name so re-ranking after
+  save keeps the highlight). `HomeTab` gained the fold-stat row, `setTab`,
+  `GapMap onPick`, and both sheets behind `React.lazy` with prefetch on first
+  pointer-down — Vite split them into their own chunks (FoldSheet 2.7 kB,
+  MuscleSheet 11.9 kB; main chunk unchanged). Browser-verified against live data
+  at 390×844: all three captures + both drill-in paths (with and without history)
+  exercised end to end, incl. the donation flipping the verdict to Hold — every
+  test entry then deleted from the DB. 130 tests pass.
+
+**Next: unit 4 (the three folds + `DEFAULTS` to four, 014's remainder), then
+units 5–6. The carried RecoveryCard gap (sauna / cold / manual-sleep quick-adds
+unreachable on new Home) is unit 4's first concern. The bottom-nav open call is
+still open: ask Peter before wiring it.**
 
 ## Step 8 — build plan (code survey 2026-08-30)
 

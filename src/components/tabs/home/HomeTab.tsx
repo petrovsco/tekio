@@ -1,20 +1,25 @@
-import { useMemo } from 'react'
+import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, powerSetCount, CYCLE_WINDOW_DAYS,
+  donationStatus, waterStatus, fusedVerdict, powerSetCount, daysBetween,
+  CYCLE_WINDOW_DAYS,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
-import { cycleInfo } from '../../../lib/utils'
+import { cycleInfo, today } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION } from '../../../constants/app'
-import { GapMap, muscleShort } from './GapMap'
+import { GapMap, muscleShort, GAP_CUTOFF } from './GapMap'
+import type { FoldKind } from './FoldSheet'
 
 // The fused Home read (roadmap 010/018, design-system.md, language SIGNAL).
 // Everything here is T1: the whole five-second answer and nothing else — no
-// charts, no lazy detail. Drill-ins and inline capture are T2 (018 unit 3).
+// charts, no lazy detail. The sheets below are T2: lazy chunks, prefetched on
+// the first pointer-down anywhere on the surface.
 
-/** Below the top ramp band a muscle still reads as a visible gap on the map. */
-const GAP_CUTOFF = 0.70
+const FoldSheet = lazy(() => import('./FoldSheet'))
+const MuscleSheet = lazy(() => import('./MuscleSheet'))
+
+type OpenSheet = { fold: FoldKind } | { muscle: string }
 
 const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
@@ -102,11 +107,20 @@ interface GateCol {
   tone: keyof typeof TONE
 }
 
-export function HomeTab() {
+export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
   const {
-    weights, cardio, sports, sleep, donations, water, programs,
+    weights, cardio, sports, sleep, donations, water, bodyweight, programs,
     exerciseMuscles, muscleGroups, exerciseAdaptations,
   } = useAppStore()
+
+  const [sheet, setSheet] = useState<OpenSheet | null>(null)
+  const prefetched = useRef(false)
+  const prefetch = () => {
+    if (prefetched.current) return
+    prefetched.current = true
+    import('./FoldSheet')
+    import('./MuscleSheet')
+  }
 
   const states = useMemo(
     () => muscleStates(weights, exerciseMuscles, muscleGroups),
@@ -168,6 +182,28 @@ export function HomeTab() {
       : `Readiness ${sys.readiness} is below the push threshold (PLACEHOLDER). The gaps below stay open — today just isn't the day to close them.`
     : null
 
+  // The three folds as T2 stat tiles (unit 3): a readiness input each, never a
+  // destination (P3). Tap reveals the capture sheet; the T1 read never reflows.
+  const latestBw = bodyweight[0] ?? null
+  const bwDays = latestBw ? daysBetween(latestBw.date, today()) : null
+  const foldTiles: { kind: FoldKind; label: string; value: string; note: string; accent?: boolean }[] = [
+    wat.daysSince === null
+      ? { kind: 'water', label: 'WATER', value: '—', note: 'tap to log' }
+      : wat.daysSince === 0
+        ? { kind: 'water', label: 'WATER', value: `${(wat.lastDayMl / 1000).toFixed(1)} L`, note: 'today' }
+        : { kind: 'water', label: 'WATER', value: `${(wat.lastDayMl / 1000).toFixed(1)} L`, note: `stale ${wat.daysSince}d`, accent: true },
+    latestBw
+      ? { kind: 'weight', label: 'WEIGHT', value: `${latestBw.weight.toFixed(1)} kg`, note: bwDays === 0 ? 'today' : bwDays === 1 ? 'yesterday' : `${bwDays} d ago` }
+      : { kind: 'weight', label: 'WEIGHT', value: '—', note: 'tap to log' },
+    don.acuteHold
+      ? { kind: 'blood', label: 'BLOOD', value: don.daysSince === 0 ? 'today' : `${don.daysSince} d`, note: '48 h hold · PLACEHOLDER', accent: true }
+      : don.aerobicSuppressed
+        ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: 'aerobic tail · PLACEHOLDER', accent: true }
+        : don.daysSince !== null
+          ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: don.eligibleInDays > 0 ? `eligible in ${don.eligibleInDays} d` : 'eligible' }
+          : { kind: 'blood', label: 'BLOOD', value: '—', note: 'tap to log' },
+  ]
+
   const qualityTiles = ([
     { key: 'vo2max', name: 'VO₂MAX' },
     { key: 'anaerobic_capacity', name: 'ANAEROBIC' },
@@ -185,7 +221,7 @@ export function HomeTab() {
   })
 
   return (
-    <div className="text-ink">
+    <div className="text-ink" onPointerDown={prefetch}>
       {/* Header */}
       <div className="flex items-baseline justify-between pb-2">
         <span className="text-[15px] font-bold tracking-[0.14em]">TEKIŌ</span>
@@ -246,7 +282,7 @@ export function HomeTab() {
           <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">WHAT IS MISSING</span>
           <span className="text-[9px] text-ink-4">— ranked on the body · worst first</span>
         </div>
-        <GapMap states={states} gaps={gaps} zeroData={zeroData} />
+        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={m => setSheet({ muscle: m })} />
         {/* power is muscle-linked, not whole-body — its zero lives on the muscle
             side, not in the cardio strip (P2) */}
         <div className="text-[9px] text-ink-2 mt-1">
@@ -276,6 +312,33 @@ export function HomeTab() {
           ))}
         </div>
       </div>
+
+      {/* Readiness inputs — the three folds as tappable stats (T2) */}
+      <div className="mt-2 flex gap-1.5">
+        {foldTiles.map(t => (
+          <button
+            key={t.kind}
+            onClick={() => setSheet({ fold: t.kind })}
+            className="grow basis-0 bg-white border border-line rounded-[3px] px-[7px] pt-1 pb-[5px] text-left cursor-pointer"
+          >
+            <div className="text-[8px] text-ink-3 tracking-[0.08em]">{t.label}</div>
+            <div className="text-[13px] font-bold mt-px">{t.value}</div>
+            <div className={`text-[8px] ${t.accent ? 'text-signal' : 'text-ink-3'}`}>{t.note}</div>
+          </button>
+        ))}
+      </div>
+
+      <Suspense fallback={null}>
+        {sheet && ('fold' in sheet
+          ? <FoldSheet kind={sheet.fold} onClose={() => setSheet(null)} />
+          : (
+            <MuscleSheet
+              muscle={sheet.muscle}
+              onClose={() => setSheet(null)}
+              onSearchExercises={() => { setSheet(null); setTab('Weights') }}
+            />
+          ))}
+      </Suspense>
     </div>
   )
 }

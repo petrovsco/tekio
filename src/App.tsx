@@ -22,7 +22,7 @@ type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
 
 function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) {
   switch (tab) {
-    case 'Home': return <HomeTab />
+    case 'Home': return <HomeTab setTab={setTab} />
     case 'Adaptations': return <AdaptationsTab setTab={setTab} />
     case 'Program': return <ProgramTab />
     case 'Weights': return <WeightsTab />
@@ -36,7 +36,7 @@ function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) 
     case 'Admin': return <AdminTab />
     // Recovery has no dedicated tab (Home-only card); fall back to Home so a stray
     // section key can never render a blank screen.
-    default: return <HomeTab />
+    default: return <HomeTab setTab={setTab} />
   }
 }
 
