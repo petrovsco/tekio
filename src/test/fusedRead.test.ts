@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   daysBetween, muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, waterStatus, fusedVerdict, powerSetCount, CYCLE_WINDOW_DAYS,
+  muscleWeeklySets, muscleSources, muscleQualityMix,
 } from '../lib/fusedRead'
 import { PUSH_THRESHOLD, RECOVER_DAYS } from '../constants/app'
 import type {
@@ -121,6 +122,77 @@ describe('powerSetCount', () => {
     ]
     expect(powerSetCount(weights, undefined, TODAY)).toBe(4)
     expect(powerSetCount(weights, { curls: 'power' }, TODAY)).toBe(9)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The drill-in trio: weekly volume, sources, quality mix
+// ---------------------------------------------------------------------------
+
+describe('muscleWeeklySets', () => {
+  it('buckets level-weighted sets into cycle weeks, most recent last', () => {
+    const links = [link('Curls', 'Biceps'), link('Rows', 'Biceps', 2)]
+    const weights = [
+      weight(TODAY, 'Curls', 3),                    // last week
+      weight(ago(6), 'Rows', 4),                    // last week, ×0.5 → 2
+      weight(ago(7), 'Curls', 2),                   // week 5
+      weight(ago(CYCLE_WINDOW_DAYS - 1), 'Curls'),  // first week of the window
+      weight(ago(CYCLE_WINDOW_DAYS), 'Curls', 8),   // outside
+    ]
+    expect(muscleWeeklySets(weights, links, 'Biceps', TODAY)).toEqual([3, 0, 0, 0, 2, 5])
+  })
+
+  it('ignores exercises that do not feed the muscle', () => {
+    const weights = [weight(ago(1), 'Squats', 5)]
+    expect(muscleWeeklySets(weights, [link('Squats', 'Quads')], 'Biceps', TODAY))
+      .toEqual([0, 0, 0, 0, 0, 0])
+  })
+})
+
+describe('muscleSources', () => {
+  const links = [link('Curls', 'Biceps'), link('Rows', 'Biceps', 2)]
+
+  it('ranks by recency, counts window volume, carries the last scheme', () => {
+    const weights = [
+      weight(ago(10), 'Curls', 3),
+      weight(ago(2), 'Rows', 4),
+      weight(ago(5), 'Curls', 2),
+      weight(ago(1), 'Squats', 5), // feeds another muscle
+    ]
+    const src = muscleSources(weights, [...links, link('Squats', 'Quads')], 'Biceps', TODAY)
+    expect(src.map(s => s.exercise)).toEqual(['Rows', 'Curls'])
+    expect(src[0].windowSets).toBe(2)  // 4 sets × 0.5
+    expect(src[1].windowSets).toBe(5)  // 3 + 2 direct sets
+    expect(src[1].lastDate).toBe(ago(5))
+    expect(src[1].lastSets).toHaveLength(2)
+  })
+
+  it('keeps an out-of-window exercise as a repeatable scheme with zero window volume', () => {
+    const src = muscleSources([weight(ago(CYCLE_WINDOW_DAYS + 10), 'Curls', 3)], links, 'Biceps', TODAY)
+    expect(src).toHaveLength(1)
+    expect(src[0].windowSets).toBe(0)
+    expect(src[0].lastSets).toHaveLength(3)
+  })
+
+  it('returns empty for a never-fed muscle', () => {
+    expect(muscleSources([weight(ago(1), 'Curls')], links, 'Chest', TODAY)).toEqual([])
+  })
+})
+
+describe('muscleQualityMix', () => {
+  it('classifies weighted sets by rep range, override-aware', () => {
+    const links = [link('Curls', 'Biceps'), link('Rows', 'Biceps', 2)]
+    const weights: WeightEntry[] = [
+      { id: 'a', date: ago(1), exercise: 'Curls', sets: [{ weight: 50, reps: 3 }, { weight: 40, reps: 12 }] },
+      { id: 'b', date: ago(2), exercise: 'Rows', sets: [{ weight: 60, reps: 20 }, { weight: 60, reps: 20 }] },
+      { id: 'c', date: ago(CYCLE_WINDOW_DAYS), exercise: 'Curls', sets: [{ weight: 50, reps: 3 }] }, // outside
+    ]
+    expect(muscleQualityMix(weights, links, 'Biceps', undefined, TODAY)).toEqual({
+      strength: 1, hypertrophy: 1, muscular_endurance: 1, power: 0,
+    })
+    expect(muscleQualityMix(weights, links, 'Biceps', { curls: 'power' }, TODAY)).toEqual({
+      strength: 0, hypertrophy: 0, muscular_endurance: 1, power: 2,
+    })
   })
 })
 

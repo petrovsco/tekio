@@ -1,6 +1,6 @@
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, DonationEntry, WaterEntry,
-  SleepEntry, ExerciseMuscleLink, MuscleGroup,
+  SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet,
 } from '../types'
 import {
   CYCLE, RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS,
@@ -180,6 +180,130 @@ export function powerSetCount(
     for (const s of w.sets) if (classifyWeightSet(s.reps, override) === 'power') n++
   }
   return n
+}
+
+// ── Local: one muscle's drill-in (T2) ───────────────────────────────────────
+
+/** Total stimulus level-weight linking each exercise (lowercased) to `muscle`. */
+function stimulusWeightsFor(
+  exerciseMuscles: ExerciseMuscleLink[],
+  muscle: string,
+): Map<string, number> {
+  const target = muscle.toLowerCase()
+  const map = new Map<string, number>()
+  for (const l of exerciseMuscles) {
+    if (l.contribution !== 'stimulus' || l.group.toLowerCase() !== target) continue
+    const k = l.exercise.toLowerCase()
+    map.set(k, (map.get(k) ?? 0) + (LEVEL_WEIGHT[l.level] ?? 0))
+  }
+  return map
+}
+
+/**
+ * Level-weighted sets attributed to one muscle per week of the cycle window,
+ * oldest week first — index {@link CYCLE} − 1 is the last 7 days.
+ */
+export function muscleWeeklySets(
+  weights: WeightEntry[],
+  exerciseMuscles: ExerciseMuscleLink[],
+  muscle: string,
+  date: string = today(),
+): number[] {
+  const linkWeight = stimulusWeightsFor(exerciseMuscles, muscle)
+  const weeks: number[] = new Array(CYCLE).fill(0)
+  for (const w of weights) {
+    if (w.date > date) continue
+    const daysAgo = daysBetween(w.date, date)
+    if (daysAgo >= CYCLE_WINDOW_DAYS) continue
+    const lw = linkWeight.get(w.exercise.toLowerCase())
+    if (!lw) continue
+    weeks[CYCLE - 1 - Math.floor(daysAgo / 7)] += w.sets.length * lw
+  }
+  return weeks.map(n => +n.toFixed(2))
+}
+
+export interface MuscleSource {
+  /** Exercise name as most recently logged. */
+  exercise: string
+  /** Level-weighted sets this exercise gave the muscle within the window. */
+  windowSets: number
+  /** Most recent logged date over all history. */
+  lastDate: string
+  /** That entry's sets — the scheme "repeat last" prefills. */
+  lastSets: LiftSet[]
+}
+
+/**
+ * Every logged exercise that feeds `muscle`, most recent first: the drill-in's
+ * "what fed it" list and the repeat-last-scheme ranking of its log flow. All
+ * history is scanned (a muscle idle for months still has a scheme to repeat);
+ * `windowSets` counts the cycle window only.
+ */
+export function muscleSources(
+  weights: WeightEntry[],
+  exerciseMuscles: ExerciseMuscleLink[],
+  muscle: string,
+  date: string = today(),
+): MuscleSource[] {
+  const linkWeight = stimulusWeightsFor(exerciseMuscles, muscle)
+  const byExercise = new Map<string, MuscleSource>()
+  for (const w of weights) {
+    if (w.date > date) continue
+    const key = w.exercise.toLowerCase()
+    const lw = linkWeight.get(key)
+    if (!lw) continue
+    const windowSets = daysBetween(w.date, date) < CYCLE_WINDOW_DAYS ? w.sets.length * lw : 0
+    const cur = byExercise.get(key)
+    if (!cur) {
+      byExercise.set(key, { exercise: w.exercise, windowSets, lastDate: w.date, lastSets: w.sets })
+    } else {
+      cur.windowSets += windowSets
+      if (w.date >= cur.lastDate) {
+        cur.exercise = w.exercise
+        cur.lastDate = w.date
+        cur.lastSets = w.sets
+      }
+    }
+  }
+  return [...byExercise.values()]
+    .map(s => ({ ...s, windowSets: +s.windowSets.toFixed(2) }))
+    .sort((a, b) =>
+      b.lastDate.localeCompare(a.lastDate)
+      || b.windowSets - a.windowSets
+      || a.exercise.localeCompare(b.exercise))
+}
+
+/** The four muscle-linked qualities (doctrine P2 — they read per muscle). */
+export const MUSCLE_QUALITIES = ['strength', 'hypertrophy', 'muscular_endurance', 'power'] as const
+export type MuscleQuality = typeof MUSCLE_QUALITIES[number]
+
+/**
+ * One muscle's quality mix over the cycle window: level-weighted sets per
+ * muscle-linked quality, classified by rep range with the same override-aware
+ * rule as the Adaptations dashboard. Sums to the muscle's windowed volume when
+ * every set classifies muscle-linked.
+ */
+export function muscleQualityMix(
+  weights: WeightEntry[],
+  exerciseMuscles: ExerciseMuscleLink[],
+  muscle: string,
+  overrides?: Record<string, Adaptation>,
+  date: string = today(),
+): Record<MuscleQuality, number> {
+  const linkWeight = stimulusWeightsFor(exerciseMuscles, muscle)
+  const mix: Record<MuscleQuality, number> = { strength: 0, hypertrophy: 0, muscular_endurance: 0, power: 0 }
+  for (const w of weights) {
+    if (w.date > date || daysBetween(w.date, date) >= CYCLE_WINDOW_DAYS) continue
+    const lw = linkWeight.get(w.exercise.toLowerCase())
+    if (!lw) continue
+    const override = resolveExerciseAdaptation(w.exercise, overrides)
+    for (const s of w.sets) {
+      const q = classifyWeightSet(s.reps, override)
+      if (q in mix) mix[q as MuscleQuality] += lw
+    }
+  }
+  for (const k of MUSCLE_QUALITIES) mix[k] = +mix[k].toFixed(2)
+  return mix
 }
 
 // ── Systemic: readiness + verdict ───────────────────────────────────────────

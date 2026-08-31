@@ -3,7 +3,9 @@
 **Label:** feature
 **Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
 five-second tests passed. Step 8 is underway: units 1–2 shipped (v1.1.6 constants
-+ fused-read library; v1.2.0 SIGNAL tokens + the T1 surface); units 3–6 remain.
++ fused-read library; v1.2.0 SIGNAL tokens + the T1 surface), unit 3's data layer
++ tappable map shipped (v1.2.1); the unit-3 sheets remain (plan banked below),
+then units 4–6.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -99,8 +101,24 @@ stands; read this for how it got there.
   quick-adds) is unreachable on the new Home until capture is re-homed —
   production still has the old surface, so logging continues there.
 
-**Next: step 8, unit 3 — T2 reveals (fold-stat row + capture sheets, muscle
-drill-in). The bottom-nav open call is still open: ask Peter before wiring it.**
+- **2026-08-31 — step 8 unit 3 groundwork shipped** (v1.2.1): the drill-in's
+  pure data layer landed in `src/lib/fusedRead.ts` — `muscleWeeklySets`
+  (level-weighted sets per cycle week, oldest first), `muscleSources` (every
+  exercise that ever fed a muscle, most recent first, carrying `windowSets`
+  plus the last entry's sets as the repeat-last scheme) and `muscleQualityMix`
+  (the four muscle-linked qualities, override-aware rep-range classification)
+  — +6 tests, 130 passing overall. `GapMap` now accepts an optional
+  `onPick(muscleName)`: zones resolve to their effective muscle (own, else the
+  trained parent) and callouts pick by name; `GAP_CUTOFF = 0.70` moved into
+  `GapMap` (it is the ramp's top band) and is exported for the sheet's verdict
+  copy. All additive — `onPick` is not passed yet, so no visible change and no
+  browser pass. The session hit the context guard here; the sheet build is
+  **banked in the unit-3 plan below, not started**.
+
+**Next: finish step 8 unit 3 from the banked plan under
+[Unit 3](#unit-3--t2-reveals-lazy) — the three sheets, the fold-stat row, the
+HomeTab wiring, lazy + prefetch, then browser-verify and minor-bump. The
+bottom-nav open call is still open: ask Peter before wiring it.**
 
 ## Step 8 — build plan (code survey 2026-08-30)
 
@@ -169,6 +187,62 @@ the next starts (session wrap-up rule).
   target, then the ranked exercise list + prefilled sets grid per
   `LogSets.dc.html` (exercise-first — sets classify by rep range).
 - All T2 behind `React.lazy`; prefetch on first pointer-down on the surface.
+
+**Banked build state (2026-08-31, groundwork shipped in v1.2.1).** The data
+layer and map taps exist; what remains is four files plus wiring, worked out
+against the boards and the shipped code — build from this, don't re-derive:
+
+- `src/components/tabs/home/BottomSheet.tsx` — SIGNAL sheet primitive plus
+  `SheetClose` and `Chip` helpers. Portal to body; scrim `rgba(26,26,26,0.34)`
+  click-closes; Escape + body scroll lock copied from `ui/Modal.tsx` (which
+  stays old-language — don't reuse it). Panel: fixed bottom, `z-[200]` (nav is
+  `z-[100]`), white, `border-t-2 border-ink`, `rounded-t-[6px]`, max-h ~85vh
+  scroll, 34×3 chrome drag bar. The `safe-area-inset-bottom` class used by
+  BottomNav is defined nowhere (silent no-op) — use inline
+  `paddingBottom: calc(16px + env(safe-area-inset-bottom))`. Chips per
+  design-system §8: 11px/600, 3px radius, 5×10 padding, 1px ink border;
+  outline = logs on tap, solid = the confirm.
+- `src/components/tabs/home/FoldSheet.tsx` — default export,
+  `{ kind: 'water'|'weight'|'blood', onClose }`. **Water**: outline chips
+  +100/+250/+500 → `addWaterEntry({ date: today(), amountMl })`, sheet stays
+  open, live line "today X L · goal 2.5 L" (`WATER_GOAL_ML`). **Weight**:
+  stepper − 1 / − 0.1 / + 0.1 / + 1 over tenths, prefilled from the latest
+  bodyweight entry (80.0 if none), solid `Log <exact value> kg` →
+  `addBodyweightEntry` → close. **Blood**: solid `Full donation — today` →
+  `addDonationEntry({ type: 'Full Blood', notes: '' })` → close; note names
+  the 48 h hold + ~21 d aerobic tail with the same on-screen PLACEHOLDER
+  convention T1 already uses.
+- `src/components/tabs/home/MuscleSheet.tsx` — default export,
+  `{ muscle, onClose, onSearchExercises }`. Sections per the MuscleDrillIn
+  board: verdict card (never trained → "Never trained." inverted; recovering →
+  "Recently hit — leave it."; `fillFraction ≥ 1` → "Recovered — but back
+  off."; `< GAP_CUTOFF` → "Train it." inverted; else "Recovered, close to
+  target."), STIMULUS / RECOVERY split cards (div bars, targets
+  `CYCLE_SET_TARGET` / `RECOVER_DAYS`), SETS PER WEEK six bars from
+  `muscleWeeklySets` scaled to `max(10, …)`, WHAT FED IT (sources with
+  `windowSets > 0`, sorted by volume), QUALITY MIX four tiles (hidden while
+  the log flow is open), then the log flow: solid "Log sets for X" → picker of
+  the top 3 `muscleSources` (sub "last 21 Aug · 3×8 @ 24 kg"; weight 0 reads
+  BW) → grid prefilled from `lastSets` with editable reps/kg inputs, "Same
+  again" duplicates the last row, "Save N sets" →
+  `addWeightEntry({ date: today(), exercise, sets })`, sheet stays open with a
+  "just re-shaded on the map" note. Track the picked exercise **by name, not
+  index** — saving re-ranks the sources. No history → dashed "nothing has ever
+  fed this muscle" note. "Something else — search the exercise list" row →
+  `onSearchExercises` (= `setTab('Weights')`, the T3 escape).
+- `HomeTab.tsx` wiring — add a `setTab` prop (`App.tsx` passes it on both
+  `case 'Home'` and the default fallback); fold-stat row of three tiles after
+  the qualities card (WATER / WEIGHT / BLOOD from `waterStatus`, latest
+  bodyweight entry, `donationStatus`; accent notes for stale water and the
+  donation hold/tail, recency note for weight); `lazy()` both sheets at module
+  scope; prefetch both `import()`s on first pointer-down on the root div
+  (useRef once-flag); `<Suspense fallback={null}>` renders the open sheet;
+  `<GapMap onPick={…}>` opens the muscle sheet.
+- Conventions already decided: tier chips stay off the shipped surface (unit 2
+  decision); on-screen PLACEHOLDER marks mirror T1's existing usage. Then
+  browser-verify per the house rule (restart Vite first — /mnt/c has no HMR),
+  minor-bump + tag, commit, push. The carried RecoveryCard gap stays with
+  unit 4.
 
 ### Unit 4 — the three folds + DEFAULTS to four (014's remainder)
 

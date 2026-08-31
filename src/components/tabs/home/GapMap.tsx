@@ -12,10 +12,13 @@ const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
 /** Everything sits here on a day with no data at all. */
 const NO_DATA = '#eeeeec'
 
+/** The ramp's top band; below it a muscle still reads as a visible gap. */
+export const GAP_CUTOFF = 0.70
+
 function rampStep(fraction: number): number {
   if (fraction < 0.10) return 0
   if (fraction < 0.35) return 1
-  if (fraction < 0.70) return 2
+  if (fraction < GAP_CUTOFF) return 2
   return 3
 }
 
@@ -137,9 +140,11 @@ interface GapMapProps {
   /** Ranked, already filtered to genuine gaps — worst first. */
   gaps: MuscleState[]
   zeroData: boolean
+  /** Opens the muscle drill-in (T2) — a tap on a zone or a callout label. */
+  onPick?: (muscle: string) => void
 }
 
-export function GapMap({ states, gaps, zeroData }: GapMapProps) {
+export function GapMap({ states, gaps, zeroData, onPick }: GapMapProps) {
   const uid = useId()
   const hatchId = `${uid}h`
 
@@ -147,13 +152,14 @@ export function GapMap({ states, gaps, zeroData }: GapMapProps) {
   // A zone follows its own muscle; with no sets of its own it falls back to a
   // directly-trained top-level parent (exercise mapped to the parent, no child
   // breakdown), same rule as the adaptations map.
-  const resolve = (zone: Zone): { fill: string; recovering: boolean } => {
-    if (zeroData) return { fill: NO_DATA, recovering: false }
+  const resolve = (zone: Zone): { fill: string; recovering: boolean; pick: string } => {
     const own = byName.get(zone.muscle.toLowerCase())
     const parent = byName.get(zone.parent.toLowerCase())
     const eff = own && own.sets > 0 ? own : parent && parent.sets > 0 ? parent : own
-    if (!eff) return { fill: RAMP[0], recovering: false }
-    return { fill: RAMP[rampStep(eff.fillFraction)], recovering: eff.recovering }
+    const pick = eff?.name ?? zone.muscle
+    if (zeroData) return { fill: NO_DATA, recovering: false, pick }
+    if (!eff) return { fill: RAMP[0], recovering: false, pick }
+    return { fill: RAMP[rampStep(eff.fillFraction)], recovering: eff.recovering, pick }
   }
 
   const callouts = zeroData ? [] : placeCallouts(gaps)
@@ -168,14 +174,18 @@ export function GapMap({ states, gaps, zeroData }: GapMapProps) {
         </defs>
         <text x="117" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">FRONT</text>
         <text x="215" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">BACK</text>
-        <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} />
-        <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} />
+        <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} onPick={onPick} />
+        <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} onPick={onPick} />
         {callouts.map(c => {
           const lineX = c.side === 'L' ? 83 : 251
           const textX = c.side === 'L' ? 80 : 254
           const anchor = c.side === 'L' ? 'end' : 'start'
           return (
-            <g key={c.key}>
+            <g
+              key={c.key}
+              onClick={onPick && (() => onPick(c.key))}
+              style={onPick && { cursor: 'pointer' }}
+            >
               <line x1={lineX} y1={c.labelY} x2={c.dotX} y2={c.dotY} stroke="#6b6b6b" strokeWidth="1" />
               <circle cx={c.dotX} cy={c.dotY} r="2.3" fill="#ffffff" stroke="#c2410c" strokeWidth="1.2" />
               <text
@@ -212,14 +222,15 @@ export function GapMap({ states, gaps, zeroData }: GapMapProps) {
 }
 
 function Figure({
-  zones, fig, abs, resolve, clipId, hatchId,
+  zones, fig, abs, resolve, clipId, hatchId, onPick,
 }: {
   zones: Zone[]
   fig: 'front' | 'back'
   abs?: boolean
-  resolve: (zone: Zone) => { fill: string; recovering: boolean }
+  resolve: (zone: Zone) => { fill: string; recovering: boolean; pick: string }
   clipId: string
   hatchId: string
+  onPick?: (muscle: string) => void
 }) {
   const t = FIG[fig]
   return (
@@ -233,9 +244,13 @@ function Figure({
       </clipPath>
       <g clipPath={`url(#${clipId})`}>
         {zones.map(zone => {
-          const { fill, recovering } = resolve(zone)
+          const { fill, recovering, pick } = resolve(zone)
           return (
-            <g key={zone.muscle}>
+            <g
+              key={zone.muscle}
+              onClick={onPick && (() => onPick(pick))}
+              style={onPick && { cursor: 'pointer' }}
+            >
               <g fill={fill} stroke="#ffffff" strokeWidth="0.7">
                 <path d={zone.d} />
                 {zone.mirrored && <path d={zone.d} transform={MIRROR} />}
