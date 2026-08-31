@@ -2,10 +2,10 @@
 
 **Label:** feature
 **Status:** in progress — rounds 1–3 are done, the look is picked (SIGNAL) and both
-five-second tests passed. Step 8 is underway: units 1–4 shipped (v1.1.6 constants
+five-second tests passed. Step 8 is underway: units 1–5 shipped (v1.1.6 constants
 + fused-read library; v1.2.0 SIGNAL tokens + the T1 surface; v1.2.1 + v1.3.0 the
-T2 sheets; v1.4.0 the three folds, the recovery sheet and R1's cap met); units 5–6
-remain.
+T2 sheets; v1.4.0 the three folds, the recovery sheet and R1's cap met; v1.4.1 the
+T3 split — T1 is now 554 kB / 161 kB gzip, half the old bundle); unit 6 remains.
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -156,7 +156,34 @@ stands; read this for how it got there.
   Profile show only the three live sections. Build green, 130 tests pass. New
   chunk: `RecoverySheet` 3.3 kB.
 
-**Next: unit 5 (T3 code splitting), then unit 6 (regression pass + close).**
+- **2026-08-31 — step 8 unit 5 shipped** (v1.4.1): the T3 split, and P1's
+  performance face goes from zero to real. Every tab in `App.tsx` is now
+  `React.lazy` behind one `<Suspense fallback={<HomeSkeleton />}>` — Home is the
+  only tab left in the initial chunk, because it is the whole five-second
+  answer. Two T2 boundaries went with them: `EditModal` (lazy, mounted only
+  while `editModal` is set, prefetched on the first pointer-down anywhere in
+  `AppShell` — it is reached from every surface, including Home's sheets) and
+  `AssistantPanel` (lazy behind the FAB, prefetched on its pointer-down).
+  `Modal` has no open/close transition, so conditional mounting is behaviourally
+  identical to the old always-rendered form. **Measured** (`npm run build`, same
+  machine, before → after): main chunk **1,137.46 kB → 553.83 kB**, gzip
+  **322.49 kB → 161.22 kB** — a 51% cut. Recharts left in its own
+  `LineChart` chunk (386.73 kB / 106.63 kB gzip) and dnd-kit inside
+  `ProfileTab` (57.29 kB); `grep` over the built T1 chunk confirms neither
+  `recharts` nor `dnd-kit` appears in it. Per-tab chunks: ProgramTab 26.3 kB,
+  WeightsTab 25.0 kB, EditModal 18.3 kB, CardioTab 15.6 kB, AdaptationsTab
+  11.5 kB, AdminTab 11.0 kB, MobilityTab 6.0 kB, AssistantPanel 4.5 kB,
+  HabitsTab 3.8 kB. Vite's 500 kB warning still fires: what is left in T1 is
+  React + react-router + supabase-js + the store and its db layer, all of which
+  `bootstrap()` needs on first paint. Browser-verified at 390×844 against live
+  data: Home paints with no tab module requested, Weights / Cardio / Program
+  each load their chunk on tap and render, the More drawer lists the three live
+  sections, the assistant panel and the (lazy) edit modal both open — the sleep
+  edit form came up prefilled from the recovery sheet's edit strip. The only
+  console error is the pre-existing `/favicon.ico` 404 (no `public/`, no icon
+  link in `index.html`). 130 tests pass.
+
+**Next: unit 6 (regression pass + close).**
 Carried into unit 6: `show_in_home` lost its last consumer with `OverviewTab`
 — the Profile toggle is gone, but the DB column and the `SectionConfig` field
 are still there and should be dropped.
@@ -301,13 +328,13 @@ against the boards and the shipped code — build from this, don't re-derive:
 - End state: `DEFAULTS` seeds Weights, Cardio, Mobility (+ the shelved Habits
   row); R1 satisfied with one slot free.
 
-### Unit 5 — T3 code splitting
+### Unit 5 — T3 code splitting — **shipped v1.4.1**
 
-- `React.lazy` every tab component in `App.tsx` — behind nav/drawer is T3 by
-  definition. Suspense fallback: the `HomeSkeleton` pattern.
-- Measure before/after with `npm run build` (baseline 2026-08-27: one chunk,
-  1,142 kB / 322 kB gzip). The T1 chunk must exclude Recharts, dnd-kit and
-  the tabs. Record the numbers here.
+- ~~`React.lazy` every tab component in `App.tsx`~~ — done, plus the two T2
+  boundaries (`EditModal`, `AssistantPanel`). Suspense fallback: `HomeSkeleton`.
+- ~~Measure before/after~~ — **1,137.46 kB → 553.83 kB (322.49 → 161.22 kB
+  gzip)**, Recharts and dnd-kit confirmed absent from T1. Full numbers in the
+  progress log above.
 
 ### Unit 6 — verify + close
 

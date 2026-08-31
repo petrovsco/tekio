@@ -1,12 +1,18 @@
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react'
 import { useAppStore } from '../../store/app'
 import { cycleInfo } from '../../lib/utils'
 import { DeloadBadge } from '../ui/Badges'
 import { Toast } from '../ui/Toast'
-import { EditModal } from '../ui/EditModal'
 import { Drawer } from './Drawer'
 import { BottomNav } from './BottomNav'
 import { AssistantFab } from '../assistant/AssistantFab'
+
+// T2 — on intent (roadmap 018 unit 5). The edit form is reached from every
+// surface but only ever after a tap, so it is a lazy chunk prefetched on the
+// first pointer-down anywhere in the shell and mounted only while an edit is
+// open. Modal has no open/close transition, so conditional mounting is
+// equivalent to the old always-rendered form.
+const EditModal = lazy(() => import('../ui/EditModal').then(m => ({ default: m.EditModal })))
 
 const TAB_TITLES: Record<string, string> = {
   Home: 'Home',
@@ -31,7 +37,9 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [inputFocused, setInputFocused] = useState(false)
   const programs = useAppStore(s => s.programs)
+  const editing = useAppStore(s => s.editModal)
   const { isDeload, week } = cycleInfo(programs[0] ?? null)
+  const prefetched = useRef(false)
 
   useEffect(() => {
     const INPUTS = ['INPUT', 'TEXTAREA', 'SELECT']
@@ -55,9 +63,20 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
   const isHome = tab === 'Home'
 
   return (
-    <div className={`min-h-screen ${isHome ? 'bg-paper' : 'bg-bg'}`}>
+    <div
+      className={`min-h-screen ${isHome ? 'bg-paper' : 'bg-bg'}`}
+      onPointerDown={() => {
+        if (prefetched.current) return
+        prefetched.current = true
+        void import('../ui/EditModal')
+      }}
+    >
       <Toast />
-      <EditModal />
+      {editing && (
+        <Suspense fallback={null}>
+          <EditModal />
+        </Suspense>
+      )}
 
       <Drawer
         open={drawerOpen}

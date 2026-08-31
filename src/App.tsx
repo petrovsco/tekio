@@ -1,17 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { useAppStore } from './store/app'
 import { AppShell } from './components/layout/AppShell'
-import { AdaptationsTab } from './components/tabs/AdaptationsTab'
 import { HomeTab } from './components/tabs/home/HomeTab'
-import { WeightsTab } from './components/tabs/weights/WeightsTab'
-import { CardioTab } from './components/tabs/CardioTab'
-import { MobilityTab } from './components/tabs/MobilityTab'
-import { HabitsTab } from './components/tabs/HabitsTab'
-import { ProgramTab } from './components/tabs/ProgramTab'
-import { ProfileTab } from './components/tabs/ProfileTab'
-import { AdminTab } from './components/tabs/AdminTab'
 import { HomeSkeleton } from './components/tabs/HomeSkeleton'
+
+// T3 — on demand (design-system tier table, roadmap 018 unit 5). Everything
+// reached by an explicit destination change is a lazy chunk with no prefetch;
+// Home is the only tab in the initial chunk, because it is the whole
+// five-second answer. This is what keeps Recharts and dnd-kit out of T1.
+const AdaptationsTab = lazy(() => import('./components/tabs/AdaptationsTab').then(m => ({ default: m.AdaptationsTab })))
+const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').then(m => ({ default: m.WeightsTab })))
+const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(m => ({ default: m.CardioTab })))
+const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(m => ({ default: m.MobilityTab })))
+const HabitsTab = lazy(() => import('./components/tabs/HabitsTab').then(m => ({ default: m.HabitsTab })))
+const ProgramTab = lazy(() => import('./components/tabs/ProgramTab').then(m => ({ default: m.ProgramTab })))
+const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(m => ({ default: m.ProfileTab })))
+const AdminTab = lazy(() => import('./components/tabs/AdminTab').then(m => ({ default: m.AdminTab })))
 
 // Body Weight, Donations and Water folded onto Home 2026-08-31 (doctrine §5,
 // roadmap 014): capture and correction moved into the T2 sheets, the
@@ -50,7 +55,11 @@ export default function App() {
         <HomeSkeleton />
       ) : (
         <Routes>
-          <Route path="*" element={<TabContent tab={tab} setTab={(t) => setTab(t as Tab)} />} />
+          <Route path="*" element={
+            <Suspense fallback={<HomeSkeleton />}>
+              <TabContent tab={tab} setTab={(t) => setTab(t as Tab)} />
+            </Suspense>
+          } />
         </Routes>
       )}
     </AppShell>
