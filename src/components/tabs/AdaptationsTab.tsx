@@ -39,7 +39,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
         </p>
         <div className="flex items-end gap-4">
           <div>
-            <p className="text-3xl font-bold leading-none">{onTarget}<span className="text-lg text-white/50">/9</span></p>
+            <p className="text-3xl font-bold leading-none">{onTarget}<span className="text-lg text-white/50">/{ADAPTATIONS.length}</span></p>
             <p className="text-[11px] text-white/60 mt-1">on target this week</p>
           </div>
           <div className="ml-auto flex gap-5 text-right">
@@ -66,7 +66,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
         </Card>
       )}
 
-      {/* Nine adaptation cards */}
+      {/* One card per adaptation */}
       <div className="flex flex-col gap-2">
         {ADAPTATIONS.map(meta => (
           <AdaptationCard
@@ -88,7 +88,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
         </div>
         <p className="text-center leading-tight">
           Right-hand figure = muscle groups hitting their weekly set target (lifting),
-          or sessions vs. weekly target (cardio / skill).
+          or sessions vs. weekly target (cardio).
         </p>
       </div>
 

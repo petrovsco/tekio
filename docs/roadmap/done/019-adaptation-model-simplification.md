@@ -1,7 +1,7 @@
 # Roadmap: Simplify the adaptation model — nine → seven
 
 **Label:** feature
-**Status:** planned — decision made 2026-08-29; app-side code not started — `src/types/index.ts` still declares nine adaptations.
+**Status:** done — shipped 2026-09-01. Seven adaptations in the type, the constants, the dashboard, the guide and the targets editor; grounding inventory reindexed; 001, 012, 020 and 031 unblocked.
 **Release:** 2.0.0
 
 ## The decision (2026-08-29, during the roadmap-018 canvas review)
@@ -15,7 +15,7 @@ Peter's call, lightly compressed:
   is read **per muscle**.
 - **Skill — drop for now.** "Very broad… hard to track by an app." The
   per-exercise skill-recommendations idea is parked as
-  [020-skill-recommendations-per-exercise.md](020-skill-recommendations-per-exercise.md)
+  [020-skill-recommendations-per-exercise.md](../020-skill-recommendations-per-exercise.md)
   (backlog).
 
 What remains splits cleanly in two, which is itself the argument for the model:
@@ -74,6 +74,36 @@ No migration. Speed, skill, and power all have **0 logged sets ever** in prod
 (DATA.md pull, 2026-08-27), and sport sessions were already rerouted to cardio
 adaptations in July 2026. Nothing to backfill or delete.
 
+Confirmed against prod on 2026-09-01, and it holds: no exercise carries a
+`default_adaptation` of `speed` or `skill` (one row is set at all — Dead Hang →
+`muscular_endurance`). Two leftovers stay in the database on purpose, both
+inert and both queued in
+[025-release-blocked-schema-drops.md](../025-release-blocked-schema-drops.md):
+
+- `adaptation_targets` still holds a `speed` and a `skill` row. Nothing reads
+  them — the app only looks up keys that exist in `ADAPTATIONS` — but `master`
+  still renders those two adaptations, so deleting the rows now would strip
+  production of its stored targets for them.
+- `exercises_default_adaptation_check` still allows all nine values. It is
+  permissive, so it costs nothing; narrowing it to seven is DDL against the
+  shared database and waits for the same release.
+
+## What actually shipped
+
+- `Adaptation` is a seven-member union; `AdaptationModality` lost `'skill'`.
+- The `speed` and `skill` entries are gone from `ADAPTATIONS`. Power's target
+  stayed **6** — it is a per-muscle threshold, not a share of a total, so the
+  renormalisation trap in checklist item 5 did not fire. The only counter that
+  divided by nine was the `/9` hero, now `/{ADAPTATIONS.length}`.
+- The four sprint/reactive keyword rules (`sprint`, `dash`, `agility`, `pogo`)
+  were repointed from speed to power rather than deleted: dropping them would
+  send a logged sprint to the rep classifier, which would call a 1-rep sprint
+  *strength* — a worse claim than the one it replaced. Power's load band
+  (30–70% 1RM) is narrower than speed's (0–30%), so nothing was widened.
+- Grounding inventory: rows 1.1, 1.6, 3.1 and 3.2 struck as retired, §1/§2/§3
+  line anchors repointed, and the header counts recounted (they were already
+  stale — 64/8/3 predated the 2026-08 de-duplication strikes).
+
 ## Watch out
 
 - The `sport_*` DB subsystem rename (July 2026) is unrelated to this drop —
@@ -81,3 +111,18 @@ adaptations in July 2026. Nothing to backfill or delete.
 - Per-muscle power in the app v1 = the drill-in quality-mix row and a "Power ·
   0 sets" gap chip (as drawn on the 018 canvas). Any power-specific target
   threshold runs `/ground` before it becomes code (015 trigger spec).
+
+## Acceptance
+
+- [x] `Adaptation` declares seven keys; nothing in `src/` references `speed` or
+      `skill` as an adaptation (the Garmin `SPEED` training-effect label and the
+      `SKILL` program tag are different namespaces and stay).
+- [x] The Adaptations hero counts against the live list, not a hard-coded 9.
+- [x] The guide, the targets editor and the exercise→muscle mapping copy name
+      seven adaptations and no longer say "cardio / skill".
+- [x] `npm run build` and all 137 tests pass.
+- [x] Browser-verified on the Adaptations tab (seven cards, `0/7` hero, power
+      reading per muscle) and Admin (seven target rows).
+- [x] `docs/grounding-inventory.md` reindexed in the same change — retired rows
+      struck, anchors repointed, counts corrected.
+- [x] 001, 012, 020 and 031 taken off `blocked`.

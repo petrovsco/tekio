@@ -1,7 +1,7 @@
 # Roadmap: Cross-adaptation set/rep classification — TBC
 
 **Label:** backlog
-**Status:** backlog — the rep-range question is captured, not decided. Blocked on 019 reshaping the adaptation set it would apply to.
+**Status:** backlog — the rep-range question is captured, not decided. 019 landed 2026-09-01, so the adaptation set it applies to is now settled (seven); it still needs a decision, not a blocker.
 **Depends:** 019
 **Kickoff:** start a fresh session with this file as the brief.
 

@@ -1,7 +1,7 @@
 # Roadmap: Adaptation target shapes — one gap, not three follow-ups
 
 **Label:** feature
-**Status:** planned — kickoff-ready, no code. 019 removes two of the qualities it reshapes, so it runs after.
+**Status:** planned — kickoff-ready, no code. Unblocked 2026-09-01: 019 landed, so the seven qualities it reshapes are final.
 **Depends:** 019
 **Release:** 2.0.0
 **Origin:** follow-ups #1, #2 and #3 of

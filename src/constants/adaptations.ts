@@ -1,7 +1,7 @@
 import type { Adaptation } from '../types'
 
 /** Training modality an adaptation is primarily trained through. */
-export type AdaptationModality = 'resistance' | 'cardio' | 'skill'
+export type AdaptationModality = 'resistance' | 'cardio'
 
 export interface AdaptationRx {
   /** Load / intensity guidance. */
@@ -28,74 +28,33 @@ export interface AdaptationMeta {
   /**
    * Inclusive rep range used to auto-classify a resistance set into this
    * adaptation. `null` = not rep-derived (needs an exercise tag, or comes from
-   * cardio / skill logging).
+   * cardio logging).
    */
   repRange: [number, number] | null
   /**
    * Default weekly per-muscle-group target (weighted sets) used to colour a
    * muscle green (on track) vs amber (needs work). `0` = not muscle-targeted
-   * (cardio / skill adaptations show sessions instead).
+   * (cardio adaptations show sessions instead).
    */
   weeklyMuscleTarget: number
   /**
-   * Weekly session target for non-resistance adaptations (cardio / skill). An
-   * adaptation counts as "on target" once this many sessions are logged. `0` for
-   * resistance adaptations, which are judged by their muscle targets instead.
+   * Weekly session target for the whole-body cardio adaptations. An adaptation
+   * counts as "on target" once this many sessions are logged. `0` for the
+   * muscle-linked adaptations, which are judged by their muscle targets instead.
    */
   weeklySessionTarget: number
 }
 
 /**
- * The nine adaptations, ordered along Galpin's force–velocity → endurance
- * continuum. This array is the single source of truth for the dashboard,
- * tooltips and reference card.
+ * The seven adaptations, ordered along Galpin's force–velocity → endurance
+ * continuum: four muscle-linked (power → muscular endurance, read per muscle)
+ * then three whole-body cardio qualities (read per session). Speed and skill
+ * were dropped 2026-08-29 — see
+ * docs/roadmap/done/019-adaptation-model-simplification.md.
+ * This array is the single source of truth for the dashboard, tooltips and
+ * reference card.
  */
 export const ADAPTATIONS: AdaptationMeta[] = [
-  {
-    key: 'skill',
-    label: 'Skill',
-    icon: '🎯',
-    color: '#8b5cf6',
-    summary: 'Movement proficiency & technique',
-    modality: 'skill',
-    repRange: null,
-    weeklyMuscleTarget: 0,
-    weeklySessionTarget: 3,
-    rx: {
-      load: 'Very light / bodyweight',
-      reps: '3–5 crisp reps',
-      sets: 'Many short bouts',
-      rest: 'Full — stay fresh',
-      effort: 'Never to fatigue',
-      cue: 'Practice often with perfect form; stop before quality drops.',
-    },
-  },
-  {
-    key: 'speed',
-    label: 'Speed',
-    icon: '⚡',
-    color: '#06b6d4',
-    summary: 'Rate of movement / quickness',
-    modality: 'resistance',
-    repRange: null,
-    /**
-     * 6 — convention only. No literature doses speed in weekly sets per muscle;
-     * the honest unit is contacts/sprints per session. This is an exposure
-     * counter (2 sessions × 3 sets), not a dose. Was 3 — below one session of
-     * its own rx, so a single session turned a muscle green.
-     * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
-     */
-    weeklyMuscleTarget: 6,
-    weeklySessionTarget: 0,
-    rx: {
-      load: '0–30% 1RM',
-      reps: '1–5, maximal velocity',
-      sets: '3–5',
-      rest: '2–5 min (full)',
-      effort: 'Never to fatigue',
-      cue: 'Every rep as fast as possible; quit when speed drops.',
-    },
-  },
   {
     key: 'power',
     label: 'Power',
@@ -105,10 +64,13 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     modality: 'resistance',
     repRange: null,
     /**
-     * 6 — convention only, and deliberately identical to speed: no source
-     * supports speed and power carrying different numbers (Galpin prescribes
-     * both identically), so the old 3-vs-4 split was invented. Exposure
-     * counter, not a dose. Was 4.
+     * 6 — convention only, unchanged by the nine → seven simplification. No
+     * literature doses power in weekly sets per muscle; the honest unit is
+     * contacts/throws per session, so this is an exposure counter (2 sessions ×
+     * 3 sets), not a dose. Was 4, raised to 6 to match the retired `speed`
+     * entry because no source supported the two carrying different numbers
+     * (Galpin prescribed both identically) — that reasoning is why the value is
+     * 6 and survives speed's removal.
      * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklyMuscleTarget: 6,
@@ -304,7 +266,7 @@ export const ADAPTATION_MAP: Record<Adaptation, AdaptationMeta> = Object.fromEnt
 
 /** Cross-cutting principle shown at the top of the reference card. */
 export const ADAPTATION_PRINCIPLE =
-  'Skill · Speed · Power · Strength are quality-driven — never train to fatigue, rest fully. ' +
+  'Power · Strength are quality-driven — never train to fatigue, rest fully. ' +
   'Hypertrophy → Endurance are volume/fatigue-driven — accumulate work and push effort.'
 
 /**
@@ -313,12 +275,16 @@ export const ADAPTATION_PRINCIPLE =
  * substring matches; first hit wins. User-set tags override these.
  */
 const KEYWORD_ADAPTATION: [string, Adaptation][] = [
-  // Speed / sprint / reactive
-  ['sprint', 'speed'],
-  ['dash', 'speed'],
-  ['agility', 'speed'],
-  ['pogo', 'speed'],
-  // Power / plyometric / ballistic / Olympic
+  // Sprint / reactive work. These four tagged the retired `speed` adaptation
+  // until 2026-08-29; they now tag power, which is the only remaining home for
+  // maximal-velocity work. No new claim — the rule that already read "this is a
+  // velocity quality, not a rep count" now points at the one velocity quality
+  // left. See docs/roadmap/done/019-adaptation-model-simplification.md.
+  ['sprint', 'power'],
+  ['dash', 'power'],
+  ['agility', 'power'],
+  ['pogo', 'power'],
+  // Plyometric / ballistic / Olympic
   ['clean', 'power'],
   ['snatch', 'power'],
   ['jerk', 'power'],

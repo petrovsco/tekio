@@ -18,11 +18,18 @@ an index must not.
 **State** uses the `/ground` Step 3 verdict vocabulary: `grounded` /
 `convention` / `unknown`.
 
-**Updated 2026-08-26 by the first scout runs** (#7(b), run 1): the nine adaptation
-targets in §1 are no longer `unknown` — four are `grounded`, five are
-`convention`, and row 1.6 (skill) is deliberately deferred. Every row outside §1
-is still `unknown`. The blocks live in
+**Updated 2026-08-26 by the first scout runs** (#7(b), run 1): the adaptation
+targets in §1 are no longer `unknown` — four are `grounded`, four are
+`convention`, and row 1.10 (the `0` sentinel) is deliberately deferred. Every row
+outside §1 is still `unknown`. The blocks live in
 [roadmap/done/011-adaptation-weekly-targets.md](roadmap/done/011-adaptation-weekly-targets.md).
+
+**Updated 2026-09-01 by the nine → seven simplification**
+([done/019](roadmap/done/019-adaptation-model-simplification.md)): speed and skill
+left the model, so rows 1.1, 1.6, 3.1 and 3.2 are struck as **retired** — the
+constants are deleted, so those claims no longer ship. Nothing was renormalised:
+every §1 target is a per-muscle or per-session threshold standing on its own, not
+a share of a total, so removing two adaptations changed no surviving value.
 
 **Updated 2026-08-30 by the 010 runs** (018 step 7): rows 10.2–10.4 and
 4.12 are now `convention`; the §12 not-yet-in-app numbers (recovery window,
@@ -48,13 +55,19 @@ number, and how cleanly:
 this is where #7(b) starts. **(no brief)** = nothing in `roadmap/` would carry
 it; one has to be created before a scout run has anywhere to land.
 
-Counts: **75 rows**, of which 64 fire the trigger, 8 are ambiguous, 3 do not
-fire. **31 of the 64 firing rows are `unnamed`** — see [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
+Counts: **75 rows** — 55 fire the trigger (34 `named`, 21 `unnamed`), 8 are
+ambiguous, 3 do not fire, and 9 are struck through (fixed or retired, with
+nothing left to ground). **21 of the 55 firing rows are `unnamed`** — see
+[§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
+Recounted 2026-09-01; the previous figures (64 / 8 / 3) predated the 2026-08
+de-duplication strikes as well as the 019 retirements.
 
-**Struck-through rows are fixed**, not grounded. 2026-08-26 removed six
-duplicate/contradictory copies (§2, §5); every surviving claim is still
+**Struck-through rows are fixed or retired**, not grounded. 2026-08-26 removed
+six duplicate/contradictory copies (§2, §5); every surviving claim is still
 `unknown`. De-duplicating a number does not ground it — it just means there is
-now one thing to ground.
+now one thing to ground. 2026-09-01 struck four more (1.1, 1.6, 3.1, 3.2) for a
+different reason: the feature that carried them was deleted, so the claim stopped
+shipping. Both kinds keep their row — the number is retired, not forgotten.
 
 ---
 
@@ -86,17 +99,17 @@ weights").
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 1.1 | `6` | [adaptations.ts:88](../src/constants/adaptations.ts#L88) | Speed needs 6 weighted sets per muscle group per week (was 3) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
-| 1.2 | `6` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | Power needs 6 sets/muscle/week (was 4; deliberately identical to speed) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
-| 1.3 | `6` | [adaptations.ts:145](../src/constants/adaptations.ts#L145) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
-| 1.4 | `10` | [adaptations.ts:173](../src/constants/adaptations.ts#L173) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
-| 1.5 | `6` | [adaptations.ts:199](../src/constants/adaptations.ts#L199) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
-| 1.6 | `3` | [adaptations.ts:63](../src/constants/adaptations.ts#L63) | Skill needs 3 sessions/week | named | unknown | skill-adaptation-data-source |
-| 1.7 | `1` | [adaptations.ts:226](../src/constants/adaptations.ts#L226) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
-| 1.8 | `1` | [adaptations.ts:257](../src/constants/adaptations.ts#L257) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
-| 1.9 | `2` | [adaptations.ts:288](../src/constants/adaptations.ts#L288) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
-| 1.10 | `0` ×9 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:263](../src/lib/adaptations.ts#L263) | ? | unknown † | — |
-| 1.11 | all 18, duplicated | `adaptation_targets` (DB), 9 rows | Identical values to 1.1–1.9, and **they win** — [lib/adaptations.ts:261-262](../src/lib/adaptations.ts#L261) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
+| 1.1 | ~~`6`~~ | — | **Retired 2026-09-01.** Speed was dropped from the model (nine → seven, [done/019](roadmap/done/019-adaptation-model-simplification.md)). The constant is deleted, so the claim no longer ships. Its `convention` verdict stands as history in [011 §Grounding](roadmap/done/011-adaptation-weekly-targets.md#grounding); the reasoning behind the value survives inside row 1.2 | — | — | — |
+| 1.2 | `6` | [adaptations.ts:76](../src/constants/adaptations.ts#L76) | Power needs 6 sets/muscle/week (was 4; raised to match the now-retired speed entry, which is why it is 6) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
+| 1.3 | `6` | [adaptations.ts:107](../src/constants/adaptations.ts#L107) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
+| 1.4 | `10` | [adaptations.ts:135](../src/constants/adaptations.ts#L135) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
+| 1.5 | `6` | [adaptations.ts:161](../src/constants/adaptations.ts#L161) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
+| 1.6 | ~~`3`~~ | — | **Retired 2026-09-01.** Skill was dropped from the model ([done/019](roadmap/done/019-adaptation-model-simplification.md)); its data source had already gone when sports were rerouted to cardio ([done/006](roadmap/done/006-skill-adaptation-data-source.md)). Never grounded, and now never shipped | — | — | — |
+| 1.7 | `1` | [adaptations.ts:188](../src/constants/adaptations.ts#L188) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
+| 1.8 | `1` | [adaptations.ts:219](../src/constants/adaptations.ts#L219) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
+| 1.9 | `2` | [adaptations.ts:250](../src/constants/adaptations.ts#L250) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
+| 1.10 | `0` ×7 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:274](../src/lib/adaptations.ts#L274) | ? | unknown † | — |
+| 1.11 | all 14, duplicated | `adaptation_targets` (DB), 9 rows — 7 live, plus dead `speed` / `skill` rows nothing reads since 2026-09-01 | Identical values to 1.2–1.5 and 1.7–1.9, and **they win** — [lib/adaptations.ts:272-273](../src/lib/adaptations.ts#L272) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
 
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
 > the user sees. The DB rows shadow every default, are currently byte-identical,
@@ -107,12 +120,12 @@ weights").
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 2.1 | `[1, 5]` | [adaptations.ts:118](../src/constants/adaptations.ts#L118) | 1–5 reps = strength | named | unknown | cross-adaptation-rep-ranges |
-| 2.2 | `[6, 15]` | [adaptations.ts:137](../src/constants/adaptations.ts#L137) | 6–15 reps = hypertrophy | named | unknown | cross-adaptation-rep-ranges |
-| 2.3 | `[16, 999]` | [adaptations.ts:156](../src/constants/adaptations.ts#L156) | 16+ reps = muscular endurance | named | unknown | cross-adaptation-rep-ranges |
+| 2.1 | `[1, 5]` | [adaptations.ts:94](../src/constants/adaptations.ts#L94) | 1–5 reps = strength | named | unknown | cross-adaptation-rep-ranges |
+| 2.2 | `[6, 15]` | [adaptations.ts:125](../src/constants/adaptations.ts#L125) | 6–15 reps = hypertrophy | named | unknown | cross-adaptation-rep-ranges |
+| 2.3 | `[16, 999]` | [adaptations.ts:153](../src/constants/adaptations.ts#L153) | 16+ reps = muscular endurance | named | unknown | cross-adaptation-rep-ranges |
 | 2.4 | ~~`reps <= 5`~~ | — | **Fixed 2026-08-26.** `classifyWeightSet` now derives its boundaries from `repRange`, so 2.1–2.3 are the live values and there is one copy | — | — | — |
 | 2.5 | ~~`reps <= 15`~~ | — | **Fixed 2026-08-26**, same change | — | — | — |
-| 2.6 | 18 keyword rules | [adaptations.ts:242-265](../src/constants/adaptations.ts#L242) | "kettlebell swing is power", "pogo is speed", etc. — a physiological classification carrying **no digit** | ? | unknown | cross-adaptation-rep-ranges |
+| 2.6 | 20 keyword rules | [adaptations.ts:277-304](../src/constants/adaptations.ts#L277) | "kettlebell swing is power", "pogo is power", etc. — a physiological classification carrying **no digit**. All 20 now point at power: the four sprint/reactive rules (`sprint`, `dash`, `agility`, `pogo`) tagged the retired `speed` adaptation until 2026-09-01 and were repointed with it ([done/019](roadmap/done/019-adaptation-model-simplification.md)) | ? | unknown | cross-adaptation-rep-ranges |
 
 > **~~2.1–2.3 are dead code.~~ Fixed 2026-08-26** — `classifyWeightSet` now reads
 > `repRange` ([lib/adaptations.ts](../src/lib/adaptations.ts#L23)), so the gated
@@ -121,7 +134,7 @@ weights").
 > it. The finding it produced stands — see
 > [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 
-## 3. `rx` prescriptions — 9 blocks, ~45 numbers in prose
+## 3. `rx` prescriptions — 7 blocks, ~35 numbers in prose
 
 One row per adaptation; the gated table covers `load / reps / sets / rest /
 effort / cue` for all of them. All named, all `unknown`, and the cues are the
@@ -129,16 +142,16 @@ sharpest debt in the app because they read as settled fact.
 
 | # | Numbers asserted | Where | Notable claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 3.1 | Skill: 3–5 reps | [adaptations.ts:64-71](../src/constants/adaptations.ts#L64) | "Never to fatigue" | named | unknown | skill-adaptation-data-source |
-| 3.2 | Speed: 0–30% 1RM, 1–5 reps, 3–5 sets, 2–5 min | [adaptations.ts:83-90](../src/constants/adaptations.ts#L83) | Load band for velocity work | named | unknown | cross-adaptation-rep-ranges |
-| 3.3 | Power: 30–70% 1RM, 1–5, 3–5, 2–5 min | [adaptations.ts:102-109](../src/constants/adaptations.ts#L102) | Load band for ballistic work | named | unknown | cross-adaptation-rep-ranges |
-| 3.4 | Strength: 85–100% 1RM, 3–5, 3–5, 2–5 min, 1–2 RIR | [adaptations.ts:121-128](../src/constants/adaptations.ts#L121) | **Cue names "Galpin's 3–5 rule" as settled** — a `[single-practitioner position]` with no provenance ([adaptations.ts:127](../src/constants/adaptations.ts#L127)); the skill's own *Known debt* entry | named | unknown | cross-adaptation-rep-ranges |
-| 3.5 | Hypertrophy: 30–80% 1RM, 5–30 (≈8–15), 10–20 sets/muscle/wk, 30 s–2 min, 0–4 RIR | [adaptations.ts:140-147](../src/constants/adaptations.ts#L140) | ~~contradicts row 1.4~~ **Resolved 2026-08-26**: not a contradiction. The target is the minimum-effective floor; the `rx` is the productive range *whose floor is that same number*. Both unchanged, now locked together in the source comment — neither moves without the other | named | **grounded** | adaptation-weekly-targets |
-| 3.6 | Musc. endurance: <50% 1RM, 15–40+, 2–4, <60 s | [adaptations.ts:159-166](../src/constants/adaptations.ts#L159) | Load ceiling and rest floor | named | unknown | cross-adaptation-rep-ranges |
-| 3.7 | Anaerobic: 20 s–2 min, 3–8 rounds, 1:2–1:4 rest | [adaptations.ts:178-185](../src/constants/adaptations.ts#L178) | Work:rest ratio | named | unknown | hr-zone-intensity-classification |
-| 3.8 | VO₂max: ~90–100% HRmax, 3–8 min, 4–6 sets, ≈1:1 | [adaptations.ts:197-204](../src/constants/adaptations.ts#L197) | **Cue ships the "classic 4×4 min at 90–95% HRmax" protocol** ([adaptations.ts:203](../src/constants/adaptations.ts#L203)) — a named protocol, unattributed. Same failure class as 3.4 | named | unknown | hr-zone-intensity-classification |
-| 3.9 | Endurance: Zone 2, 30 min–hours | [adaptations.ts:216-223](../src/constants/adaptations.ts#L216) | "Nasal-breathing pace"; "builds mitochondria & fat oxidation" — a **mechanistic** claim, no number | named | unknown | hr-zone-intensity-classification |
-| 3.10 | *(none)* | [adaptations.ts:233-235](../src/constants/adaptations.ts#L233) | `ADAPTATION_PRINCIPLE`: "Skill · Speed · Power · Strength are quality-driven — never train to fatigue… Hypertrophy → Endurance are volume/fatigue-driven". A categorical physiological claim that **carries no digit at all** | ? | unknown | cross-adaptation-rep-ranges |
+| 3.1 | ~~Skill: 3–5 reps~~ | — | **Retired 2026-09-01** with row 1.6 — the whole `skill` entry, `rx` block included, is deleted ([done/019](roadmap/done/019-adaptation-model-simplification.md)) | — | — | — |
+| 3.2 | ~~Speed: 0–30% 1RM, 1–5 reps, 3–5 sets, 2–5 min~~ | — | **Retired 2026-09-01** with row 1.1 — the whole `speed` entry, `rx` block included, is deleted. Velocity work now falls under power's band (row 3.3), which is 30–70% 1RM: a *narrower* load claim than the one it replaces, so nothing ungrounded was widened | — | — | — |
+| 3.3 | Power: 30–70% 1RM, 1–5, 3–5, 2–5 min | [adaptations.ts:78-85](../src/constants/adaptations.ts#L78) | Load band for ballistic work | named | unknown | cross-adaptation-rep-ranges |
+| 3.4 | Strength: 85–100% 1RM, 3–5, 3–5, 2–5 min, 1–2 RIR | [adaptations.ts:109-116](../src/constants/adaptations.ts#L109) | **Cue names "Galpin's 3–5 rule" as settled** — a `[single-practitioner position]` with no provenance ([adaptations.ts:115](../src/constants/adaptations.ts#L115)); the skill's own *Known debt* entry | named | unknown | cross-adaptation-rep-ranges |
+| 3.5 | Hypertrophy: 30–80% 1RM, 5–30 (≈8–15), 10–20 sets/muscle/wk, 30 s–2 min, 0–4 RIR | [adaptations.ts:137-144](../src/constants/adaptations.ts#L137) | ~~contradicts row 1.4~~ **Resolved 2026-08-26**: not a contradiction. The target is the minimum-effective floor; the `rx` is the productive range *whose floor is that same number*. Both unchanged, now locked together in the source comment — neither moves without the other | named | **grounded** | adaptation-weekly-targets |
+| 3.6 | Musc. endurance: <50% 1RM, 15–40+, 2–4, <60 s | [adaptations.ts:163-170](../src/constants/adaptations.ts#L163) | Load ceiling and rest floor | named | unknown | cross-adaptation-rep-ranges |
+| 3.7 | Anaerobic: 20 s–2 min, 3–8 rounds, 1:2–1:4 rest | [adaptations.ts:189-196](../src/constants/adaptations.ts#L189) | Work:rest ratio | named | unknown | hr-zone-intensity-classification |
+| 3.8 | VO₂max: ~90–100% HRmax, 3–8 min, 4–6 sets, ≈1:1 | [adaptations.ts:220-227](../src/constants/adaptations.ts#L220) | **Cue ships the "classic 4×4 min at 90–95% HRmax" protocol** ([adaptations.ts:226](../src/constants/adaptations.ts#L226)) — a named protocol, unattributed. Same failure class as 3.4 | named | unknown | hr-zone-intensity-classification |
+| 3.9 | Endurance: Zone 2, 30 min–hours | [adaptations.ts:251-258](../src/constants/adaptations.ts#L251) | "Nasal-breathing pace"; "builds mitochondria & fat oxidation" — a **mechanistic** claim, no number | named | unknown | hr-zone-intensity-classification |
+| 3.10 | *(none)* | [adaptations.ts:268-270](../src/constants/adaptations.ts#L268) | `ADAPTATION_PRINCIPLE`: "Power · Strength are quality-driven — never train to fatigue… Hypertrophy → Endurance are volume/fatigue-driven". A categorical physiological claim that **carries no digit at all**. Shortened 2026-09-01 by the removal of skill and speed — the same claim over fewer qualities, still ungrounded | ? | unknown | cross-adaptation-rep-ranges |
 
 ## 4. Recovery / readiness
 

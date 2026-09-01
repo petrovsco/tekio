@@ -1,7 +1,7 @@
 # Roadmap: Skill training recommendations per exercise
 
 **Label:** backlog
-**Status:** backlog — idea captured 2026-08-29 when the skill adaptation was retired. Waits on 019 landing before it can be shaped.
+**Status:** backlog — idea captured 2026-08-29 when the skill adaptation was retired. 019 landed 2026-09-01, so it is shapeable now; it still needs a decision to commit.
 **Depends:** 019
 
 ## The idea

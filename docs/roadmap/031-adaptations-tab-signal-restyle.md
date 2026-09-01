@@ -1,7 +1,7 @@
 # Roadmap: Adaptations tab — SIGNAL restyle
 
 **Label:** feature
-**Status:** blocked — 026 landed, but 019 has not: the rows it would restyle are about to change, so restyling them first would be wasted.
+**Status:** planned — unblocked 2026-09-01: 026 and 019 have both landed, so the seven rows it restyles are final.
 **Depends:** 019, 026
 **Release:** 2.0.0
 
@@ -30,7 +30,7 @@ go; emoji icons become stroke icons or plain labels.
 
 ## Out of scope
 
-- The model change itself — that is [019](019-adaptation-model-simplification.md),
+- The model change itself — that is [019](done/019-adaptation-model-simplification.md),
   which lands first.
 - Target values or shapes ([012](012-adaptation-target-shapes.md)); if 012
   lands first, the units shown here follow it, but neither blocks the other's

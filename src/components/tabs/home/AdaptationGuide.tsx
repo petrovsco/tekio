@@ -3,7 +3,7 @@ import { ADAPTATIONS, ADAPTATION_PRINCIPLE } from '../../../constants/adaptation
 import { Card } from '../../ui/Card'
 import { AdaptationRxTable } from './AdaptationRx'
 
-/** Collapsible "How to train each adaptation" reference (all nine). */
+/** Collapsible "How to train each adaptation" reference (all seven). */
 export function AdaptationGuide() {
   const [open, setOpen] = useState(false)
   return (

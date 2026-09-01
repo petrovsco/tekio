@@ -1,8 +1,9 @@
-# Roadmap: Release-blocked schema drops — columns develop has stopped reading
+# Roadmap: Release-blocked schema drops — what develop has stopped reading
 
 **Label:** infra
 **Status:** blocked — committed, but it cannot run until 2.0.0 is released onto
-`master`. One column is queued so far (`user_section_config.show_in_home`).
+`master`. Three items queued: one column drop, plus two leftovers from the
+nine → seven adaptation simplification (019).
 
 ## Why this brief exists
 
@@ -48,11 +49,37 @@ The migration, when it runs:
 alter table user_section_config drop column show_in_home;
 ```
 
+### Also queued: the two adaptation leftovers from 019
+
+Not column drops, but blocked by exactly the same shared-database rule — `master`
+still renders nine adaptations, so neither can run before the release.
+
+| Item | Stopped being read | Still read by | Safe to change once |
+|---|---|---|---|
+| `adaptation_targets` rows `speed` and `skill` | v2.0.0 (roadmap 019) — `ADAPTATIONS` no longer contains those keys, so nothing looks them up | `master`, which renders both adaptations and reads their stored targets | `master` runs 2.0.0 or later |
+| `exercises_default_adaptation_check` still allows all nine values | v2.0.0 (roadmap 019) — the app only ever writes the seven | Nothing; it is permissive, so it costs nothing while it waits | `master` runs 2.0.0 or later |
+
+Neither is urgent: dead rows nothing selects, and a constraint that is wider than
+the app. They are here so the fact is scheduled rather than remembered. When they
+run:
+
+```sql
+delete from adaptation_targets where adaptation in ('speed', 'skill');
+
+alter table exercises drop constraint exercises_default_adaptation_check;
+alter table exercises add constraint exercises_default_adaptation_check
+  check (default_adaptation = any (array[
+    'power', 'strength', 'hypertrophy', 'muscular_endurance',
+    'anaerobic_capacity', 'vo2max', 'endurance'
+  ]));
+```
+
 ## Acceptance
 
-- [ ] `master` is running the code that stopped reading these columns.
+- [ ] `master` is running the code that stopped reading these columns and rows.
 - [ ] Each queued drop is applied as a tracked migration (per
       [016-supabase-migration-baseline.md](016-supabase-migration-baseline.md)),
       and its row is ticked off above.
-- [ ] `select('*')` from the affected tables shows no leftover column, and the
-      app still bootstraps on both branches.
+- [ ] `select('*')` from the affected tables shows no leftover column, the
+      `adaptation_targets` table holds seven rows, the check constraint names
+      seven values, and the app still bootstraps on both branches.

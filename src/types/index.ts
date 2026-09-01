@@ -48,10 +48,13 @@ export interface CardioEntry {
   zoneDistribution?: number[]
 }
 
-/** The nine trainable physical adaptations (Huberman × Galpin framework). */
+/**
+ * The seven trainable physical adaptations (Huberman × Galpin framework,
+ * simplified 2026-08-29 — see docs/roadmap/done/019-adaptation-model-simplification.md).
+ * Four are muscle-linked and read per muscle; three are whole-body cardio
+ * qualities read per session.
+ */
 export type Adaptation =
-  | 'skill'
-  | 'speed'
   | 'power'
   | 'strength'
   | 'hypertrophy'
@@ -134,8 +137,8 @@ export interface WaterEntry {
 }
 
 // ── Recovery / Readiness axis ───────────────────────────────────────────────
-// Modalities that sit *parallel* to the nine Galpin adaptations (recovery is
-// deliberately not a 10th adaptation). Each is a simple user-scoped log.
+// Modalities that sit *parallel* to the seven Galpin adaptations (recovery is
+// deliberately not an eighth adaptation). Each is a simple user-scoped log.
 
 export type SleepQuality = 1 | 2 | 3 | 4 | 5
 

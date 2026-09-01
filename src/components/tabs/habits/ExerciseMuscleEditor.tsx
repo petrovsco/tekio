@@ -143,7 +143,7 @@ export function ExerciseMuscleEditor() {
         <div className="mt-3 flex flex-col gap-3">
           <p className="text-[11px] text-ink-2 leading-[1.4]">
             Each exercise can target multiple muscles — L1 primary, L2/L3 secondary — as stimulus or recovery.
-            Set an <b>Adaptation</b> to always count an exercise toward power/speed/etc. (overrides rep-based
+            Set an <b>Adaptation</b> to always count an exercise toward power/strength/etc. (overrides rep-based
             classification); leave it on Auto to classify by reps. Edits update the dashboards.
           </p>
 

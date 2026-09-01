@@ -23,7 +23,7 @@ describe('classifyWeightSet', () => {
 
   it('lets an exercise override win over reps', () => {
     expect(classifyWeightSet(3, 'power')).toBe('power')
-    expect(classifyWeightSet(20, 'speed')).toBe('speed')
+    expect(classifyWeightSet(20, 'power')).toBe('power')
   })
 })
 
@@ -83,8 +83,10 @@ describe('resolveExerciseAdaptation', () => {
   it('uses built-in keyword defaults', () => {
     expect(resolveExerciseAdaptation('Box Jump')).toBe('power')
     expect(resolveExerciseAdaptation('Power Clean')).toBe('power')
-    expect(resolveExerciseAdaptation('40m Sprint')).toBe('speed')
-    expect(resolveExerciseAdaptation('Pogo Hops')).toBe('speed')
+    // Sprint / reactive keywords tagged the retired `speed` adaptation until
+    // 2026-08-29; they now tag power (roadmap 019).
+    expect(resolveExerciseAdaptation('40m Sprint')).toBe('power')
+    expect(resolveExerciseAdaptation('Pogo Hops')).toBe('power')
   })
 
   it('returns null for ordinary lifts (fall back to reps)', () => {
@@ -142,7 +144,7 @@ describe('adaptationCoverage', () => {
         w('c', '2025-01-03', 'Box Jump', 5, 5),     // power ×5 (keyword), Front Delt → 5
       ],
       cardio: [{ id: 'r', date: '2025-01-04', type: 'Running', duration: 45 }],
-      // 20-min Tennis session → classified as cardio by duration (VO₂max), not skill.
+      // 20-min Tennis session → classified as cardio by duration (VO₂max).
       sports: [{ id: 's', date: '2025-01-04', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', duration: 20 }],
       exerciseMuscles: links,
       muscleGroups: groups,
@@ -154,8 +156,7 @@ describe('adaptationCoverage', () => {
     expect(cov.hypertrophy.volume).toBe(4)
     expect(cov.power.volume).toBe(5)
     expect(cov.endurance.volume).toBe(1)      // Running 45 min
-    expect(cov.vo2max.volume).toBe(1)         // Tennis 20 min → cardio, not skill
-    expect(cov.skill.volume).toBe(0)          // sports no longer feed the skill adaptation
+    expect(cov.vo2max.volume).toBe(1)         // Tennis 20 min → cardio, not a skill count
 
     const chestStrength = cov.strength.muscles.find(m => m.id === 'chest')!
     expect(chestStrength.aggSets).toBe(3)

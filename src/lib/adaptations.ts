@@ -124,7 +124,7 @@ export interface MuscleStatusRow {
 
 export interface AdaptationSummary {
   key: Adaptation
-  /** Primary weekly volume: set count (resistance) or session count (cardio/skill). */
+  /** Primary weekly volume: set count (resistance) or session count (cardio). */
   volume: number
   unit: 'sets' | 'sessions'
   /** Top-level muscle rows with rolled-up children (resistance adaptations only). */
@@ -133,12 +133,12 @@ export interface AdaptationSummary {
   onTrack: number
   worked: number
   totalMuscles: number
-  /** Weekly session target for cardio/skill adaptations (0 for resistance). */
+  /** Weekly session target for the cardio adaptations (0 for resistance). */
   sessionTarget: number
   /**
    * Whether the adaptation's weekly target is fully met — every tracked muscle
-   * on track (resistance), or the session target reached (cardio/skill). Drives
-   * the "adaptations trained" counter.
+   * on track (resistance), or the session target reached (cardio). Drives the
+   * "adaptations trained" counter.
    */
   met: boolean
 }
@@ -154,7 +154,7 @@ const inRange = (d: string, start: string, end: string) => d >= start && d <= en
 /**
  * Per-adaptation weekly coverage across all modalities for [weekStart, date].
  * Resistance adaptations get a rolled-up muscle-group breakdown with status;
- * cardio/skill adaptations report session counts.
+ * cardio adaptations report session counts.
  */
 export function adaptationCoverage(
   args: {
@@ -241,7 +241,7 @@ export function adaptationCoverage(
   }
 
   // Manual habit completions that produce a stimulus. Recovery contributions
-  // aren't one of the nine adaptations, so they're ignored here (they surface on
+  // aren't one of the seven adaptations, so they're ignored here (they surface on
   // the Muscle Coverage recovery axis instead). A repless habit can only be
   // classified via its exercise's adaptation tag, so muscle-linked stimulus
   // habits — which have no exercise, hence no adaptation — are skipped.

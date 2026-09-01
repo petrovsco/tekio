@@ -33,14 +33,15 @@ export function AdaptationTargetsEditor() {
       <div>
         <SecTitle className="mb-1">Weekly targets</SecTitle>
         <p className="text-[11px] text-ink-2 leading-[1.4]">
-          Resistance adaptations use a weekly per-muscle set target; cardio/skill use a weekly
-          session target. Reaching a target marks the adaptation “on target” on the dashboard.
+          Muscle-linked adaptations use a weekly per-muscle set target; the cardio ones use a
+          weekly session target. Reaching a target marks the adaptation “on target” on the dashboard.
         </p>
       </div>
 
       {/* Each row used to carry the adaptation's emoji and tint its input.
           Neither survives §1 and §7 — the name is what identifies the row, and
-          nine tints would be nine colours claiming nine meanings. */}
+          one tint per adaptation would be seven colours claiming seven
+          meanings. */}
       <div className="flex flex-col divide-y divide-hairline">
         {ADAPTATIONS.map(meta => {
           const isResistance = meta.modality === 'resistance'
