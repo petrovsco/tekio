@@ -18,6 +18,13 @@
 
 ## Scope
 
+**Inherited from [027](done/027-weights-tab-signal-restyle.md):** `BLOCK_META`
+in [src/constants/program.ts](../../src/constants/program.ts) now carries a
+SIGNAL `iconName` beside its old emoji `icon`. ProgramTab is the last consumer
+of the emoji field — switch it to `iconName` and delete `icon` here. The shared
+icon set also gained `warmup`, `sport` and `recovery`; reuse them rather than
+adding near-duplicates.
+
 Re-skin all three states — no active program, active day view, and the
 program editor — per the design system: SIGNAL tokens and type, §8 controls,
 stroke icons, 3px radii, the deload treatment decided in 026. Status badges

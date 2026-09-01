@@ -10,6 +10,7 @@ export type IconName =
   | 'home' | 'weights' | 'cardio' | 'program' | 'menu' | 'mobility'
   | 'habits' | 'adaptations' | 'profile' | 'admin' | 'assistant'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
+  | 'warmup' | 'sport' | 'recovery'
 
 /** Path geometry only — the wrapper below carries every shared stroke rule. */
 const PATHS: Record<IconName, string> = {
@@ -39,6 +40,12 @@ const PATHS: Record<IconName, string> = {
   chevronUp: 'M6 14.5 12 8.5l6 6',
   plus: 'M12 5v14M5 12h14',
   check: 'M5 12.5 10 17.5 19 7',
+  // A flame — the warm-up block.
+  warmup: 'M12 3C9 6.5 6.5 9.5 6.5 13.5a5.5 5.5 0 0 0 11 0c0-2.4-1.2-4.4-2.8-6-.3 2.1-1.3 3.2-2.4 3.2-1.3 0-2-1.3-1.7-3C10.9 6.2 11.4 4.6 12 3Z',
+  // A ball — the sport block.
+  sport: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17M12 3.5v4.2M20 9.6l-4 2.9M17 19.4l-1.5-4.6M7 19.4l1.5-4.6M4 9.6l4 2.9M12 7.7l4 2.8-1.5 4.3h-5L8 10.5Z',
+  // A crescent — rest, the recovery block and the rest-day banner.
+  recovery: 'M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z',
 }
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

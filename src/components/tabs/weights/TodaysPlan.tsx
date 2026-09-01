@@ -7,7 +7,9 @@ import type { GroupedExercise } from '../../../lib/utils'
 import { BLOCK_META } from '../../../constants/program'
 import { ExPlan } from './ExPlan'
 import { deloadSets } from '../../../lib/utils'
-import { SSBadge } from '../../ui/Badges'
+import { SSBadge, DeloadBadge } from '../../ui/Badges'
+import { Chip } from '../../ui/Chip'
+import { Icon } from '../../ui/Icon'
 import type { Program, ProgramDay, ProgramDayBlock, WeightEntry, LiftSet, BlockType, DayOfWeek } from '../../../types'
 
 interface PickHandlers {
@@ -29,6 +31,16 @@ const LOG_IN_TAB: Partial<Record<BlockType, string>> = {
   mobility: 'Mobility',
   conditioning: 'Cardio',
 }
+
+// SIGNAL surfaces for this page (design-system §§2, 5, 6). The banner used to
+// recolour itself — amber on a deload week, green when done. Neither is a
+// meaning colour is allowed to carry (§1), so the surface stays paper-white and
+// the state is stated in a micro label instead.
+const BANNER = 'rounded-[3px] overflow-hidden border border-line bg-white mb-1'
+const MICRO = 'inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3'
+/** Nothing on this page commits an entry — every control prefills the log form. */
+const ACT_CHIP =
+  'inline-flex items-center gap-0.5 px-2.5 py-[3px] text-[11px] font-semibold text-ink bg-white border border-line rounded-[3px] hover:border-ink cursor-pointer transition-colors'
 
 /** Weight-logging sections of a day (one per weight block; whole day if legacy). */
 function weightSectionsFor(day: ProgramDay): { name?: string; groups: GroupedExercise[] }[] {
@@ -68,19 +80,19 @@ function WeightGroups({ groups, program, weights, isDeload, ...h }: {
       {groups.map((g, gi) => {
         if (g.type === 'superset') {
           return (
-            <div key={gi} className="mt-3 border border-ss-b rounded-xl p-2.5 bg-ss-l">
-              <div className="flex items-center justify-between mb-2">
+            <div key={gi} className="mt-3 border border-line rounded-[3px] p-2.5 bg-paper">
+              <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-1.5">
                   <SSBadge />
-                  <span className="text-xs text-ss font-semibold">Superset</span>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
                 </div>
                 {isDeload ? (
-                  <button onClick={() => h.onPickSupersetDeload(g.exercises, lastPerf)} className="text-[11px] font-semibold text-white bg-dl-tx rounded-full px-2.5 py-1">
-                    Deload ↓
+                  <button onClick={() => h.onPickSupersetDeload(g.exercises, lastPerf)} className={ACT_CHIP}>
+                    Deload <Icon name="chevronDown" size={11} />
                   </button>
                 ) : (
-                  <button onClick={() => h.onPickSuperset(g.exercises)} className="text-[11px] font-semibold text-white bg-ss rounded-full px-2.5 py-1">
-                    Log Together ↓
+                  <button onClick={() => h.onPickSuperset(g.exercises)} className={ACT_CHIP}>
+                    Log together <Icon name="chevronDown" size={11} />
                   </button>
                 )}
               </div>
@@ -104,22 +116,22 @@ function BlockInfo({ block }: { block: ProgramDayBlock }) {
   const meta = BLOCK_META[block.blockType]
   const logTab = LOG_IN_TAB[block.blockType]
   return (
-    <div className="mt-3 border border-border rounded-xl p-2.5 bg-bg/40">
+    <div className="mt-3 border border-line rounded-[3px] p-2.5 bg-paper">
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="text-sm">{meta.icon}</span>
-        <span className="text-xs font-semibold text-primary">{block.name}</span>
-        {block.scheduledTime && <span className="text-[10px] text-muted">· {block.scheduledTime}</span>}
-        {block.durationMinutes && <span className="text-[10px] text-muted">· {block.durationMinutes}m</span>}
-        {logTab && <span className="ml-auto text-[10px] text-accent">Log in {logTab}</span>}
+        <Icon name={meta.iconName} size={13} className="text-ink-2 shrink-0" />
+        <span className="text-xs font-bold text-ink">{block.name}</span>
+        {block.scheduledTime && <span className="text-[10px] text-ink-3">· {block.scheduledTime}</span>}
+        {block.durationMinutes && <span className="text-[10px] text-ink-3">· {block.durationMinutes}m</span>}
+        {logTab && <span className={`${MICRO} ml-auto`}>Log in {logTab}</span>}
       </div>
       <div className="flex flex-wrap gap-1">
         {block.exercises.map((ex, ei) => (
-          <span key={ei} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] bg-surface border border-border text-primary">
+          <span key={ei} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[3px] text-[11px] bg-white border border-line text-ink">
             {ex.exercise}
-            {ex.durationText && <span className="text-muted">· {ex.durationText}</span>}
+            {ex.durationText && <span className="text-ink-3">· {ex.durationText}</span>}
           </span>
         ))}
-        {block.exercises.length === 0 && <span className="text-[11px] text-muted italic">—</span>}
+        {block.exercises.length === 0 && <span className="text-[11px] text-ink-3">—</span>}
       </div>
     </div>
   )
@@ -138,18 +150,18 @@ function DayLog({ day, program, weights, isDeload, ...h }: {
   const showSectionNames = sections.length > 1
 
   return (
-    <div className="bg-surface px-3.5 pt-3.5 pb-3.5">
+    <div className="bg-white px-3 pt-3 pb-3">
       {sections.map((sec, si) => (
         <div key={si}>
           {showSectionNames && sec.name && (
-            <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mt-3 first:mt-0">{sec.name}</p>
+            <p className="text-[9px] font-bold text-ink-3 uppercase tracking-[0.14em] mt-3 first:mt-0">{sec.name}</p>
           )}
           <WeightGroups groups={sec.groups} program={program} weights={weights} isDeload={isDeload} {...h} />
         </div>
       ))}
       {info.map((b, bi) => <BlockInfo key={bi} block={b} />)}
       {sections.length === 0 && info.length === 0 && (
-        <p className="text-xs text-muted italic">Rest day</p>
+        <p className="text-[11px] text-ink-3">Rest day</p>
       )}
     </div>
   )
@@ -174,27 +186,36 @@ function WeeklyChecklist({ program, weights, isDeload, ...h }: {
   })
 
   return (
-    <div className="rounded-2xl overflow-hidden border mb-1 bg-[#f8fafc] border-border">
-      <div className="px-3.5 py-3 border-b border-border">
-        <span className="text-xs font-bold text-primary">🗓️ This week's sessions</span>
-        {trackable > 0 && <span className="text-xs text-muted ml-2">{doneCount}/{trackable} lifting days done</span>}
-        <p className="text-[11px] text-muted mt-0.5">Days aren't pinned yet — pick whichever fits today.</p>
+    <div className={BANNER}>
+      <div className="px-3 py-2.5 border-b border-hairline">
+        <div className="flex items-center gap-1.5">
+          <Icon name="program" size={13} className="text-ink-2 shrink-0" />
+          <span className="text-[9px] font-bold text-ink uppercase tracking-[0.14em]">This week's sessions</span>
+          {trackable > 0 && (
+            <span className="ml-auto text-[11px] text-ink-2 tabular-nums">{doneCount}/{trackable} lifting days</span>
+          )}
+        </div>
+        <p className="text-[11px] text-ink-3 mt-1">Days aren't pinned yet — pick whichever fits today.</p>
       </div>
 
-      <div className="bg-surface">
+      <div className="bg-white">
         {days.map((d, i) => {
           const done = doneFlags[i]
           const isSel = i === selected
-          const icons = (d.blocks ?? []).map(b => BLOCK_META[b.blockType].icon).join(' ')
+          const blockIcons = (d.blocks ?? []).map(b => BLOCK_META[b.blockType].iconName)
           return (
-            <div key={i} className="border-b border-bg last:border-0">
-              <button onClick={() => setSelected(isSel ? -1 : i)} className={`w-full flex items-center gap-2 px-3.5 py-2.5 text-left ${isSel ? 'bg-accent-l' : ''}`}>
-                <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${done ? 'bg-success text-white' : 'bg-bg text-muted'}`}>
-                  {done ? '✓' : i + 1}
+            <div key={i} className="border-b border-hairline last:border-0">
+              <button onClick={() => setSelected(isSel ? -1 : i)} className={`w-full flex items-center gap-2 px-3 py-2.5 text-left cursor-pointer ${isSel ? 'bg-hairline' : ''}`}>
+                <span className={`shrink-0 w-5 h-5 rounded-[2px] flex items-center justify-center text-[10px] font-bold ${done ? 'bg-ink text-white' : 'border border-line text-ink-3'}`}>
+                  {done ? <Icon name="check" size={11} /> : i + 1}
                 </span>
-                <span className={`text-xs flex-1 ${isSel ? 'font-semibold text-accent' : 'text-primary'} truncate`}>{d.name}</span>
-                {icons && <span className="text-xs">{icons}</span>}
-                <span className="text-[10px] text-muted">{isSel ? '▲' : '▼'}</span>
+                <span className={`text-xs flex-1 truncate ${isSel ? 'font-bold text-ink' : 'text-ink-2'}`}>{d.name}</span>
+                {blockIcons.length > 0 && (
+                  <span className="flex items-center gap-1 text-ink-3 shrink-0">
+                    {blockIcons.map((n, bi) => <Icon key={bi} name={n} size={12} />)}
+                  </span>
+                )}
+                <Icon name={isSel ? 'chevronUp' : 'chevronDown'} size={13} className="text-ink-3 shrink-0" />
               </button>
               {isSel && (
                 <DayLog day={d} program={program} weights={weights} isDeload={isDeload} {...h} />
@@ -211,7 +232,7 @@ function WeeklyChecklist({ program, weights, isDeload, ...h }: {
 
 export function TodaysPlan({ program, weights, variantWeekdays, onToggleVariant, ...h }: TodaysPlanProps) {
   const [open, setOpen] = useState(true)
-  const { isDeload } = cycleInfo(program)
+  const { week, isDeload } = cycleInfo(program)
   const mode = programMode(program)
 
   if (mode === 'flexible') {
@@ -224,46 +245,42 @@ export function TodaysPlan({ program, weights, variantWeekdays, onToggleVariant,
   const variantOn = variantWeekdays?.has(wd) ?? false
 
   const variantToggle = todaysVariant && onToggleVariant && (
-    <div className="flex items-center gap-1.5 px-3.5 py-2 bg-surface border-b border-bg">
-      <span className="text-[11px] text-muted shrink-0">This {wd}:</span>
-      <button
-        onClick={() => onToggleVariant(wd, false)}
-        className={`flex-1 py-1 rounded-lg text-[11px] font-semibold border ${!variantOn ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'}`}
-      >
+    <div className="flex items-center gap-1.5 px-3 py-2 bg-white border-b border-hairline">
+      <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3 shrink-0">This {wd}</span>
+      <Chip active={!variantOn} onClick={() => onToggleVariant(wd, false)} className="flex-1 truncate">
         {todaysVariant.base?.name ?? 'Base'}
-      </button>
-      <button
-        onClick={() => onToggleVariant(wd, true)}
-        className={`flex-1 py-1 rounded-lg text-[11px] font-semibold border ${variantOn ? 'border-ss bg-ss-l text-ss' : 'border-border bg-surface text-muted'}`}
-      >
+      </Chip>
+      <Chip active={variantOn} onClick={() => onToggleVariant(wd, true)} className="flex-1 truncate">
         {todaysVariant.variant.name}
-      </button>
+      </Chip>
     </div>
   )
 
   if (!day) {
     // Weekday mode with nothing scheduled today → a quiet rest-day banner.
     return (
-      <div className="rounded-2xl overflow-hidden border border-border bg-[#f8fafc] mb-1">
+      <div className={BANNER}>
         {variantToggle}
-        <div className="px-3.5 py-3">
-          <span className="text-xs font-bold text-primary">🛌 Rest day</span>
-          <span className="text-xs text-muted ml-2">Nothing scheduled for {wd}</span>
+        <div className="flex items-center gap-1.5 px-3 py-2.5">
+          <Icon name="recovery" size={13} className="text-ink-2 shrink-0" />
+          <span className="text-xs font-bold text-ink">Rest day</span>
+          <span className="text-[11px] text-ink-3 ml-1.5">Nothing scheduled for {wd}</span>
         </div>
       </div>
     )
   }
 
   const done = isTodayDone(weights, day)
-  const headerLabel = isDeload ? '⚠️ Deload Week' : done ? `✅ ${day.name} — Done` : `📋 ${day.name}`
-  const headerColor = isDeload ? 'text-dl-tx' : done ? 'text-success' : 'text-primary'
-  const headerBg = isDeload ? 'bg-dl-bg border-dl-bd' : done ? 'bg-green-50 border-green-200' : 'bg-[#f8fafc] border-border'
 
   return (
-    <div className={`rounded-2xl overflow-hidden border mb-1 ${headerBg}`}>
-      <button onClick={() => setOpen(o => !o)} className={`w-full flex items-center justify-between px-3.5 py-3 border-b ${headerBg}`}>
-        <span className={`text-xs font-bold ${headerColor}`}>{headerLabel}</span>
-        <span className="text-xs text-muted">{open ? '▲' : '▼'}</span>
+    <div className={BANNER}>
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center justify-between gap-2 px-3 py-2.5 border-b border-hairline cursor-pointer">
+        <span className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-bold text-ink truncate">{day.name}</span>
+          {isDeload && <DeloadBadge week={week} />}
+          {done && <span className={MICRO}><Icon name="check" size={11} />Done</span>}
+        </span>
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} size={13} className="text-ink-3 shrink-0" />
       </button>
       {variantToggle}
       {open && <DayLog day={day} program={program} weights={weights} isDeload={isDeload} {...h} />}

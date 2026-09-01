@@ -2,18 +2,19 @@ import { useState, useEffect } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { today, cycleInfo, isDeloadDate, isTodayDone, programMode, activeVariantWeekdays, best1RM } from '../../../lib/utils'
-import { Card, SecTitle } from '../../ui/Card'
-import { Inp } from '../../ui/Input'
+import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
+import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, DelBtn, EditBtn } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
 import { SSBadge } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
+import { SetsGrid } from '../../ui/SetsGrid'
+import type { SetStr } from '../../ui/SetsGrid'
+import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
 import { TodaysPlan } from './TodaysPlan'
 import { SupersetLogger } from './SupersetLogger'
 import type { WeightEntry, LiftSet } from '../../../types'
-
-interface SetStr { weight: string; reps: string }
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -198,8 +199,8 @@ export function WeightsTab() {
         <Card>
           <SecTitle>Log Exercise</SecTitle>
           <div className="flex flex-col gap-2.5 mb-3">
-            <div>
-              <p className="text-xs text-muted font-medium mb-1">Exercise</p>
+            <div className="flex flex-col gap-1">
+              <label className={FIELD_LABEL}>Exercise</label>
               <SmartInput
                 value={ex}
                 onChange={v => { setEx(v); if (!v) setSsExercises(null) }}
@@ -208,8 +209,8 @@ export function WeightsTab() {
               />
             </div>
             {lastPerf && (
-              <div className="px-2.5 py-2 bg-bg rounded-lg text-xs text-muted">
-                <span className="font-semibold text-primary">Last ({lastPerf.date}):</span>{' '}
+              <div className="px-2.5 py-2 bg-hairline rounded-[3px] text-[11px] text-ink-2">
+                <span className="font-bold text-ink">Last ({lastPerf.date}):</span>{' '}
                 {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
               </div>
             )}
@@ -217,48 +218,33 @@ export function WeightsTab() {
           </div>
 
           <div className="mb-3">
-            <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
-              {['#', 'Weight (kg)', 'Reps', ''].map((h, i) => (
-                <p key={i} className="text-[11px] text-muted font-semibold">{h}</p>
-              ))}
-            </div>
-            {sets.slice(0, revealed).map((s, i) => (
-              <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
-                <span className="text-xs text-muted text-center">{i + 1}</span>
-                <input
-                  value={s.weight} onChange={e => updateSet(i, 'weight', e.target.value)}
-                  type="number" placeholder="60" min="0" step="0.5"
-                  className="w-full min-w-0 border border-border rounded-lg px-2.5 py-1.5 text-sm bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
-                />
-                <input
-                  value={s.reps} onChange={e => updateSet(i, 'reps', e.target.value)}
-                  type="number" placeholder="10" min="1"
-                  className="w-full min-w-0 border border-border rounded-lg px-2.5 py-1.5 text-sm bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
-                />
-                <div>{sets.slice(0, revealed).length > 1 && <DelBtn noConfirm onClick={() => removeSet(i)} />}</div>
-              </div>
-            ))}
-            <button onClick={revealNext} className="text-xs text-accent mt-1">
-              + {revealed < sets.length ? `Set ${revealed + 1} (${sets[revealed].weight}kg × ${sets[revealed].reps})` : 'Add set'}
-            </button>
+            <SetsGrid
+              sets={sets}
+              revealed={revealed}
+              onUpdate={updateSet}
+              onRemove={removeSet}
+              onRevealNext={revealNext}
+            />
           </div>
 
           {(live1RM > 0 || historical1RM > 0) && (
-            <div className="flex items-center justify-between px-2.5 py-2 bg-accent-l rounded-lg mb-3 text-xs">
-              <span className="text-muted font-medium">💪 Est. 1RM</span>
-              <span className="text-primary font-semibold tabular-nums flex items-center gap-1.5">
+            <div className="flex items-center justify-between gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
+              <span className={FIELD_LABEL}>Est. 1RM</span>
+              <span className="text-[13px] font-bold text-ink tabular-nums flex items-center gap-1.5">
                 {live1RM > 0 ? `${Math.round(live1RM)} kg` : '–'}
                 {historical1RM > 0 && (
-                  <span className="text-muted font-normal">· best {Math.round(historical1RM)} kg</span>
+                  <span className="text-[11px] text-ink-2 font-normal">· best {Math.round(historical1RM)} kg</span>
                 )}
+                {/* A personal best is a fact, not an urgency, so it takes no
+                    accent (design-system §1) — it is stated, like SS and DELOAD. */}
                 {live1RM > 0 && live1RM >= historical1RM && historical1RM > 0 && (
-                  <span className="text-accent font-bold">🏆 PR</span>
+                  <span className="inline-flex items-center px-1.5 py-[2px] rounded-[2px] bg-ink text-white text-[8px] font-bold uppercase tracking-[0.08em]">PR</span>
                 )}
               </span>
             </div>
           )}
 
-          <Btn onClick={addEntry} className="w-full">Save Exercise</Btn>
+          <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
         </Card>
       )}
 
@@ -279,37 +265,42 @@ export function WeightsTab() {
               <Chip small active={chartMetric === 'volume'} onClick={() => setChartMetric('volume')}>Volume</Chip>
             </div>
           </div>
-          <select
-            value={chartEx}
-            onChange={e => setSelEx(e.target.value)}
-            className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary mb-3 focus:outline-none"
-          >
-            {exercises.map(e => <option key={e}>{e}</option>)}
-          </select>
+          <div className="mb-3">
+            <SelEl
+              value={chartEx}
+              onChange={e => setSelEx(e.target.value)}
+              options={exercises.map(e => ({ value: e, label: e }))}
+            />
+          </div>
           {chartData.length > 1 ? (
             <ResponsiveContainer width="100%" height={170}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b' }} />
-                <YAxis domain={['auto', 'auto']} tick={{ fontSize: 10, fill: '#64748b' }} width={40} />
-                <Tooltip formatter={(v: number) => [`${v} kg`, chartMetric === 'maxWeight' ? 'Max Weight' : 'Volume']} />
+              <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
+                <CartesianGrid vertical={false} stroke={CHART.grid} />
+                <XAxis dataKey="date" {...CHART_AXIS} />
+                <YAxis domain={['auto', 'auto']} width={38} {...CHART_AXIS} />
+                <Tooltip
+                  {...CHART_TOOLTIP}
+                  formatter={(v: number) => chartMetric === 'maxWeight'
+                    ? [`${v} kg`, 'Max weight']
+                    : [`${v} kg·reps`, 'Volume']}
+                />
                 <Line
-                  type="monotone"
+                  {...CHART_LINE}
                   dataKey={chartMetric}
-                  stroke="#6366f1"
-                  strokeWidth={2.5}
+                  stroke={CHART.line}
+                  activeDot={{ r: 3, fill: CHART.line, stroke: 'none' }}
+                  // No resting dots (§9) — the only marked points are the deload
+                  // sessions, and a single point is exactly what the accent is for.
                   dot={(props: { cx?: number; cy?: number; payload?: { deload?: boolean }; index?: number }) => {
                     const { cx, cy, payload, index } = props
-                    if (cx == null || cy == null) return <g key={index} />
-                    return payload?.deload
-                      ? <circle key={index} cx={cx} cy={cy} r={5} fill="#92400e" stroke="#fcd34d" strokeWidth={2} />
-                      : <circle key={index} cx={cx} cy={cy} r={3} fill="#6366f1" />
+                    if (cx == null || cy == null || !payload?.deload) return <g key={index} />
+                    return <circle key={index} cx={cx} cy={cy} r={3.5} fill={CHART.accent} />
                   }}
                 />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-sm text-muted text-center py-8">Not enough data to chart</p>
+            <EmptyMsg>Not enough data to chart</EmptyMsg>
           )}
         </Card>
       )}
@@ -326,11 +317,11 @@ export function WeightsTab() {
           renderItem={(g, gi) => {
             if (g.type === 'superset') {
               return (
-                <div key={gi} className="mb-3 border border-ss-b rounded-xl p-2.5 bg-ss-l">
+                <div key={gi} className="mb-3 border border-line rounded-[3px] p-2.5 bg-paper">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <SSBadge />
-                    <span className="text-[11px] text-ss font-semibold">Superset</span>
-                    <span className="text-[11px] text-muted ml-auto">{g.entries[0].date}</span>
+                    <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
+                    <span className="text-[11px] text-ink-3 ml-auto tabular-nums">{g.entries[0].date}</span>
                     <EditBtn onClick={() => openEditModal({ type: 'weight-superset', records: [g.entries[0], g.entries[1]] })} />
                     <DelBtn onClick={() => {
                       g.entries.forEach(e => removeWeightEntry(e.id))
@@ -338,10 +329,10 @@ export function WeightsTab() {
                   </div>
                   {g.entries.map((e, ei) => (
                     <div key={ei} className={ei === 0 ? 'mb-1.5' : ''}>
-                      <span className="text-xs font-semibold text-primary">{e.exercise}</span>
+                      <span className="text-xs font-bold text-ink">{e.exercise}</span>
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {e.sets.map((s, i) => (
-                          <span key={i} className="px-1.5 py-0.5 rounded bg-surface text-[11px] text-muted">S{i + 1}: {s.weight}kg×{s.reps}</span>
+                          <span key={i} className="px-1.5 py-0.5 rounded-[2px] bg-white border border-line text-[10px] text-ink-2 tabular-nums">S{i + 1}: {s.weight}kg×{s.reps}</span>
                         ))}
                       </div>
                     </div>
@@ -351,24 +342,24 @@ export function WeightsTab() {
             }
             const entry = g.entries[0]
             return (
-              <div key={gi} className="flex items-start justify-between py-2 border-b border-bg last:border-0">
-                <div>
-                  <p className="text-sm font-semibold text-primary flex items-center gap-1.5">
+              <div key={gi} className="flex items-start justify-between py-2 border-b border-hairline last:border-0">
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-ink flex items-center gap-1.5 flex-wrap">
                     {entry.exercise}
                     {best1RM(entry.sets) > 0 && (
-                      <span className="text-[10px] font-medium text-accent bg-accent-l px-1.5 py-0.5 rounded-full">
+                      <span className="text-[10px] font-semibold text-ink-2 border border-line px-1.5 py-0.5 rounded-[2px] tabular-nums">
                         ≈{Math.round(best1RM(entry.sets))}kg 1RM
                       </span>
                     )}
                   </p>
-                  <div className="flex flex-wrap gap-1 mt-0.5">
+                  <div className="flex flex-wrap gap-1 mt-1">
                     {entry.sets.map((s, i) => (
-                      <span key={i} className="px-1.5 py-0.5 rounded bg-bg text-[11px] text-muted">S{i + 1}: {s.weight}kg×{s.reps}</span>
+                      <span key={i} className="px-1.5 py-0.5 rounded-[2px] bg-hairline text-[10px] text-ink-2 tabular-nums">S{i + 1}: {s.weight}kg×{s.reps}</span>
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 ml-2 mt-0.5">
-                  <span className="text-[11px] text-muted">{entry.date}</span>
+                <div className="flex items-center gap-1 ml-2 mt-0.5 shrink-0">
+                  <span className="text-[11px] text-ink-3 tabular-nums">{entry.date}</span>
                   <EditBtn onClick={() => openEditModal({ type: 'weight', record: entry })} />
                   <DelBtn onClick={() => removeWeightEntry(entry.id)} />
                 </div>

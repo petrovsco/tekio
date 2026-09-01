@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { isDeloadDate, uid } from '../../../lib/utils'
-import { Card } from '../../ui/Card'
+import { Card, SecTitle } from '../../ui/Card'
 import { Btn } from '../../ui/Button'
-import { SSBadge } from '../../ui/Badges'
+import { SSBadge, DeloadBadge } from '../../ui/Badges'
+import { FIELD } from '../../ui/Input'
 import type { WeightEntry, LiftSet } from '../../../types'
 
 interface SetStr { weight: string; reps: string }
@@ -73,28 +74,30 @@ export function SupersetLogger({ exercises, weights, date, programStartDate, isD
     if (entries.length) onSave(entries)
   }
 
+  // The 2px border is the emphasis weight (design-system §6) — this panel takes
+  // over the capture slot, so it earns it. Colour cannot say so (§1).
   return (
-    <Card className="border-2 border-ss-b bg-ss-l">
+    <Card className="border-2 border-ink">
       <div className="flex items-center gap-2 mb-3">
         <SSBadge />
-        <span className="text-sm font-bold text-ss">Superset Logger</span>
-        {isDeload && <span className="text-[11px] bg-dl-bd text-dl-tx rounded-full px-2 py-0.5 font-bold">⚠️ Deload — 70% reps</span>}
+        <SecTitle className="mb-0">Superset logger</SecTitle>
+        {isDeload && <span className="ml-auto"><DeloadBadge /></span>}
       </div>
 
       {/* Header row */}
       <div className="grid gap-2 mb-1.5" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr)' }}>
         <div />
         {exercises.map((ex, i) => (
-          <div key={i} className="text-center text-xs font-bold text-ss bg-surface rounded-lg py-1.5">{ex}</div>
+          <div key={i} className="text-center text-[11px] font-bold text-ink bg-hairline rounded-[3px] py-1.5 px-1 truncate">{ex}</div>
         ))}
       </div>
 
-      {lp0 && <p className="text-[10px] text-muted mb-0.5 pl-9">Last: {lp0.sets.map(s => `${s.weight}×${s.reps}`).join(' · ')}</p>}
-      {lp1 && <p className="text-[10px] text-muted mb-2 pl-9">Last: {lp1.sets.map(s => `${s.weight}×${s.reps}`).join(' · ')}</p>}
+      {lp0 && <p className="text-[10px] text-ink-3 mb-0.5 pl-9">Last: {lp0.sets.map(s => `${s.weight}×${s.reps}`).join(' · ')}</p>}
+      {lp1 && <p className="text-[10px] text-ink-3 mb-2 pl-9">Last: {lp1.sets.map(s => `${s.weight}×${s.reps}`).join(' · ')}</p>}
 
       {Array.from({ length: Math.min(revealed, Math.max(sets0.length, sets1.length)) }, (_, i) => (
         <div key={i} className="grid gap-2 mb-2 items-start" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr)' }}>
-          <span className="text-[11px] text-muted text-center pt-2.5">S{i + 1}</span>
+          <span className="text-[11px] text-ink-3 text-center pt-2.5">S{i + 1}</span>
           {([
             [sets0, setSets0] as const,
             [sets1, setSets1] as const,
@@ -104,13 +107,13 @@ export function SupersetLogger({ exercises, weights, date, programStartDate, isD
                 value={sets[i]?.weight || ''}
                 onChange={e => updateSet(setter, i, 'weight', e.target.value)}
                 type="number" placeholder="kg" min="0" step="0.5"
-                className="w-full min-w-0 border border-border rounded-lg px-2 py-1.5 text-sm bg-surface text-primary focus:outline-none focus:ring-1 focus:ring-ss/50"
+                className={FIELD}
               />
               <input
                 value={sets[i]?.reps || ''}
                 onChange={e => updateSet(setter, i, 'reps', e.target.value)}
                 type="number" placeholder="reps" min="1"
-                className="w-full min-w-0 border border-border rounded-lg px-2 py-1.5 text-sm bg-surface text-primary focus:outline-none focus:ring-1 focus:ring-ss/50"
+                className={FIELD}
               />
             </div>
           ))}
@@ -121,7 +124,7 @@ export function SupersetLogger({ exercises, weights, date, programStartDate, isD
         {revealed < 8 && (
           <Btn variant="secondary" small onClick={revealNext}>+ Set</Btn>
         )}
-        <Btn variant="ss" onClick={save} className="flex-1">Save Superset</Btn>
+        <Btn onClick={save} className="flex-1">Save superset</Btn>
         <Btn variant="secondary" onClick={onCancel}>Cancel</Btn>
       </div>
     </Card>

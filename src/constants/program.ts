@@ -1,16 +1,21 @@
 import type { BlockType, TrainingTag } from '../types'
+import type { IconName } from '../components/ui/Icon'
 
 export const BLOCK_TYPES: BlockType[] = [
   'warmup', 'weight', 'mobility', 'conditioning', 'sport', 'recovery',
 ]
 
-export const BLOCK_META: Record<BlockType, { icon: string; label: string }> = {
-  warmup: { icon: '🔥', label: 'Warm-up' },
-  weight: { icon: '🏋️', label: 'Weights' },
-  mobility: { icon: '🧘', label: 'Mobility' },
-  conditioning: { icon: '🫀', label: 'Conditioning' },
-  sport: { icon: '⚽', label: 'Sport' },
-  recovery: { icon: '🛌', label: 'Recovery' },
+/**
+ * `iconName` is the SIGNAL icon (design-system §7); `icon` is the emoji it
+ * replaces, still consumed by ProgramTab until roadmap 030 sweeps that page.
+ */
+export const BLOCK_META: Record<BlockType, { icon: string; iconName: IconName; label: string }> = {
+  warmup: { icon: '🔥', iconName: 'warmup', label: 'Warm-up' },
+  weight: { icon: '🏋️', iconName: 'weights', label: 'Weights' },
+  mobility: { icon: '🧘', iconName: 'mobility', label: 'Mobility' },
+  conditioning: { icon: '🫀', iconName: 'cardio', label: 'Conditioning' },
+  sport: { icon: '⚽', iconName: 'sport', label: 'Sport' },
+  recovery: { icon: '🛌', iconName: 'recovery', label: 'Recovery' },
 }
 
 export const TRAINING_TAGS: TrainingTag[] = [
