@@ -2,12 +2,13 @@
 
 **Label:** feature
 **Status:** planned — kickoff-ready. The foundation of the 2.0.0 restyle: every per-page brief (027–032) builds on this one.
-**Depends:** 024
+**Depends:** 037
 **Release:** 2.0.0
 
-Why it waits on 024: the acceptance below logs a test entry of every type
-against the shared production database; 024 Part 1 makes those rows taggable
-(and staging unmistakable) first.
+Why it waits on 037: the acceptance below logs a test entry of every type
+against the shared production database — including from localhost — so
+[037](037-row-origin-tagging.md) makes those rows identifiable first. (037 was
+024's Part 1 until 2026-09-01; the rest of 024 does not block this brief.)
 **Origin:** 2026-09-01 screen survey. Home wears the SIGNAL language
 ([design-system.md](../design-system.md), from roadmap
 [018](done/018-home-design-canvas.md)); every other surface — and the chrome

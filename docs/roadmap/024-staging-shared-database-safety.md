@@ -1,12 +1,13 @@
 # Roadmap: Staging on the production database — guardrails and release cleanup
 
 **Label:** infra
-**Status:** planned — kickoff-ready. Decided 2026-08-30 when staging was set up;
-nothing built yet. The staging deployment itself (domain, gate, env vars) is not
-part of this brief — that is already done.
-**Release:** 2.0.0 — tagged 2026-09-01: the restyle train's browser verification
-writes test rows into the shared database, so Part 1 lands before it
-([026](026-signal-chrome-and-primitives.md) depends on this brief).
+**Status:** planned — Part 1 split out to [037](037-row-origin-tagging.md) on
+2026-09-01; what remains is the migration/destructive-write policy (Part 2) and
+the release cleanup ritual (Part 3). The staging deployment itself (domain,
+gate, env vars) is not part of this brief — that is already done.
+**Depends:** 037
+**Release:** 2.0.0 — the cleanup ritual is what makes a major release safe on a
+shared database.
 **Origin:** Peter's answer when asked whether staging should get its own Supabase
 project: *"Same database, but then we need to make sure we don't break the
 production. Also we want to plan database cleanups on major releases so we don't
@@ -43,21 +44,12 @@ written before rows are identifiable is a ritual that cannot be performed.
 
 ## What to build
 
-### Part 1 — Tell staging apart (do this first)
+### Part 1 — Tell staging apart → [037](037-row-origin-tagging.md)
 
-- **Mark the rows.** Give the write path a way to record which environment
-  created a row. The cheapest honest shape is one nullable `origin` (or `env`)
-  text column on the tables that take user writes, defaulting to null for
-  everything that already exists, and set to `'staging'` only when the app is
-  running on staging. Null therefore means "production or pre-dates the
-  column" — which is the safe default, because cleanup only ever deletes rows
-  it can positively identify as staging.
-- **Tell the app where it is running.** A build-time env var (e.g.
-  `VITE_ENV=staging`, set on Vercel's Preview environment only) that the data
-  layer reads when inserting. Production builds leave it unset.
-- **Show it on screen.** A persistent, unmissable staging marker in the UI —
-  the point is that Peter never logs a real session into staging by mistake,
-  which is the failure mode that makes all of the above necessary.
+Split out on 2026-09-01 and moved in full: the nullable `origin` column, the
+write-once trigger, the environment resolver, and the on-screen marker. It left
+because it was the only part blocking anything — [026](026-signal-chrome-and-primitives.md)
+waits on it — and because Part 3 below cannot be written until it ships.
 
 ### Part 2 — Stop staging from breaking production
 
@@ -72,10 +64,11 @@ written before rows are identifiable is a ritual that cannot be performed.
 
 ### Part 3 — The cleanup ritual at major releases
 
-Only meaningful once Part 1 ships.
+Only meaningful once [037](037-row-origin-tagging.md) ships.
 
 - On every **major** version bump (the ones Peter confirms — see the branching
-  and versioning rules in `CLAUDE.md`), sweep rows marked `origin = 'staging'`.
+  and versioning rules in `CLAUDE.md`), sweep rows whose `origin` is not null
+  — 037 tags both `'staging'` and `'dev'`, and null means production.
 - Write the sweep as a reviewable query per table, not one blanket delete, and
   **report a count before deleting anything**. The database holds live
   single-user data with no sandbox; a cleanup that cannot be previewed is a
@@ -84,21 +77,14 @@ Only meaningful once Part 1 ships.
 
 ## Questions to answer at kickoff
 
-1. Which tables actually need the `origin` column? Probably the ones with user
-   writes (`training_sessions`, `session_exercises`, `session_sets`,
-   `cardio_sessions`, bodyweight, mobility, water, donations) — confirm against
-   the schema rather than assuming.
-2. Is `origin` the right shape, or is a single `is_staging boolean` enough? A
-   text column costs nothing extra and leaves room for other origins (the Garmin
-   sync already writes rows no human typed).
-3. Should the staging marker be a banner, a colour change, or both?
+1. Does staging get a *blanket* block on deletes and bulk updates, or is the
+   risk accepted in writing? The app has one user, so a block is cheap — but it
+   also makes staging unable to exercise the delete paths that 026 restyles.
+2. Where does the migration policy live so it is actually read — `CLAUDE.md`,
+   `supabase/README.md`, or both?
 
 ## Acceptance
 
-- [ ] Staging builds set a distinguishing env var, and the data layer records it
-      on every user-created row.
-- [ ] The migration adding the column is applied, with existing rows left null.
-- [ ] Staging is visually unmistakable in the browser.
 - [ ] A written rule says how migrations reach production and what staging may
       not do destructively.
 - [ ] A cleanup procedure exists that previews counts before deleting, and it

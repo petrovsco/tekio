@@ -19,10 +19,11 @@ The next `develop` → `master` release onto production, and its objective is
 - **The model** — the simplified seven-adaptation model (019), its follow-on
   target shapes (012), and the doctrine-ledger close-out (014).
 - **The restyle** — Home already wears the SIGNAL language (018); every other
-  surface still wears the v1 slate/indigo look. The restyle train is 024
-  (staging guardrails, so restyle testing writes taggable rows) → 026
+  surface still wears the v1 slate/indigo look. The restyle train is 037
+  (row origin tagging, so restyle testing writes identifiable rows) → 026
   (chrome + shared primitives) → 027–032 (one sweep per page) → 033 (delete
-  the old language and prove the walk).
+  the old language and prove the walk). 024 carries the rest of the shared-
+  database guardrails and rides the same release.
 
 Releasing it unblocks the schema drops queued in
 [025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md) —
