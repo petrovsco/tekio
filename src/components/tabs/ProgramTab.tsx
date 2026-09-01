@@ -681,9 +681,9 @@ export function ProgramTab() {
     try {
       await saveActiveProgram(p, programId, userProgramId)
       setEditing(null)
-      setToast('✅ Program saved!')
+      setToast('Program saved!')
     } catch {
-      setToast('❌ Failed to save program.')
+      setToast('Failed to save program.')
     } finally {
       setSaving(false)
     }
@@ -693,18 +693,18 @@ export function ProgramTab() {
     const newIndex = (ap.currentDayIndex + 1) % ap.days.length
     try {
       await advanceActiveProgram(ap.userProgramId, newIndex, today())
-      setToast(`✅ Advanced to ${ap.days[newIndex].name}`)
+      setToast(`Advanced to ${ap.days[newIndex].name}`)
     } catch {
-      setToast('❌ Failed to advance.')
+      setToast('Failed to advance.')
     }
   }
 
   const handleRestart = async (ap: ActiveProgram) => {
     try {
       await restartActiveProgram(ap.userProgramId, today())
-      setToast('🔄 Program restarted!')
+      setToast('Program restarted!')
     } catch {
-      setToast('❌ Failed to restart.')
+      setToast('Failed to restart.')
     }
   }
 
@@ -713,16 +713,16 @@ export function ProgramTab() {
       await pauseActiveProgram(ap.userProgramId)
       setToast(`⏸ ${ap.name} paused`)
     } catch {
-      setToast('❌ Failed to pause.')
+      setToast('Failed to pause.')
     }
   }
 
   const handleDelete = async (ap: ActiveProgram) => {
     try {
       await removeProgram(ap.programId, ap.userProgramId)
-      setToast(`🗑 ${ap.name} deleted`)
+      setToast(`${ap.name} deleted`)
     } catch {
-      setToast('❌ Failed to delete.')
+      setToast('Failed to delete.')
     }
   }
 
@@ -731,16 +731,16 @@ export function ProgramTab() {
       await resumeActiveProgram(cycle.userProgramId)
       setToast(`▶ ${cycle.programName} resumed`)
     } catch {
-      setToast('❌ Failed to resume.')
+      setToast('Failed to resume.')
     }
   }
 
   const handleDeleteHistory = async (cycle: ProgramCycle) => {
     try {
       await removeProgram(cycle.programId, cycle.userProgramId)
-      setToast(`🗑 ${cycle.programName} deleted`)
+      setToast(`${cycle.programName} deleted`)
     } catch {
-      setToast('❌ Failed to delete.')
+      setToast('Failed to delete.')
     }
   }
 

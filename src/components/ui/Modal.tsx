@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { Icon } from './Icon'
 
 interface ModalProps {
   open: boolean
@@ -15,6 +16,9 @@ interface ModalProps {
  * - Renders into document.body via a portal
  * - Closes on Escape key or backdrop click
  * - Full-screen on mobile, centred card on sm+
+ * - SIGNAL sheet geometry (design-system §2): 2px ink border, 6px radius,
+ *   rgba(26,26,26,0.34) scrim. Home's own sheets use BottomSheet; this is the
+ *   shell-wide equivalent for everything reached from a tab.
  * - Scrollable content area; header/footer stay fixed
  */
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
@@ -46,21 +50,19 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
       aria-label={title}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative w-full min-w-0 sm:max-w-md max-h-[92vh] bg-surface rounded-t-2xl sm:rounded-2xl border border-border shadow-xl flex flex-col overflow-hidden">
+      <div className="relative w-full min-w-0 sm:max-w-md max-h-[92vh] bg-white text-ink rounded-t-[6px] sm:rounded-[6px] border-2 border-ink flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-shrink-0">
-          <h2 className="text-sm font-semibold text-primary">{title}</h2>
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-hairline flex-shrink-0">
+          <h2 className="text-[17px] font-bold tracking-[-0.01em]">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-muted hover:text-primary hover:bg-bg transition-colors"
+            className="w-11 h-11 -my-2 -mr-3 flex items-center justify-end text-ink-2 hover:text-ink cursor-pointer transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <path d="M2 2l12 12M14 2L2 14" />
-            </svg>
+            <Icon name="close" />
           </button>
         </div>
 
@@ -71,7 +73,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
 
         {/* Footer — outside scroll area so it's always visible on all browsers */}
         {footer && (
-          <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-border bg-surface">
+          <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-hairline bg-white">
             {footer}
           </div>
         )}

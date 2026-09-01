@@ -37,7 +37,7 @@ export function MuscleGroupEditor() {
       await reloadMuscleData()
       setToast(msg)
     } catch {
-      setToast('❌ Failed to refresh muscle data.')
+      setToast('Failed to refresh muscle data.')
     }
   }
 
@@ -45,7 +45,7 @@ export function MuscleGroupEditor() {
     const name = newName.trim()
     if (!name) return
     if (muscleGroups.some(g => g.name.toLowerCase() === name.toLowerCase())) {
-      setToast('❌ That muscle group already exists.')
+      setToast('That muscle group already exists.')
       return
     }
     try {
@@ -53,7 +53,7 @@ export function MuscleGroupEditor() {
       setNewName('')
       await reload('✅ Muscle group added.')
     } catch {
-      setToast('❌ Failed to add muscle group.')
+      setToast('Failed to add muscle group.')
     }
   }
 
@@ -64,7 +64,7 @@ export function MuscleGroupEditor() {
       await updateMuscleGroup(id, { name: v })
       await reload('✅ Renamed.')
     } catch {
-      setToast('❌ Failed to rename.')
+      setToast('Failed to rename.')
     }
   }
 
@@ -73,7 +73,7 @@ export function MuscleGroupEditor() {
       await updateMuscleGroup(id, { bodyRegion: region })
       await reload('✅ Region updated.')
     } catch {
-      setToast('❌ Failed to update region.')
+      setToast('Failed to update region.')
     }
   }
 
@@ -83,20 +83,20 @@ export function MuscleGroupEditor() {
       await updateMuscleGroup(id, { parentId: parent || null })
       await reload('✅ Moved.')
     } catch {
-      setToast('❌ Failed to move group.')
+      setToast('Failed to move group.')
     }
   }
 
   const remove = async (id: string, name: string) => {
     if (childrenOf(id).length > 0) {
-      setToast('❌ Move or delete its sub-groups first.')
+      setToast('Move or delete its sub-groups first.')
       return
     }
     try {
       await deleteMuscleGroup(id)
       await reload(`🗑 ${name} deleted.`)
     } catch {
-      setToast('❌ Can’t delete — it’s used by a habit.')
+      setToast('Can’t delete — it’s used by a habit.')
     }
   }
 

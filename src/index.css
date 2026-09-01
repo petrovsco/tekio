@@ -28,7 +28,7 @@
 }
 
 .animate-shimmer {
-  background-image: linear-gradient(90deg, var(--color-border) 25%, var(--color-bg) 50%, var(--color-border) 75%);
+  background-image: linear-gradient(90deg, var(--color-hairline) 25%, var(--color-paper) 50%, var(--color-hairline) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
 }

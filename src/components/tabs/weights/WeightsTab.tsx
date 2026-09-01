@@ -110,9 +110,9 @@ export function WeightsTab() {
     try {
       await addWeightEntry({ date, exercise: ex.trim(), sets: vs })
       setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1)
-      setToast('✅ Exercise saved!')
+      setToast('Exercise saved!')
     } catch {
-      setToast('❌ Failed to save.')
+      setToast('Failed to save.')
     }
   }
 
@@ -120,9 +120,9 @@ export function WeightsTab() {
     try {
       await Promise.all(entries.map(e => addWeightEntry(e)))
       setSsExercises(null); setSsInitialSets(null)
-      setToast('✅ Superset saved!')
+      setToast('Superset saved!')
     } catch {
-      setToast('❌ Failed to save.')
+      setToast('Failed to save.')
     }
   }
 

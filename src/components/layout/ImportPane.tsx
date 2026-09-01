@@ -124,7 +124,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
         await store.saveActiveProgram(p.program as Program)
       }
 
-      store.setToast('✅ Data imported!')
+      store.setToast('Data imported!')
       return true
     } catch {
       return false
@@ -141,7 +141,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
     ref.current?.blur()
     setTimeout(async () => {
       const ok = await applyData(text)
-      if (!ok) store.setToast('❌ Invalid data format.')
+      if (!ok) store.setToast('Invalid data format.')
       onClose()
     }, 100)
   }
@@ -165,7 +165,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
           <Btn
             onClick={async () => {
               const ok = await applyData(val)
-              if (!ok) store.setToast('❌ Invalid data format.')
+              if (!ok) store.setToast('Invalid data format.')
               else onClose()
             }}
             disabled={!val.trim() || loading}

@@ -1,4 +1,5 @@
 import { DelBtn } from './Button'
+import { FIELD } from './Input'
 
 export interface SetStr { weight: string; reps: string }
 
@@ -19,14 +20,14 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
   return (
     <div>
       <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
-        {['#', 'Weight (kg)', 'Reps', ''].map((h, i) => (
-          <p key={i} className="text-[11px] text-muted font-semibold">{h}</p>
+        {['#', 'Weight kg', 'Reps', ''].map((h, i) => (
+          <p key={i} className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">{h}</p>
         ))}
       </div>
 
       {visible.map((s, i) => (
         <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
-          <span className="text-xs text-muted text-center">{i + 1}</span>
+          <span className="text-[11px] text-ink-3 text-center">{i + 1}</span>
           <input
             value={s.weight}
             onChange={e => onUpdate(i, 'weight', e.target.value)}
@@ -34,7 +35,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
             placeholder="60"
             min="0"
             step="0.5"
-            className="w-full min-w-0 border border-border rounded-lg px-2.5 py-1.5 text-sm bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className={FIELD}
           />
           <input
             value={s.reps}
@@ -42,7 +43,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
             type="number"
             placeholder="10"
             min="1"
-            className="w-full min-w-0 border border-border rounded-lg px-2.5 py-1.5 text-sm bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40"
+            className={FIELD}
           />
           <div>
             {visible.length > 1 && <DelBtn noConfirm onClick={() => onRemove(i)} />}
@@ -50,7 +51,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
         </div>
       ))}
 
-      <button onClick={onRevealNext} className="text-xs text-accent mt-1">
+      <button onClick={onRevealNext} className="text-[11px] font-semibold text-ink underline underline-offset-2 mt-1 cursor-pointer">
         {revealed < sets.length
           ? `+ Set ${revealed + 1} (${sets[revealed].weight}kg × ${sets[revealed].reps})`
           : '+ Add set'}

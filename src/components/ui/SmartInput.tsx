@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import type { KeyboardEvent } from 'react'
+import { FIELD } from './Input'
 
 interface SmartInputProps {
   value: string
@@ -39,16 +40,16 @@ export function SmartInput({ value, onChange, suggestions, placeholder, classNam
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
-        className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40"
+        className={FIELD}
       />
       {open && filtered.length > 0 && (
-        <div className="absolute z-50 w-full top-full mt-1 bg-surface border border-border rounded-lg shadow-lg overflow-hidden">
+        <div className="absolute z-50 w-full top-full mt-1 bg-white border border-ink rounded-[3px] overflow-hidden">
           {filtered.map(s => (
             <button
               key={s}
               type="button"
               onMouseDown={e => { e.preventDefault(); onChange(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-sm text-primary hover:bg-bg transition-colors"
+              className="w-full text-left px-2.5 py-2 text-xs text-ink hover:bg-hairline cursor-pointer transition-colors"
             >
               {s}
             </button>

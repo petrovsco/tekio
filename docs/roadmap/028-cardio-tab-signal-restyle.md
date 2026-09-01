@@ -1,7 +1,7 @@
 # Roadmap: Cardio tab — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 026; follow the pattern 027 sets on Weights.
+**Status:** planned — kickoff-ready now 026 has landed; follow the pattern 027 sets on Weights.
 **Depends:** 026
 **Release:** 2.0.0
 

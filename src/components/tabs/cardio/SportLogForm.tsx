@@ -68,9 +68,9 @@ export function SportLogForm() {
       setDuration(''); setAvgHr('')
       setCompetitorNames([]); setResult(''); setTeammates([])
       setNewSportHasCompetitor(false); setNewSportHasTeammate(false)
-      setToast('✅ Session logged!')
+      setToast('Session logged!')
     } catch {
-      setToast('❌ Failed to save.')
+      setToast('Failed to save.')
     }
   }
 

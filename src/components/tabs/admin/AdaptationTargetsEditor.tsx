@@ -19,9 +19,9 @@ export function AdaptationTargetsEditor() {
     try {
       await updateAdaptationTarget(key, { [field]: Math.round(value) })
       await reloadAdaptationTargets()
-      setToast('✅ Target updated.')
+      setToast('Target updated.')
     } catch {
-      setToast('❌ Failed to update target.')
+      setToast('Failed to update target.')
     } finally {
       setSaving(null)
     }

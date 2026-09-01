@@ -1,0 +1,67 @@
+import type { SVGProps } from 'react'
+
+// The SIGNAL icon set (design-system §7): stroke SVGs on a 24 viewBox,
+// stroke-width 1.8, round caps and joins, no fills, currentColor. 18px in the
+// nav, 13px inline. This module is the whole set — no icon font, no emoji in
+// app chrome. Emoji inside *data* (exercise names, notes) are content and are
+// left alone.
+
+export type IconName =
+  | 'home' | 'weights' | 'cardio' | 'program' | 'menu' | 'mobility'
+  | 'habits' | 'adaptations' | 'profile' | 'admin' | 'assistant'
+  | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
+
+/** Path geometry only — the wrapper below carries every shared stroke rule. */
+const PATHS: Record<IconName, string> = {
+  // A roof over a doorway — the surface that answers without tapping.
+  home: 'M3 10.5 12 3.5l9 7M5.5 9v11h13V9M10 20v-6h4v6',
+  // A loaded barbell: sleeve, collar, bar.
+  weights: 'M3 9v6M6.5 6.5v11M17.5 6.5v11M21 9v6M6.5 12h11',
+  // Heart rate as a trace, not a heart — cardio is measured, not felt.
+  cardio: 'M3 12h4l2.5-6 4 12 2.5-6h5',
+  // A dated plan: a sheet with a bound top edge and ruled lines.
+  program: 'M6 3.5h12a1.5 1.5 0 0 1 1.5 1.5v15a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 20V5A1.5 1.5 0 0 1 6 3.5ZM9 3.5v3M15 3.5v3M8 12h8M8 16h5',
+  menu: 'M4 7h16M4 12h16M4 17h16',
+  // A figure held in a lunge — one leg extended, one bent, arms reaching.
+  mobility: 'M13.9 5.2a1.9 1.9 0 1 1-3.8 0 1.9 1.9 0 0 1 3.8 0M12 7.1v5.4M7.6 10.6 12 9.1l4.4 1.5M12 12.5 8 20M12 12.5l4 4.2-1 3.3',
+  // A checklist: two ticked rows.
+  habits: 'M4 8.2 6 10.2 9.5 6.2M4 17.2 6 19.2 9.5 15.2M12.5 8h7.5M12.5 17H20',
+  // Overlapping rings — the qualities read together, not alone.
+  adaptations: 'M9.5 8.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM14.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z',
+  profile: 'M12 3.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4.5 20.5c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6',
+  admin: 'M4 7h10M18 7h2M4 17h2M10 17h10M16 4.5v5M8 14.5v5',
+  // A speech frame — the assistant answers in words.
+  assistant: 'M4.5 5.5h15v11h-9L6 20.5V16.5H4.5Z',
+  close: 'M6 6l12 12M18 6 6 18',
+  trash: 'M4 6.5h16M9.5 6.5V4h5v2.5M6.5 6.5 7.5 20h9l1-13.5M10.5 10v6M13.5 10v6',
+  edit: 'M4 20h4l10.5-10.5a2 2 0 0 0-2.8-2.8L5 17.5ZM15 6.5l2.5 2.5',
+  chevronDown: 'M6 9.5 12 15.5l6-6',
+  chevronUp: 'M6 14.5 12 8.5l6 6',
+  plus: 'M12 5v14M5 12h14',
+  check: 'M5 12.5 10 17.5 19 7',
+}
+
+interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
+  name: IconName
+  /** Rendered size in px — 18 in the nav, 13 inline (§7). */
+  size?: number
+}
+
+export function Icon({ name, size = 18, ...props }: IconProps) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <path d={PATHS[name]} />
+    </svg>
+  )
+}

@@ -5,7 +5,7 @@
 **Depends:** 027, 028, 029, 030, 031, 032
 **Release:** 2.0.0
 
-[026](026-signal-chrome-and-primitives.md) promised the old tokens die when
+[026](done/026-signal-chrome-and-primitives.md) promised the old tokens die when
 their last consumer goes. This brief is that death, plus the proof that the
 release actually achieved "one visual language everywhere" — without it the
 old language lingers as dead weight and every future component has two

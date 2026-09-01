@@ -4,8 +4,10 @@ import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
 import type { SetStr } from './SetsGrid'
-import { Inp, SelEl } from './Input'
+import { Inp, SelEl, FIELD_LABEL } from './Input'
 import { Btn, DelBtn } from './Button'
+import { Icon } from './Icon'
+import { SSBadge } from './Badges'
 import { SmartInput } from './SmartInput'
 import { ChipListInput } from './ChipListInput'
 import { HabitForm } from '../tabs/habits/HabitForm'
@@ -64,6 +66,67 @@ function useSets(initial: LiftSet[]) {
   return { sets, revealed, update, remove, revealNext, parsed: parseSets(sets, revealed) }
 }
 
+// ── Shared field furniture (design-system §§5, 8) ────────────────────────────
+
+/** The 9px uppercase tracked label that sits above a control without its own. */
+function FieldLabel({ children }: { children: string }) {
+  return <p className={`${FIELD_LABEL} mb-1`}>{children}</p>
+}
+
+/** A one-of-N choice. Solid ink is the chosen option, outline the rest (§8). */
+function Toggle<T extends string | boolean>({ options, value, onPick, label }: {
+  options: { value: T; label: string }[]
+  value: T | ''
+  onPick: (v: T) => void
+  label: string
+}) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex gap-1.5">
+        {options.map(o => (
+          <button
+            key={String(o.value)}
+            onClick={() => onPick(o.value)}
+            className={`flex-1 py-2 rounded-[3px] text-[11px] font-semibold border cursor-pointer transition-colors ${
+              value === o.value
+                ? 'border-ink bg-ink text-white'
+                : 'border-line bg-white text-ink-2 hover:border-ink hover:text-ink'
+            }`}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+const RATING_STEPS = [1, 2, 3, 4, 5]
+
+/** A 1–5 rating as filled squares — the same polarity as the whole-body
+ *  quality tiles (§4). Ink means "counted"; a star would need a colour. */
+function Rating({ label, value, onPick }: { label: string; value: number; onPick: (v: number) => void }) {
+  return (
+    <div>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex gap-1.5 items-center">
+        {RATING_STEPS.map(s => (
+          <button
+            key={s}
+            aria-label={`${s} of 5`}
+            onClick={() => onPick(value === s ? 0 : s)}
+            className={`w-7 h-7 rounded-[2px] border cursor-pointer transition-colors ${
+              s <= value ? 'bg-ink border-ink' : 'bg-white border-line hover:border-ink'
+            }`}
+          />
+        ))}
+        {value > 0 && <span className="text-[11px] text-ink-3 ml-1 tabular-nums">{value}/5</span>}
+      </div>
+    </div>
+  )
+}
+
 // ── Save/Cancel footer ────────────────────────────────────────────────────────
 
 function Footer({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }) {
@@ -87,17 +150,17 @@ function WeightForm({ record, onClose, saveRef }: { record: WeightEntry; onClose
     if (!s.parsed.length) return
     try {
       await editWeightEntry(record.id, { sets: s.parsed, date })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm font-semibold text-primary">{record.exercise}</p>
+      <p className="text-[13px] font-bold text-ink">{record.exercise}</p>
       <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
       <SetsGrid
         sets={s.sets} revealed={s.revealed}
@@ -123,10 +186,10 @@ function SupersetForm({ records, onClose, saveRef }: { records: [WeightEntry, We
         editWeightEntry(records[0].id, { sets: s0.parsed, date }),
         editWeightEntry(records[1].id, { sets: s1.parsed, date }),
       ])
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -135,16 +198,16 @@ function SupersetForm({ records, onClose, saveRef }: { records: [WeightEntry, We
     <div className="flex flex-col gap-4">
       <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
 
-      <div className="border border-ss-b rounded-xl p-3 bg-ss-l">
-        <p className="text-xs font-semibold text-ss mb-2">{records[0].exercise}</p>
+      <div className="border border-line rounded-[3px] p-2.5 bg-hairline">
+        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{records[0].exercise}</p>
         <SetsGrid
           sets={s0.sets} revealed={s0.revealed}
           onUpdate={s0.update} onRemove={s0.remove} onRevealNext={s0.revealNext}
         />
       </div>
 
-      <div className="border border-ss-b rounded-xl p-3 bg-ss-l">
-        <p className="text-xs font-semibold text-ss mb-2">{records[1].exercise}</p>
+      <div className="border border-line rounded-[3px] p-2.5 bg-hairline">
+        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{records[1].exercise}</p>
         <SetsGrid
           sets={s1.sets} revealed={s1.revealed}
           onUpdate={s1.update} onRemove={s1.remove} onRevealNext={s1.revealNext}
@@ -166,10 +229,10 @@ function BodyweightForm({ record, onClose, saveRef }: { record: BodyweightEntry;
     if (!weight) return
     try {
       await editBodyweightEntry(record.id, { date, weight: +weight })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -219,10 +282,10 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
         avgHr: avgHr ? +avgHr : undefined,
         notes: notes || undefined,
       })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -254,7 +317,7 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
             step="0.01"
             min="0"
           />
-          {livePace && <p className="text-xs text-accent font-medium mt-1">⚡ {livePace}</p>}
+          {livePace && <p className="text-[11px] text-ink-2 mt-1 tabular-nums">{livePace}</p>}
         </div>
         <Inp
           label="Avg HR (bpm, opt.)"
@@ -307,10 +370,10 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
         exercises: valid,
         duration: valid.reduce((s, e) => s + e.duration, 0),
       })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -350,14 +413,12 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
         </div>
       ))}
 
-      <button onClick={addEx} className="text-xs text-accent text-left">+ Add Exercise</button>
+      <button onClick={addEx} className="text-[11px] font-semibold text-ink underline underline-offset-2 text-left cursor-pointer">+ Add exercise</button>
     </div>
   )
 }
 
 // ── SportForm ─────────────────────────────────────────────────────────────────
-
-const STARS = [1, 2, 3, 4, 5]
 
 function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: () => void; saveRef: { current: () => void } }) {
   const editSportEntry = useAppStore(s => s.editSportEntry)
@@ -409,10 +470,10 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
         result: hasCompetitor ? (result || undefined) : undefined,
         teammateNames: hasTeammate ? teammates : undefined,
       }, newSportFlags)
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -420,7 +481,7 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
   return (
     <div className="flex flex-col gap-3">
       <div>
-        <p className="text-xs text-muted font-medium mb-1">Sport</p>
+        <FieldLabel>Sport</FieldLabel>
         <SmartInput
           value={sport}
           onChange={setSport}
@@ -430,14 +491,14 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
       </div>
 
       {isNewSport && (
-        <div className="flex flex-col gap-1.5 px-3 py-2 rounded-lg bg-bg border border-border">
-          <p className="text-xs text-muted font-medium">New sport — what should this track?</p>
-          <label className="flex items-center gap-2 text-xs text-primary">
-            <input type="checkbox" checked={newSportHasCompetitor} onChange={e => setNewSportHasCompetitor(e.target.checked)} />
+        <div className="flex flex-col gap-1.5 px-2.5 py-2 rounded-[3px] bg-hairline border border-line">
+          <p className={FIELD_LABEL}>New sport — what should this track?</p>
+          <label className="flex items-center gap-2 text-xs text-ink">
+            <input type="checkbox" className="accent-ink" checked={newSportHasCompetitor} onChange={e => setNewSportHasCompetitor(e.target.checked)} />
             Competitor (opponent + win/loss)
           </label>
-          <label className="flex items-center gap-2 text-xs text-primary">
-            <input type="checkbox" checked={newSportHasTeammate} onChange={e => setNewSportHasTeammate(e.target.checked)} />
+          <label className="flex items-center gap-2 text-xs text-ink">
+            <input type="checkbox" className="accent-ink" checked={newSportHasTeammate} onChange={e => setNewSportHasTeammate(e.target.checked)} />
             Teammate(s)
           </label>
         </div>
@@ -445,24 +506,12 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
 
       <div className="grid grid-cols-2 gap-2.5">
         <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
-        <div>
-          <p className="text-xs text-muted font-medium mb-1">With Trainer?</p>
-          <div className="flex gap-1.5">
-            {([false, true] as boolean[]).map(v => (
-              <button
-                key={String(v)}
-                onClick={() => setWithTrainer(v)}
-                className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-                  withTrainer === v
-                    ? 'border-accent bg-accent-l text-accent'
-                    : 'border-border bg-surface text-muted'
-                }`}
-              >
-                {v ? 'Yes' : 'No'}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Toggle
+          label="With trainer?"
+          value={withTrainer}
+          onPick={setWithTrainer}
+          options={[{ value: false, label: 'No' }, { value: true, label: 'Yes' }]}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-2.5">
@@ -484,26 +533,12 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
         />
       </div>
 
-      <div>
-        <p className="text-xs text-muted font-medium mb-1">Quality</p>
-        <div className="flex gap-1 items-center">
-          {STARS.map(s => (
-            <button
-              key={s}
-              onClick={() => setQuality(q => (q === s ? 0 : s))}
-              className={`text-2xl transition-colors ${s <= quality ? 'text-warning' : 'text-border'}`}
-            >
-              ★
-            </button>
-          ))}
-          {quality > 0 && <span className="text-xs text-muted ml-1">{quality}/5</span>}
-        </div>
-      </div>
+      <Rating label="Quality" value={quality} onPick={v => setQuality(v as QualityRating | 0)} />
 
       {hasCompetitor && (
         <>
           <div>
-            <p className="text-xs text-muted font-medium mb-1">Competitor(s) (opt.)</p>
+            <FieldLabel>Competitor(s) (opt.)</FieldLabel>
             <ChipListInput
               items={competitorNames}
               onChange={setCompetitorNames}
@@ -511,30 +546,18 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
               placeholder="Add competitor"
             />
           </div>
-          <div>
-            <p className="text-xs text-muted font-medium mb-1">Result</p>
-            <div className="flex gap-1.5">
-              {(['win', 'loss', 'tie'] as MatchResult[]).map(r => (
-                <button
-                  key={r}
-                  onClick={() => setResult(rv => (rv === r ? '' : r))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors capitalize ${
-                    result === r
-                      ? 'border-accent bg-accent-l text-accent'
-                      : 'border-border bg-surface text-muted'
-                  }`}
-                >
-                  {r}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Toggle
+            label="Result"
+            value={result}
+            onPick={(r: MatchResult) => setResult(rv => (rv === r ? '' : r))}
+            options={(['win', 'loss', 'tie'] as MatchResult[]).map(r => ({ value: r, label: r[0].toUpperCase() + r.slice(1) }))}
+          />
         </>
       )}
 
       {hasTeammate && (
         <div>
-          <p className="text-xs text-muted font-medium mb-1">Teammate(s) (opt.)</p>
+          <FieldLabel>Teammate(s) (opt.)</FieldLabel>
           <ChipListInput items={teammates} onChange={setTeammates} suggestions={allTeammates} placeholder="Add teammate" />
         </div>
       )}
@@ -561,10 +584,10 @@ function DonationForm({ record, onClose, saveRef }: { record: DonationEntry; onC
   const save = async () => {
     try {
       await editDonationEntry(record.id, { date, type, notes })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -602,10 +625,10 @@ function WaterForm({ record, onClose, saveRef }: { record: WaterEntry; onClose: 
     if (!amount) return
     try {
       await editWaterEntry(record.id, { date, amountMl: +amount })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -634,18 +657,14 @@ function WaterForm({ record, onClose, saveRef }: { record: WaterEntry; onClose: 
 
 function DeleteRow({ onDelete }: { onDelete: () => void }) {
   return (
-    <button
-      onClick={onDelete}
-      className="text-xs text-danger font-medium self-start mt-1 active:scale-95 transition-transform"
-    >
-      🗑 Delete entry
-    </button>
+    <Btn variant="danger" small onClick={onDelete} className="self-start mt-1 inline-flex items-center gap-1.5">
+      <Icon name="trash" size={13} />
+      Delete entry
+    </Btn>
   )
 }
 
 // ── SleepForm ─────────────────────────────────────────────────────────────────
-
-const SLEEP_STARS: SleepQuality[] = [1, 2, 3, 4, 5]
 
 function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: () => void; saveRef: { current: () => void } }) {
   const editSleepEntry = useAppStore(s => s.editSleepEntry)
@@ -660,10 +679,10 @@ function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: 
     if (!hours) return
     try {
       await editSleepEntry(record.id, { date, hours: +hours, quality: quality || undefined, notes: notes || undefined })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -671,10 +690,10 @@ function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: 
   const del = async () => {
     try {
       await removeSleepEntry(record.id)
-      setToast('🗑 Deleted')
+      setToast('Deleted')
       onClose()
     } catch {
-      setToast('❌ Failed to delete.')
+      setToast('Failed to delete.')
     }
   }
 
@@ -685,27 +704,13 @@ function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: 
         <Inp label="Hours" type="number" value={hours} onChange={e => setHours(e.target.value)} step="0.25" min="0" placeholder="7.5" />
       </div>
       {record.score != null && (
-        <div className="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg bg-bg text-muted">
-          <span>⌚ Garmin Sleep Score</span>
-          <span className="font-bold text-primary tabular-nums">{record.score}</span>
-          {record.scoreQualifier && <span className="uppercase tracking-wide text-[10px]">{record.scoreQualifier.toLowerCase()}</span>}
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-[3px] bg-hairline">
+          <span className={FIELD_LABEL}>Garmin sleep score</span>
+          <span className="text-[13px] font-bold text-ink tabular-nums">{record.score}</span>
+          {record.scoreQualifier && <span className="text-[11px] text-ink-3">{record.scoreQualifier.toLowerCase()}</span>}
         </div>
       )}
-      <div>
-        <p className="text-xs text-muted font-medium mb-1">Quality (opt.)</p>
-        <div className="flex gap-1 items-center">
-          {SLEEP_STARS.map(s => (
-            <button
-              key={s}
-              onClick={() => setQuality(q => (q === s ? 0 : s))}
-              className={`text-2xl transition-colors ${s <= quality ? 'text-warning' : 'text-border'}`}
-            >
-              ★
-            </button>
-          ))}
-          {quality > 0 && <span className="text-xs text-muted ml-1">{quality}/5</span>}
-        </div>
-      </div>
+      <Rating label="Quality (opt.)" value={quality} onPick={v => setQuality(v as SleepQuality | 0)} />
       <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. woke up once" />
       <DeleteRow onDelete={del} />
     </div>
@@ -734,10 +739,10 @@ function SessionEditForm({
     if (!duration) return
     try {
       await onEdit(record.id, { date, duration: +duration, tempC: temp ? +temp : undefined, notes: notes || undefined })
-      setToast('✅ Updated!')
+      setToast('Updated!')
       onClose()
     } catch {
-      setToast('❌ Failed to update.')
+      setToast('Failed to update.')
     }
   }
   saveRef.current = save
@@ -745,10 +750,10 @@ function SessionEditForm({
   const del = async () => {
     try {
       await onRemove(record.id)
-      setToast('🗑 Deleted')
+      setToast('Deleted')
       onClose()
     } catch {
-      setToast('❌ Failed to delete.')
+      setToast('Failed to delete.')
     }
   }
 

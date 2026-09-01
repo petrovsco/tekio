@@ -1,11 +1,14 @@
 import { useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { Icon } from './Icon'
 
 interface InfoTipProps {
   children: ReactNode
   /** Accessible label / title for the trigger. */
   label?: string
-  /** Optional colour for the panel's left accent bar. */
+  /** Optional colour for the panel's left edge — the only place a caller may
+   *  pass a colour, and only when it is already a meaningful channel on the
+   *  calling surface (e.g. an adaptation's own tint). */
   accent?: string
 }
 
@@ -17,7 +20,7 @@ interface InfoTipProps {
  */
 export function InfoTip({ children, label = 'More info', accent }: InfoTipProps) {
   const [open, setOpen] = useState(false)
-  const tint = accent ?? 'var(--color-accent)'
+  const tint = accent ?? 'var(--color-ink)'
 
   // Swallow pointer/click events on the trigger so a parent card's handlers
   // don't fire alongside the toggle.
@@ -31,7 +34,7 @@ export function InfoTip({ children, label = 'More info', accent }: InfoTipProps)
         aria-expanded={open}
         onPointerDown={stop}
         onClick={(e) => { e.stopPropagation(); setOpen(v => !v) }}
-        className="w-5 h-5 flex items-center justify-center rounded-full border text-[11px] font-bold transition-colors"
+        className="w-5 h-5 flex items-center justify-center rounded-full border text-[11px] font-bold cursor-pointer transition-colors"
         style={
           open
             ? { backgroundColor: tint, borderColor: tint, color: '#fff' }
@@ -42,12 +45,12 @@ export function InfoTip({ children, label = 'More info', accent }: InfoTipProps)
       </button>
       {open && createPortal(
         <div
-          className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/30"
+          className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-[rgba(26,26,26,0.34)]"
           onPointerDown={stop}
           onClick={(e) => { e.stopPropagation(); setOpen(false) }}
         >
           <div
-            className="relative z-[151] w-full max-w-xs max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-xl p-4 text-left"
+            className="relative z-[151] w-full max-w-xs max-h-[80vh] overflow-y-auto rounded-[6px] border-2 border-ink bg-white text-ink p-4 text-left"
             style={accent ? { borderLeftWidth: 3, borderLeftColor: accent } : undefined}
             onPointerDown={stop}
             onClick={stop}
@@ -57,9 +60,9 @@ export function InfoTip({ children, label = 'More info', accent }: InfoTipProps)
               aria-label="Close"
               onPointerDown={stop}
               onClick={(e) => { e.stopPropagation(); setOpen(false) }}
-              className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full text-muted hover:text-primary text-sm"
+              className="absolute top-1 right-1 w-9 h-9 flex items-center justify-center text-ink-2 hover:text-ink cursor-pointer"
             >
-              ✕
+              <Icon name="close" size={14} />
             </button>
             {children}
           </div>

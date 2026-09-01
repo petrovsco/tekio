@@ -1,23 +1,23 @@
 # Roadmap: SIGNAL chrome — tokens, shell, and shared primitives
 
 **Label:** feature
-**Status:** planned — kickoff-ready. The foundation of the 2.0.0 restyle: every per-page brief (027–032) builds on this one.
+**Status:** done — icon set, shell chrome, every `ui/` primitive, EditModal and the §Charts spec all landed 2026-09-01 in v1.5.0.
 **Depends:** 037
 **Release:** 2.0.0
 
 Why it waits on 037: the acceptance below logs a test entry of every type
 against the shared production database — including from localhost — so
-[037](done/037-row-origin-tagging.md) makes those rows identifiable first. (037 was
+[037](037-row-origin-tagging.md) makes those rows identifiable first. (037 was
 024's Part 1 until 2026-09-01; the rest of 024 does not block this brief.)
 **Origin:** 2026-09-01 screen survey. Home wears the SIGNAL language
-([design-system.md](../design-system.md), from roadmap
-[018](done/018-home-design-canvas.md)); every other surface — and the chrome
+([design-system.md](../../design-system.md), from roadmap
+[018](018-home-design-canvas.md)); every other surface — and the chrome
 *around* Home — still wears the v1 slate/indigo language.
 
 ## The gap
 
 The two languages already coexist in
-[src/index.css](../../src/index.css): the SIGNAL tokens (`paper`, `ink`,
+[src/index.css](../../../src/index.css): the SIGNAL tokens (`paper`, `ink`,
 `signal`, `line`, `hairline`, `chrome`) sit next to the old set (`bg`,
 `surface`, `primary`, `accent` #6366f1, `muted`, `success/warning/danger`,
 `ss`, `dl-*`) with a comment saying the old ones stay "until the old tabs are
@@ -35,7 +35,7 @@ What is old today, even on Home:
 - **Drawer** — 💪 logo tile, "Fitness Tracker" tagline, emoji nav icons,
   indigo active row, rounded-xl geometry.
 - **Toast**, **HomeSkeleton** (slate shimmer), **Modal**.
-- **Shared primitives** ([src/components/ui/](../../src/components/ui/)):
+- **Shared primitives** ([src/components/ui/](../../../src/components/ui/)):
   `Card`, `Button` (`Btn`/`DelBtn`/`EditBtn`), `Input`/`Inp`, `Chip`,
   `SmartInput`, `HistoryList`, `SetsGrid`, `MiniChart` — all on old tokens,
   rounded-lg/xl radii, indigo solids.
@@ -66,18 +66,18 @@ What is old today, even on Home:
 5. **Chart treatment, written down.** One spec: ink line on hairline grid,
    `signal` reserved for the emphasised thing (e.g. deload dots), monochrome
    bars, 11–12px axis type. Lands as a new §Charts in
-   [design-system.md](../design-system.md) — the doc change rides this brief,
+   [design-system.md](../../design-system.md) — the doc change rides this brief,
    which is the sanctioned way a reference doc changes. `MiniChart` is the
    first conformer; the page briefs apply it to the Recharts surfaces.
 
 ## Out of scope
 
 - Page-level sweeps — one brief per page, 027–032.
-- Deleting the old tokens — [033](033-retire-old-design-language.md), once
+- Deleting the old tokens — [033](../033-retire-old-design-language.md), once
   nothing consumes them.
 - Any IA change: no tab moves, no read changes, no capture-flow redesigns.
   This is a re-skin. (Product questions found during the survey are parked in
-  [034](034-v2-1-candidates-tbc.md).)
+  [034](../034-v2-1-candidates-tbc.md).)
 
 ## Doctrine check (§4)
 
@@ -91,13 +91,46 @@ What is old today, even on Home:
 
 ## Acceptance
 
-- [ ] Bottom nav, drawer, header, FAB, toast and skeleton are SIGNAL; no emoji
-      remains in chrome anywhere in the app.
-- [ ] Home renders with **zero** old-language pixels (nav + FAB were the last
+- [x] Bottom nav, drawer, header, FAB, toast and skeleton are SIGNAL; no emoji
+      remains in chrome anywhere in the app. The 73 toast strings lost their
+      leading ✅ / ❌ / 🗑 too — a toast is chrome, and without a colour channel
+      (§1) the words have to carry the outcome, which they already did.
+- [x] Home renders with **zero** old-language pixels (nav + FAB were the last
       two).
-- [ ] Every `src/components/ui/` primitive uses only SIGNAL tokens — no
+- [x] Every `src/components/ui/` primitive uses only SIGNAL tokens — no
       `accent`/`primary`/`muted`/`bg`/`surface` classes left in them.
-- [ ] EditModal verified in the browser for at least one entry of each type.
-- [ ] design-system.md has a §Charts section and MiniChart follows it.
-- [ ] The deload header state has a deliberate SIGNAL treatment, recorded in
+- [x] EditModal verified in the browser for all twelve `EditModalTarget`
+      variants, not just one each: a throwaway harness mounted the real
+      component against a synthetic record per variant, so nothing was written
+      to the shared database to see them.
+- [x] design-system.md has a §Charts section and MiniChart follows it.
+- [x] The deload header state has a deliberate SIGNAL treatment, recorded in
       design-system.md.
+
+## What this decided
+
+Three questions the brief left open, answered in `design-system.md` so the
+page sweeps do not each re-answer them:
+
+- **Deload takes no colour.** It is a fact about the cycle, not an urgency, so
+  the header stays paper and the state is stated — an outlined `DELOAD · WK 6`
+  micro label. The amber `dl-*` tokens now have no consumer.
+- **Destructive controls take no colour either.** What makes a delete safe is
+  the confirmation step, not a red button, so a destructive commit is an
+  outline with a **2px** ink border (§6's emphasis weight) and the Yes/No pair
+  uses the chip tones.
+- **A 1–5 rating is squares, not stars.** Filled ink versus an outlined tile,
+  the same polarity as the whole-body quality tiles (§4) — a star needs a
+  colour to read as "filled", and there is none to spend.
+
+## Handed on
+
+- **Page-body emoji** (ProgramTab's `✏️ Edit`, the `🏆 PR` marker, section-card
+  icons) stayed put: they are page content, and each page brief 027–032 owns
+  its own sweep. Only chrome and shared primitives were in scope here.
+- **ExportPane / ImportPane** live in `src/components/layout/` but are Profile
+  surfaces, so they went to [032](../032-profile-admin-signal-restyle.md) rather
+  than being re-skinned as shell chrome.
+- **`src/components/ui/chart.ts`** is the shared palette the page briefs apply
+  to their Recharts surfaces — `CHART`, `CHART_LINE`, `CHART_AXIS`,
+  `CHART_TOOLTIP`.

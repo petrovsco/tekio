@@ -42,7 +42,7 @@ export function ExerciseMuscleEditor() {
     if (!open || loaded) return
     loadExerciseMuscleRows()
       .then(r => { setRows(r); setLoaded(true) })
-      .catch(() => setToast('❌ Failed to load mappings.'))
+      .catch(() => setToast('Failed to load mappings.'))
   }, [open, loaded, setToast])
 
   const muscleOpts = useMemo(() => muscleOptions(muscleGroups), [muscleGroups])
@@ -81,7 +81,7 @@ export function ExerciseMuscleEditor() {
       await upsertExerciseMuscle(row)
       await reloadMuscleData()
     } catch {
-      setToast('❌ Failed to save link.')
+      setToast('Failed to save link.')
     }
   }
 
@@ -91,7 +91,7 @@ export function ExerciseMuscleEditor() {
       await deleteExerciseMuscle(row.exerciseId, row.muscleGroupId)
       await reloadMuscleData()
     } catch {
-      setToast('❌ Failed to remove link.')
+      setToast('Failed to remove link.')
     }
   }
 
@@ -105,7 +105,7 @@ export function ExerciseMuscleEditor() {
       await setExerciseAdaptation(exerciseId, (value || null) as Adaptation | null)
       await reloadMuscleData()
     } catch {
-      setToast('❌ Failed to save adaptation.')
+      setToast('Failed to save adaptation.')
     }
   }
 
@@ -113,7 +113,7 @@ export function ExerciseMuscleEditor() {
     const name = newName.trim()
     if (!name) return
     if (Object.values(exerciseNames).some(n => n.toLowerCase() === name.toLowerCase())) {
-      setToast('❌ That exercise already exists.')
+      setToast('That exercise already exists.')
       return
     }
     try {
@@ -121,9 +121,9 @@ export function ExerciseMuscleEditor() {
       await reloadMuscleData()
       setNewName('')
       setExpanded(prev => new Set(prev).add(ex.id))
-      setToast('✅ Exercise created — add its muscles.')
+      setToast('Exercise created — add its muscles.')
     } catch {
-      setToast('❌ Failed to create exercise.')
+      setToast('Failed to create exercise.')
     }
   }
 

@@ -1,5 +1,12 @@
 import type { InputHTMLAttributes, SelectHTMLAttributes, ReactNode } from 'react'
 
+// SIGNAL fields (design-system §§2, 5, 6): white ground, 1px `line` border
+// that goes ink on focus, 3px radius, 12px value, 9px uppercase tracked label.
+export const FIELD =
+  'w-full min-w-0 border border-line rounded-[3px] px-2.5 py-2 text-xs bg-white text-ink placeholder:text-ink-4 focus:outline-none focus:border-ink transition-colors'
+
+export const FIELD_LABEL = 'text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3'
+
 interface InpProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
 }
@@ -7,11 +14,8 @@ interface InpProps extends InputHTMLAttributes<HTMLInputElement> {
 export function Inp({ label, className = '', ...props }: InpProps) {
   return (
     <div className="flex flex-col gap-1 min-w-0">
-      {label && <label className="text-xs text-muted font-medium">{label}</label>}
-      <input
-        className={`w-full min-w-0 border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40 ${className}`}
-        {...props}
-      />
+      {label && <label className={FIELD_LABEL}>{label}</label>}
+      <input className={`${FIELD} ${className}`} {...props} />
     </div>
   )
 }
@@ -25,11 +29,8 @@ interface SelElProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export function SelEl({ label, options, className = '', children, ...props }: SelElProps) {
   return (
     <div className="flex flex-col gap-1 min-w-0">
-      {label && <label className="text-xs text-muted font-medium">{label}</label>}
-      <select
-        className={`w-full min-w-0 border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary focus:outline-none focus:ring-2 focus:ring-accent/40 ${className}`}
-        {...props}
-      >
+      {label && <label className={FIELD_LABEL}>{label}</label>}
+      <select className={`${FIELD} ${className}`} {...props}>
         {children ?? options.map(o => (
           <option key={o.value} value={o.value}>{o.label}</option>
         ))}

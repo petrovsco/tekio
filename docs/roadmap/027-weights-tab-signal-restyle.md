@@ -1,7 +1,7 @@
 # Roadmap: Weights tab — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 026 for the primitives and the chart spec.
+**Status:** planned — kickoff-ready: 026 landed, so the primitives, the icon set and the §Charts spec are all in place.
 **Depends:** 026
 **Release:** 2.0.0
 

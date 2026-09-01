@@ -1,7 +1,7 @@
 # Roadmap: Profile & Admin — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 026. Last of the page sweeps; confirmed in 2.0.0 on 2026-09-01.
+**Status:** planned — kickoff-ready now 026 has landed. Last of the page sweeps; confirmed in 2.0.0 on 2026-09-01.
 **Depends:** 026
 **Release:** 2.0.0
 
@@ -19,7 +19,11 @@ they do.
 - **Profile** — Monday/Sunday indigo toggle, adaptation-tracking chips,
   Assistant card (provider select, key management, red "Remove"), Sections
   drag-list with emoji and indigo ON/OFF pills, Export/Import rows with 📤 📥
-  emoji.
+  emoji. The sheets those rows open —
+  [ExportPane.tsx](../../src/components/layout/ExportPane.tsx) and
+  [ImportPane.tsx](../../src/components/layout/ImportPane.tsx) — sit in
+  `layout/` but are Profile surfaces, so [026](done/026-signal-chrome-and-primitives.md)
+  deliberately left them here rather than treating them as shell chrome.
 - **Admin** — amber notice banner, WEEKLY TARGETS editor (emoji + a
   coloured input per adaptation — also follows 019's row changes), MUSCLE
   GROUPS nested editor (indigo "Add", red deletes throughout), EXERCISE →

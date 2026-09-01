@@ -6,7 +6,7 @@ export function Toast() {
   return (
     <div
       key={toast}
-      className="fixed top-4 left-1/2 z-[100] bg-primary text-white text-sm px-4 py-2 rounded-lg shadow-lg animate-toast-fade"
+      className="fixed top-4 left-1/2 z-[100] bg-ink text-white text-xs px-3 py-2 rounded-[3px] animate-toast-fade"
     >
       {toast}
     </div>

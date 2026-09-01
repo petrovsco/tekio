@@ -67,12 +67,12 @@ export function HabitForm({ record, onDone, saveRef }: HabitFormProps) {
   }
 
   const buildHabit = (): Omit<Habit, 'id'> | null => {
-    if (!name.trim()) { setToast('❌ Name is required.'); return null }
+    if (!name.trim()) { setToast('Name is required.'); return null }
     const exerciseId = linkType === 'exercise' ? (idByExName[exerciseName.trim().toLowerCase()] ?? null) : null
     if (sourceNeedsLink(autoSource)) {
-      if (linkType === 'muscle' && !muscleGroupId) { setToast('❌ Pick a muscle group.'); return null }
-      if (linkType === 'exercise' && !exerciseId) { setToast('❌ Pick a known exercise.'); return null }
-      if (linkType === 'none') { setToast('❌ Auto-tracking needs a muscle or exercise link.'); return null }
+      if (linkType === 'muscle' && !muscleGroupId) { setToast('Pick a muscle group.'); return null }
+      if (linkType === 'exercise' && !exerciseId) { setToast('Pick a known exercise.'); return null }
+      if (linkType === 'none') { setToast('Auto-tracking needs a muscle or exercise link.'); return null }
     }
     return {
       name: name.trim(),
@@ -98,10 +98,10 @@ export function HabitForm({ record, onDone, saveRef }: HabitFormProps) {
     try {
       if (record) await editHabit(record.id, h)
       else await addHabit(h)
-      setToast(record ? '✅ Habit updated!' : '✅ Habit added!')
+      setToast(record ? 'Habit updated!' : 'Habit added!')
       onDone()
     } catch {
-      setToast('❌ Failed to save habit.')
+      setToast('Failed to save habit.')
     }
   }
   if (saveRef) saveRef.current = save

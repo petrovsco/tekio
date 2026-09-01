@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { SmartInput } from './SmartInput'
+import { Icon } from './Icon'
 
 interface ChipListInputProps {
   items: string[]
@@ -32,7 +33,7 @@ export function ChipListInput({ items, onChange, suggestions, placeholder }: Chi
         <button
           type="button"
           onClick={() => add(input)}
-          className="px-3 py-2 rounded-lg text-xs font-semibold border border-border bg-surface text-muted hover:border-accent/50 transition-colors"
+          className="px-2.5 py-2 rounded-[3px] text-[11px] font-semibold border border-ink bg-white text-ink hover:bg-hairline cursor-pointer transition-colors"
         >
           Add
         </button>
@@ -42,15 +43,16 @@ export function ChipListInput({ items, onChange, suggestions, placeholder }: Chi
           {items.map(t => (
             <span
               key={t}
-              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-accent-l text-accent"
+              className="inline-flex items-center gap-1 px-2 py-[3px] rounded-[3px] text-[11px] font-semibold border border-line bg-white text-ink"
             >
               {t}
               <button
                 type="button"
                 onClick={() => onChange(items.filter(x => x !== t))}
-                className="text-accent/70 hover:text-accent"
+                aria-label={`Remove ${t}`}
+                className="text-ink-3 hover:text-ink cursor-pointer"
               >
-                ✕
+                <Icon name="close" size={11} />
               </button>
             </span>
           ))}

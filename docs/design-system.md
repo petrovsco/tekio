@@ -33,6 +33,16 @@ every channel carries exactly one meaning:
 Nothing else may carry colour. A new meaning does not get a new colour —
 it takes one away from something first.
 
+Two states asked for one and were refused, so the rule has teeth:
+
+- **Deload week** is a fact about the cycle, not an urgency, so it never
+  recolours the header or a card. It is stated instead — an outlined micro
+  label, `DELOAD · WK 6` (§5, 8px uppercase, tracked). The old amber
+  `dl-*` tokens carried no meaning in this system.
+- **Destructive controls** do not get a warning colour either. What makes a
+  delete safe is the confirmation step, not a red button; the weight in §6
+  carries the emphasis instead (§8).
+
 ## 2. Ground and surfaces
 
 | Token | Value |
@@ -120,9 +130,41 @@ fills. 18px in the nav, 13px inline. No icon font, no emoji in app chrome.
   the T1 read never reflows (P1). (On the design canvas the reveals
   render centred instead, because the viewer's Play toolbar covers the
   bottom of the frame — a canvas workaround, not the spec.)
+- **Buttons** carry the same two tones one size up: 12px / 600, 3px radius,
+  `px-3 py-2`. **Solid ink** commits (save, log, confirm); **outline** is the
+  reversible action (cancel, edit, secondary); **ghost** (`#8a8a8a` text, no
+  border) is for the third-rank action. A **destructive commit** is outline
+  with a **2px** ink border — the weight §6 reserves for true emphasis, used
+  here so "delete" stops the eye without inventing a colour.
+- **Fields**: white ground, 1px `#e2e2e0` border that goes ink on focus, 3px
+  radius, 12px value, and a 9px uppercase tracked label above it (§5). No
+  focus glow — the border is the focus signal.
 - Close targets are padded well beyond the glyph.
 
-## 9. Tiers
+## 9. Charts
+
+A chart is a read, so it obeys §1: the ink carries the data and the accent
+marks the one thing being pointed at. It never becomes a second palette.
+
+- **Line**: `#1a1a1a`, 1.5px, `monotone`, no resting dots. The active
+  (hover) dot is r3 ink.
+- **Grid**: horizontal only, solid `#eeeeec` at 1px. No vertical grid, and
+  no dashes — a dash means "not data" and is spent on reference lines.
+- **Axes**: 11px `#8a8a8a`, no axis line, no tick marks. Label the axis only
+  when the unit is not obvious from the card's own label.
+- **Bars**: `#8f8f8f` — the mid step of the ramp (§4), so a bar never reads
+  as a filled muscle. The emphasised bar goes ink.
+- **A second series** is `#c9c9c7`. There is no third: three series in one
+  frame is the moment to draw two charts (P2).
+- **The accent** marks single points, never a series — a deload session, a
+  stale capture, the value the card is about.
+- **Reference lines** (a target, a cap): `#c9c9c7`, 1px, dashed. This is the
+  only dash in the system.
+- **Tooltip**: white, 1px `#e2e2e0`, 3px radius, 11px, no shadow.
+
+Charts are never T1 (§10) — the five-second answer does not need one.
+
+## 10. Tiers
 
 Every component carries a tier, and the tier decides both faces of P1 —
 what is shown now and what is loaded now:
@@ -137,7 +179,7 @@ what is shown now and what is loaded now:
 The rule: if the five-second answer needs it, it is T1. If it answers a
 question a tap just asked, it is T2. Everything else is T3.
 
-## 10. Placeholder numbers
+## 11. Placeholder numbers
 
 Every number that claims physiological meaning and has not passed
 `/ground` is marked PLACEHOLDER on the boards and in code comments —

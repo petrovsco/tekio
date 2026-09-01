@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'rea
 import { useAppStore } from '../../store/app'
 import { cycleInfo } from '../../lib/utils'
 import { DeloadBadge } from '../ui/Badges'
+import { Icon } from '../ui/Icon'
 import { Toast } from '../ui/Toast'
 import { Drawer } from './Drawer'
 import { BottomNav } from './BottomNav'
@@ -58,9 +59,10 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
   // The env banner (roadmap 037) is sticky at top-0 too, so the header parks
   // under it rather than sharing the slot and being covered.
   const stickyTop = IS_PRODUCTION ? 'top-0' : 'top-6'
-  const headerClass = isDeload
-    ? `bg-dl-bg border-b border-dl-bd sticky ${stickyTop} z-50`
-    : `bg-surface border-b border-border sticky ${stickyTop} z-50`
+  // Deload does not recolour the header. The accent has exactly one meaning
+  // (action / urgency, design-system §1) and a deload week is a fact about the
+  // cycle, not an urgency — so it is stated as a label, not painted on the bar.
+  const headerClass = `bg-white border-b border-chrome sticky ${stickyTop} z-50`
 
   // The SIGNAL Home surface carries its own header (TEKIŌ + cycle label) and
   // paper ground; the shell chrome would double it. Drawer and Profile stay
@@ -69,7 +71,7 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
 
   return (
     <div
-      className={`min-h-screen ${isHome ? 'bg-paper' : 'bg-bg'}`}
+      className="min-h-screen bg-paper text-ink"
       onPointerDown={() => {
         if (prefetched.current) return
         prefetched.current = true
@@ -98,13 +100,12 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
         <div className="flex items-center justify-between px-4 py-3 max-w-[600px] mx-auto">
           <button
             onClick={() => setDrawerOpen(true)}
-            className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary rounded-lg hover:bg-bg transition-colors"
+            className="w-9 h-9 -ml-2 flex items-center justify-center text-ink-2 hover:text-ink cursor-pointer transition-colors"
+            aria-label="Open menu"
           >
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M3 6h12M3 10h12M3 14h12" />
-            </svg>
+            <Icon name="menu" />
           </button>
-          <h1 className={`text-base font-bold ${isDeload ? 'text-dl-tx' : 'text-primary'}`}>
+          <h1 className="text-xs font-bold uppercase tracking-[0.10em] text-ink">
             {TAB_TITLES[tab] ?? tab}
           </h1>
           <div className="flex items-center gap-2 justify-end">
@@ -112,10 +113,10 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
             {tab !== 'Profile' && (
               <button
                 onClick={() => setTab('Profile')}
-                className="w-8 h-8 flex items-center justify-center text-muted hover:text-primary rounded-lg hover:bg-bg transition-colors"
+                className="w-9 h-9 -mr-2 flex items-center justify-center text-ink-2 hover:text-ink cursor-pointer transition-colors"
                 aria-label="Profile & Settings"
               >
-                👤
+                <Icon name="profile" />
               </button>
             )}
           </div>

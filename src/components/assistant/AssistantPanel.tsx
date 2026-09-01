@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAssistant } from '../../store/assistant'
 import { Modal } from '../ui/Modal'
+import { FIELD } from '../ui/Input'
 import { ProposalCard } from './ProposalCard'
 
 const SUGGESTIONS = [
@@ -30,7 +31,7 @@ export function AssistantPanel() {
   const footer = (
     <div className="flex flex-col gap-2">
       {noKey && (
-        <p className="text-[11px] text-danger">
+        <p className="text-[11px] font-semibold text-signal">
           No API key set. Add your Gemini key in Profile → Assistant first.
         </p>
       )}
@@ -43,12 +44,12 @@ export function AssistantPanel() {
           }}
           rows={1}
           placeholder="Ask to add or change something…"
-          className="flex-1 min-w-0 resize-none border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent/40 max-h-32"
+          className={`${FIELD} resize-none max-h-32`}
         />
         <button
           onClick={submit}
           disabled={busy || !draft.trim()}
-          className="flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium bg-accent text-white disabled:opacity-40 transition-opacity"
+          className="flex-shrink-0 px-3 py-2 rounded-[3px] text-xs font-semibold bg-ink text-white border border-ink cursor-pointer disabled:opacity-40 transition-opacity"
         >
           Send
         </button>
@@ -57,22 +58,22 @@ export function AssistantPanel() {
   )
 
   return (
-    <Modal open={open} onClose={() => setOpen(false)} title="🤖 Assistant" footer={footer}>
+    <Modal open={open} onClose={() => setOpen(false)} title="Assistant" footer={footer}>
       <div className="flex flex-col gap-3">
         {messages.length === 0 && (
-          <div className="text-sm text-muted">
+          <div className="text-xs text-ink-2">
             <p className="mb-3">
               I can add or change habits, exercise↔muscle mappings, and your program. I'll always show you
               exactly what I'll do before anything is saved.
             </p>
-            <p className="text-xs font-medium mb-1.5">Try:</p>
+            <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 mb-1.5">Try</p>
             <div className="flex flex-col gap-1.5">
               {SUGGESTIONS.map(s => (
                 <button
                   key={s}
                   onClick={() => { setDraft(''); void send(s) }}
                   disabled={busy || noKey}
-                  className="text-left text-xs px-3 py-2 rounded-lg border border-border bg-bg hover:bg-surface disabled:opacity-40 transition-colors"
+                  className="text-left text-xs px-2.5 py-2 rounded-[3px] border border-line bg-white text-ink hover:border-ink cursor-pointer disabled:opacity-40 transition-colors"
                 >
                   {s}
                 </button>
@@ -87,8 +88,8 @@ export function AssistantPanel() {
               <div
                 className={
                   m.role === 'user'
-                    ? 'px-3 py-2 rounded-2xl rounded-br-sm bg-accent text-white text-sm whitespace-pre-wrap break-words'
-                    : 'px-3 py-2 rounded-2xl rounded-bl-sm bg-bg border border-border text-primary text-sm whitespace-pre-wrap break-words'
+                    ? 'px-2.5 py-2 rounded-[3px] bg-ink text-white text-xs whitespace-pre-wrap break-words'
+                    : 'px-2.5 py-2 rounded-[3px] bg-hairline border border-line text-ink text-xs whitespace-pre-wrap break-words'
                 }
               >
                 {m.text}
@@ -99,7 +100,7 @@ export function AssistantPanel() {
         ))}
 
         {busy && (
-          <div className="self-start px-3 py-2 rounded-2xl rounded-bl-sm bg-bg border border-border text-muted text-sm">
+          <div className="self-start px-2.5 py-2 rounded-[3px] bg-hairline border border-line text-ink-3 text-xs">
             <span className="inline-flex gap-1">
               <span className="animate-bounce">•</span>
               <span className="animate-bounce [animation-delay:0.15s]">•</span>
@@ -111,7 +112,7 @@ export function AssistantPanel() {
         {messages.length > 0 && (
           <button
             onClick={clearChat}
-            className="self-center text-[11px] text-muted hover:text-primary underline mt-1"
+            className="self-center text-[11px] text-ink-3 hover:text-ink underline underline-offset-2 cursor-pointer mt-1"
           >
             Clear conversation
           </button>

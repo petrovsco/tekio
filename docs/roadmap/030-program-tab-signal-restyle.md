@@ -1,7 +1,7 @@
 # Roadmap: Program tab — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 026. The biggest page sweep: ProgramTab is ~840 lines with three distinct states.
+**Status:** planned — kickoff-ready now 026 has landed. The biggest page sweep: ProgramTab is ~840 lines with three distinct states.
 **Depends:** 026
 **Release:** 2.0.0
 

@@ -63,9 +63,9 @@ export function MobilityTab() {
       setExercises([emptyExercise()])
       setRevealedEx(1)
       setMuscleOpen(null)
-      setToast('✅ Session logged!')
+      setToast('Session logged!')
     } catch {
-      setToast('❌ Failed to save.')
+      setToast('Failed to save.')
     }
   }
 

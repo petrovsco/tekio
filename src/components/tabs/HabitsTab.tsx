@@ -28,7 +28,7 @@ function HabitRow({ habit, ctx, weekStart }: { habit: Habit; ctx: HabitProgressC
     try {
       if (isCheck) await completeHabit(habit.id, p.done ? 0 : habit.targetCount)
       else await completeHabit(habit.id, p.current + 1)
-    } catch { setToast('❌ Failed to update.') }
+    } catch { setToast('Failed to update.') }
   }
 
   return (

@@ -1,7 +1,7 @@
 # Roadmap: Adaptations tab — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 019 (the rows it would restyle are about to change) and 026 (tokens, chart spec).
+**Status:** blocked — 026 landed, but 019 has not: the rows it would restyle are about to change, so restyling them first would be wasted.
 **Depends:** 019, 026
 **Release:** 2.0.0
 

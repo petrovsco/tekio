@@ -29,9 +29,9 @@ export function CardioLogForm() {
         notes: notes || undefined,
       })
       setDuration(''); setDistance(''); setAvgHr(''); setNotes('')
-      setToast('✅ Session logged!')
+      setToast('Session logged!')
     } catch {
-      setToast('❌ Failed to save.')
+      setToast('Failed to save.')
     }
   }
 

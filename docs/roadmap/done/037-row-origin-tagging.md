@@ -3,7 +3,7 @@
 **Label:** infra
 **Status:** done — shipped and verified 2026-09-01. Split out of
 [024](../024-staging-shared-database-safety.md) on 2026-09-01 so the restyle train
-([026](../026-signal-chrome-and-primitives.md)) is not parked behind the whole of
+([026](026-signal-chrome-and-primitives.md)) is not parked behind the whole of
 024. This is 024's Part 1, unchanged in intent and widened in one place (see
 *Dev counts too*).
 **Release:** 2.0.0

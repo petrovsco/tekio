@@ -1,16 +1,15 @@
 import type { ReactNode, HTMLAttributes } from 'react'
 
+// SIGNAL surfaces (design-system §§2, 5, 6): white card, 1px `line` border,
+// 3px radius, 7–10px padding. Section labels are 9px uppercase and tracked.
+
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: ReactNode
-  deload?: boolean
 }
 
-export function Card({ children, deload, className = '', ...props }: CardProps) {
-  const base = deload
-    ? 'bg-dl-bg border border-dl-bd rounded-xl p-4'
-    : 'bg-surface border border-border rounded-xl p-4'
+export function Card({ children, className = '', ...props }: CardProps) {
   return (
-    <div className={`${base} ${className}`} {...props}>
+    <div className={`bg-white border border-line rounded-[3px] p-2.5 ${className}`} {...props}>
       {children}
     </div>
   )
@@ -18,12 +17,12 @@ export function Card({ children, deload, className = '', ...props }: CardProps) 
 
 export function SecTitle({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <p className={`text-xs font-semibold text-muted uppercase tracking-wide mb-2 ${className}`}>
+    <p className={`text-[9px] font-bold text-ink-3 uppercase tracking-[0.14em] mb-2 ${className}`}>
       {children}
     </p>
   )
 }
 
 export function EmptyMsg({ children }: { children: ReactNode }) {
-  return <p className="text-sm text-muted text-center py-6">{children}</p>
+  return <p className="text-xs text-ink-3 text-center py-6">{children}</p>
 }

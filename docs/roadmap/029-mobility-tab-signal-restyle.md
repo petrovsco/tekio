@@ -1,7 +1,7 @@
 # Roadmap: Mobility tab — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 026; the smallest page sweep, follows 027's pattern.
+**Status:** planned — kickoff-ready now 026 has landed; the smallest page sweep, follows 027's pattern.
 **Depends:** 026
 **Release:** 2.0.0
 

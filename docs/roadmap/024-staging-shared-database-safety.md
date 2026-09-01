@@ -48,7 +48,7 @@ written before rows are identifiable is a ritual that cannot be performed.
 
 Split out on 2026-09-01 and moved in full: the nullable `origin` column, the
 write-once trigger, the environment resolver, and the on-screen marker. It left
-because it was the only part blocking anything — [026](026-signal-chrome-and-primitives.md)
+because it was the only part blocking anything — [026](done/026-signal-chrome-and-primitives.md)
 waits on it — and because Part 3 below cannot be written until it ships.
 
 ### Part 2 — Stop staging from breaking production
