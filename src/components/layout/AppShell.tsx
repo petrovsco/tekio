@@ -5,6 +5,8 @@ import { DeloadBadge } from '../ui/Badges'
 import { Toast } from '../ui/Toast'
 import { Drawer } from './Drawer'
 import { BottomNav } from './BottomNav'
+import { EnvBanner } from './EnvBanner'
+import { IS_PRODUCTION } from '../../lib/env'
 import { AssistantFab } from '../assistant/AssistantFab'
 
 // T2 — on intent (roadmap 018 unit 5). The edit form is reached from every
@@ -53,9 +55,12 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
     }
   }, [])
 
+  // The env banner (roadmap 037) is sticky at top-0 too, so the header parks
+  // under it rather than sharing the slot and being covered.
+  const stickyTop = IS_PRODUCTION ? 'top-0' : 'top-6'
   const headerClass = isDeload
-    ? 'bg-dl-bg border-b border-dl-bd sticky top-0 z-50'
-    : 'bg-surface border-b border-border sticky top-0 z-50'
+    ? `bg-dl-bg border-b border-dl-bd sticky ${stickyTop} z-50`
+    : `bg-surface border-b border-border sticky ${stickyTop} z-50`
 
   // The SIGNAL Home surface carries its own header (TEKIŌ + cycle label) and
   // paper ground; the shell chrome would double it. Drawer and Profile stay
@@ -71,6 +76,8 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
         void import('../ui/EditModal')
       }}
     >
+      <EnvBanner />
+
       <Toast />
       {editing && (
         <Suspense fallback={null}>

@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { SleepEntry, SaunaEntry, ColdEntry, SleepQuality } from '../../types'
+import { withOrigin } from '../env'
 
 // ── Sleep (sleep_logs: log_date / duration_hours / quality) ─────────────────
 
@@ -107,13 +108,13 @@ async function loadSessions(table: 'sauna_sessions' | 'cold_sessions') {
 async function saveSession(table: 'sauna_sessions' | 'cold_sessions', entry: { date: string; duration: number; tempC?: number; notes?: string }) {
   const { data, error } = await supabase
     .from(table)
-    .insert({
+    .insert(withOrigin({
       user_id: USER_ID,
       session_date: entry.date,
       duration_minutes: entry.duration,
       temperature_c: entry.tempC ?? null,
       notes: entry.notes ?? null,
-    })
+    }))
     .select('id, session_date, duration_minutes, temperature_c, notes')
     .single()
   if (error) throw error

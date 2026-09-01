@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID, CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../../constants/app'
 import { startOfWeek, today } from '../utils'
+import { withOrigin } from '../env'
 import type {
   Program, ProgramDay, ProgramPhase, ProgramDayBlock, ProgramDayExercisePrescription,
   ActiveProgram, ProgramCycle, ProgramWeekOverride, DayOfWeek, TrainingTag,
@@ -9,7 +10,7 @@ import type {
 export async function getOrCreateExercise(name: string): Promise<string> {
   await supabase
     .from('exercises')
-    .upsert({ user_id: USER_ID, name, is_system: false }, { onConflict: 'user_id,name' })
+    .upsert(withOrigin({ user_id: USER_ID, name, is_system: false }), { onConflict: 'user_id,name' })
   const { data, error } = await supabase
     .from('exercises')
     .select('id')
@@ -253,14 +254,14 @@ export async function saveProgram(
   } else {
     const { data: prog, error: progErr } = await supabase
       .from('programs')
-      .insert({
+      .insert(withOrigin({
         user_id: USER_ID,
         name: program.name,
         cycle_length_weeks: CYCLE,
         deload_week: DELOAD_WEEK,
         deload_strategy: { type: 'reps', factor: DELOAD_REP_FACTOR },
         weekly_principles: program.weeklyPrinciples ?? null,
-      })
+      }))
       .select('id')
       .single()
     if (progErr) throw progErr
@@ -325,7 +326,7 @@ export async function saveProgram(
   } else {
     const { data: up, error: upErr } = await supabase
       .from('user_programs')
-      .insert({
+      .insert(withOrigin({
         user_id: USER_ID,
         program_id: programId,
         start_date: program.startDate,
@@ -333,7 +334,7 @@ export async function saveProgram(
         last_advanced_date: program.lastAdvancedDate ?? program.startDate,
         current_phase_id: firstPhaseId,
         status: 'active',
-      })
+      }))
       .select('id')
       .single()
     if (upErr) throw upErr

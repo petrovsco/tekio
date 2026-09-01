@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { Adaptation, BodyRegion, ExerciseMuscleLink, MuscleContribution, MuscleGroup } from '../../types'
+import { withOrigin } from '../env'
 
 export async function loadMuscleGroups(): Promise<MuscleGroup[]> {
   const { data, error } = await supabase
@@ -118,7 +119,7 @@ export async function deleteExerciseMuscle(exerciseId: string, muscleGroupId: st
 export async function createExercise(name: string): Promise<{ id: string; name: string }> {
   const { data, error } = await supabase
     .from('exercises')
-    .insert({ user_id: USER_ID, name: name.trim(), is_system: false })
+    .insert(withOrigin({ user_id: USER_ID, name: name.trim(), is_system: false }))
     .select('id, name')
     .single()
   if (error) throw error

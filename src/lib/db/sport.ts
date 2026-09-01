@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { SportEntry, SportTypeInfo, NewSportFlags, QualityRating, MatchResult } from '../../types'
+import { withOrigin } from '../env'
 
 async function getOrCreateSportType(name: string, newSportFlags?: NewSportFlags): Promise<string> {
   const { data: existing, error: selectError } = await supabase
@@ -14,13 +15,13 @@ async function getOrCreateSportType(name: string, newSportFlags?: NewSportFlags)
 
   const { data, error } = await supabase
     .from('sport_types')
-    .insert({
+    .insert(withOrigin({
       user_id: USER_ID,
       name,
       is_system: false,
       has_competitor: newSportFlags?.hasCompetitor ?? false,
       has_teammate: newSportFlags?.hasTeammate ?? false,
-    })
+    }))
     .select('id')
     .single()
   if (error) throw error
@@ -65,7 +66,7 @@ export async function saveSportEntry(
   const sportTypeId = await getOrCreateSportType(entry.sport, newSportFlags)
   const { data, error } = await supabase
     .from('sport_sessions')
-    .insert({
+    .insert(withOrigin({
       user_id: USER_ID,
       sport_type_id: sportTypeId,
       session_date: entry.date,
@@ -77,7 +78,7 @@ export async function saveSportEntry(
       competitor_names: entry.competitorNames?.length ? entry.competitorNames : null,
       result: entry.result || null,
       teammate_names: entry.teammateNames?.length ? entry.teammateNames : null,
-    })
+    }))
     .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names')
     .single()
   if (error) throw error

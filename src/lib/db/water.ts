@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WaterEntry } from '../../types'
+import { withOrigin } from '../env'
 
 export async function loadWater(): Promise<WaterEntry[]> {
   const { data, error } = await supabase
@@ -19,11 +20,11 @@ export async function loadWater(): Promise<WaterEntry[]> {
 export async function saveWaterEntry(entry: Omit<WaterEntry, 'id'>): Promise<WaterEntry> {
   const { data, error } = await supabase
     .from('water_logs')
-    .insert({
+    .insert(withOrigin({
       user_id: USER_ID,
       log_date: entry.date,
       amount_ml: entry.amountMl,
-    })
+    }))
     .select('id, log_date, amount_ml')
     .single()
   if (error) throw error

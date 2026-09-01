@@ -1,7 +1,9 @@
 # Roadmap: Row origin tagging — tell staging and dev rows apart
 
 **Label:** infra
-**Status:** planned — kickoff-ready. Split out of
+**Status:** in progress — code and migration shipped 2026-09-01 and verified
+in the browser; the one box left is setting `VITE_ENV=staging` on Vercel's
+Preview environment, which only Peter can do. Split out of
 [024](024-staging-shared-database-safety.md) on 2026-09-01 so the restyle train
 ([026](026-signal-chrome-and-primitives.md)) is not parked behind the whole of
 024. This is 024's Part 1, unchanged in intent and widened in one place (see
@@ -60,7 +62,7 @@ and triples the write-path surface:
 | `exercises` | auto-created by `getOrCreateExercise` when a new name is typed — a test name pollutes autocomplete permanently |
 | `cardio_sessions` | cardio log |
 | `mobility_sessions` | mobility log; session exercises cascade |
-| `mobility_exercises` | auto-created the same way as `exercises` |
+| `sport_types` | auto-created by `getOrCreateSportType`, same as `exercises` |
 | `sport_sessions` | sport log; `sport_session_drills` cascade |
 | `bodyweight_logs` | bodyweight |
 | `water_logs` | water |
@@ -78,6 +80,11 @@ Deliberately excluded, and why:
 - **`muscle_groups`, `exercise_muscle_groups`, `movement_patterns`** —
   reference/admin data, not a training log. Pollution here is visible and
   hand-fixable.
+- **`mobility_exercises`** — reads like a catalog table, is not one. It holds
+  `(session_id, exercise_name, duration_minutes, exercise_id)` and cascades from
+  `mobility_sessions`; the mobility catalog is `exercises`, reached through
+  `getOrCreateExercise`. Checked during implementation, after tagging it by
+  mistake.
 - **`sleep_logs`** and the other Garmin-written tables — no app write path, so
   nothing would ever set the column from this brief. A `'garmin'` origin is a
   reasonable later use of the same column; it is not this brief.
@@ -155,15 +162,26 @@ should be a few lines that survive that sweep, not a designed component.
 4. **Honest shape:** one nullable provenance field on the row it describes.
 5. **Physiological number?** No. No `## Grounding` needed.
 
+## Progress log
+
+- **2026-09-01** — split out of 024. Migration applied
+  (`20260901110325_row_origin_tagging`, plus two corrections: `sport_types`
+  added, `mobility_exercises` removed once it turned out to be a session child
+  rather than a catalog table). `src/lib/env.ts` + `withOrigin` wired into all
+  13 root writes, `EnvBanner` mounted in the shell, 7 unit tests added.
+  Verified against the live database: a cardio session logged from localhost
+  landed with `origin = 'dev'`; the write-once trigger held in both directions;
+  the bodyweight upsert left a real null-origin row untagged. Test row swept.
+
 ## Acceptance
 
-- [ ] Migration applied: `origin text` on the 13 tables above, existing rows null.
-- [ ] A write-once trigger on each tagged table; an update cannot change `origin`.
-- [ ] The environment resolver returns `dev` on localhost and `staging` on a
+- [x] Migration applied: `origin text` on the 13 tables above, existing rows null.
+- [x] A write-once trigger on each tagged table; an update cannot change `origin`.
+- [x] The environment resolver returns `dev` on localhost and `staging` on a
       `stg-` host with no env var set.
-- [ ] Root inserts in `src/lib/db/` carry the origin; a production build's insert
+- [x] Root inserts in `src/lib/db/` carry the origin; a production build's insert
       payload is unchanged.
 - [ ] `VITE_ENV=staging` is set on Vercel's Preview environment.
-- [ ] A non-production environment is unmistakable in the browser.
-- [ ] Verified in the browser: a row logged from localhost lands with
+- [x] A non-production environment is unmistakable in the browser.
+- [x] Verified in the browser: a row logged from localhost lands with
       `origin = 'dev'`, and editing an existing null-origin row leaves it null.

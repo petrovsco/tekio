@@ -2,6 +2,7 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import { getOrCreateExercise } from './program'
 import type { MobilityEntry } from '../../types'
+import { withOrigin } from '../env'
 
 /** Map of exercise_id → its muscle-group names (canonical, shared across sessions). */
 async function loadExerciseMuscleMap(): Promise<Map<string, string[]>> {
@@ -94,7 +95,7 @@ export async function saveMobilityEntry(entry: Omit<MobilityEntry, 'id'>): Promi
   const totalDuration = entry.exercises.reduce((s, e) => s + e.duration, 0)
   const { data: session, error: sessionErr } = await supabase
     .from('mobility_sessions')
-    .insert({ user_id: USER_ID, session_date: entry.date, total_duration: totalDuration })
+    .insert(withOrigin({ user_id: USER_ID, session_date: entry.date, total_duration: totalDuration }))
     .select('id')
     .single()
   if (sessionErr) throw sessionErr

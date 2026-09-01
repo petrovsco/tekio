@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID, CARDIO_TYPE_MAP, CARDIO_TYPE_REVERSE } from '../../constants/app'
 import type { CardioEntry } from '../../types'
+import { withOrigin } from '../env'
 
 const COLS =
   'id, session_date, activity_type, duration_minutes, distance_km, avg_heart_rate, ' +
@@ -43,7 +44,7 @@ export async function loadCardio(): Promise<CardioEntry[]> {
 export async function saveCardioEntry(entry: Omit<CardioEntry, 'id'>): Promise<CardioEntry> {
   const { data, error } = await supabase
     .from('cardio_sessions')
-    .insert({
+    .insert(withOrigin({
       user_id: USER_ID,
       session_date: entry.date,
       activity_type: CARDIO_TYPE_MAP[entry.type] ?? entry.type.toLowerCase(),
@@ -51,7 +52,7 @@ export async function saveCardioEntry(entry: Omit<CardioEntry, 'id'>): Promise<C
       distance_km: entry.distance ?? null,
       avg_heart_rate: entry.avgHr ?? null,
       notes: entry.notes ?? null,
-    })
+    }))
     .select(COLS)
     .single()
   if (error) throw error

@@ -1,11 +1,12 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WeightEntry, LiftSet } from '../../types'
+import { withOrigin } from '../env'
 
 async function getOrCreateExercise(name: string): Promise<string> {
   await supabase
     .from('exercises')
-    .upsert({ user_id: USER_ID, name, is_system: false }, { onConflict: 'user_id,name' })
+    .upsert(withOrigin({ user_id: USER_ID, name, is_system: false }), { onConflict: 'user_id,name' })
   const { data, error } = await supabase
     .from('exercises')
     .select('id')
@@ -27,7 +28,7 @@ async function getOrCreateSession(date: string): Promise<string> {
 
   const { data, error } = await supabase
     .from('training_sessions')
-    .insert({ user_id: USER_ID, session_date: date })
+    .insert(withOrigin({ user_id: USER_ID, session_date: date }))
     .select('id')
     .single()
   if (error) throw error
