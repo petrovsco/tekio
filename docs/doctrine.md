@@ -109,7 +109,7 @@ Status of every surface as of 2026-08-26. This table is the shelf; keep it curre
 
 **This ledger records verdicts, not steps.** Five surfaces below are ruled out
 of the menu and all five still ship — the work that closes the gap is
-[roadmap/014-doctrine-ledger-execution.md](roadmap/014-doctrine-ledger-execution.md).
+[roadmap/done/014-doctrine-ledger-execution.md](roadmap/done/014-doctrine-ledger-execution.md).
 Pending work lives in `docs/roadmap/`, never in this file (house rule
 `pending-work-in-roadmap`).
 
@@ -134,7 +134,7 @@ decision, not optional cleanup: `ExerciseMuscleEditor.tsx` moves to Admin rather
 than being deleted with the section, and `RECOVERY_WEIGHTS.habits` (0.10) is
 renormalised rather than dropped. Both are carried in full, with their sequencing
 and their grounding trap, by
-[roadmap/014-doctrine-ledger-execution.md](roadmap/014-doctrine-ledger-execution.md).
+[roadmap/done/014-doctrine-ledger-execution.md](roadmap/done/014-doctrine-ledger-execution.md).
 
 Resolved by the same decision: habit-derived *muscle* contributions go too. The
 muscle read counts logged sets only, which is the more honest answer anyway.
@@ -158,5 +158,5 @@ don't leave it blank.
 - **Is the code clean?** → `/simplify`, `/code-review`.
 - **Did smoothness degrade?** → the measured perf budget.
 
-See [roadmap/009-feature-grounding.md](roadmap/009-feature-grounding.md) for how the
+See [roadmap/done/009-feature-grounding.md](roadmap/done/009-feature-grounding.md) for how the
 three fit together.

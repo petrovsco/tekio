@@ -25,7 +25,7 @@ the point:
 | Does the UI read well? | `frontend-design` | Craft, and it belongs after the diff exists |
 
 Growing `/ground` to cover those rebuilds the single all-purpose panel that
-[009-feature-grounding.md](../../../docs/roadmap/009-feature-grounding.md) was written
+[009-feature-grounding.md](../../../docs/roadmap/done/009-feature-grounding.md) was written
 to reject. Four concerns, two moments — don't re-merge them.
 
 Prerequisite: [docs/doctrine.md](../../../docs/doctrine.md) — §4 is the

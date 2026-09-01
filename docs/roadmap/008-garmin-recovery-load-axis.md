@@ -37,7 +37,7 @@ pipeline verified, so this brief's prerequisite is met. See
   sub-scores (each `clamp01(achieved / weekly target)`):
   `RECOVERY_WEIGHTS` = { sleep .45, mobility .15, sauna .15, cold .15, habits .10 }
   (corrected 2026-08-26 — this brief had drifted; `habits` is being dropped, see
-  [014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md))
+  [014-doctrine-ledger-execution.md](done/014-doctrine-ledger-execution.md))
   and `RECOVERY_TARGETS` in [src/constants/app.ts](../../src/constants/app.ts).
 - **Sleep Score precedent** — the pattern to copy. `sleep_logs` gained
   `sleep_score` / `source` via the Garmin sleep sync; the per-night sub-score

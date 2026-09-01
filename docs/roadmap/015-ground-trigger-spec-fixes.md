@@ -29,7 +29,7 @@ Apply in any order — they touch different parts of the skill and do not confli
 ## Out of scope
 
 - Any scout run. Applying these edits grounds nothing — the back-fill running
-  order lives in [009-feature-grounding.md](009-feature-grounding.md) under pushback #7(b).
+  order lives in [009-feature-grounding.md](done/009-feature-grounding.md) under pushback #7(b).
 - The three bugs the inventory found in the app itself; all were fixed 2026-08-26.
 
 ## Acceptance

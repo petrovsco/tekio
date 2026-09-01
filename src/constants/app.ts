@@ -112,4 +112,4 @@ export const DONATION_SUPPRESSION = { acuteHours: 48, aerobicTailDays: 21 } as c
 // blended with a baseline-relative HRV sub-score. So the weights were not
 // reweighted, they were retired — the number they produced measured adherence
 // to a recovery routine, not recovery state. The before/after comparison on
-// real data is in docs/roadmap/014-doctrine-ledger-execution.md.
+// real data is in docs/roadmap/done/014-doctrine-ledger-execution.md.

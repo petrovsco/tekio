@@ -4,6 +4,9 @@
 **Status:** planned — kickoff-ready. Decided 2026-08-30 when staging was set up;
 nothing built yet. The staging deployment itself (domain, gate, env vars) is not
 part of this brief — that is already done.
+**Release:** 2.0.0 — tagged 2026-09-01: the restyle train's browser verification
+writes test rows into the shared database, so Part 1 lands before it
+([026](026-signal-chrome-and-primitives.md) depends on this brief).
 **Origin:** Peter's answer when asked whether staging should get its own Supabase
 project: *"Same database, but then we need to make sure we don't break the
 production. Also we want to plan database cleanups on major releases so we don't

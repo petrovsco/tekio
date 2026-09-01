@@ -39,7 +39,7 @@ re-skin must not make them slower to use.
   functionality (its product question is parked in
   [034](034-v2-1-candidates-tbc.md)).
 - `ExerciseMuscleEditor`'s move from Habits into Admin — that belongs to the
-  Habits expiry work (roadmap 014's remainder), not the restyle. If it has
+  Habits expiry work ([035](035-habits-expiry-deletion.md)), not the restyle. If it has
   already moved by kickoff, restyle it here like everything else.
 
 ## Doctrine check (§4)

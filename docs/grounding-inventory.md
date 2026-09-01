@@ -4,7 +4,7 @@ Every number in Tekiō that claims physiological meaning — what it is, where i
 lives, what it asserts, and whether anything backs it.
 
 **Built 2026-08-26** as pushback #7(a) of
-[roadmap/009-feature-grounding.md](roadmap/009-feature-grounding.md). This is an *index*,
+[roadmap/done/009-feature-grounding.md](roadmap/done/009-feature-grounding.md). This is an *index*,
 not a grounding block: findings live in briefs (`/ground` Step 3) and this file
 points at them. It sits outside `roadmap/` on purpose — briefs move to `done/`,
 an index must not.
@@ -283,5 +283,5 @@ file is an index. The `13.x` numbering is preserved there, so existing reference
 to §13.1–§13.8 still resolve.
 
 The back-fill running order that was §13.9 now lives in
-[roadmap/009-feature-grounding.md](roadmap/009-feature-grounding.md) beside pushback #7,
+[roadmap/done/009-feature-grounding.md](roadmap/done/009-feature-grounding.md) beside pushback #7,
 whose 7(b) it sequences.

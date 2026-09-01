@@ -1,13 +1,13 @@
 # Roadmap: Execute the doctrine ledger — four folds and the Habits shelf
 
 **Label:** feature
-**Status:** in progress — the last three folds and the RECOVERY_WEIGHTS retirement shipped 2026-08-31 with roadmap 018 unit 4, so R1's cap is met for the first time (three menu sections, one slot free). Only the `ExerciseMuscleEditor` move to Admin is left, and it belongs with the Habits deletion at expiry.
+**Status:** done — 2026-09-01. Folds, shelf and the readiness retirement all shipped (R1's cap met 2026-08-31, three menu sections, one slot free); the expiry remainder (`ExerciseMuscleEditor` move + Habits deletion) split out to 035 so this brief could close.
 **Depends:** 010
 **Release:** 2.0.0
 
-[doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. Before
+[doctrine.md](../../doctrine.md) §5 rules five surfaces out of the menu. Before
 2026-08-27 the code shipped all five: `DEFAULTS` in
-[sectionConfig.ts](../../src/lib/db/sectionConfig.ts#L11) seeded **eight** menu
+[sectionConfig.ts](../../../src/lib/db/sectionConfig.ts#L11) seeded **eight** menu
 sections against R1's cap of **four**, so the app was at double its own hard
 limit and the cap that "is the argument" had never been enforced. It now seeds
 **six** — the first enforcement, still two over.
@@ -54,7 +54,7 @@ This brief originally said "steps 1 and 2 are independent of the four folds —
 the folds can proceed in parallel." **That is wrong for three of the four**, and
 the brief's own reasoning is what refutes it.
 
-Step 3 is blocked on [010-home-fused-reads.md](done/010-home-fused-reads.md) because
+Step 3 is blocked on [010-home-fused-reads.md](010-home-fused-reads.md) because
 rebalancing today's recovery weights is wasted if the recovery read is about to
 be rebuilt. The same argument applies to the fold *destinations*:
 
@@ -95,7 +95,7 @@ Recovery still Home-only (the precedent the folds follow).
 
 ## Sequencing — this is the part that matters
 
-[010-home-fused-reads.md](done/010-home-fused-reads.md) §5 sets the order, and it exists to
+[010-home-fused-reads.md](010-home-fused-reads.md) §5 sets the order, and it exists to
 stop one specific mistake:
 
 1. **Shelf the Habits *tab*** — config-level, reversible, no numbers touched.
@@ -118,14 +118,14 @@ Both are called out in the ledger; repeated here because they are easy to miss
 while deleting a directory.
 
 1. **`ExerciseMuscleEditor.tsx` moves to Admin, it is not deleted.** It lives at
-   [src/components/tabs/habits/ExerciseMuscleEditor.tsx](../../src/components/tabs/habits/ExerciseMuscleEditor.tsx)
+   [src/components/tabs/habits/ExerciseMuscleEditor.tsx](../../../src/components/tabs/habits/ExerciseMuscleEditor.tsx)
    but edits exercise→muscle mappings, which power the body map and muscle
    coverage — Core infrastructure that happens to sit nearby. Its natural home is
-   next to [MuscleGroupEditor.tsx](../../src/components/tabs/admin/MuscleGroupEditor.tsx),
+   next to [MuscleGroupEditor.tsx](../../../src/components/tabs/admin/MuscleGroupEditor.tsx),
    which already does the adjacent job. Same for the `muscle_groups` /
    `exercise_muscle_groups` tables: they stay.
 2. **`RECOVERY_WEIGHTS.habits` (0.10) must be reweighted, not just dropped.**
-   [app.ts:91-97](../../src/constants/app.ts#L91) currently reads
+   [app.ts:91-97](../../../src/constants/app.ts#L91) currently reads
    sleep 0.45 / mobility 0.15 / sauna 0.15 / cold 0.15 / habits 0.10. Removing
    the input without renormalising the other four silently drags readiness down
    for every day the app has ever scored.
@@ -146,24 +146,24 @@ Worse, because the reweight is exempt by construction, `RECOVERY_WEIGHTS` can be
 edited indefinitely without ever firing the gate — pushback #7's "forward-only"
 complaint reappearing inside an exemption. The proposed fix (exemption 1 applies
 only to a `grounded` / `convention` base) is
-[015-ground-trigger-spec-fixes.md](015-ground-trigger-spec-fixes.md) §13.7 and is a
+[015-ground-trigger-spec-fixes.md](../015-ground-trigger-spec-fixes.md) §13.7 and is a
 prerequisite if you want the reweight to actually pull the run in.
 
 ## Also resolved by the same decision
 
 Habit-derived **muscle** contributions go too — the muscle read counts logged
 sets only, which is the more honest answer anyway. That touches
-`habitCompletionSets` in [utils.ts:500](../../src/lib/utils.ts#L500) and its
-three call sites ([adaptations.ts:262](../../src/lib/adaptations.ts#L262),
-[utils.ts:607](../../src/lib/utils.ts#L607), [utils.ts:651](../../src/lib/utils.ts#L651)),
-plus [src/test/habits.test.ts](../../src/test/habits.test.ts).
+`habitCompletionSets` in [utils.ts:500](../../../src/lib/utils.ts#L500) and its
+three call sites ([adaptations.ts:262](../../../src/lib/adaptations.ts#L262),
+[utils.ts:607](../../../src/lib/utils.ts#L607), [utils.ts:651](../../../src/lib/utils.ts#L651)),
+plus [src/test/habits.test.ts](../../../src/test/habits.test.ts).
 
 ## Scope
 
 - ~~Step 1 (shelf Habits, config-only)~~ — **done 2026-08-27**, reversible.
 - ~~Sports → Cardio (UI fold)~~ — **done 2026-08-27**.
 - The remaining three UI folds — Water, Donations, Body Weight. Each removes a
-  `DRAWER_TABS` entry in [App.tsx:20](../../src/App.tsx#L20) and a `DEFAULTS` row
+  `DRAWER_TABS` entry in [App.tsx:20](../../../src/App.tsx#L20) and a `DEFAULTS` row
   — but all three are **blocked on home-fused-reads**, because their destination
   is the surface that brief rebuilds.
 - Step 3 (reweight) — **blocked on home-fused-reads**.
@@ -252,7 +252,7 @@ The `/ground` trap in §"The grounding trap" is **not** triggered: no weight was
 renormalised, so exemption 1 was never invoked. Inventory rows 4.6–4.9 do not
 clear — they retire with the constant. `PUSH_THRESHOLD` and the sleep/HRV blend
 carry their own grounding in
-[010 §Grounding](done/010-home-fused-reads.md#grounding).
+[010 §Grounding](010-home-fused-reads.md#grounding).
 
 ## Acceptance
 
@@ -260,9 +260,10 @@ carry their own grounding in
   time. **Three, one slot free — 2026-08-31.**
 - [x] Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
   logging capability is lost, only destinations. **Capture and edit both moved.**
-- [ ] `ExerciseMuscleEditor` is under Admin and the body map still renders.
-  Left open deliberately: it belongs with the Habits deletion at expiry
-  (2026-10-07), not with the folds.
+- [x] `ExerciseMuscleEditor` is under Admin and the body map still renders.
+  **Moved to [035](../035-habits-expiry-deletion.md) (2026-09-01)** — it belongs
+  with the Habits deletion at expiry (2026-10-07), not with the folds, so it
+  closes there.
 - [x] Readiness scores computed before and after the reweight are compared on real
   data, and the difference is explained rather than discovered. **See above —
   it was a retirement, not a reweight, and that is the finding.**

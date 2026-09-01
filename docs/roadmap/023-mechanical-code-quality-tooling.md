@@ -2,10 +2,10 @@
 
 **Label:** infra
 **Status:** planned — kickoff-ready. Nothing built. Spun out of
-[009-feature-grounding.md](009-feature-grounding.md) on 2026-08-30 so that brief
+[009-feature-grounding.md](done/009-feature-grounding.md) on 2026-08-30 so that brief
 holds only the grounding back-fill it still tracks.
 **Origin:** pushbacks #3 and #4 and deliverables 5 and 6 of
-[009-feature-grounding.md](009-feature-grounding.md), agreed 2026-08-26 and never
+[009-feature-grounding.md](done/009-feature-grounding.md), agreed 2026-08-26 and never
 started. The arguments below are carried in full — this brief is kickoff-ready on
 its own and you do not need to read 009 first.
 
@@ -65,7 +65,7 @@ are both over 800 lines. Mechanize first, judge second.
 - A performance *reviewer agent*. See the first argument above — that is the
   thing this brief exists to replace.
 - Anything in the grounding track. Those runs stay in
-  [009-feature-grounding.md](009-feature-grounding.md).
+  [009-feature-grounding.md](done/009-feature-grounding.md).
 
 ## Acceptance
 

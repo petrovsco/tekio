@@ -4,7 +4,7 @@
 **Status:** done — 2026-08-26. All eight acceptance criteria are ticked below: two scout runs landed, every citation was verified against NCBI eutils, the constants and the `adaptation_targets` DB shadow both carry the grounded values, and row 3.5 is resolved. The follow-ups it created are briefs 012 and 013.
 **Kickoff:** this file is the brief. It exists to carry a grounding decision, not a
 feature.
-**Origin:** run #7(b) of [009-feature-grounding.md](../009-feature-grounding.md) — the first
+**Origin:** run #7(b) of [009-feature-grounding.md](009-feature-grounding.md) — the first
 back-fill scout runs. Scope set by [grounding-inventory.md](../../grounding-inventory.md)
 §1 (rows 1.1–1.5, 1.7–1.9, 1.11) and §3.5, and by §13.9's ordering
 ("targets before weights").

@@ -22,7 +22,7 @@ questions are "easier to answer with the fused state concrete than in the
 abstract." That is a request for a mockup. This brief is that mockup, plus the
 design system it needs.
 **Blocks:** the three remaining folds in
-[014-doctrine-ledger-execution.md](../014-doctrine-ledger-execution.md) and, through them,
+[014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md) and, through them,
 R1's cap of four menu sections.
 
 ---
@@ -151,7 +151,7 @@ stands; read this for how it got there.
   `DonationsTab`, `BodyWeightTab`, and `RECOVERY_WEIGHTS` / `RECOVERY_TARGETS` /
   `RECOVERY_ICONS` — retired rather than reweighted, with the before/after
   comparison on live data written into
-  [014](../014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4).
+  [014](014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4).
   Live `user_section_config` flipped to match (three menu rows: Weights,
   Cardio, Mobility). Browser-verified at 390×844 against live data: recovery
   sheet logged a real sauna session end to end (test row then deleted from the
@@ -752,5 +752,5 @@ Rounds 2 and 3 do not re-paste this; they carry only what changed.
       units ending v1.4.2. Shared with
       [010-home-fused-reads.md](010-home-fused-reads.md) (the fused read —
       closed with this) and
-      [014-doctrine-ledger-execution.md](../014-doctrine-ledger-execution.md) (the
+      [014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md) (the
       three folds landed; 014 keeps one box open for the Habits expiry).
