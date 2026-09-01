@@ -3,6 +3,8 @@ import { useAppStore } from '../../../store/app'
 import { SecTitle } from '../../ui/Card'
 import { Btn, DelBtn } from '../../ui/Button'
 import { Inp, SelEl } from '../../ui/Input'
+import { Icon } from '../../ui/Icon'
+import { MicroLabel } from '../../ui/Badges'
 import { muscleOptions } from './habitFields'
 import {
   loadExerciseMuscleRows, upsertExerciseMuscle, deleteExerciseMuscle, createExercise,
@@ -23,7 +25,7 @@ const CONTRIB_OPTS = [
 ]
 const ADAPTATION_OPTS = [
   { value: '', label: 'Auto (by reps)' },
-  ...ADAPTATIONS.map(a => ({ value: a.key, label: `${a.icon} ${a.label}` })),
+  ...ADAPTATIONS.map(a => ({ value: a.key, label: a.label })),
 ]
 
 const rowKey = (r: ExerciseMuscleRow) => `${r.exerciseId}:${r.muscleGroupId}`
@@ -128,15 +130,18 @@ export function ExerciseMuscleEditor() {
   }
 
   return (
-    <div className="border-t border-bg pt-3 mt-1">
-      <button onClick={() => setOpen(v => !v)} className="w-full flex items-center justify-between">
-        <SecTitle className="mb-0">Exercise → Muscle Mapping</SecTitle>
-        <span className="text-[10px] text-muted">{open ? '▾ hide' : '▸ edit'}</span>
+    <div className="border-t border-hairline pt-3 mt-1">
+      <button onClick={() => setOpen(v => !v)} className="w-full flex items-center justify-between cursor-pointer">
+        <SecTitle className="mb-0">Exercise → muscle mapping</SecTitle>
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2">
+          {open ? 'Hide' : 'Edit'}
+          <Icon name={open ? 'chevronUp' : 'chevronDown'} size={11} />
+        </span>
       </button>
 
       {open && (
         <div className="mt-3 flex flex-col gap-3">
-          <p className="text-[11px] text-muted">
+          <p className="text-[11px] text-ink-2 leading-[1.4]">
             Each exercise can target multiple muscles — L1 primary, L2/L3 secondary — as stimulus or recovery.
             Set an <b>Adaptation</b> to always count an exercise toward power/speed/etc. (overrides rep-based
             classification); leave it on Auto to classify by reps. Edits update the dashboards.
@@ -161,7 +166,7 @@ export function ExerciseMuscleEditor() {
           />
 
           {!loaded ? (
-            <p className="text-sm text-muted text-center py-4">Loading…</p>
+            <p className="text-xs text-ink-3 text-center py-4">Loading…</p>
           ) : (
             <div className="flex flex-col gap-1 max-h-[28rem] overflow-y-auto pr-1">
               {exercises.map(ex => {
@@ -172,54 +177,56 @@ export function ExerciseMuscleEditor() {
                 const adaptation = exerciseAdaptations[ex.name.toLowerCase()]
                 const adaptMeta = adaptation ? ADAPTATIONS.find(a => a.key === adaptation) : null
                 return (
-                  <div key={ex.id} className="border border-border rounded-lg overflow-hidden">
+                  // shrink-0: the list is a flex column with a max height, so
+                  // without it every row is squeezed to a hairline once there
+                  // are more exercises than fit.
+                  <div key={ex.id} className="shrink-0 border border-line rounded-[3px] overflow-hidden">
                     <button
                       onClick={() => toggle(ex.id)}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-bg"
+                      className="w-full flex items-center gap-2 px-2.5 py-2 text-left hover:bg-hairline cursor-pointer transition-colors"
                     >
-                      <span className="text-[10px] text-muted w-3">{isOpen ? '▾' : '▸'}</span>
-                      <span className="text-sm font-semibold text-primary flex-1 truncate">{ex.name}</span>
+                      <Icon name={isOpen ? 'chevronUp' : 'chevronDown'} size={11} className="text-ink-3 shrink-0" />
+                      <span className="text-xs font-semibold text-ink flex-1 truncate">{ex.name}</span>
+                      {/* A pinned adaptation is a stated fact about the exercise,
+                          not an urgency, so it is the outline micro label — the
+                          per-adaptation tint would be a second palette (§1). */}
                       {adaptMeta && (
-                        <span
-                          className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full shrink-0"
-                          style={{ background: `${adaptMeta.color}1a`, color: adaptMeta.color }}
-                          title={`Always counts as ${adaptMeta.label}`}
-                        >
-                          {adaptMeta.icon} {adaptMeta.label}
+                        <span className="shrink-0" title={`Always counts as ${adaptMeta.label}`}>
+                          <MicroLabel>{adaptMeta.label}</MicroLabel>
                         </span>
                       )}
-                      <span className="text-[10px] text-muted shrink-0">
+                      <span className="text-[10px] text-ink-3 shrink-0">
                         {links.length === 0 ? 'no muscles' : `${links.length} muscle${links.length > 1 ? 's' : ''}`}
                       </span>
                     </button>
 
                     {isOpen && (
-                      <div className="px-3 pb-3 pt-1 flex flex-col gap-2 bg-bg/40">
+                      <div className="px-2.5 pb-2.5 pt-1.5 flex flex-col gap-2 bg-hairline">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted flex-1">Adaptation</span>
+                          <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 flex-1">Adaptation</span>
                           <SelEl
                             options={ADAPTATION_OPTS}
                             value={adaptation ?? ''}
                             onChange={e => saveAdaptation(ex.id, e.target.value)}
-                            className="!py-1 !px-2 text-xs w-40"
+                            className="!py-1 !px-2 w-40"
                           />
                         </div>
                         {links.map(link => (
                           <div key={link.muscleGroupId} className="flex items-center gap-2">
-                            <span className="text-xs text-primary flex-1 truncate">
+                            <span className="text-xs text-ink flex-1 truncate">
                               {muscleNameById.get(link.muscleGroupId) ?? '—'}
                             </span>
                             <SelEl
                               options={LEVEL_OPTS}
                               value={String(link.level)}
                               onChange={e => persist({ ...link, level: +e.target.value as 1 | 2 | 3 })}
-                              className="!py-1 !px-2 text-xs w-28"
+                              className="!py-1 !px-2 w-28"
                             />
                             <SelEl
                               options={CONTRIB_OPTS}
                               value={link.contribution}
                               onChange={e => persist({ ...link, contribution: e.target.value as MuscleContribution })}
-                              className="!py-1 !px-2 text-xs w-24"
+                              className="!py-1 !px-2 w-24"
                             />
                             <DelBtn label="Remove muscle" noConfirm onClick={() => remove(link)} />
                           </div>
@@ -230,7 +237,7 @@ export function ExerciseMuscleEditor() {
                             options={[{ value: '', label: '+ Add muscle…' }, ...available]}
                             value=""
                             onChange={e => addLink(ex.id, e.target.value)}
-                            className="!py-1 text-xs"
+                            className="!py-1"
                           />
                         )}
                       </div>
@@ -239,7 +246,7 @@ export function ExerciseMuscleEditor() {
                 )
               })}
               {exercises.length === 0 && (
-                <p className="text-sm text-muted text-center py-4">No exercises match “{search}”.</p>
+                <p className="text-xs text-ink-3 text-center py-4">No exercises match “{search}”.</p>
               )}
             </div>
           )}
