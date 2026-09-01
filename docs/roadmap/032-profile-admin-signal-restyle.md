@@ -1,7 +1,7 @@
 # Roadmap: Profile & Admin — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — waits on 026. Last of the page sweeps; the natural cut line if 2.0.0 needs trimming (see note).
+**Status:** planned — waits on 026. Last of the page sweeps; confirmed in 2.0.0 on 2026-09-01.
 **Depends:** 026
 **Release:** 2.0.0
 
@@ -9,10 +9,10 @@ The ledger exempts Profile and Admin from R1 (infrastructure, not sections),
 but "one visual language everywhere" includes them — they are the only
 surfaces left after 027–031.
 
-**Note for release review:** if 2.0.0 needs to ship leaner, this brief is the
-one to retag to a later release — the user-facing surfaces would already be
-unified, and [033](033-retire-old-design-language.md)'s token deletion would
-move with it. Peter's call; until made, it ships in 2.0.0.
+"Everywhere" is the objective, so these two ship with the rest: 2.0.0 is not
+done while a settings screen still wears the old language, and
+[033](033-retire-old-design-language.md) cannot delete the old tokens until
+they do.
 
 ## What is old (2026-09-01 survey)
 

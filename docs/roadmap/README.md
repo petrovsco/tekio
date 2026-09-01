@@ -43,7 +43,7 @@ after them.
 ```
 
 - **`**Label:**`** — one of the four above. What kind of work it is.
-- **`**Status:**`** — **the first word is one of five**, then an em dash and a
+- **`**Status:**`** — **the first word is one of six**, then an em dash and a
   short human sentence:
 
   | Keyword | Means |
@@ -53,6 +53,7 @@ after them.
   | `in progress` | someone is working on it now |
   | `blocked` | committed, but something outside the brief must happen first |
   | `done` | finished — the file lives in `done/` |
+  | `discarded` | dropped without shipping — the file lives in `done/` too |
 
   The keyword is what tooling reads; the sentence is what a person reads. Keep
   the sentence to a line or two and keep it current.
@@ -86,6 +87,17 @@ Moving a file into `done/` changes its depth, so:
    `NNN-x.md` becomes `../NNN-x.md`).
 2. Repoint everything that linked **to** it — including source comments:
    `grep -rn "<brief-filename>" docs src .claude`.
+
+`done/` is the archive, not a trophy cabinet. A brief we decide **not** to do
+retires exactly the same way, but says so: `**Status:** discarded — <why, in
+one line>`. Two endings, two words — `done` shipped, `discarded` was dropped —
+and neither is a deletion, because the number is never reused and the reasoning
+is the part worth keeping.
+
+There is no discarded column and no discarded *label*: the state lives in the
+status line, the label keeps saying what kind of work it was. The board reads
+that keyword and marks the card **discarded** inside Done, so a dropped brief
+never reads as a shipped one.
 
 ## Releases
 
