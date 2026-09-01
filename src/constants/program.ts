@@ -5,17 +5,15 @@ export const BLOCK_TYPES: BlockType[] = [
   'warmup', 'weight', 'mobility', 'conditioning', 'sport', 'recovery',
 ]
 
-/**
- * `iconName` is the SIGNAL icon (design-system §7); `icon` is the emoji it
- * replaces, still consumed by ProgramTab until roadmap 030 sweeps that page.
- */
-export const BLOCK_META: Record<BlockType, { icon: string; iconName: IconName; label: string }> = {
-  warmup: { icon: '🔥', iconName: 'warmup', label: 'Warm-up' },
-  weight: { icon: '🏋️', iconName: 'weights', label: 'Weights' },
-  mobility: { icon: '🧘', iconName: 'mobility', label: 'Mobility' },
-  conditioning: { icon: '🫀', iconName: 'cardio', label: 'Conditioning' },
-  sport: { icon: '⚽', iconName: 'sport', label: 'Sport' },
-  recovery: { icon: '🛌', iconName: 'recovery', label: 'Recovery' },
+/** `iconName` is the SIGNAL icon for the block type (design-system §7). The
+ *  emoji it replaced died with roadmap 030, the last page to render one. */
+export const BLOCK_META: Record<BlockType, { iconName: IconName; label: string }> = {
+  warmup: { iconName: 'warmup', label: 'Warm-up' },
+  weight: { iconName: 'weights', label: 'Weights' },
+  mobility: { iconName: 'mobility', label: 'Mobility' },
+  conditioning: { iconName: 'cardio', label: 'Conditioning' },
+  sport: { iconName: 'sport', label: 'Sport' },
+  recovery: { iconName: 'recovery', label: 'Recovery' },
 }
 
 export const TRAINING_TAGS: TrainingTag[] = [

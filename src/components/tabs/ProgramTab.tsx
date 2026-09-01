@@ -6,15 +6,31 @@ import { BLOCK_TYPES, BLOCK_META, TRAINING_TAGS, DEFAULT_TAG, DAYS_OF_WEEK } fro
 import { parseProgramJson } from '../../lib/programImport'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Btn, DelBtn } from '../ui/Button'
-import { SSBadge } from '../ui/Badges'
+import { SSBadge, DeloadBadge, MicroLabel } from '../ui/Badges'
 import { Chip } from '../ui/Chip'
+import { Icon } from '../ui/Icon'
+import { FIELD, FIELD_LABEL } from '../ui/Input'
 import { MiniChart } from '../ui/MiniChart'
 import type {
   Program, ProgramDay, ProgramDayBlock, BlockType, TrainingTag, DayOfWeek,
   ActiveProgram, ProgramCycle, WeightEntry,
 } from '../../types'
 
-const inputCls = 'border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent/40'
+// Inline meta on a row — a stated fact, never an urgency, so it never takes
+// the accent (design-system §1).
+const MICRO = 'inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3'
+
+/** A reveal or a quiet addition: the ghost tone (§8), never the accent. */
+const GHOST = 'inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2 hover:text-ink cursor-pointer transition-colors'
+
+/** A nested container on a white card — paper ground, 1px line, 3px radius. */
+const NEST = 'rounded-[3px] border border-line bg-paper'
+
+// The editor lays its rows out on grids rather than flex, because a SIGNAL
+// field carries `w-full` (ui/Input) and so needs a track to fill.
+const DAY_COLS = 'minmax(0,1fr) 126px 28px'
+const BLOCK_COLS = '20px 124px minmax(0,1fr) 28px'
+const ADD_EX_COLS = 'minmax(0,1fr) 108px auto auto'
 
 // ── Editor helpers ────────────────────────────────────────────────────────────
 
@@ -154,12 +170,17 @@ function ProgramEditor({ draft, onSave, onCancel }: {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* JSON import */}
+      {/* JSON import — opening it writes nothing, so it is a reveal (§8). */}
       <Card>
-        <button onClick={() => setShowImport(s => !s)} className="text-xs text-accent w-full text-left">
-          {showImport ? '▲ Hide JSON import' : '📥 Import from JSON'}
+        <button onClick={() => setShowImport(s => !s)} className={GHOST}>
+          Import from JSON
+          <Icon name={showImport ? 'chevronUp' : 'chevronDown'} size={11} />
         </button>
-        {importMsg && <p className="text-xs text-accent mt-2">✅ {importMsg}</p>}
+        {importMsg && (
+          <p className="inline-flex items-center gap-1 text-[11px] text-ink-2 mt-2 ml-3">
+            <Icon name="check" size={11} className="shrink-0" />{importMsg}
+          </p>
+        )}
         {showImport && (
           <div className="mt-2 flex flex-col gap-2">
             <textarea
@@ -167,9 +188,10 @@ function ProgramEditor({ draft, onSave, onCancel }: {
               onChange={e => { setImportText(e.target.value); setImportErr(null) }}
               placeholder='Paste program JSON ({ "name": …, "days": [ … ] })'
               rows={6}
-              className={`${inputCls} font-mono text-xs resize-y`}
+              className={`${FIELD} font-mono resize-y`}
             />
-            {importErr && <p className="text-xs text-danger whitespace-pre-wrap">⚠️ {importErr}</p>}
+            {/* A parse error is the one thing on the card that needs acting on. */}
+            {importErr && <p className="text-[11px] text-signal whitespace-pre-wrap">{importErr}</p>}
             <div className="flex gap-2">
               <Btn small onClick={runImport}>Import</Btn>
               <Btn small variant="secondary" onClick={() => { setImportText(''); setImportErr(null) }}>Clear</Btn>
@@ -179,102 +201,127 @@ function ProgramEditor({ draft, onSave, onCancel }: {
       </Card>
 
       <Card>
-        <SecTitle>Program Name</SecTitle>
-        <input value={name} onChange={e => setName(e.target.value)} className={`w-full ${inputCls}`} />
+        <SecTitle>Program name</SecTitle>
+        <input value={name} onChange={e => setName(e.target.value)} className={FIELD} />
       </Card>
       <Card>
-        <SecTitle>Start Date</SecTitle>
-        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={`w-full ${inputCls}`} />
+        <SecTitle>Start date</SecTitle>
+        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={FIELD} />
       </Card>
 
       {days.map((day, di) => (
         <Card key={di}>
-          <div className="flex items-center gap-2 mb-3">
+          <div className="grid gap-1.5 items-center mb-2.5" style={{ gridTemplateColumns: DAY_COLS }}>
             <input
               value={day.name}
               onChange={e => setDayName(di, e.target.value)}
-              className={`flex-1 ${inputCls} font-semibold`}
+              className={`${FIELD} font-bold`}
             />
-            <select value={day.dayOfWeek ?? ''} onChange={e => setDayDow(di, e.target.value)} className={inputCls}>
+            <select value={day.dayOfWeek ?? ''} onChange={e => setDayDow(di, e.target.value)} className={`${FIELD} px-1.5`}>
               <option value="">Unscheduled</option>
               {DAYS_OF_WEEK.map(d => <option key={d} value={d}>{d}</option>)}
             </select>
             <DelBtn label="Delete day" onClick={() => removeDay(di)} />
           </div>
           {day.isVariant && (
-            <p className="text-[11px] text-ss font-medium mb-2">⤷ Variant day{day.variantGroupKey ? ` · ${day.variantGroupKey}` : ''}</p>
+            <p className="mb-2">
+              <MicroLabel>{day.variantGroupKey ? `Variant · ${day.variantGroupKey}` : 'Variant'}</MicroLabel>
+            </p>
           )}
 
           {(day.blocks ?? []).map((block, bi) => {
             const meta = BLOCK_META[block.blockType]
             return (
-              <div key={bi} className="mb-3 border border-border rounded-xl p-3 bg-bg/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-base">{meta.icon}</span>
-                  <select value={block.blockType} onChange={e => setBlockType(di, bi, e.target.value as BlockType)} className={`${inputCls} py-1.5`}>
+              <div key={bi} className={`mb-2.5 p-2 ${NEST}`}>
+                <div className="grid gap-1.5 items-center mb-1.5" style={{ gridTemplateColumns: BLOCK_COLS }}>
+                  <Icon name={meta.iconName} size={14} className="text-ink-2 justify-self-center" />
+                  <select value={block.blockType} onChange={e => setBlockType(di, bi, e.target.value as BlockType)} className={`${FIELD} px-1.5 py-1.5`}>
                     {BLOCK_TYPES.map(t => <option key={t} value={t}>{BLOCK_META[t].label}</option>)}
                   </select>
-                  <input value={block.name} onChange={e => setBlockName(di, bi, e.target.value)} className={`flex-1 ${inputCls} py-1.5`} placeholder="Block name" />
+                  <input value={block.name} onChange={e => setBlockName(di, bi, e.target.value)} className={`${FIELD} py-1.5`} placeholder="Block name" />
                   <DelBtn label="Delete block" onClick={() => removeBlock(di, bi)} />
                 </div>
-                <input
-                  value={block.scheduledTime ?? ''}
-                  onChange={e => setBlockTime(di, bi, e.target.value)}
-                  placeholder="Time (e.g. 07:00)"
-                  className={`${inputCls} py-1 text-xs mb-2 w-32`}
-                />
+                <div className="w-28 mb-1.5">
+                  <input
+                    value={block.scheduledTime ?? ''}
+                    onChange={e => setBlockTime(di, bi, e.target.value)}
+                    placeholder="Time 07:00"
+                    className={`${FIELD} py-1`}
+                  />
+                </div>
 
                 {block.supersets.length > 0 && (
-                  <div className="mb-2 flex flex-col gap-1">
+                  <div className="mb-1.5 flex flex-col gap-1">
                     {block.supersets.map((pair, pi) => (
-                      <div key={pi} className="flex items-center gap-1.5 px-2 py-1 bg-ss-l rounded-lg border border-ss-b">
+                      <div key={pi} className="flex items-center gap-1.5 px-2 py-1 rounded-[3px] border border-line bg-white">
                         <SSBadge />
-                        <span className="text-xs text-ss font-medium">{pair[0]} + {pair[1]}</span>
-                        <button onClick={() => unpair(di, bi, pair)} className="ml-auto text-muted text-base leading-none">×</button>
+                        <span className="text-[11px] text-ink truncate">{pair[0]} + {pair[1]}</span>
+                        <button
+                          onClick={() => unpair(di, bi, pair)}
+                          aria-label="Unpair"
+                          className="ml-auto shrink-0 text-ink-3 hover:text-ink cursor-pointer transition-colors"
+                        >
+                          <Icon name="close" size={12} />
+                        </button>
                       </div>
                     ))}
                   </div>
                 )}
 
-                <div className="flex flex-col gap-1 mb-2">
+                <div className="flex flex-col gap-1 mb-1.5">
                   {block.exercises.map((ex, ei) => {
                     const inSS = block.supersets.some(p => p.includes(ex.exercise))
                     const isPF = pairing?.di === di && pairing?.bi === bi && pairing?.first === ex.exercise
                     return (
-                      <div key={ei} className={`flex items-center gap-2 px-2 py-1 rounded-lg border ${inSS ? 'bg-ss-l border-ss-b' : 'bg-surface border-border'}`}>
-                        <span className="text-xs text-primary flex-1 truncate">{ex.exercise}</span>
+                      <div key={ei} className={`flex items-center gap-1.5 px-2 py-1 rounded-[3px] bg-white border ${inSS ? 'border-ink' : 'border-line'}`}>
+                        {inSS && <SSBadge />}
+                        <span className="text-[11px] text-ink flex-1 truncate">{ex.exercise}</span>
                         <select
                           value={ex.trainingTag}
                           onChange={e => setExerciseTag(di, bi, ei, e.target.value as TrainingTag)}
-                          className="text-[10px] border border-border rounded px-1 py-0.5 bg-surface text-muted"
+                          className="shrink-0 text-[9px] font-bold uppercase tracking-[0.06em] border border-line rounded-[2px] px-1 py-0.5 bg-white text-ink-2 focus:outline-none focus:border-ink"
                         >
                           {TRAINING_TAGS.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                         {!inSS && (
-                          <button onClick={() => togglePair(di, bi, ex.exercise)} className={`text-xs font-bold ${isPF ? 'text-ss' : 'text-muted'}`} title="Pair as superset">
-                            {isPF ? '★' : '⊕'}
+                          // The pairing pick reads with the chip tones (§8):
+                          // solid ink is the one chosen, outline the rest.
+                          <button
+                            onClick={() => togglePair(di, bi, ex.exercise)}
+                            title="Pair as superset"
+                            className={`shrink-0 px-1.5 py-[2px] rounded-[2px] text-[8px] font-bold uppercase tracking-[0.08em] border cursor-pointer transition-colors ${
+                              isPF ? 'bg-ink text-white border-ink' : 'bg-white text-ink-3 border-line hover:border-ink hover:text-ink'
+                            }`}
+                          >
+                            SS
                           </button>
                         )}
-                        <button onClick={() => removeExercise(di, bi, ei)} className="text-muted leading-none">×</button>
+                        <button
+                          onClick={() => removeExercise(di, bi, ei)}
+                          aria-label="Remove exercise"
+                          className="shrink-0 text-ink-3 hover:text-ink cursor-pointer transition-colors"
+                        >
+                          <Icon name="close" size={12} />
+                        </button>
                       </div>
                     )
                   })}
                 </div>
                 {pairing?.di === di && pairing?.bi === bi && (
-                  <p className="text-xs text-ss italic mb-2">Tap ⊕ on another exercise to pair with "{pairing.first}"</p>
+                  <p className="text-[11px] text-ink-2 mb-1.5">Tap SS on another exercise to pair with “{pairing.first}”</p>
                 )}
 
                 {addingAt?.di === di && addingAt?.bi === bi ? (
-                  <div className="flex gap-2">
+                  <div className="grid gap-1.5 items-center" style={{ gridTemplateColumns: ADD_EX_COLS }}>
                     <input
                       value={newExName}
                       onChange={e => setNewExName(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && addExercise(di, bi)}
                       placeholder="Exercise name…"
-                      className={`flex-1 ${inputCls} py-1.5`}
+                      className={`${FIELD} py-1.5`}
                       autoFocus
                     />
-                    <select value={newExTag} onChange={e => setNewExTag(e.target.value as TrainingTag)} className={`${inputCls} py-1.5`}>
+                    <select value={newExTag} onChange={e => setNewExTag(e.target.value as TrainingTag)} className={`${FIELD} py-1.5`}>
                       <option value="">{DEFAULT_TAG[block.blockType]}</option>
                       {TRAINING_TAGS.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -282,22 +329,26 @@ function ProgramEditor({ draft, onSave, onCancel }: {
                     <Btn small variant="secondary" onClick={() => setAddingAt(null)}>Done</Btn>
                   </div>
                 ) : (
-                  <button onClick={() => { setAddingAt({ di, bi }); setNewExName(''); setNewExTag('') }} className="text-xs text-accent">+ Add exercise</button>
+                  <button onClick={() => { setAddingAt({ di, bi }); setNewExName(''); setNewExTag('') }} className={GHOST}>
+                    <Icon name="plus" size={11} />Add exercise
+                  </button>
                 )}
               </div>
             )
           })}
 
-          <button onClick={() => addBlock(di)} className="text-xs text-accent">+ Add block</button>
+          <button onClick={() => addBlock(di)} className={GHOST}>
+            <Icon name="plus" size={11} />Add block
+          </button>
         </Card>
       ))}
 
       <Card>
-        <Btn small onClick={addDay}>+ Add Day</Btn>
+        <Btn small variant="secondary" onClick={addDay}>+ Add day</Btn>
       </Card>
 
       <div className="flex gap-2">
-        <Btn onClick={save} className="flex-1">Save Program</Btn>
+        <Btn onClick={save} className="flex-1">Save program</Btn>
         <Btn onClick={onCancel} variant="secondary" className="flex-1">Cancel</Btn>
       </div>
     </div>
@@ -306,26 +357,34 @@ function ProgramEditor({ draft, onSave, onCancel }: {
 
 // ── Block display ─────────────────────────────────────────────────────────────
 
+/** One exercise as it reads on the plan: an outlined tile, ink when it is half
+ *  of a superset — the SS badge, not a colour, says which (§1). */
+function ExTile({ inSS, children }: { inSS?: boolean; children: React.ReactNode }) {
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-[3px] bg-white border text-[11px] text-ink ${inSS ? 'border-ink' : 'border-line'}`}>
+      {children}
+    </span>
+  )
+}
+
 /** Renders a day's blocks with their exercises + tags. Falls back to the flat
  *  superset-grouped view for legacy days that carry no blocks. */
 function DayBlocks({ day }: { day: ProgramDay }) {
   const blocks = day.blocks ?? []
   if (blocks.length === 0) {
-    if (day.exercises.length === 0) return <span className="text-xs text-muted italic">Rest day</span>
+    if (day.exercises.length === 0) return <span className="text-[11px] text-ink-3">Rest day</span>
     return (
       <div className="flex flex-wrap gap-1.5">
         {getGrouped(day).map((g, gi) =>
           g.type === 'superset' ? (
-            <div key={gi} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-ss-l border border-ss-b rounded-lg">
+            <ExTile key={gi} inSS>
               <SSBadge />
               {g.exercises.map((ex, i) => (
-                <span key={i} className="text-xs font-medium text-ss">{i > 0 ? '+ ' : ''}{ex}</span>
+                <span key={i}>{i > 0 ? '+ ' : ''}{ex}</span>
               ))}
-            </div>
+            </ExTile>
           ) : (
-            <div key={gi} className="inline-flex items-center px-2.5 py-1.5 rounded-full bg-accent-l text-accent text-xs font-medium">
-              🏋️ {g.exercises[0]}
-            </div>
+            <ExTile key={gi}>{g.exercises[0]}</ExTile>
           )
         )}
       </div>
@@ -338,22 +397,19 @@ function DayBlocks({ day }: { day: ProgramDay }) {
         return (
           <div key={bi}>
             <div className="flex items-center gap-1.5 mb-1">
-              <span className="text-sm">{meta.icon}</span>
-              <span className="text-xs font-semibold text-primary">{block.name}</span>
-              {block.scheduledTime && <span className="text-[10px] text-muted">· {block.scheduledTime}</span>}
-              {block.durationMinutes && <span className="text-[10px] text-muted">· {block.durationMinutes}m</span>}
+              <Icon name={meta.iconName} size={13} className="text-ink-2 shrink-0" />
+              <span className="text-[11px] font-bold text-ink">{block.name}</span>
+              {block.scheduledTime && <span className="text-[10px] text-ink-3 tabular-nums">· {block.scheduledTime}</span>}
+              {block.durationMinutes && <span className="text-[10px] text-ink-3 tabular-nums">· {block.durationMinutes}m</span>}
             </div>
             <div className="flex flex-wrap gap-1 pl-5">
-              {block.exercises.map((ex, ei) => {
-                const inSS = block.supersets.some(p => p.includes(ex.exercise))
-                return (
-                  <span key={ei} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] border ${inSS ? 'bg-ss-l border-ss-b text-ss' : 'bg-bg border-border text-primary'}`}>
-                    {inSS && <SSBadge />}
-                    {ex.exercise}
-                  </span>
-                )
-              })}
-              {block.exercises.length === 0 && <span className="text-[11px] text-muted italic">—</span>}
+              {block.exercises.map((ex, ei) => (
+                <ExTile key={ei} inSS={block.supersets.some(p => p.includes(ex.exercise))}>
+                  {block.supersets.some(p => p.includes(ex.exercise)) && <SSBadge />}
+                  {ex.exercise}
+                </ExTile>
+              ))}
+              {block.exercises.length === 0 && <span className="text-[11px] text-ink-3">—</span>}
             </div>
           </div>
         )
@@ -367,22 +423,29 @@ function BlockTypeStrip({ day }: { day: ProgramDay }) {
   const blocks = day.blocks ?? []
   if (blocks.length === 0) {
     return (
-      <div className="flex flex-wrap gap-1 mt-0.5">
+      <div className="flex flex-wrap items-center gap-1 mt-1">
         {getGrouped(day).map((g, gi) =>
           g.type === 'superset' ? (
-            <span key={gi} className="text-[10px] text-ss bg-ss-l border border-ss-b rounded-full px-1.5 py-0.5">SS: {g.exercises.join('+')}</span>
+            <span key={gi} className="inline-flex items-center gap-1 text-[10px] text-ink-2">
+              <SSBadge />{g.exercises.join(' + ')}
+            </span>
           ) : (
-            <span key={gi} className="text-[10px] text-muted">{g.exercises[0]}</span>
+            <span key={gi} className="text-[10px] text-ink-3">{g.exercises[0]}</span>
           )
         )}
       </div>
     )
   }
   return (
-    <div className="flex flex-wrap gap-1 mt-0.5">
+    <div className="flex flex-wrap gap-1 mt-1">
       {blocks.map((b, i) => (
-        <span key={i} className="text-[10px] text-muted bg-bg rounded-full px-1.5 py-0.5" title={b.name}>
-          {BLOCK_META[b.blockType].icon} {b.name}
+        <span
+          key={i}
+          className="inline-flex items-center gap-1 text-[10px] text-ink-2 border border-line rounded-[2px] px-1.5 py-0.5"
+          title={b.name}
+        >
+          <Icon name={BLOCK_META[b.blockType].iconName} size={11} className="text-ink-3 shrink-0" />
+          {b.name}
         </span>
       ))}
     </div>
@@ -431,31 +494,34 @@ function ProgramCard({
 
   return (
     <Card>
-      {/* Header: name + week badge */}
-      <div className="flex items-start justify-between mb-2">
-        <div>
-          <p className="text-base font-bold text-primary">{ap.name}</p>
-          {isComplete ? (
-            <span className="text-xs text-accent font-semibold">🎉 Cycle complete</span>
-          ) : isDeload ? (
-            <span className="text-xs text-dl-tx font-semibold">⚠️ Deload week</span>
-          ) : (
-            <span className="text-xs text-muted">Week {week} of {CYCLE}</span>
-          )}
+      {/* Header: name + where the cycle stands */}
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <div className="min-w-0">
+          <p className="text-[13px] font-bold text-ink tracking-[-0.01em]">{ap.name}</p>
+          <div className="mt-0.5">
+            {isComplete ? (
+              <span className={MICRO}><Icon name="check" size={11} />Cycle complete</span>
+            ) : isDeload ? (
+              <DeloadBadge week={week} />
+            ) : (
+              <span className="text-[11px] text-ink-2">Week {week} of {CYCLE}</span>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2 items-center shrink-0">
-          <button onClick={onEdit} className="text-xs text-accent">Edit</button>
-          <button onClick={onPause} className="text-xs text-muted">Pause</button>
+        <div className="flex gap-1.5 items-center shrink-0">
+          <Btn small variant="secondary" onClick={onEdit}>Edit</Btn>
+          <Btn small variant="ghost" onClick={onPause}>Pause</Btn>
         </div>
       </div>
 
-      {/* Cycle progress bar */}
+      {/* Cycle progress — ink accumulates like the stimulus ramp (§4): weeks
+          behind you are ink, this week is the mid step, ahead is hairline. */}
       {!isComplete && !isDeload && (
         <div className="flex gap-1 mb-3">
           {Array.from({ length: CYCLE }, (_, i) => (
             <div
               key={i}
-              className={`flex-1 h-1 rounded-full ${i < week - 1 ? 'bg-accent' : i === week - 1 ? 'bg-accent/40' : 'bg-bg'}`}
+              className={`flex-1 h-1 rounded-[2px] ${i < week - 1 ? 'bg-ink' : i === week - 1 ? 'bg-ink-3' : 'bg-hairline'}`}
             />
           ))}
         </div>
@@ -464,49 +530,44 @@ function ProgramCard({
       {/* Today / this week */}
       {mode === 'flexible' ? (
         <div className="mb-3">
-          <p className="text-xs text-muted mb-1">🗓️ This week</p>
+          <p className={`${FIELD_LABEL} mb-1`}>This week</p>
           {trackableDays > 0 && (
-            <p className="text-sm font-semibold text-primary mb-1.5">{doneThisWeek}/{trackableDays} lifting days done</p>
+            <p className="text-xs font-bold text-ink mb-1 tabular-nums">{doneThisWeek}/{trackableDays} lifting days done</p>
           )}
-          <p className="text-[11px] text-muted">Days aren't pinned — log from the checklist in Weights.</p>
+          <p className="text-[11px] text-ink-3">Days aren't pinned — log from the checklist in Weights.</p>
         </div>
       ) : day ? (
         <div className="mb-3">
-          <p className="text-xs text-muted mb-1">{todayLabel}</p>
-          <p className="text-sm font-semibold text-primary mb-1.5">{day.name}</p>
+          <p className="text-[11px] text-ink-3 mb-1">{todayLabel}</p>
+          <p className="text-xs font-bold text-ink mb-1.5">{day.name}</p>
           <DayBlocks day={day} />
         </div>
       ) : (
         <div className="mb-3">
-          <p className="text-xs text-muted mb-1">{todayLabel}</p>
-          <p className="text-sm text-muted italic">🛌 Rest day — nothing scheduled</p>
+          <p className="text-[11px] text-ink-3 mb-1">{todayLabel}</p>
+          <p className="inline-flex items-center gap-1.5 text-xs text-ink-2">
+            <Icon name="recovery" size={13} className="shrink-0" />
+            Rest day — nothing scheduled
+          </p>
         </div>
       )}
 
       {/* This week's variant toggles */}
       {mode === 'weekday' && variants.length > 0 && (
-        <div className="mb-3 rounded-xl border border-border bg-bg/40 p-2.5">
-          <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mb-1.5">🔀 This week's variants</p>
+        <div className={`mb-3 p-2 ${NEST}`}>
+          <p className={`${FIELD_LABEL} mb-1.5`}>This week's variants</p>
           <div className="flex flex-col gap-1.5">
             {variants.map(g => {
               const on = variantWeekdays.has(g.weekday)
               return (
-                <div key={g.weekday} className="flex items-center gap-2">
-                  <span className="text-xs text-primary w-20 shrink-0">{g.weekday}</span>
-                  <div className="flex gap-1 flex-1">
-                    <button
-                      onClick={() => onToggleVariant(g.weekday, false)}
-                      className={`flex-1 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${!on ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'}`}
-                    >
-                      {g.base?.name ?? 'Base'}
-                    </button>
-                    <button
-                      onClick={() => onToggleVariant(g.weekday, true)}
-                      className={`flex-1 py-1 rounded-lg text-[11px] font-semibold border transition-colors ${on ? 'border-ss bg-ss-l text-ss' : 'border-border bg-surface text-muted'}`}
-                    >
-                      {g.variant.name}
-                    </button>
-                  </div>
+                <div key={g.weekday} className="flex items-center gap-1.5">
+                  <span className="text-[11px] text-ink w-20 shrink-0 truncate">{g.weekday}</span>
+                  <Chip active={!on} onClick={() => onToggleVariant(g.weekday, false)} className="flex-1 truncate">
+                    {g.base?.name ?? 'Base'}
+                  </Chip>
+                  <Chip active={on} onClick={() => onToggleVariant(g.weekday, true)} className="flex-1 truncate">
+                    {g.variant.name}
+                  </Chip>
                 </div>
               )
             })}
@@ -514,47 +575,48 @@ function ProgramCard({
         </div>
       )}
 
-      {/* Actions */}
+      {/* Actions — both of these write, so both take the solid commit tone (§8). */}
       {isComplete ? (
         <div className="flex gap-2 mb-3">
-          <Btn onClick={onRestart} className="flex-1">🔄 Restart</Btn>
-          <Btn onClick={onEdit} variant="secondary" className="flex-1">✏️ Edit</Btn>
+          <Btn onClick={onRestart} className="flex-1">Restart cycle</Btn>
+          <Btn onClick={onEdit} variant="secondary" className="flex-1">Edit</Btn>
         </div>
       ) : mode === 'index' ? (
-        <Btn onClick={onAdvance} variant="secondary" className="w-full mb-3">
-          ✓ Done → {nextDay?.name}
+        <Btn onClick={onAdvance} className="w-full mb-3 inline-flex items-center justify-center gap-1.5">
+          <Icon name="check" size={13} />Done → {nextDay?.name}
         </Btn>
       ) : null}
 
       {/* Expandable schedule */}
       <button
         onClick={() => setScheduleOpen(o => !o)}
-        className="text-xs text-muted w-full text-left py-1 border-t border-bg mt-1"
+        className={`${GHOST} w-full justify-between py-1 border-t border-hairline mt-1`}
       >
-        {scheduleOpen ? '▲ Hide schedule' : '▼ Full schedule'}
+        Full schedule
+        <Icon name={scheduleOpen ? 'chevronUp' : 'chevronDown'} size={11} />
       </button>
 
       {scheduleOpen && (
-        <div className="mt-2 space-y-0.5">
+        <div className="mt-1.5">
           {ap.days.map((d, i) => {
             const active = mode === 'index' ? i === dayIndex : d === activeDay
             const dates = sessionDates(weights, d.exercises)
             return (
-              <div key={i} className={`flex items-start gap-2.5 py-2 px-2.5 rounded-xl ${active ? 'bg-accent-l' : ''}`}>
-                <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 ${active ? 'bg-accent text-white' : 'bg-bg text-muted'}`}>
+              <div key={i} className={`flex items-start gap-2 py-2 px-2 rounded-[3px] ${active ? 'bg-hairline' : ''}`}>
+                <span className={`shrink-0 w-5 h-5 rounded-[2px] flex items-center justify-center text-[10px] font-bold tabular-nums mt-0.5 ${active ? 'bg-ink text-white' : 'bg-hairline text-ink-3'}`}>
                   {i + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className={`text-xs font-${active ? 'semibold' : 'normal'} ${active ? 'text-accent' : 'text-primary'} truncate`}>
+                  <p className={`text-[11px] truncate ${active ? 'font-bold text-ink' : 'text-ink-2'}`}>
                     {d.dayOfWeek ? `${d.dayOfWeek} · ` : ''}{d.name}
                   </p>
                   <BlockTypeStrip day={d} />
                   {dates.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-1 mt-1">
                       {dates.slice(0, 3).map(dt => (
-                        <span key={dt} className="text-[10px] bg-bg text-muted px-1.5 py-0.5 rounded-full">{dt}</span>
+                        <span key={dt} className="text-[10px] text-ink-3 tabular-nums border border-line rounded-[2px] px-1.5 py-0.5">{dt}</span>
                       ))}
-                      {dates.length > 3 && <span className="text-[10px] text-muted">+{dates.length - 3}</span>}
+                      {dates.length > 3 && <span className="text-[10px] text-ink-3 tabular-nums">+{dates.length - 3}</span>}
                     </div>
                   )}
                 </div>
@@ -562,8 +624,8 @@ function ProgramCard({
             )
           })}
           {ap.days.length === 0 && <EmptyMsg>No days in this program</EmptyMsg>}
-          <div className="pt-2 border-t border-bg mt-1">
-            <button onClick={onDelete} className="text-xs text-danger">Delete program</button>
+          <div className="pt-2 border-t border-hairline mt-1">
+            <Btn small variant="danger" onClick={onDelete}>Delete program</Btn>
           </div>
         </div>
       )}
@@ -573,11 +635,13 @@ function ProgramCard({
 
 // ── Program History Card (one per past/paused cycle) ──────────────────────────
 
-const STATUS_BADGE: Record<ProgramCycle['status'], string> = {
+// A cycle's ending is a stated fact, so it reads as an outlined micro label —
+// no amber for paused, no colour for completed (§1).
+const STATUS_LABEL: Record<ProgramCycle['status'], string> = {
   active: '',
-  paused: '⏸ Paused',
-  completed: '🎉 Completed',
-  abandoned: '⏹ Stopped early',
+  paused: 'Paused',
+  completed: 'Completed',
+  abandoned: 'Stopped early',
 }
 
 function ProgramHistoryCard({
@@ -599,33 +663,36 @@ function ProgramHistoryCard({
 
   return (
     <Card>
-      <div className="flex items-start justify-between mb-1">
-        <div>
-          <p className="text-sm font-bold text-primary">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-ink truncate">
             {cycle.programName}{cycle.cycleNumber > 1 ? ` · Cycle ${cycle.cycleNumber}` : ''}
           </p>
-          <p className="text-xs text-muted">
+          <p className="text-[11px] text-ink-3 tabular-nums">
             {cycle.startDate} – {cycle.endDate ?? 'ongoing'}
           </p>
         </div>
-        <span className="text-xs font-semibold text-muted shrink-0">{STATUS_BADGE[cycle.status]}</span>
+        {STATUS_LABEL[cycle.status] && (
+          <span className="shrink-0"><MicroLabel>{STATUS_LABEL[cycle.status]}</MicroLabel></span>
+        )}
       </div>
 
       {cycle.status === 'paused' && (
-        <div className="flex gap-2 mt-2 mb-1">
-          <Btn small onClick={onResume}>▶ Resume</Btn>
+        <div className="flex items-center gap-1.5 mt-2 mb-1">
+          <Btn small onClick={onResume}>Resume</Btn>
           <DelBtn label="Delete program" onClick={onDelete} />
         </div>
       )}
 
-      <button onClick={() => setOpen(o => !o)} className="text-xs text-muted w-full text-left py-1 border-t border-bg mt-2">
-        {open ? '▲ Hide progress' : '▼ View progress'}
+      <button onClick={() => setOpen(o => !o)} className={`${GHOST} w-full justify-between py-1 border-t border-hairline mt-2`}>
+        Progress
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} size={11} />
       </button>
 
       {open && (
         <div className="mt-2 space-y-3">
           {progress.length > 0 && (
-            <div className="flex gap-1">
+            <div className="flex gap-1.5">
               <Chip small active={metric === 'maxWeight'} onClick={() => setMetric('maxWeight')}>Max kg</Chip>
               <Chip small active={metric === 'volume'} onClick={() => setMetric('volume')}>Volume</Chip>
             </div>
@@ -635,13 +702,16 @@ function ProgramHistoryCard({
             const m = p[metric]
             return (
               <div key={p.exercise}>
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs font-semibold text-primary">{p.exercise}</span>
-                  <div className="text-right">
-                    <span className={`text-xs font-medium ${m.delta > 0 ? 'text-accent' : m.delta < 0 ? 'text-danger' : 'text-muted'}`}>
-                      {fmt(m.first)}{unit} → {fmt(m.last)}{unit} ({m.delta > 0 ? '+' : ''}{fmt(m.delta)}{unit})
+                <div className="flex items-start justify-between gap-2 mb-0.5">
+                  <span className="text-[11px] font-bold text-ink min-w-0 truncate">{p.exercise}</span>
+                  <div className="text-right shrink-0">
+                    {/* A result is not an urgency, so the delta stays ink and
+                        the sign carries it (§1). */}
+                    <span className="text-[11px] text-ink tabular-nums">
+                      {fmt(m.first)}{unit} → {fmt(m.last)}{unit}
+                      <span className="text-ink-2"> ({m.delta > 0 ? '+' : ''}{fmt(m.delta)}{unit})</span>
                     </span>
-                    <p className="text-[11px] text-muted">Peak {fmt(m.peak)}{unit}</p>
+                    <p className="text-[10px] text-ink-3 tabular-nums">Peak {fmt(m.peak)}{unit}</p>
                   </div>
                 </div>
                 <MiniChart data={m.series} />
@@ -711,7 +781,7 @@ export function ProgramTab() {
   const handlePause = async (ap: ActiveProgram) => {
     try {
       await pauseActiveProgram(ap.userProgramId)
-      setToast(`⏸ ${ap.name} paused`)
+      setToast(`${ap.name} paused`)
     } catch {
       setToast('Failed to pause.')
     }
@@ -729,7 +799,7 @@ export function ProgramTab() {
   const handleResume = async (cycle: ProgramCycle) => {
     try {
       await resumeActiveProgram(cycle.userProgramId)
-      setToast(`▶ ${cycle.programName} resumed`)
+      setToast(`${cycle.programName} resumed`)
     } catch {
       setToast('Failed to resume.')
     }
@@ -745,7 +815,7 @@ export function ProgramTab() {
   }
 
   if (saving) {
-    return <div className="text-center py-12 text-muted text-sm">Saving program…</div>
+    return <div className="text-center py-12 text-ink-3 text-xs">Saving program…</div>
   }
 
   if (editing !== null) {
@@ -766,31 +836,31 @@ export function ProgramTab() {
     <div className="flex flex-col gap-4">
       {programs.length === 0 && (
         <Card>
-          <SecTitle>Start a Program</SecTitle>
-          <p className="text-sm text-muted mb-4">
+          <SecTitle>Start a program</SecTitle>
+          <p className="text-[11px] text-ink-2 mb-3">
             Pick a ready-made template to customize, or build your own from scratch.
           </p>
           <div className="flex flex-col gap-2">
-            <p className="text-[11px] font-semibold text-muted uppercase tracking-wide">Templates</p>
+            <p className={FIELD_LABEL}>Templates</p>
             <button
               onClick={() => setEditing({ draft: defaultProgram() })}
-              className="w-full flex items-center gap-3 text-left rounded-xl border border-border bg-bg/40 p-3 active:scale-[0.98] transition-transform hover:border-accent"
+              className="w-full flex items-center gap-2.5 text-left rounded-[3px] border border-line bg-white p-2.5 hover:border-ink cursor-pointer transition-colors"
             >
-              <span className="text-2xl shrink-0">🏋️</span>
+              <Icon name="weights" size={18} className="text-ink-2 shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-primary">5-Day High Efficiency Split</p>
-                <p className="text-[11px] text-muted">Squat/bench/deadlift-based split with supersets</p>
+                <p className="text-xs font-bold text-ink">5-Day High Efficiency Split</p>
+                <p className="text-[11px] text-ink-3">Squat/bench/deadlift-based split with supersets</p>
               </div>
             </button>
-            <p className="text-[11px] font-semibold text-muted uppercase tracking-wide mt-2">Or start blank</p>
+            <p className={`${FIELD_LABEL} mt-1`}>Or start blank</p>
             <button
               onClick={startFromScratch}
-              className="w-full flex items-center gap-3 text-left rounded-xl border border-dashed border-border bg-surface p-3 active:scale-[0.98] transition-transform hover:border-accent"
+              className="w-full flex items-center gap-2.5 text-left rounded-[3px] border border-line bg-white p-2.5 hover:border-ink cursor-pointer transition-colors"
             >
-              <span className="text-2xl shrink-0">✏️</span>
+              <Icon name="plus" size={18} className="text-ink-2 shrink-0" />
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-accent">Create from scratch</p>
-                <p className="text-[11px] text-muted">Build your own days, blocks and exercises</p>
+                <p className="text-xs font-bold text-ink">Create from scratch</p>
+                <p className="text-[11px] text-ink-3">Build your own days, blocks and exercises</p>
               </div>
             </button>
           </div>
@@ -814,7 +884,7 @@ export function ProgramTab() {
 
       {programHistory.filter(c => c.status !== 'active').length > 0 && (
         <div className="flex flex-col gap-3">
-          <SecTitle>📜 Program History</SecTitle>
+          <SecTitle className="mb-0">Program history</SecTitle>
           {programHistory.filter(c => c.status !== 'active').map(cycle => (
             <ProgramHistoryCard
               key={cycle.id}
@@ -830,9 +900,9 @@ export function ProgramTab() {
       {programs.length > 0 && (
         <button
           onClick={startFromScratch}
-          className="w-full border-2 border-dashed border-border bg-surface rounded-2xl p-4 text-center"
+          className="w-full flex items-center justify-center gap-1.5 rounded-[3px] border border-line bg-white py-2.5 text-xs font-semibold text-ink hover:border-ink cursor-pointer transition-colors"
         >
-          <span className="text-sm font-semibold text-accent">+ Add New Program</span>
+          <Icon name="plus" size={13} />Add program
         </button>
       )}
     </div>
