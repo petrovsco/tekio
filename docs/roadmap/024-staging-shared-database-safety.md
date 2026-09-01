@@ -1,7 +1,7 @@
 # Roadmap: Staging on the production database — guardrails and release cleanup
 
 **Label:** infra
-**Status:** planned — Part 1 split out to [037](037-row-origin-tagging.md) on
+**Status:** planned — Part 1 split out to [037](done/037-row-origin-tagging.md) on
 2026-09-01; what remains is the migration/destructive-write policy (Part 2) and
 the release cleanup ritual (Part 3). The staging deployment itself (domain,
 gate, env vars) is not part of this brief — that is already done.
@@ -44,7 +44,7 @@ written before rows are identifiable is a ritual that cannot be performed.
 
 ## What to build
 
-### Part 1 — Tell staging apart → [037](037-row-origin-tagging.md)
+### Part 1 — Tell staging apart → [037](done/037-row-origin-tagging.md)
 
 Split out on 2026-09-01 and moved in full: the nullable `origin` column, the
 write-once trigger, the environment resolver, and the on-screen marker. It left
@@ -64,7 +64,7 @@ waits on it — and because Part 3 below cannot be written until it ships.
 
 ### Part 3 — The cleanup ritual at major releases
 
-Only meaningful once [037](037-row-origin-tagging.md) ships.
+Only meaningful once [037](done/037-row-origin-tagging.md) ships.
 
 - On every **major** version bump (the ones Peter confirms — see the branching
   and versioning rules in `CLAUDE.md`), sweep rows whose `origin` is not null

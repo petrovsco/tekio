@@ -7,7 +7,7 @@
 
 Why it waits on 037: the acceptance below logs a test entry of every type
 against the shared production database — including from localhost — so
-[037](037-row-origin-tagging.md) makes those rows identifiable first. (037 was
+[037](done/037-row-origin-tagging.md) makes those rows identifiable first. (037 was
 024's Part 1 until 2026-09-01; the rest of 024 does not block this brief.)
 **Origin:** 2026-09-01 screen survey. Home wears the SIGNAL language
 ([design-system.md](../design-system.md), from roadmap

@@ -1,11 +1,9 @@
 # Roadmap: Row origin tagging — tell staging and dev rows apart
 
 **Label:** infra
-**Status:** in progress — code and migration shipped 2026-09-01 and verified
-in the browser; the one box left is setting `VITE_ENV=staging` on Vercel's
-Preview environment, which only Peter can do. Split out of
-[024](024-staging-shared-database-safety.md) on 2026-09-01 so the restyle train
-([026](026-signal-chrome-and-primitives.md)) is not parked behind the whole of
+**Status:** done — shipped and verified 2026-09-01. Split out of
+[024](../024-staging-shared-database-safety.md) on 2026-09-01 so the restyle train
+([026](../026-signal-chrome-and-primitives.md)) is not parked behind the whole of
 024. This is 024's Part 1, unchanged in intent and widened in one place (see
 *Dev counts too*).
 **Release:** 2.0.0
@@ -75,7 +73,7 @@ and triples the write-path surface:
 Deliberately excluded, and why:
 
 - **`habits` / `habit_completions`** — shelved by the doctrine ledger with a
-  delete-by of 2026-10-07; [035](035-habits-expiry-deletion.md) removes them.
+  delete-by of 2026-10-07; [035](../035-habits-expiry-deletion.md) removes them.
   Do not add a column to a table that is being dropped.
 - **`muscle_groups`, `exercise_muscle_groups`, `movement_patterns`** —
   reference/admin data, not a training log. Pollution here is visible and
@@ -172,6 +170,17 @@ should be a few lines that survive that sweep, not a designed component.
   Verified against the live database: a cardio session logged from localhost
   landed with `origin = 'dev'`; the write-once trigger held in both directions;
   the bodyweight upsert left a real null-origin row untagged. Test row swept.
+- **2026-09-01** — `VITE_ENV=staging` added to Vercel's **Preview** environment
+  only (production left unset) via the Vercel CLI, and the preview redeployed so
+  it is baked in; the redeploy took the `stg-tekio.shamatoff.com` alias.
+  Confirmed by reading the built bundle: with the var set, Vite folds the
+  resolver to `function(){return"staging"}`; with it unset the resolver reduces
+  to pure hostname inference, which yields `production` on the production domain
+  and so keeps `withOrigin` an identity function there.
+  **Not checked with my own eyes:** the banner on live staging. Its gate
+  credentials are Vercel *Secrets* and `vercel env pull` refuses to decrypt
+  them, so signing in needs Peter. The banner itself was verified on localhost
+  and only its label differs.
 
 ## Acceptance
 
@@ -181,7 +190,7 @@ should be a few lines that survive that sweep, not a designed component.
       `stg-` host with no env var set.
 - [x] Root inserts in `src/lib/db/` carry the origin; a production build's insert
       payload is unchanged.
-- [ ] `VITE_ENV=staging` is set on Vercel's Preview environment.
+- [x] `VITE_ENV=staging` is set on Vercel's Preview environment.
 - [x] A non-production environment is unmistakable in the browser.
 - [x] Verified in the browser: a row logged from localhost lands with
       `origin = 'dev'`, and editing an existing null-origin row leaves it null.

@@ -46,7 +46,7 @@ Both sit behind the same cookie gate in [middleware.ts](middleware.ts) —
 Production, so a change to it changes both. Vercel Authentication is off; that
 gate is the only door. Staging talks to the **same Supabase project as
 production** — the risks that creates, and the work that pays them, are
-[roadmap/037-row-origin-tagging.md](docs/roadmap/037-row-origin-tagging.md)
+[roadmap/037-row-origin-tagging.md](docs/roadmap/done/037-row-origin-tagging.md)
 (marking which environment wrote a row) and
 [roadmap/024-staging-shared-database-safety.md](docs/roadmap/024-staging-shared-database-safety.md)
 (the migration policy and the release cleanup).
