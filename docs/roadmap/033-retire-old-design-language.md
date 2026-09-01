@@ -1,7 +1,7 @@
 # Roadmap: Retire the v1 design language
 
 **Label:** infra
-**Status:** blocked — waiting on 031, 032; the closing sweep of the 2.0.0 restyle, and the old tokens still have consumers until those pages land.
+**Status:** blocked — waiting on 031 only; 032 landed 2026-09-01, so Adaptations is the last page still holding the old tokens.
 **Depends:** 027, 028, 029, 030, 031, 032
 **Release:** 2.0.0
 

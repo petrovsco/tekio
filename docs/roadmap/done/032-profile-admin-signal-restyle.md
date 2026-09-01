@@ -1,7 +1,7 @@
 # Roadmap: Profile & Admin — SIGNAL restyle
 
 **Label:** feature
-**Status:** in progress — restyling ProfileTab, AdminTab and their child panes (Export/Import) into the SIGNAL language.
+**Status:** done — shipped 2026-09-01 in v1.10.0 (Profile) and v1.11.0 (Admin); both tabs and every child pane browser-verified.
 **Depends:** 026
 **Release:** 2.0.0
 
@@ -53,8 +53,22 @@ grounding, R1 untouched.
 
 ## Acceptance
 
-- [ ] No old-token classes or emoji remain in `ProfileTab`, `AdminTab` and
+- [x] No old-token classes or emoji remain in `ProfileTab`, `AdminTab` and
       their children.
-- [ ] Section reorder, a target edit, and a muscle-group edit
+- [x] Section reorder, a target edit, and a muscle-group edit
       browser-verified; console clean.
-- [ ] Export/Import still round-trips.
+- [x] Export/Import still round-trips.
+
+## What shipped
+
+Two commits, one per tab. Beyond the re-skin: `Icon` gained `drag`,
+`export` and `import`; Export/Import stopped hand-rolling a bottom sheet
+and now use the shared `Modal`; and removing the assistant API key grew
+the confirm step §8 requires of a destructive control.
+
+Two bugs from before this brief were found while verifying and fixed in
+the Admin commit — the weekly-target input rendered on top of its own
+label (`FIELD` already sets `w-full`, so a second width utility on the
+same element does not win), and every row of the exercise → muscle
+mapping list collapsed to a 2px hairline (a flex column with a max
+height shrinks its children once there are more than fit).
