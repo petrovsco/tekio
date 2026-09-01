@@ -18,3 +18,14 @@ export function DeloadBadge({ week }: { week?: number }) {
     </span>
   )
 }
+
+/** A stated fact on a history row — provenance, a trainer, a match result.
+ *  All of them are outline: none is an urgency (§1), and none changes what
+ *  you do today, which is what the solid tone above is reserved for. */
+export function MicroLabel({ children }: { children: string }) {
+  return (
+    <span className="inline-flex items-center px-[6px] py-[2px] rounded-[2px] border border-line text-ink-2 text-[8px] font-bold uppercase tracking-[0.08em]">
+      {children}
+    </span>
+  )
+}

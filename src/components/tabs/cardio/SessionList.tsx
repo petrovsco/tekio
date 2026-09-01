@@ -1,9 +1,12 @@
 import { useAppStore } from '../../../store/app'
 import { formatDurationMins, calcPace } from '../../../lib/utils'
-import { CARDIO_TYPES, CARDIO_ICONS } from '../../../constants/app'
+import { CARDIO_TYPES } from '../../../constants/app'
 import { Card, SecTitle } from '../../ui/Card'
 import { DelBtn, EditBtn } from '../../ui/Button'
 import { HistoryList } from '../../ui/HistoryList'
+import { Icon } from '../../ui/Icon'
+import { MicroLabel } from '../../ui/Badges'
+import { RatingRead } from '../../ui/Fields'
 import type { CardioEntry, SportEntry } from '../../../types'
 
 /**
@@ -33,35 +36,45 @@ function sessionLabel(s: Session): string {
   return s.kind === 'cardio' ? s.entry.type : s.entry.sport
 }
 
+/** The row's right-hand column: date and the two controls, one shape for both
+ *  kinds of session. */
+function RowActions({ date, onEdit, onDelete }: { date: string; onEdit: () => void; onDelete: () => void }) {
+  return (
+    <div className="flex items-center gap-1 shrink-0 ml-2">
+      <span className="text-[11px] text-ink-3 tabular-nums">{date}</span>
+      <EditBtn onClick={onEdit} />
+      <DelBtn onClick={onDelete} />
+    </div>
+  )
+}
+
 function CardioRow({ d }: { d: CardioEntry }) {
   const { removeCardioEntry, openEditModal } = useAppStore()
   return (
-    <div className="pb-2 mb-2 border-b border-bg last:border-0 last:mb-0">
+    <div className="py-2 border-b border-hairline last:border-0">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <span className="text-base">{CARDIO_ICONS[d.type]}</span>
-          <span className="text-sm font-semibold text-primary">{d.type}</span>
-          {d.source === 'garmin' && (
-            <span className="text-[10px] font-semibold text-accent bg-accent-l px-1.5 py-0.5 rounded-full">
-              ⌚ Garmin
-            </span>
-          )}
+        <div className="flex items-center gap-1.5 min-w-0">
+          {/* The stroke icon separates the two kinds of session in one list;
+              the emoji it replaced was chrome, not data (§7). */}
+          <Icon name="cardio" size={13} className="text-ink-3 shrink-0" />
+          <span className="text-xs font-bold text-ink truncate">{d.type}</span>
+          {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted">{d.date}</span>
-          <EditBtn onClick={() => openEditModal({ type: 'cardio', record: d })} />
-          <DelBtn onClick={() => removeCardioEntry(d.id)} />
-        </div>
+        <RowActions
+          date={d.date}
+          onEdit={() => openEditModal({ type: 'cardio', record: d })}
+          onDelete={() => removeCardioEntry(d.id)}
+        />
       </div>
-      <p className="text-xs text-muted mt-0.5 ml-0.5">
+      <p className="text-[11px] text-ink-2 mt-1 tabular-nums">
         {formatDurationMins(d.duration)}
         {d.distance ? ` · ${d.distance} km · ${calcPace(d.duration, d.distance)}` : ''}
-        {d.avgHr ? ` · ❤️ ${d.avgHr} bpm` : ''}
-        {d.elevationGain ? ` · ⛰️ ${Math.round(d.elevationGain)} m` : ''}
+        {d.avgHr ? ` · ${d.avgHr} bpm` : ''}
+        {d.elevationGain ? ` · ${Math.round(d.elevationGain)} m up` : ''}
         {d.notes ? ` — ${d.notes}` : ''}
       </p>
       {(d.aerobicTe != null || d.anaerobicTe != null) && (
-        <p className="text-[11px] text-muted mt-0.5 ml-0.5">
+        <p className="text-[11px] text-ink-3 mt-0.5 tabular-nums">
           {d.trainingEffectLabel ? `${prettyTeLabel(d.trainingEffectLabel)} · ` : ''}
           aerobic {d.aerobicTe ?? '—'} · anaerobic {d.anaerobicTe ?? '—'}
         </p>
@@ -73,47 +86,39 @@ function CardioRow({ d }: { d: CardioEntry }) {
 function SportRow({ d }: { d: SportEntry }) {
   const { removeSportEntry, openEditModal } = useAppStore()
   return (
-    <div className="pb-2 mb-2 border-b border-bg last:border-0 last:mb-0">
+    <div className="py-2 border-b border-hairline last:border-0">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="text-base">⚽</span>
-          <span className="text-sm font-semibold text-primary truncate">{d.sport}</span>
+          <Icon name="sport" size={13} className="text-ink-3 shrink-0" />
+          <span className="text-xs font-bold text-ink truncate">{d.sport}</span>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-xs text-muted">{d.date}</span>
-          <EditBtn onClick={() => openEditModal({ type: 'sport', record: d })} />
-          <DelBtn onClick={() => removeSportEntry(d.id)} />
-        </div>
+        <RowActions
+          date={d.date}
+          onEdit={() => openEditModal({ type: 'sport', record: d })}
+          onDelete={() => removeSportEntry(d.id)}
+        />
       </div>
       {(d.withTrainer || d.quality > 0 || d.result) && (
         <div className="flex flex-wrap items-center gap-1.5 mt-1">
-          {d.withTrainer && (
-            <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-full">
-              with trainer
-            </span>
-          )}
-          {d.quality > 0 && (
-            <span className="text-xs text-warning">{'★'.repeat(d.quality)}</span>
-          )}
-          {d.result && (
-            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize ${d.result === 'win' ? 'text-green-700 bg-green-50' : d.result === 'loss' ? 'text-red-700 bg-red-50' : 'text-slate-700 bg-slate-100'}`}>
-              {d.result}
-            </span>
-          )}
+          {d.withTrainer && <MicroLabel>With trainer</MicroLabel>}
+          {/* The result is the word, not a colour: green for a win would be a
+              second palette, and §1 has exactly one accent to spend. */}
+          {d.result && <MicroLabel>{d.result}</MicroLabel>}
+          {d.quality > 0 && <RatingRead value={d.quality} />}
         </div>
       )}
       {(d.duration || d.avgHr) && (
-        <p className="text-xs text-muted mt-1">
-          {d.duration ? `⏱️ ${formatDurationMins(d.duration)}` : ''}
+        <p className="text-[11px] text-ink-2 mt-1 tabular-nums">
+          {d.duration ? formatDurationMins(d.duration) : ''}
           {d.duration && d.avgHr ? ' · ' : ''}
-          {d.avgHr ? `❤️ ${d.avgHr} bpm` : ''}
+          {d.avgHr ? `${d.avgHr} bpm` : ''}
         </p>
       )}
-      {d.competitorNames && d.competitorNames.length > 0 && <p className="text-xs text-muted mt-1">vs {d.competitorNames.join(', ')}</p>}
+      {d.competitorNames && d.competitorNames.length > 0 && <p className="text-[11px] text-ink-2 mt-1">vs {d.competitorNames.join(', ')}</p>}
       {d.teammateNames && d.teammateNames.length > 0 && (
-        <p className="text-xs text-muted mt-1">with {d.teammateNames.join(', ')}</p>
+        <p className="text-[11px] text-ink-2 mt-1">with {d.teammateNames.join(', ')}</p>
       )}
-      {d.notes && <p className="text-xs text-muted italic mt-1">{d.notes}</p>}
+      {d.notes && <p className="text-[11px] text-ink-3 italic mt-1">{d.notes}</p>}
     </div>
   )
 }

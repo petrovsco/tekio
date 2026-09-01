@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
-import { CARDIO_TYPES, CARDIO_ICONS } from '../../constants/app'
-import { Card, SecTitle } from '../ui/Card'
+import { CARDIO_TYPES } from '../../constants/app'
+import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Chip } from '../ui/Chip'
+import { Toggle } from '../ui/Fields'
+import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP } from '../ui/chart'
 import { CardioLogForm } from './cardio/CardioLogForm'
 import { SportLogForm } from './cardio/SportLogForm'
 import { SportProgress } from './cardio/SportProgress'
@@ -17,6 +19,11 @@ import { SessionList } from './cardio/SessionList'
  * tables underneath.
  */
 type LogMode = 'cardio' | 'sport'
+
+const MODES: { value: LogMode; label: string }[] = [
+  { value: 'cardio', label: 'Cardio' },
+  { value: 'sport', label: 'Sport' },
+]
 
 export function CardioTab() {
   const [mode, setMode] = useState<LogMode>('cardio')
@@ -32,49 +39,72 @@ export function CardioTab() {
       duration: +d.duration.toFixed(2),
       ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
     }))
+  const hasPace = chartData.some(d => d.distance)
 
   return (
     <div className="flex flex-col gap-4">
       <Card>
-        <SecTitle>Log Session</SecTitle>
-        <div className="flex gap-1.5 mb-3">
-          {([['cardio', '❤️ Cardio'], ['sport', '⚽ Sport']] as [LogMode, string][]).map(([m, label]) => (
-            <button
-              key={m}
-              onClick={() => setMode(m)}
-              className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${mode === m ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'}`}
-            >
-              {label}
-            </button>
-          ))}
+        <SecTitle>Log session</SecTitle>
+        <div className="mb-3">
+          <Toggle options={MODES} value={mode} onPick={setMode} />
         </div>
         {mode === 'cardio' ? <CardioLogForm /> : <SportLogForm />}
       </Card>
 
       <Card>
         <SecTitle>Progress</SecTitle>
+        {/* Plain type names, no emoji: the marker is chrome here, not data (§7). */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {['All', ...CARDIO_TYPES].map(t => (
-            <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>
-              {t === 'All' ? 'All' : `${CARDIO_ICONS[t]} ${t}`}
-            </Chip>
+            <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>{t}</Chip>
           ))}
         </div>
         {chartData.length > 1 ? (
-          <ResponsiveContainer width="100%" height={150}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#64748b' }} />
-              <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
-              <Tooltip />
-              <Line type="monotone" dataKey="duration" stroke="#6366f1" strokeWidth={2.5} dot={false} name="Duration (min)" />
-              {chartData.some(d => d.distance) && (
-                <Line type="monotone" dataKey="pace" stroke="#10b981" strokeWidth={1.5} strokeDasharray="5 5" dot={false} name="Pace (min/km)" />
+          <ResponsiveContainer width="100%" height={170}>
+            <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
+              <CartesianGrid vertical={false} stroke={CHART.grid} />
+              <XAxis dataKey="date" {...CHART_AXIS} />
+              <YAxis yAxisId="duration" width={30} {...CHART_AXIS} />
+              {/* Pace gets its own axis: minutes and min/km are two scales, and
+                  one frame drawn on the wrong one is the pretty lie P2 forbids. */}
+              {hasPace && (
+                <YAxis yAxisId="pace" orientation="right" width={30} domain={['auto', 'auto']} {...CHART_AXIS} />
+              )}
+              <Tooltip {...CHART_TOOLTIP} />
+              <Line
+                {...CHART_LINE}
+                yAxisId="duration"
+                dataKey="duration"
+                stroke={CHART.line}
+                name="Duration (min)"
+                activeDot={{ r: 3, fill: CHART.line, stroke: 'none' }}
+              />
+              {/* Pace is the second series, so it is the pale ink (§9) — solid,
+                  because a dash means "not data" and is spent on reference lines. */}
+              {hasPace && (
+                <Line
+                  {...CHART_LINE}
+                  yAxisId="pace"
+                  dataKey="pace"
+                  stroke={CHART.line2}
+                  name="Pace (min/km)"
+                  activeDot={{ r: 3, fill: CHART.line2, stroke: 'none' }}
+                />
               )}
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <p className="text-sm text-muted text-center py-8">Not enough data to chart yet</p>
+          <EmptyMsg>Not enough data to chart yet</EmptyMsg>
+        )}
+        {hasPace && (
+          <div className="flex items-center gap-3 mt-2">
+            <span className="flex items-center gap-1.5 text-[10px] text-ink-3">
+              <span className="w-3 h-[1.5px] bg-ink" /> Duration (min)
+            </span>
+            <span className="flex items-center gap-1.5 text-[10px] text-ink-3">
+              <span className="w-3 h-[1.5px]" style={{ background: CHART.line2 }} /> Pace (min/km)
+            </span>
+          </div>
         )}
       </Card>
 

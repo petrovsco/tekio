@@ -5,6 +5,7 @@ import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
 import type { SetStr } from './SetsGrid'
 import { Inp, SelEl, FIELD_LABEL } from './Input'
+import { FieldLabel, Toggle, Rating } from './Fields'
 import { Btn, DelBtn } from './Button'
 import { Icon } from './Icon'
 import { SSBadge } from './Badges'
@@ -64,67 +65,6 @@ function useSets(initial: LiftSet[]) {
   }
 
   return { sets, revealed, update, remove, revealNext, parsed: parseSets(sets, revealed) }
-}
-
-// ── Shared field furniture (design-system §§5, 8) ────────────────────────────
-
-/** The 9px uppercase tracked label that sits above a control without its own. */
-function FieldLabel({ children }: { children: string }) {
-  return <p className={`${FIELD_LABEL} mb-1`}>{children}</p>
-}
-
-/** A one-of-N choice. Solid ink is the chosen option, outline the rest (§8). */
-function Toggle<T extends string | boolean>({ options, value, onPick, label }: {
-  options: { value: T; label: string }[]
-  value: T | ''
-  onPick: (v: T) => void
-  label: string
-}) {
-  return (
-    <div>
-      <FieldLabel>{label}</FieldLabel>
-      <div className="flex gap-1.5">
-        {options.map(o => (
-          <button
-            key={String(o.value)}
-            onClick={() => onPick(o.value)}
-            className={`flex-1 py-2 rounded-[3px] text-[11px] font-semibold border cursor-pointer transition-colors ${
-              value === o.value
-                ? 'border-ink bg-ink text-white'
-                : 'border-line bg-white text-ink-2 hover:border-ink hover:text-ink'
-            }`}
-          >
-            {o.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-const RATING_STEPS = [1, 2, 3, 4, 5]
-
-/** A 1–5 rating as filled squares — the same polarity as the whole-body
- *  quality tiles (§4). Ink means "counted"; a star would need a colour. */
-function Rating({ label, value, onPick }: { label: string; value: number; onPick: (v: number) => void }) {
-  return (
-    <div>
-      <FieldLabel>{label}</FieldLabel>
-      <div className="flex gap-1.5 items-center">
-        {RATING_STEPS.map(s => (
-          <button
-            key={s}
-            aria-label={`${s} of 5`}
-            onClick={() => onPick(value === s ? 0 : s)}
-            className={`w-7 h-7 rounded-[2px] border cursor-pointer transition-colors ${
-              s <= value ? 'bg-ink border-ink' : 'bg-white border-line hover:border-ink'
-            }`}
-          />
-        ))}
-        {value > 0 && <span className="text-[11px] text-ink-3 ml-1 tabular-nums">{value}/5</span>}
-      </div>
-    </div>
-  )
 }
 
 // ── Save/Cancel footer ────────────────────────────────────────────────────────

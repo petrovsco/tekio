@@ -3,7 +3,9 @@ import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Ba
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { weekKey } from '../../../lib/utils'
-import { Card, SecTitle } from '../../ui/Card'
+import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
+import { SelEl } from '../../ui/Input'
+import { CHART, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
 
 const TIME_FRAMES = ['All time', 'Last 30 days', 'Last 90 days', 'This year'] as const
 type TimeFrame = typeof TIME_FRAMES[number]
@@ -17,6 +19,17 @@ function withinTimeFrame(date: string, frame: TimeFrame): boolean {
   const cutoff = new Date(now)
   cutoff.setDate(cutoff.getDate() - days)
   return d >= cutoff
+}
+
+/** One column of the win/loss/tie record. The label names the outcome, so the
+ *  number needs no colour of its own (design-system §1). */
+function RecordStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="text-center">
+      <p className="text-[17px] font-bold text-ink tabular-nums leading-tight">{value}</p>
+      <p className="text-[9px] font-bold text-ink-3 uppercase tracking-[0.10em] mt-0.5">{label}</p>
+    </div>
+  )
 }
 
 /**
@@ -61,61 +74,51 @@ export function SportProgress() {
 
   return (
     <Card>
-      <SecTitle>Sessions per Week — {chartSport}</SecTitle>
-      <select
-        value={chartSport}
-        onChange={e => { setSelSport(e.target.value); setStatsCompetitor('') }}
-        className="w-full border border-border rounded-lg px-3 py-2 text-sm bg-surface text-primary mb-3 focus:outline-none"
-      >
-        {allSports.map(s => <option key={s}>{s}</option>)}
-      </select>
+      <SecTitle>Sessions per week — {chartSport}</SecTitle>
+      <div className="mb-3">
+        <SelEl
+          value={chartSport}
+          onChange={e => { setSelSport(e.target.value); setStatsCompetitor('') }}
+          options={allSports.map(s => ({ value: s, label: s }))}
+        />
+      </div>
       {chartHasCompetitor && (
-        <div className="flex flex-col gap-2.5 mb-3 px-3 py-2.5 rounded-lg bg-bg border border-border">
+        <div className="flex flex-col gap-2.5 mb-3 px-2.5 py-2.5 rounded-[3px] bg-hairline border border-line">
           <div className="grid grid-cols-2 gap-2">
-            <select
+            <SelEl
               value={statsCompetitor}
               onChange={e => setStatsCompetitor(e.target.value)}
-              className="border border-border rounded-lg px-2 py-1.5 text-xs bg-surface text-primary focus:outline-none"
-            >
-              <option value="">All competitors</option>
-              {competitorsForChartSport.map(c => <option key={c}>{c}</option>)}
-            </select>
-            <select
+              options={[
+                { value: '', label: 'All competitors' },
+                ...competitorsForChartSport.map(c => ({ value: c, label: c })),
+              ]}
+            />
+            <SelEl
               value={statsTimeFrame}
               onChange={e => setStatsTimeFrame(e.target.value as TimeFrame)}
-              className="border border-border rounded-lg px-2 py-1.5 text-xs bg-surface text-primary focus:outline-none"
-            >
-              {TIME_FRAMES.map(f => <option key={f}>{f}</option>)}
-            </select>
+              options={TIME_FRAMES.map(f => ({ value: f, label: f }))}
+            />
           </div>
-          <div className="flex items-center justify-center gap-6">
-            <div className="text-center">
-              <p className="text-lg font-bold text-green-700">{wins}</p>
-              <p className="text-[10px] text-muted font-medium">Win</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-red-700">{losses}</p>
-              <p className="text-[10px] text-muted font-medium">Loss</p>
-            </div>
-            <div className="text-center">
-              <p className="text-lg font-bold text-slate-600">{ties}</p>
-              <p className="text-[10px] text-muted font-medium">Tie</p>
-            </div>
+          <div className="flex items-center justify-center gap-8">
+            <RecordStat label="Win" value={wins} />
+            <RecordStat label="Loss" value={losses} />
+            <RecordStat label="Tie" value={ties} />
           </div>
         </div>
       )}
       {chartData.length > 1 ? (
-        <ResponsiveContainer width="100%" height={160}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-            <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#64748b' }} angle={-25} textAnchor="end" height={36} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#64748b' }} width={20} />
-            <Tooltip formatter={(v: number) => [v, 'Sessions']} />
-            <Bar dataKey="sessions" fill="#6366f1" radius={[4, 4, 0, 0]} />
+        <ResponsiveContainer width="100%" height={170}>
+          <BarChart data={chartData} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
+            <CartesianGrid vertical={false} stroke={CHART.grid} />
+            <XAxis dataKey="week" angle={-25} textAnchor="end" height={38} {...CHART_AXIS} />
+            <YAxis allowDecimals={false} width={22} {...CHART_AXIS} />
+            <Tooltip {...CHART_TOOLTIP} formatter={(v: number) => [v, 'Sessions']} />
+            {/* The ramp's mid step, so a bar never reads as a filled muscle (§9). */}
+            <Bar dataKey="sessions" fill={CHART.bar} radius={[2, 2, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <p className="text-sm text-muted text-center py-6">Not enough data to chart</p>
+        <EmptyMsg>Not enough data to chart</EmptyMsg>
       )}
     </Card>
   )

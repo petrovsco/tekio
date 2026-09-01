@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { today, parseDurationMins } from '../../../lib/utils'
-import { Inp } from '../../ui/Input'
+import { Inp, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
+import { FieldLabel, Toggle, Rating } from '../../ui/Fields'
 import { SmartInput } from '../../ui/SmartInput'
 import { ChipListInput } from '../../ui/ChipListInput'
 import type { QualityRating, MatchResult, NewSportFlags } from '../../../types'
 
-const STARS = [1, 2, 3, 4, 5]
+const RESULTS: { value: MatchResult; label: string }[] = [
+  { value: 'win', label: 'Win' },
+  { value: 'loss', label: 'Loss' },
+  { value: 'tie', label: 'Tie' },
+]
 
 /**
  * Sport capture, folded into Cardio (doctrine ledger: "a sport session is a
@@ -78,7 +83,7 @@ export function SportLogForm() {
     <>
       <div className="flex flex-col gap-2.5 mb-3">
         <div>
-          <p className="text-xs text-muted font-medium mb-1">Sport</p>
+          <FieldLabel>Sport</FieldLabel>
           <SmartInput
             value={sport}
             onChange={handleSelectSport}
@@ -87,34 +92,26 @@ export function SportLogForm() {
           />
         </div>
         {isNewSport && (
-          <div className="flex flex-col gap-1.5 px-3 py-2 rounded-lg bg-bg border border-border">
-            <p className="text-xs text-muted font-medium">New sport — what should this track?</p>
-            <label className="flex items-center gap-2 text-xs text-primary">
-              <input type="checkbox" checked={newSportHasCompetitor} onChange={e => setNewSportHasCompetitor(e.target.checked)} />
+          <div className="flex flex-col gap-1.5 px-2.5 py-2 rounded-[3px] bg-hairline border border-line">
+            <p className={FIELD_LABEL}>New sport — what should this track?</p>
+            <label className="flex items-center gap-2 text-xs text-ink">
+              <input type="checkbox" className="accent-ink" checked={newSportHasCompetitor} onChange={e => setNewSportHasCompetitor(e.target.checked)} />
               Competitor (opponent + win/loss)
             </label>
-            <label className="flex items-center gap-2 text-xs text-primary">
-              <input type="checkbox" checked={newSportHasTeammate} onChange={e => setNewSportHasTeammate(e.target.checked)} />
+            <label className="flex items-center gap-2 text-xs text-ink">
+              <input type="checkbox" className="accent-ink" checked={newSportHasTeammate} onChange={e => setNewSportHasTeammate(e.target.checked)} />
               Teammate(s)
             </label>
           </div>
         )}
         <div className="grid grid-cols-2 gap-2.5">
           <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
-          <div>
-            <p className="text-xs text-muted font-medium mb-1">With Trainer?</p>
-            <div className="flex gap-1.5">
-              {([false, true] as boolean[]).map(v => (
-                <button
-                  key={String(v)}
-                  onClick={() => setWithTrainer(v)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${withTrainer === v ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'}`}
-                >
-                  {v ? 'Yes' : 'No'}
-                </button>
-              ))}
-            </div>
-          </div>
+          <Toggle
+            label="With trainer?"
+            value={withTrainer}
+            onPick={setWithTrainer}
+            options={[{ value: false, label: 'No' }, { value: true, label: 'Yes' }]}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <Inp
@@ -134,52 +131,32 @@ export function SportLogForm() {
             step="1"
           />
         </div>
-        <div>
-          <p className="text-xs text-muted font-medium mb-1">Quality</p>
-          <div className="flex gap-1 items-center">
-            {STARS.map(s => (
-              <button
-                key={s}
-                onClick={() => setQuality(q => q === s ? 0 : s)}
-                className={`text-2xl transition-colors ${s <= quality ? 'text-warning' : 'text-border'}`}
-              >
-                ★
-              </button>
-            ))}
-            {quality > 0 && <span className="text-xs text-muted ml-1">{quality}/5</span>}
-          </div>
-        </div>
+        {/* Squares, not stars: a star has to be filled with a colour to read,
+            and §1 has none to spend (decided in roadmap 026). */}
+        <Rating label="Quality" value={quality} onPick={v => setQuality(v as QualityRating | 0)} />
         {hasCompetitor && (
           <>
             <div>
-              <p className="text-xs text-muted font-medium mb-1">Competitor(s) (opt.)</p>
+              <FieldLabel>Competitor(s) (opt.)</FieldLabel>
               <ChipListInput items={competitorNames} onChange={setCompetitorNames} suggestions={allCompetitors} placeholder="Add competitor" />
             </div>
-            <div>
-              <p className="text-xs text-muted font-medium mb-1">Result</p>
-              <div className="flex gap-1.5">
-                {(['win', 'loss', 'tie'] as MatchResult[]).map(r => (
-                  <button
-                    key={r}
-                    onClick={() => setResult(rv => rv === r ? '' : r)}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors capitalize ${result === r ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'}`}
-                  >
-                    {r}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <Toggle
+              label="Result"
+              value={result}
+              onPick={(r: MatchResult) => setResult(rv => (rv === r ? '' : r))}
+              options={RESULTS}
+            />
           </>
         )}
         {hasTeammate && (
           <div>
-            <p className="text-xs text-muted font-medium mb-1">Teammate(s) (opt.)</p>
+            <FieldLabel>Teammate(s) (opt.)</FieldLabel>
             <ChipListInput items={teammates} onChange={setTeammates} suggestions={allTeammates} placeholder="Add teammate" />
           </div>
         )}
         <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="How did it go?" />
       </div>
-      <Btn onClick={add} className="w-full">Log Session</Btn>
+      <Btn onClick={add} className="w-full">Log session</Btn>
     </>
   )
 }

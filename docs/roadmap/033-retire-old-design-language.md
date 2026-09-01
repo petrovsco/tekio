@@ -1,7 +1,7 @@
 # Roadmap: Retire the v1 design language
 
 **Label:** infra
-**Status:** planned — the closing sweep of the 2.0.0 restyle; can only run when nothing consumes the old tokens.
+**Status:** blocked — waiting on 029, 030, 031, 032; the closing sweep of the 2.0.0 restyle, and the old tokens still have consumers until those pages land.
 **Depends:** 027, 028, 029, 030, 031, 032
 **Release:** 2.0.0
 

@@ -32,12 +32,6 @@ export const CARDIO_TYPE_REVERSE: Record<string, string> = {
   swimming: 'Swimming',
   rowing: 'Indoor Rowing',
 }
-export const CARDIO_ICONS: Record<string, string> = {
-  Running: '🏃',
-  Cycling: '🚴',
-  Swimming: '🏊',
-  'Indoor Rowing': '🚣',
-}
 
 export const DONATION_TYPES = ['Full Blood', 'Plasma'] as const
 export type DonationDisplayType = typeof DONATION_TYPES[number]
