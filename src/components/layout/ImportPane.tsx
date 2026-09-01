@@ -11,6 +11,8 @@ import { saveWaterEntry } from '../../lib/db/water'
 import { saveSleepEntry, saveSaunaEntry, saveColdEntry } from '../../lib/db/recovery'
 import type { WeightEntry, BodyweightEntry, CardioEntry, MobilityEntry, SportEntry, DonationEntry, WaterEntry, SleepEntry, SaunaEntry, ColdEntry, Program } from '../../types'
 import { Btn } from '../ui/Button'
+import { Modal } from '../ui/Modal'
+import { FIELD } from '../ui/Input'
 
 interface ImportPaneProps {
   onClose: () => void
@@ -147,21 +149,12 @@ export function ImportPane({ onClose }: ImportPaneProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end">
-      <div onClick={onClose} className="absolute inset-0 bg-black/50" />
-      <div className="relative w-full bg-surface rounded-t-2xl p-5 shadow-xl">
-        <div className="w-10 h-1 bg-border rounded mx-auto mb-4" />
-        <p className="text-base font-bold text-primary mb-1">Import Data</p>
-        <p className="text-sm text-muted mb-3">Paste JSON — loads automatically on paste.</p>
-        <textarea
-          ref={ref}
-          value={val}
-          onPaste={handlePaste}
-          onChange={e => setVal(e.target.value)}
-          placeholder="Paste here…"
-          className="w-full h-20 border border-border rounded-xl px-3 py-2 text-xs font-mono resize-none focus:outline-none focus:ring-2 focus:ring-accent/40"
-        />
-        <div className="flex gap-2 mt-2">
+    <Modal
+      open
+      onClose={onClose}
+      title="Import data"
+      footer={
+        <div className="flex gap-2">
           <Btn
             onClick={async () => {
               const ok = await applyData(val)
@@ -175,7 +168,19 @@ export function ImportPane({ onClose }: ImportPaneProps) {
           </Btn>
           <Btn onClick={onClose} variant="secondary" className="flex-1">Cancel</Btn>
         </div>
+      }
+    >
+      <div className="flex flex-col gap-3">
+        <p className="text-xs text-ink-2 leading-[1.4]">Paste JSON — it loads automatically on paste.</p>
+        <textarea
+          ref={ref}
+          value={val}
+          onPaste={handlePaste}
+          onChange={e => setVal(e.target.value)}
+          placeholder="Paste here…"
+          className={`${FIELD} h-24 font-mono resize-none`}
+        />
       </div>
-    </div>
+    </Modal>
   )
 }

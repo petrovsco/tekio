@@ -10,7 +10,7 @@ export type IconName =
   | 'home' | 'weights' | 'cardio' | 'program' | 'menu' | 'mobility'
   | 'habits' | 'adaptations' | 'profile' | 'admin' | 'assistant'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
-  | 'warmup' | 'sport' | 'recovery'
+  | 'warmup' | 'sport' | 'recovery' | 'drag' | 'export' | 'import'
 
 /** Path geometry only — the wrapper below carries every shared stroke rule. */
 const PATHS: Record<IconName, string> = {
@@ -46,6 +46,12 @@ const PATHS: Record<IconName, string> = {
   sport: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17M12 3.5v4.2M20 9.6l-4 2.9M17 19.4l-1.5-4.6M7 19.4l1.5-4.6M4 9.6l4 2.9M12 7.7l4 2.8-1.5 4.3h-5L8 10.5Z',
   // A crescent — rest, the recovery block and the rest-day banner.
   recovery: 'M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z',
+  // A grip: two short rules. Narrower than `menu` so a drag handle never
+  // reads as the hamburger it sits a few pixels away from.
+  drag: 'M7 9.5h10M7 14.5h10',
+  // Out of the tray, and into it — the two halves of the clipboard round-trip.
+  export: 'M12 15V3.5M8.5 7 12 3.5 15.5 7M4.5 14v5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-5',
+  import: 'M12 3.5V15M8.5 11.5 12 15l3.5-3.5M4.5 14v5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-5',
 }
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

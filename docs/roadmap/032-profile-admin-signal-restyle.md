@@ -1,7 +1,7 @@
 # Roadmap: Profile & Admin — SIGNAL restyle
 
 **Label:** feature
-**Status:** planned — kickoff-ready now 026 has landed. Last of the page sweeps; confirmed in 2.0.0 on 2026-09-01.
+**Status:** in progress — restyling ProfileTab, AdminTab and their child panes (Export/Import) into the SIGNAL language.
 **Depends:** 026
 **Release:** 2.0.0
 

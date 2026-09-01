@@ -2,11 +2,18 @@ import { useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { Btn } from '../ui/Button'
 import { Inp } from '../ui/Input'
+import { Modal } from '../ui/Modal'
+import { Toggle } from '../ui/Fields'
 import { today } from '../../lib/utils'
 
 interface ExportPaneProps {
   onClose: () => void
 }
+
+const RANGE_OPTS = [
+  { value: 'from', label: 'From a date' },
+  { value: 'all', label: 'Everything' },
+]
 
 export function ExportPane({ onClose }: ExportPaneProps) {
   const store = useAppStore()
@@ -44,36 +51,40 @@ export function ExportPane({ onClose }: ExportPaneProps) {
     document.body.removeChild(ta)
 
     store.setToast(ok
-      ? `✅ Copied ${filtered.weights.length} weight entries (${Math.round(json.length / 1024)}KB)`
-      : '❌ Copy failed — try manual copy.'
+      ? `Copied ${filtered.weights.length} weight entries (${Math.round(json.length / 1024)}KB)`
+      : 'Copy failed — try manual copy.'
     )
     onClose()
   }
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end">
-      <div onClick={onClose} className="absolute inset-0 bg-black/50" />
-      <div className="relative w-full bg-surface rounded-t-2xl p-5 shadow-xl">
-        <div className="w-10 h-1 bg-border rounded mx-auto mb-4" />
-        <p className="text-base font-bold text-primary mb-1">Export Data</p>
-        <p className="text-sm text-muted mb-3">Copy all entries from a date onwards to clipboard.</p>
-        <label className="flex items-center gap-2 text-sm text-primary mb-3 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={exportAll}
-            onChange={e => setExportAll(e.target.checked)}
-            className="accent-accent"
-          />
-          Export all data
-        </label>
+    <Modal
+      open
+      onClose={onClose}
+      title="Export data"
+      footer={
+        <div className="flex gap-2">
+          <Btn onClick={doExport} className="flex-1">Copy to clipboard</Btn>
+          <Btn onClick={onClose} variant="secondary" className="flex-1">Cancel</Btn>
+        </div>
+      }
+    >
+      <div className="flex flex-col gap-3">
+        <p className="text-xs text-ink-2 leading-[1.4]">
+          Copies your entries to the clipboard as JSON.
+        </p>
+        {/* A checkbox has no tone in this system; the range is a one-of-two
+            choice, so it reads as the shared toggle (§8). */}
+        <Toggle
+          label="Range"
+          options={RANGE_OPTS}
+          value={exportAll ? 'all' : 'from'}
+          onPick={v => setExportAll(v === 'all')}
+        />
         {!exportAll && (
           <Inp label="From date" type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
         )}
-        <div className="flex gap-2 mt-3">
-          <Btn onClick={doExport} className="flex-1">📤 Copy to Clipboard</Btn>
-          <Btn onClick={onClose} variant="secondary" className="flex-1">Cancel</Btn>
-        </div>
       </div>
-    </div>
+    </Modal>
   )
 }
