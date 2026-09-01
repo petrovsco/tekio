@@ -3,6 +3,7 @@
 **Label:** feature
 **Status:** in progress — the last three folds and the RECOVERY_WEIGHTS retirement shipped 2026-08-31 with roadmap 018 unit 4, so R1's cap is met for the first time (three menu sections, one slot free). Only the `ExerciseMuscleEditor` move to Admin is left, and it belongs with the Habits deletion at expiry.
 **Depends:** 010
+**Release:** 2.0.0
 
 [doctrine.md](../doctrine.md) §5 rules five surfaces out of the menu. Before
 2026-08-27 the code shipped all five: `DEFAULTS` in

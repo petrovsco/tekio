@@ -3,6 +3,15 @@
 **Label:** feature
 **Status:** backlog — phase 1 code shipped but has never produced a row, so the field names are unverified; phase 2 is the recovery-load axis.
 
+> **Stale destination (noted 2026-09-01):** the Context section below
+> describes `RecoveryCard` and `RECOVERY_WEIGHTS`, both retired 2026-08-31
+> when the fused Home shipped (roadmap 014/018). Systemic readiness is now
+> sleep + HRV in `src/lib/fusedRead.ts` behind Home's SYSTEMIC READINESS
+> card — which is exactly where a Garmin Training Readiness score and
+> acute-load chip would surface. The open decision (display-only vs scored
+> in) survives unchanged; re-aim the implementation steps at the fused read
+> at kickoff.
+
 ## Goal
 
 Pull Garmin's **daily whole-body** metrics — **Training Readiness** score (0–100)

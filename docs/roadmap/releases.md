@@ -1,0 +1,28 @@
+# Releases
+
+The release registry. This file is furniture — no `NNN-` prefix, so `/roadmap`
+never treats it as a task. One `##` section per release; **the heading text is
+the release name**, spelled exactly as briefs reference it in their
+`**Release:**` header line. `**Target:**` is a free-form date; `**Status:**`
+is `planned` (default) or `released <date>`. File order is display order on
+the board.
+
+## 2.0.0
+
+**Target:** TBC
+**Status:** planned
+
+The next `develop` → `master` release onto production, and its objective is
+**one app, one language**: the unified SIGNAL feel everywhere (defined
+2026-09-01). Two halves:
+
+- **The model** — the simplified seven-adaptation model (019), its follow-on
+  target shapes (012), and the doctrine-ledger close-out (014).
+- **The restyle** — Home already wears the SIGNAL language (018); every other
+  surface still wears the v1 slate/indigo look. The restyle train is 026
+  (chrome + shared primitives) → 027–032 (one sweep per page) → 033 (delete
+  the old language and prove the walk).
+
+Releasing it unblocks the schema drops queued in
+[025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md) —
+that brief runs *after* this ships, so it is deliberately not tagged 2.0.0.

@@ -3,6 +3,7 @@
 **Label:** feature
 **Status:** planned — kickoff-ready, no code. 019 removes two of the qualities it reshapes, so it runs after.
 **Depends:** 019
+**Release:** 2.0.0
 **Origin:** follow-ups #1, #2 and #3 of
 [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md), promoted out of
 that brief's table so they do not get lost.

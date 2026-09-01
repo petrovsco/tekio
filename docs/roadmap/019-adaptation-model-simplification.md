@@ -2,6 +2,7 @@
 
 **Label:** feature
 **Status:** planned — decision made 2026-08-29; app-side code not started — `src/types/index.ts` still declares nine adaptations.
+**Release:** 2.0.0
 
 ## The decision (2026-08-29, during the roadmap-018 canvas review)
 

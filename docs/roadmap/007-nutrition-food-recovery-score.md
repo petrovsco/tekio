@@ -7,6 +7,13 @@
 ([002-recovery-axis.md](done/002-recovery-axis.md)) once the user specified a full scoring
 model. This is the "its own sub-project" the recovery axis deferred.
 
+> **Stale destination (noted 2026-09-01):** steps 6–7 below target
+> `RecoveryCard` and `RECOVERY_WEIGHTS`, both retired 2026-08-31 when the
+> fused Home shipped (roadmap 014/018) — systemic readiness is now
+> sleep + HRV in `src/lib/fusedRead.ts`, and capture lives in Home's T2
+> sheets. The FRS model itself is untouched; re-aim the integration steps at
+> the fused Home read at kickoff.
+
 ## Phase 1 — DONE (2026-07-14)
 
 An interactive **Food Recovery Score (FRS) bench** was built and published as an

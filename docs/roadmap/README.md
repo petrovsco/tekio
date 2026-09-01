@@ -86,3 +86,19 @@ Moving a file into `done/` changes its depth, so:
    `NNN-x.md` becomes `../NNN-x.md`).
 2. Repoint everything that linked **to** it — including source comments:
    `grep -rn "<brief-filename>" docs src .claude`.
+
+## Releases
+
+A brief committed to a release carries one optional header line —
+`**Release:** 2.0.0` — one release per brief, **kept when the brief moves to
+`done/`** so a shipped release's scope stays browsable. Releases are declared
+in [releases.md](releases.md) (furniture, never a task): one `##` section per
+release whose heading text is the name exactly as briefs spell it, with
+optional `**Target:**` and `**Status:** planned | released <date>` lines.
+
+Editing the `**Release:**` line *is* the scheduling act: planning a release
+means tagging the briefs that must ship in it and untagging what moves out.
+Work that can only happen *after* the release ships (e.g. the schema drops in
+025) is not part of it — it depends on it. When a release ships, flip its
+`releases.md` status to `released <date>`; open briefs still tagged with it
+need a decision — next release, or unscheduled.

@@ -1,0 +1,56 @@
+# Roadmap: Profile & Admin — SIGNAL restyle
+
+**Label:** feature
+**Status:** planned — waits on 026. Last of the page sweeps; the natural cut line if 2.0.0 needs trimming (see note).
+**Depends:** 026
+**Release:** 2.0.0
+
+The ledger exempts Profile and Admin from R1 (infrastructure, not sections),
+but "one visual language everywhere" includes them — they are the only
+surfaces left after 027–031.
+
+**Note for release review:** if 2.0.0 needs to ship leaner, this brief is the
+one to retag to a later release — the user-facing surfaces would already be
+unified, and [033](033-retire-old-design-language.md)'s token deletion would
+move with it. Peter's call; until made, it ships in 2.0.0.
+
+## What is old (2026-09-01 survey)
+
+- **Profile** — Monday/Sunday indigo toggle, adaptation-tracking chips,
+  Assistant card (provider select, key management, red "Remove"), Sections
+  drag-list with emoji and indigo ON/OFF pills, Export/Import rows with 📤 📥
+  emoji.
+- **Admin** — amber notice banner, WEEKLY TARGETS editor (emoji + a
+  coloured input per adaptation — also follows 019's row changes), MUSCLE
+  GROUPS nested editor (indigo "Add", red deletes throughout), EXERCISE →
+  MUSCLE MAPPING editor.
+
+## Scope
+
+Re-skin both tabs per the design system: SIGNAL tokens and type, §8
+controls, stroke icons, no emoji in chrome, colour only where it means
+something (§1 — red-everywhere delete buttons become ink with a confirm).
+Forms keep their exact behaviour; these are maintenance surfaces and the
+re-skin must not make them slower to use.
+
+## Out of scope
+
+- Any settings behaviour change; the drag-reorder logic; the assistant's
+  functionality (its product question is parked in
+  [034](034-v2-1-candidates-tbc.md)).
+- `ExerciseMuscleEditor`'s move from Habits into Admin — that belongs to the
+  Habits expiry work (roadmap 014's remainder), not the restyle. If it has
+  already moved by kickoff, restyle it here like everything else.
+
+## Doctrine check (§4)
+
+Exempt infrastructure surfaces; presentation only; no new number, no
+grounding, R1 untouched.
+
+## Acceptance
+
+- [ ] No old-token classes or emoji remain in `ProfileTab`, `AdminTab` and
+      their children.
+- [ ] Section reorder, a target edit, and a muscle-group edit
+      browser-verified; console clean.
+- [ ] Export/Import still round-trips.
