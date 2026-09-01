@@ -253,7 +253,7 @@ they were missed.
 - **Nutrition FRS** — ~25 coefficients and cut-points (`0.25·P + 0.20·E + …`,
   protein 1.6–2.2 g/kg, hydration 33 ml/kg, deficit penalty k=2.5, 3-day
   smoothing 0.5/0.3/0.2, alcohol ×0.85 …) live only in
-  [roadmap/007-nutrition-food-recovery-score.md](roadmap/007-nutrition-food-recovery-score.md)
+  [roadmap/done/007-nutrition-food-recovery-score.md](roadmap/done/007-nutrition-food-recovery-score.md)
   and its bench artifact. State: `unknown`, all of them.
 - **Local recovery windows** — **grounded 2026-08-30**: 48–72 h band,
   48 h default, dose-dependent

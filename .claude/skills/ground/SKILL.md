@@ -50,7 +50,7 @@ This is the canonical trigger spec. Doctrine §4.5 points here.
 | [src/constants/app.ts](../../../src/constants/app.ts) | `RECOVERY_WEIGHTS`, `RECOVERY_TARGETS`, `CYCLE` |
 | [src/constants/adaptations.ts](../../../src/constants/adaptations.ts) | `weeklyMuscleTarget`, `weeklySessionTarget`, `repRange`, every `rx` field (load / reps / sets / rest / effort / **cue**) |
 | `adaptation_targets` (DB) | seeded defaults and any migration that writes `weekly_muscle_target` / `weekly_session_target` |
-| [Nutrition FRS](../../../docs/roadmap/007-nutrition-food-recovery-score.md) | the six sub-score weights and their cut-points |
+| [Nutrition FRS](../../../docs/roadmap/done/007-nutrition-food-recovery-score.md) | the six sub-score weights and their cut-points |
 | Local recovery | hours-since-stimulus thresholds, volume-load decay |
 | Deload | which week of the cycle deloads, and by how much |
 

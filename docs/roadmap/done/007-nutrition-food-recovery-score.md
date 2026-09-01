@@ -1,18 +1,20 @@
 # Roadmap: Nutrition → Food Recovery Score (recovery-axis sub-project)
 
 **Label:** feature
-**Status:** backlog — phase 1 (the FRS bench) shipped 2026-07-14; phase 2, the app integration, is not started and is not committed to yet.
-**Kickoff:** start a fresh session with this file as the brief.
+**Status:** discarded — 2026-09-01, Peter's call: phase 2 was never committed to and the surface it targeted is gone. Phase 1's model is kept below as the record, not as work.
 **Origin:** 2026-07-14, spun out of the recovery-axis food/nutrition follow-up
-([002-recovery-axis.md](done/002-recovery-axis.md)) once the user specified a full scoring
+([002-recovery-axis.md](002-recovery-axis.md)) once the user specified a full scoring
 model. This is the "its own sub-project" the recovery axis deferred.
 
-> **Stale destination (noted 2026-09-01):** steps 6–7 below target
-> `RecoveryCard` and `RECOVERY_WEIGHTS`, both retired 2026-08-31 when the
-> fused Home shipped (roadmap 014/018) — systemic readiness is now
-> sleep + HRV in `src/lib/fusedRead.ts`, and capture lives in Home's T2
-> sheets. The FRS model itself is untouched; re-aim the integration steps at
-> the fused Home read at kickoff.
+> **Why it was discarded (2026-09-01).** Steps 6–7 targeted `RecoveryCard` and
+> `RECOVERY_WEIGHTS`, both retired 2026-08-31 when the fused Home shipped
+> (roadmap 014/018): systemic readiness is now sleep + HRV in
+> `src/lib/fusedRead.ts`. Rebuilding the integration against the new read
+> would be a fresh decision, and food is not part of the sentence the app
+> answers — it tells me what's *missing* across the seven adaptations and
+> whether I can push today. Phase 1's bench and model below are intact, so
+> reviving this means writing a new brief that argues for the surface first;
+> nothing here is lost, and the number keeps its place in the count.
 
 ## Phase 1 — DONE (2026-07-14)
 

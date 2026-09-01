@@ -1,7 +1,7 @@
 # Roadmap: Recovery / Readiness axis
 
 **Label:** feature
-**Status:** done — shipped 2026-07-10 (commit d809d1e); habits sub-score 2026-07-14 (96ce1b9); export/import 2026-07-14 (9f3ac0c). The one deferred item, the food fold-in, is its own brief — [007](../007-nutrition-food-recovery-score.md). Nothing is left here.
+**Status:** done — shipped 2026-07-10 (commit d809d1e); habits sub-score 2026-07-14 (96ce1b9); export/import 2026-07-14 (9f3ac0c). The one deferred item, the food fold-in, is its own brief — [007](007-nutrition-food-recovery-score.md). Nothing is left here.
 
 ## Shipped
 
@@ -26,7 +26,7 @@ sleep 0.45 / mobility 0.15 / sauna 0.15 / cold 0.15 / habits 0.10.
 ## Follow-ups
 
 - **Food / nutrition** — spun out into its own brief now that a scoring model is
-  defined: [007-nutrition-food-recovery-score.md](../007-nutrition-food-recovery-score.md)
+  defined: [007-nutrition-food-recovery-score.md](007-nutrition-food-recovery-score.md)
   (Phase 1 FRS bench shipped 2026-07-14; app integration is the remaining work).
 - **Export/import** — DONE (2026-07-14, commit 9f3ac0c): sleep/sauna/cold now
   round-trip through `ExportPane`/`ImportPane`. Nutrition export/import is tracked

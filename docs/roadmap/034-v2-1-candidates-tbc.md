@@ -36,7 +36,11 @@ scope creep.
 Ideas that already have parked briefs stay in them:
 [001](001-cross-adaptation-rep-ranges.md) (fuzzy rep ranges),
 [005](005-hr-zone-intensity-classification.md) (HR zones),
-[007](007-nutrition-food-recovery-score.md) (nutrition FRS),
-[008](008-garmin-recovery-load-axis.md) (Garmin daily readiness),
 [020](020-skill-recommendations-per-exercise.md) (skill recommendations),
 [022](022-companion-service-live-sync.md) (companion service).
+
+Nor do the two dropped on 2026-09-01:
+[007](done/007-nutrition-food-recovery-score.md) (nutrition FRS) and
+[008](done/008-garmin-recovery-load-axis.md) (Garmin daily readiness). They are
+not parked awaiting a slot — reviving either means a new brief that argues for
+its surface first, because the surface both targeted no longer exists.

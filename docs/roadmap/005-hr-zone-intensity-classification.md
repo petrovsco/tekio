@@ -1,8 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** backlog — needs Garmin HR data actually flowing (008 phase 1 has never produced a row), so it cannot be built or checked today.
-**Depends:** 008
+**Status:** backlog — needs avg HR actually arriving in `cardio_sessions`; the Garmin activity sync has never produced a row. Waiting on data, not on a task: 008 was discarded 2026-09-01, so nothing here parks behind it.
 
 ## Goal
 

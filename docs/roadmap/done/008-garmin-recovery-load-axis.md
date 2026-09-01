@@ -1,16 +1,17 @@
 # Roadmap: Garmin daily load & readiness → Recovery axis (Garmin sync Phase 2)
 
 **Label:** feature
-**Status:** backlog — phase 1 code shipped but has never produced a row, so the field names are unverified; phase 2 is the recovery-load axis.
+**Status:** discarded — 2026-09-01, Peter's call: the daily pull was never built, the surface it targeted is gone, and Home already answers "can I push today?" from sleep + HRV.
 
-> **Stale destination (noted 2026-09-01):** the Context section below
-> describes `RecoveryCard` and `RECOVERY_WEIGHTS`, both retired 2026-08-31
-> when the fused Home shipped (roadmap 014/018). Systemic readiness is now
-> sleep + HRV in `src/lib/fusedRead.ts` behind Home's SYSTEMIC READINESS
-> card — which is exactly where a Garmin Training Readiness score and
-> acute-load chip would surface. The open decision (display-only vs scored
-> in) survives unchanged; re-aim the implementation steps at the fused read
-> at kickoff.
+> **Why it was discarded (2026-09-01).** The Context section below describes
+> `RecoveryCard` and `RECOVERY_WEIGHTS`, both retired 2026-08-31 when the
+> fused Home shipped (roadmap 014/018). Systemic readiness is now sleep + HRV
+> in `src/lib/fusedRead.ts`, which answers the readiness question this brief
+> was going to sharpen — Garmin's Training Readiness is largely the same
+> inputs scored by someone else's formula, so adding it is a new argument, not
+> a resumption of this one. Phase 1 (activities → `cardio_sessions`) shipped
+> and stays; only this second pull is dropped. The field-discovery notes below
+> are the part worth keeping if a future brief does want the daily metrics.
 
 ## Goal
 
@@ -28,17 +29,17 @@ Training-Effect adaptation classifier) shipped 2026-07-13 — see
 **Phase 1 is unblocked (2026-08-27).** The sync had been failing since it
 shipped (a dead Garmin token — fixed 2026-08-26); the token was minted and the
 pipeline verified, so this brief's prerequisite is met. See
-[done/017-garmin-sync-token-restore.md](done/017-garmin-sync-token-restore.md).
+[017-garmin-sync-token-restore.md](017-garmin-sync-token-restore.md).
 
-## Context (what exists today)
+## Context (what existed when this was written)
 
-- **Recovery axis** lives in [src/components/tabs/home/RecoveryCard.tsx](../../src/components/tabs/home/RecoveryCard.tsx).
+- **Recovery axis** lived in `src/components/tabs/home/RecoveryCard.tsx` (deleted 2026-08-31).
   It computes a **weekly** `readiness` % as a weighted roll-up of per-modality
   sub-scores (each `clamp01(achieved / weekly target)`):
   `RECOVERY_WEIGHTS` = { sleep .45, mobility .15, sauna .15, cold .15, habits .10 }
   (corrected 2026-08-26 — this brief had drifted; `habits` is being dropped, see
-  [014-doctrine-ledger-execution.md](done/014-doctrine-ledger-execution.md))
-  and `RECOVERY_TARGETS` in [src/constants/app.ts](../../src/constants/app.ts).
+  [014-doctrine-ledger-execution.md](014-doctrine-ledger-execution.md))
+  and `RECOVERY_TARGETS` in [src/constants/app.ts](../../../src/constants/app.ts).
 - **Sleep Score precedent** — the pattern to copy. `sleep_logs` gained
   `sleep_score` / `source` via the Garmin sleep sync; the per-night sub-score
   prefers the Garmin score over raw duration (RecoveryCard.tsx ~L62-67). Do the

@@ -127,7 +127,7 @@ work — that is tooling, and this brief is a consumer of it.
   the canvas shows raw facts ("never", "53 d ago") and claims no flip logic.
 - **Resolved 2026-08-26 by P5:** systemic chronic load is Garmin's acute load —
   consume `daily_metrics.acute_load` from
-  [008-garmin-recovery-load-axis.md](../008-garmin-recovery-load-axis.md), do not recompute it
+  [008-garmin-recovery-load-axis.md](008-garmin-recovery-load-axis.md), do not recompute it
   (that brief also rules it informational context, not a recovery-% input).
   Per-muscle chronic load is a *different scope*, computed from logged sets, and
   stays here. Whether it needs a rolling window at all — and what window — is the
