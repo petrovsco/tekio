@@ -83,11 +83,20 @@ export const QUALITY_STALENESS_DAYS = {
   anaerobic_capacity: 28,
 } as const
 
-/** 60 — 10 fractional sets/muscle/week × 6-wk cycle; 10–20/wk is the
- * meta-analytic effective band (Schoenfeld 2017, Pelland 2026, Baz-Valle 2022).
- * With a half-volume deload week the honest cycle band is 50–60, see
- * docs/roadmap/done/010-home-fused-reads.md#grounding */
-export const CYCLE_SET_TARGET = 60
+/** 10 — weekly hard-set floor per muscle, pooled across every rep range (1–5 / 6–15 / 16–30+) at full
+ * value: hypertrophy per hard set is load-independent from ~30–40 % 1RM up (Schoenfeld 2017, Lopez 2021,
+ * Lasevicius 2018; set = unit, Baz-Valle 2018) and it is the volume-hungriest quality (Pelland 2026,
+ * Androulakis-Korakakis 2020). Power-tagged sets are NOT hard sets — they count in byQuality.power only
+ * (Pareja-Blanco 2017, Jukic 2023). Says nothing about strength's load, endurance's rep range or
+ * power's velocity — the per-quality maps do. Value grounded in
+ * docs/roadmap/done/010-home-fused-reads.md#grounding (D10); the pooling in
+ * docs/roadmap/039-adaptations-read-grounding.md#grounding (S3). */
+export const WEEKLY_SET_FLOOR = 10
+
+/** 60 — WEEKLY_SET_FLOOR × CYCLE, hard sets pooled across rep ranges, power sets excluded; with a
+ * half-volume deload the honest cycle band is 50–60 (010). Value grounded in 010 D10, pooling in
+ * 039 S3. See docs/roadmap/039-adaptations-read-grounding.md#grounding */
+export const CYCLE_SET_TARGET = WEEKLY_SET_FLOOR * CYCLE
 
 /** 48 h acute, 21 d aerobic tail (range 14–28 d) — whole blood only, aerobic
  * qualities only; plasma = 0 d. Endpoint contested (Ziegler 14 d / Judd 21 d /

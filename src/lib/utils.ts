@@ -486,8 +486,14 @@ export function habitProgress(
 
 // ── Muscle stimulus accounting ────────────────────────────────────────────────
 
-/** Impact weight per link level (1 = most direct): a secondary mover gets half a
- *  set, a tertiary a quarter. Every muscle read is denominated in this
- *  (inventory row 7.1); its grounding lands in
- *  docs/roadmap/039-adaptations-read-grounding.md#grounding. */
+/** Impact weight per link level (1 = most direct). Level 2 (synergist) = 0.5:
+ *  the best-fit "fractional" set counting in the largest dose-response model
+ *  (Pelland 2026) and synergist growth of ~0.4–1.0 × direct in trials
+ *  (Mannarino 2021, Gentil 2015, Brandão 2020). Level 3 = 0.25 is a
+ *  convention (grounded band 0–0.25): no study measures a quarter-set stimulus
+ *  and the measured minor contributors did not grow (hamstrings in squats —
+ *  Kubo 2019, Plotkin 2023; medial deltoid in bench — Lanza 2024). It stays
+ *  0.25 until the link table is audited, because some level-3 links are real
+ *  synergists (roadmap 042). Every muscle read is denominated in this
+ *  (inventory row 7.1). See docs/roadmap/039-adaptations-read-grounding.md#grounding */
 export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0.25 }

@@ -217,9 +217,11 @@ describe('adaptationCoverage', () => {
     expect(stim.sets.strength).toBe(3)
     // The overlap invariant (039 §6.0): the per-quality figures bracket the
     // total. With today's disjoint bands both bounds meet; once the S11 edges
-    // land the upper one may exceed the total.
+    // land the upper one may exceed the total. Power sits outside the bracket
+    // (039 S3) — it never enters `total`.
+    const hardQualities = MUSCLE_QUALITIES.filter(q => q !== 'power')
     for (const m of Object.keys(stim.total)) {
-      const parts = MUSCLE_QUALITIES.map(q => stim.byQuality[q][m] ?? 0)
+      const parts = hardQualities.map(q => stim.byQuality[q][m] ?? 0)
       expect(Math.max(...parts)).toBeLessThanOrEqual(stim.total[m])
       expect(parts.reduce((s, v) => s + v, 0)).toBeGreaterThanOrEqual(stim.total[m])
     }
@@ -234,6 +236,28 @@ describe('adaptationCoverage', () => {
     expect(stim.byQuality.power.Chest).toBe(2)
     expect(stim.byQuality.hypertrophy.Chest).toBeUndefined()
     expect(stim.total['Front Delt']).toBeUndefined()
+  })
+
+  it('leaves power sets out of the hard-set total (039 S3)', () => {
+    const stim = muscleStimulus(
+      [w('a', '2025-01-02', 'Bench Press', 10, 3), w('b', '2025-01-03', 'Bench Press', 5, 4)],
+      links, { from: '2025-01-01', to: '2025-01-07' }, { 'bench press': 'power' },
+    )
+    // Both entries are power via the override: they show on the power map...
+    expect(stim.byQuality.power.Chest).toBe(7)
+    expect(stim.sets.power).toBe(7)
+    // ...and buy nothing toward the pooled floor Home measures against.
+    expect(stim.total.Chest).toBeUndefined()
+
+    const mixed = muscleStimulus(
+      [w('a', '2025-01-02', 'Bench Press', 10, 3), w('b', '2025-01-03', 'Box Jump', 5, 4)],
+      [...links, { exercise: 'Box Jump', group: 'Chest', region: 'upper', level: 1, contribution: 'stimulus' }],
+      { from: '2025-01-01', to: '2025-01-07' },
+    )
+    // Keyword power (Box Jump) behaves the same: 3 hard sets, 4 power sets.
+    expect(mixed.total.Chest).toBe(3)
+    expect(mixed.byQuality.hypertrophy.Chest).toBe(3)
+    expect(mixed.byQuality.power.Chest).toBe(4)
   })
 
   it('weightSetsIn counts sets once inside the window', () => {

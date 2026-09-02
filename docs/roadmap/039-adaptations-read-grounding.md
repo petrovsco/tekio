@@ -2,8 +2,8 @@
 
 **Label:** feature
 **Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
-landed (v1.13.1); S1, S3–S11 still to run, two at a time (§6.5 step 2 — the
-2026-09-02 batch of eleven hit the session limit). Gates
+landed (v1.13.1), S1 + S3 landed (v1.13.2); S4–S11 still to run, two at a
+time (§6.5 step 2). Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -160,8 +160,73 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 ## Grounding
 
 One `###` per scout run from §6.3, pasted verbatim on receipt after the PMID
-check (`eutils esummary`, 2026-09-02). Landed so far: **S2**. Still to run,
-two at a time (§6.5 step 2): S1, S3, S4, S5, S6, S7, S8, S9, S10, S11.
+check (`eutils esummary`, 2026-09-02; Crossref for the three papers outside
+PubMed). Landed so far: **S1, S2, S3**. Still to run, two at a time (§6.5
+step 2): S4, S5, S6, S7, S8, S9, S10, S11.
+
+### S1 — LEVEL_WEIGHT (fractional sets by muscle link level)
+
+**Claim:** `LEVEL_WEIGHT = {1: 1, 2: 0.5, 3: 0.25}` — a logged set is credited to each muscle the exercise trains at 1.0 weighted set when the muscle is the primary mover, 0.5 when it is a secondary mover / synergist doing substantial work (triceps in a bench press, biceps in a row), 0.25 when it is a tertiary contributor or stabiliser (forearms in a deadlift, abs in an overhead press). The physiological claim: an indirect set delivers about half the growth/strength stimulus of a direct set, a tertiary set about a quarter. Every muscle-coverage number (Home map, per-adaptation maps, the "missing" ranking) is the sum of these weights against the 10-weighted-sets/muscle/week floor, so the tiers decide which muscles the app calls missing.
+**Searched:** 2026-09-02 · **Verdict:** partially supported — level 2 = 0.5 is **supported**; level 3 = 0.25 is **convention only**, and the nearest measurements sit at zero
+**Number to use:** level 1 = **1**; level 2 = **0.5** (pair-by-pair truth runs roughly 0.4–1.0; 0.5 is the pooled best fit and the only fraction ever tested against alternatives); level 3 = 0–0.25 — default **0**, i.e. collapse to two tiers. No study measures a quarter-set stimulus, the best-fit counting scheme in the literature has no tier below "meaningfully trained", and the minor contributors that were measured (hamstrings in squats, medial deltoid in bench press) did not grow — crediting them 0.25 hides gaps, the one error a "what's missing" read must not make.
+
+#### Evidence
+- `[literature]` The largest dose-response model classifies every set as *direct* ("the measured muscle(s) was likely to be the primary force generator in the exercise", e.g. pectoralis major in bench press) or *indirect* ("likely to be meaningfully trained but not the primary force generator (i.e., synergist)", e.g. triceps in bench press), then tests three counting schemes — total (indirect = 1), fractional (indirect = 0.5), direct (indirect = 0). "The relative evidence for the 'fractional' quantification method was strongest" for both hypertrophy and strength, and the authors conclude "distinguishing between direct and indirect sets appears essential". Two points for Tekiō: Pelland's "indirect" is exactly the level-2 definition (a synergist doing meaningful work), and the scheme has **no third tier** — a muscle below "meaningfully trained" is not an indirect set at all, so a stabiliser carries 0. Only 0, 0.5 and 1 were compared; 0.25 and 0.75 were never tested. Bayesian multi-level meta-regression, 67 studies, n = 2,058 (79 % male, mean age 25, mixed training status) — [Pelland et al. 2026, Sports Med](https://pubmed.ncbi.nlm.nih.gov/41343037/) (PMID verified via eutils; full text paywalled — definitions quoted from the abstract and the authors' preprint)
+- `[literature]` A review of the EMG evidence on counting limb muscles during multi-joint lifts concludes "the best advice would be to view set-volume on a 1:1 basis, then use logical rationale and personal expertise", while noting hamstring activation is "markedly lower" than quadriceps in squats and leg presses — i.e. the right fraction is pair-specific and can approach zero for some links. Narrative review, EMG studies — lowest literature tier — [Schoenfeld, Grgic, Haun, Itagaki & Helms 2019, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/31336594/) (PMID verified via eutils)
+- `[literature]` Row vs curl, same arm-count and effort: elbow-flexor thickness +5.16 % from unilateral dumbbell rows vs +11.06 % from curls (p = 0.009) — the synergist set was worth **0.47** of the direct set. Within-subject (one arm each), 10 untrained men, 8 weeks, 2×/wk, 4–6 sets of 8–12 to failure — [Mannarino et al. 2021, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/31268995/) (PMID verified via eutils)
+- `[literature]` Same comparison by region: after 8 weeks, dumbbell curls grew the elbow flexors proximally 5 % and distally 11 %; dumbbell rows grew them proximally 5 % and distally 1 %. The indirect set matches the direct set at one site and does almost nothing at the other. Chronic experiment: 9 untrained men, 8 weeks, 2×/wk (an acute swelling experiment in 16 trained men is in the same paper) — [Leitão et al. 2025, Sport Sci Health 21:3197–3205](https://link.springer.com/article/10.1007/s11332-025-01530-7) (no PMID; not indexed in PubMed)
+- `[literature]` Pulldown vs curl runs the other way: a multi-joint programme (lat pulldown / bench press) and a single-joint programme (curls / extensions) grew elbow-flexor thickness +6.10 % vs +5.83 %, no difference — for this pair the indirect set was worth **≈ 1.0**. RCT, 29 untrained men (MJ 14 / SJ 15), 10 weeks — [Gentil, Soares & Bottaro 2015, Asian J Sports Med](https://pubmed.ncbi.nlm.nih.gov/26446291/) (PMID verified via eutils)
+- `[literature]` Adding curls and extensions on top of pulldowns and presses added nothing: +6.5 % (MJ only) vs +7.04 % (MJ + SJ) thickness, no between-group difference. RCT, 29 untrained men, 10 weeks — [Gentil et al. 2013, Appl Physiol Nutr Metab](https://pubmed.ncbi.nlm.nih.gov/23537028/) (PMID verified via eutils)
+- `[literature]` The same null result in **trained** men: MJ vs MJ + SJ for 8 weeks — "no significant difference in any variable" for upper-body strength or size; the authors call MJ-only "time-efficient". RCT, 20 trained men (10 / 10), 8 weeks — [de França et al. 2015, Appl Physiol Nutr Metab](https://pubmed.ncbi.nlm.nih.gov/26244600/) (PMID verified via eutils)
+- `[literature]` Pooled, single- vs multi-joint exercise produces a "trivial" difference in whole-muscle hypertrophy of the limb muscles, with individual studies showing single-joint work grows specific *subdivisions* better. Systematic review + meta-analysis, 7 studies / 10 nested comparisons — [Rosa et al. 2023, Strength Cond J 45(1)](https://journals.lww.com/nsca-scj/fulltext/2023/02000/hypertrophic_effects_of_single__versus_multi_joint.5.aspx) (not in PubMed; journal abstract page)
+- `[literature]` Bench press vs skull crusher for the triceps, by head: the bench-press groups grew the **lateral head** significantly more than the extension-only group; the extension groups grew the **long head** significantly more than the bench-only group; the medial head was "statistically similar between conditions". So the synergist fraction is ≈ 1 for one head and low for another; secondary readings of the figures put bench-only whole-triceps growth at roughly half the extension groups' (figure data, not in the abstract). RCT, 43 untrained young men in 4 groups (MJ, SJ, MJ + SJ, SJ + MJ), 10 weeks — [Brandão et al. 2020, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/32149887/) (PMID verified via eutils)
+- `[literature]` Bench press alone for 10 weeks grew the pectoralis major, pectoralis minor, anterior deltoid and triceps brachii versus control, with the pectoralis major growing more than the triceps and pectoralis minor. The **medial deltoid** — the minor contributor in the lift — is the one measured muscle not reported as growing more than control. This is the only trial measuring a primary mover, its synergists and a minor contributor from the same sets. RCT, 24 men (13 trained bench only 3×/wk, 3–4 sets; 11 control), 10 weeks — [Lanza et al. 2024, J Bodyw Mov Ther 40:1417–1422](https://pubmed.ncbi.nlm.nih.gov/39593465/) (PMID verified via eutils)
+- `[literature]` Over 24 weeks of bench press only (3 × 10 at 75 % 1RM, 3×/wk), triceps brachii and pectoralis major CSA both increased and followed the same time-course — the indirect stimulus is durable, not a beginner artefact. RCT (continuous vs periodic), 14 untrained young men — [Ogasawara et al. 2013, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/23053130/) (PMID verified via eutils)
+- `[literature]` Squats for 10 weeks: knee extensors +4.9 % (full) / +4.6 % (half), gluteus maximus +6.7 % / +2.2 %, adductors +6.2 % / +2.7 %, **hamstrings no significant change in either group** (rectus femoris also unchanged). A muscle that "assists" a squat the way a level-3 link is meant to received no measurable growth stimulus. RCT, 17 males (8 / 9), 10 weeks, 2×/wk — [Kubo et al. 2019, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/31230110/) (PMID verified via eutils)
+- `[literature]` Squats for 9 weeks grew quadriceps (+3.6 ± 1.5 cm² vs hip thrust) and adductors (+2.5 ± 0.7 cm²) and glutes (similar to hip thrust), while "hamstrings growth was equivocal across both conditions" (0.1 ± 0.6 cm² between-group). Second independent zero for the same tertiary pair. RCT, 34 untrained college-aged adults (squat 16 / hip thrust 18), 9 weeks — [Plotkin et al. 2023, Front Physiol](https://pubmed.ncbi.nlm.nih.gov/37877099/) (PMID verified via eutils)
+- `[literature]` Fractional sets have become the field's working unit: a pre-registered multi-site equivalence trial prescribed "9 fractional sets per week" vs "36 fractional sets per week" in previously trained adults and found the two statistically equivalent for arm and thigh muscle area (0.023, 90 % CI −0.044 to 0.091). Bears on S3 (how much volume), cited here only because it shows the unit in use. **Preprint, not peer-reviewed**; 22 sites, 120 randomised / 87 completed, 12 weeks — [Steele, Gschneidner, Carlson & Fisher 2026, SportRxiv](https://sportrxiv.org/index.php/server/preprint/view/810)
+- `[practitioner consensus]` Indirect stimulus is real and large enough to change programming. Israetel sets rear-delt MV and MEV at 0–4 sets/week "because the rear delts can get enough work to grow robustly … through proper back training", and warns that "if you reduce or remove upper body pressing movements from your program, the volume landmarks for the triceps will climb substantially"; Galpin: a chin-up "is primarily working back but indirectly working biceps". Held by Israetel and Galpin — [RP rear-delt guide](https://rpstrength.com/blogs/articles/rear-delt-hypertrophy-training-tips), [RP triceps guide](https://rpstrength.com/blogs/articles/triceps-hypertrophy-training-tips), [Galpin, Huberman Lab guest series pt 2](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/). No literature contradicts it (Brandão, Lanza, Ogasawara).
+- `[single-practitioner position]` Do **not** count indirect sets; discount the *target* instead. "We only count sets where the target muscle is the prime mover or isolation exercises specifically targeting that muscle … when we say '18 sets is the MRV for triceps,' we mean direct triceps work only. We've already factored in the indirect volume from pressing movements, reducing our estimates." Israetel only (RP's written landmarks); Galpin disagrees (below). RP's own podcast pages, written by staff who are not roster members (Milo Wolf; "Dr. Pak"), teach the opposite bookkeeping explicitly — "Bench press: 1.0 sets for chest, 0.5 sets for front delts and triceps … Rows: 1.0 sets for lats, 0.5 sets for rear delts and biceps … Squats: 1.0 sets for quads, 0.5 sets for glutes" — so RP as an organisation holds both models at once — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth), [RP "11-set rule" page](https://rpstrength.com/blogs/podcasts/training-frequency-decoded-the-11-set-rule-every-lifter-should-know), [RP "truth about volume" page](https://rpstrength.com/blogs/podcasts/the-truth-about-volume-how-little-training-you-need-to-grow)
+- `[single-practitioner position]` Count-or-don't is the lifter's call: "you can count it or not towards working set[s] — really depends on goals", against a baseline of "10 working sets per muscle group, per week (or up to 25 if highly trained)". Galpin only; Israetel says never count — [Galpin, Huberman Lab guest series pt 2](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/)
+- `[single-practitioner position]` No roster member, no RP page and no located study uses a **quarter-set** tier. Nobody holds 0.25; it exists only in `LEVEL_WEIGHT`.
+
+#### Where they split
+Three forks, and only the third is Tekiō's alone.
+
+**1. Weight the set, weight the target, or let the lifter decide.** Pelland (and RP's podcast pages) put the discount on the *set* (0.5); Israetel's written landmarks put it on the *target* (direct-only counts against a pre-reduced MEV/MRV that differs per muscle); Galpin leaves it to the lifter per exercise. Everyone agrees the stimulus is real — this is a bookkeeping disagreement, not a physiological one. Tekiō has **one** floor (10/week) for every muscle, so the target-discount model is not available to it without a per-muscle target table; set-weighting is the only scheme that keeps a single denominator. That puts Tekiō on Pelland's side by construction, and 0.5 is his best-fit value.
+
+**2. One constant or one fraction per link.** Inside the literature the level-2 fraction is pair-specific: ≈ 1.0 for pulldown → biceps (Gentil 2015) and for bench → lateral-head triceps (Brandão), ≈ 0.4–0.5 for row → biceps (Mannarino, Leitão), low for bench → long-head triceps. Schoenfeld 2019 says as much: default 1:1, then adjust per muscle. Pelland's 0.5 is the pooled compromise that beat 0 and 1 — it is a model fit, not a measured constant. The fork for Tekiō: keep one number per level, or move the fraction into the per-link `contribution` column of `exercise_muscle_groups`. Keep the constant at 0.5 now; the per-link column is the upgrade path. Do not replace 0.5 with an average of the pair results above — no study or practitioner holds such a number.
+
+**3. Zero or a quarter for level 3.** Nobody outside this codebase holds 0.25. Pelland's scheme drops anything below "meaningfully trained" to 0; the three measured minor-contributor pairs (hamstrings in squats twice, medial deltoid in bench) show no growth over 9–10 weeks. The decision this forces: **collapse to two tiers** — but first audit the link table, because the change only removes stimulus that is not there if level 3 is reserved for stabilisers and minor contributors. Any real synergist currently tagged level 3 (RP's own examples: glutes in squats, rear delts in rows, front delts in bench) must be relabelled level 2 before the tier is zeroed, or the edit deletes real stimulus. If the caller keeps 0.25 anyway, it ships as a labelled convention, not as a finding.
+
+#### Caveats
+- Population mismatch: every synergist trial is 8–10 weeks in untrained men with n = 9–43, almost all on biceps and triceps. The one trained-men trial (de França, n = 20) found compounds cover the synergists at least as well in trained lifters as in novices, so the level-2 credit is not a beginner artefact. Pelland's pool is 79 % male, mean age 25, mixed status. One trained adult sits somewhere in the 0.4–1.0 spread per pair, not at 0.5.
+- The fraction is hypertrophy-shaped. Strength gains in the same trials were exercise-specific (Mannarino: 10RM improved most on whatever exercise the arm trained), so crediting a row set as 0.5 of biceps *strength* is a looser claim than 0.5 of biceps *size*. S3 inherits this when it pools rep bands under one floor.
+- A per-muscle read cannot see regions: bench alone grows the lateral head of the triceps ≈ fully and the long head little; rows grow the proximal biceps and not the distal. 0.5 is right on average and wrong at the head level, and the app should not pretend otherwise.
+- 0.5 was never optimised. Pelland compared 0, 0.5 and 1 only; "fractional fits best" means 0.5 beat both extremes, not that it beats 0.4 or 0.6.
+- The level-3 evidence is thin: two squat trials (hamstrings, n = 17 and 34) and one bench trial (medial deltoid, n = 24). Enough to say a quarter set is unmeasured and the nearest measurements are zero; not enough to say *every* stabiliser gets nothing. The bracing muscles the claim names (abs, erectors, forearms) simply have no growth data from compound lifts without direct work.
+- What would move this number: a Pelland-style model comparison that includes 0.25 and 0.75 (would settle level 2's exact value); any trial showing a stabiliser grows from compound lifts alone (would resurrect a level-3 weight above 0); filling `exercise_muscle_groups.contribution` per link from the pair data above (would retire the level constant altogether).
+
+#### Source comment
+```
+// LEVEL_WEIGHT — level 2 (synergist) = 0.5: the best-fit "fractional" set counting in the largest dose-response
+// model (Pelland 2026) and synergist growth of ~0.4–1.0 × direct in trials (Mannarino 2021, Gentil 2015,
+// Brandão 2020). Level 3 = 0 (convention band 0–0.25): no study measures a quarter-set stimulus and measured
+// minor contributors did not grow (hamstrings in squats — Kubo 2019, Plotkin 2023; medial deltoid in bench —
+// Lanza 2024). See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S1, 2026-09-02):** level 2 stays **0.5** (supported). Level 3 stays
+**0.25 for now, labelled a convention.** The scout's default is 0, but its
+precondition is not met: an audit of `exercise_muscle_groups` the same day
+found 24 stimulus links at level 3, and roughly ten of them are real synergists
+(adductors in squats, upper back in rows, face pulls and reverse flys) that
+must move to level 2 before the tier can be zeroed, or the edit deletes real
+stimulus. The relabel is Peter's call on his own anatomy tags —
+[042](042-level-3-link-audit.md) carries the list and the proposed level per
+link, and zeroing the tier lands there. The bookkeeping fork is settled by
+construction: one floor for every muscle means the discount sits on the *set*
+(Pelland), not on the *target* (Israetel's written landmarks).
 
 ### S2 — statusFor / GAP_CUTOFF (the on-track cut and the ramp)
 
@@ -207,6 +272,98 @@ The fork is Israetel's *threshold* model against the meta-analytic *curve*. Isra
 ```
 
 **Decision (S2, 2026-09-02):** `GAP_CUTOFF` stays 0.70 and `statusFor` keeps its three states, but both are now labelled as a *convention* over a continuous fill. 031 draws Home's ramp on the Adaptations tab (one ramp, both surfaces) instead of three flat per-muscle colours; the middle band is a label of the ramp, not a physiological edge.
+
+### S3 — WEEKLY_SET_FLOOR / CYCLE_SET_TARGET as an adaptation-agnostic total
+
+**Claim:** 10 level-weighted hard sets per muscle per week (60 per 6-week cycle), counted across every rep range — a 3-rep strength set, a 10-rep hypertrophy set, a 20-rep endurance set and a power set each worth one set — is a defensible floor for *total* muscle stimulus, because hypertrophy is the most volume-hungry of the four muscle-linked qualities and hard sets grow muscle about equally across the load spectrum. Drives Home's per-muscle fill (`muscleStimulus().total ÷ WEEKLY_SET_FLOOR × weeks`) and the "what's missing" ranking. The *value* 10 is settled in 010 D10 and is not re-run here; this run rules on the *pooling*.
+**Searched:** 2026-09-02 · **Verdict:** partially supported — pooling across 6–30+ reps is **supported**; pooling 1–5-rep heavy sets in full is **partially supported** (default: count in full); pooling power sets is **not supported** (default: exclude from the total); "meeting the floor covers strength, endurance and power too" is **partially supported** — it covers their *volume*, it is silent on strength's load, endurance's rep range and power's velocity.
+**Number to use:** 10–20 pooled hard sets/muscle/week — default **10 (unchanged)**, cycle **60 (unchanged; honest band 50–60 per 010)**, where "hard set" = any resistance set at 1–30+ reps taken within a few reps of failure, and power-tagged sets (jumps, throws, swings — never near failure) count in `byQuality.power` only, at **0** toward the pooled total. A set near failure is the unit the volume literature is built on; a jump is not that unit, and no study gives it a fraction.
+
+#### Evidence
+
+*(a) Is a hard set worth the same across loads?*
+
+- `[literature]` Hypertrophy is similar between low-load (≤60 % 1RM) and high-load (>60 % 1RM) training taken to failure; 1RM strength is significantly greater with high load. Systematic review + meta-analysis, 21 studies, mixed training status — [Schoenfeld, Grgic, Ogborn & Krieger 2017, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/28834797/) (PMID verified via eutils)
+- `[literature]` No hypertrophy difference between low (>15 RM), moderate (9–15 RM) and high (≤8 RM) loads to failure (p = 0.113–0.469); strength superior for high and moderate vs low load (SMD 0.60–0.63 and 0.34–0.35). Network meta-analysis, 28 studies, n = 747 healthy adults, trained and untrained — [Lopez et al. 2021, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/33433148/) (PMID verified via eutils)
+- `[literature]` The *set* is a valid unit of hypertrophy volume "when the repetition range lies between 6 and 20+" and sets are taken to failure or near it. This is the review that licenses "a set is a set" — and it stops at 6 reps. Systematic review, 14 studies, resistance-trained 18–35 y — [Baz-Valle et al. 2021 (epub 2018), J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/30063555/) (PMID verified via eutils)
+- `[literature]` With volume load equated, 40 %, 60 % and 80 % 1RM grew the quadriceps equally (20.5 / 20.4 / 19.5 %) and the elbow flexors equally (25.3 / 25.1 / 25.0 %); 20 % 1RM grew less than half as much (8.9 % / 11.4 %). The floor of load-independence is ~30–40 % 1RM, not zero. Within-subject contralateral-limb trial, 30 untrained men, 12 weeks — [Lasevicius et al. 2018, Eur J Sport Sci](https://pubmed.ncbi.nlm.nih.gov/29564973/) (PMID verified via eutils)
+- `[literature]` In well-trained men, 25–35 reps/set and 8–12 reps/set produced the same thickness gains (elbow flexors 8.6 vs 5.3 %, quads 9.5 vs 9.3 %, ns); squat 1RM favoured heavy (19.6 vs 8.8 %); upper-body endurance favoured light (+16.6 vs −1.2 %). RCT, 18 resistance-trained men, 8 weeks — [Schoenfeld et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25853914/) (PMID verified via eutils)
+- `[literature]` For hypertrophy "all prescriptions comparably promoted" growth; for strength, loads >80 % 1RM maximised gains (top-ranked SMD 1.60). Bayesian network meta-analysis, 178 studies (n = 5,097) strength / 119 studies (n = 3,364) hypertrophy — [Currier et al. 2023, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/37414459/) (PMID verified via eutils)
+- `[literature]` **The heavy end (1–5 reps), set-equated:** 4 × 3–5 reps at ~90 % 1RM grew lean arm mass *more* than 4 × 10–12 at ~70 % (5.2 vs 2.2 %) and bench 1RM more (14.8 vs 6.9 %). A heavy set counted per set is at least a full set. RCT, 29 resistance-trained men (14 / 15), 8 weeks — [Mangine et al. 2015, Physiol Rep](https://pubmed.ncbi.nlm.nih.gov/26272733/) (PMID verified via eutils)
+- `[literature]` **The heavy end, volume-load-equated:** 7 × 3RM and 3 × 10RM produced no significant difference in biceps thickness; strength favoured 3RM. Read per set this hints a triple is worth ~0.4 of a 10-rep set, but the design cannot separate that from the extra sets — it is a caveat on Mangine, not a contradiction. RCT, 17 resistance-trained men, 8 weeks — [Schoenfeld et al. 2014, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/24714538/) (PMID verified via eutils)
+- `[literature]` The classic three-zone trial: 3–5RM and 9–11RM both hypertrophied all three fibre types; 20–28RM did not, but was the only zone to improve local endurance and aerobic power. RCT with control, 32 untrained men, 8 weeks — [Campos et al. 2002, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/12436270/) (PMID verified via eutils)
+- `[literature]` The repetition-continuum re-examination: hypertrophy can be obtained across a wide loading spectrum, strength is load-specific, local endurance favours light loads. Narrative review — lowest literature tier — [Schoenfeld, Grgic, Van Every & Plotkin 2021, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/33671664/) (PMID verified via eutils)
+
+*(b) Does a set that stops short of failure still count in full?*
+
+- `[literature]` Heavy sets do not need failure: quadriceps CSA +7.7 % not-to-failure vs +8.1 % to failure at high load (1RM +33.4 vs +33.8 %). Light sets do: +2.8 % not-to-failure vs +7.8 % to failure at low load. Within-subject, 4 conditions, 25 untrained men, 8 weeks — [Lasevicius et al. 2022, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/31895290/) (PMID verified via eutils)
+- `[literature]` In trained lifters, 1–2 RIR matched failure for quadriceps thickness (+0.182 vs +0.181 cm). RCT, within-subject legs, 18 resistance-trained (12 M / 6 F), 8 weeks — [Refalo et al. 2024, J Sports Sci](https://pubmed.ncbi.nlm.nih.gov/38393985/) (PMID verified via eutils)
+- `[literature]` Failure vs non-failure: trivial advantage for failure (ES 0.19, 95 % CI 0.00–0.37); momentary failure vs non-failure ES 0.12 (CI −0.13–0.37, ns). Systematic review + meta-analysis, 15 studies, healthy adults — [Refalo et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36334240/) (PMID verified via eutils)
+- `[literature]` Failure vs non-failure: no difference for strength (ES −0.09) or hypertrophy (ES 0.22, CI −0.11–0.55); trained subgroup shows a small failure benefit for hypertrophy (ES 0.15, CI 0.03–0.26). Systematic review + meta-analysis, 15 studies, young adults — [Grgic et al. 2022, J Sport Health Sci](https://pubmed.ncbi.nlm.nih.gov/33497853/) (PMID verified via eutils)
+- `[literature]` Continuous dose-response: hypertrophy slopes for RIR were negative with CIs excluding zero (more growth the closer to failure, "modest" fit); strength slopes contained zero ("similar across a wide range of RIR"). Series of multilevel meta-regressions; study count not stated in the abstract — [Robinson et al. 2024, Sports Med](https://pubmed.ncbi.nlm.nih.gov/38970765/) (PMID verified via eutils)
+- `[literature]` Velocity-loss thresholds: higher in-set fatigue → more hypertrophy (b = 0.006 per % VL, CI 0.001–0.012) but worse countermovement jump (b = −0.040, CI −0.079 to −0.001), sprint and velocity; strength and endurance gains unaffected by VL magnitude. Systematic review + meta-analysis, 18 acute + 19 longitudinal studies — [Jukic et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36178597/) (PMID verified via eutils)
+- `[literature]` Stopping at 20 % velocity loss (≈40 % fewer reps than 40 % VL) gave similar squat strength, *greater* CMJ gain (+9.5 vs +3.5 %), preserved type IIX fibres — and *less* vastus lateralis hypertrophy. Fatigue-free sets are power sets, and power sets grow less muscle. RCT, 22 young men (12 / 10), 8 weeks — [Pareja-Blanco et al. 2017, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/27038416/) (PMID verified via eutils)
+
+*(c) Is the most volume-hungry quality's floor the right umbrella?*
+
+- `[literature]` Volume raises both hypertrophy and strength (100 % posterior probability) with diminishing returns "considerably more pronounced" for strength; fractional set counting fit best. Bayesian meta-regression, 67 studies, n = 2,058 — [Pelland et al. 2026, Sports Med](https://pubmed.ncbi.nlm.nih.gov/41343037/) (PMID verified via eutils)
+- `[literature]` Strength's floor is far below 10: one set at ~70–85 % 1RM, 2–3×/week, to high effort, significantly raises 1RM in trained men. Systematic review + meta-analysis, 6 studies — [Androulakis-Korakakis, Fisher & Steele 2020, Sports Med](https://pubmed.ncbi.nlm.nih.gov/31797219/) (PMID verified via eutils); powerlifters progress on ~3–6 sets of 1–5 reps/week above 80 % 1RM — [Androulakis-Korakakis et al. 2021, Front Sports Act Living](https://pubmed.ncbi.nlm.nih.gov/34527944/) (PMID verified via eutils)
+- `[literature]` Strength's volume curve is shallow: low weekly sets ES 0.82, medium 0.98, high 1.01. Meta-analysis, 9 studies / 61 treatment groups — [Ralston et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28755103/) (PMID verified via eutils)
+- `[literature]` Power's dose is counted in jumps, not sets: minimal effective dosage "4 weeks (8 sessions), and 92 weekly jumps". Systematic review + meta-analysis, 11 studies, n = 744 — youth athletes grouped by maturity, so a population mismatch — [Ramirez-Campillo et al. 2023, Sports Med Open](https://pubmed.ncbi.nlm.nih.gov/37036542/) (PMID verified via eutils). Across the lifespan (8–73 y), reactive-strength gains favoured >7 weeks and 3 sessions/week, but "none of the analysed training variables explained the effects" in meta-regression — no set-count dose-response exists for power. Systematic review + meta-analysis, 61 studies, n = 2,576 — [Ramirez-Campillo et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36906633/) (PMID verified via eutils)
+- `[literature]` Local muscular endurance is rep-range-specific (Schoenfeld 2015: +16.6 % light vs −1.2 % heavy; Campos 2002: only the 20–28RM zone improved it). **No systematic review or meta-analysis of a weekly-set dose-response for local muscular endurance was located** (searched 2026-09-02); the pooled floor cannot claim to cover it.
+
+*(d) The roster*
+
+- `[single-practitioner position]` A working set counts toward the landmarks only inside "Load range: 30–85 % of 1RM, Rep range: 5–30 reps per set, Effort level: 0–4 reps in reserve", and within that band "a 5-rep set and a 30-rep set produce similar stimulus and fatigue". Sets below 5 reps / above 85 % 1RM, and any set at ≥5 RIR, are outside the model. Israetel only; Galpin's band starts at 4 reps and he is silent on pooling — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
+- `[single-practitioner position]` Hypertrophy: "target 10 working sets per muscle group, per week (or up to 25 if highly trained)", "reps between 4–30 per set, stopping about 2 reps short of failure". Strength: the 3-to-5 concept — "3–5 exercises, 3–5 repetitions per set, 3–5 working sets, rest 3–5 minutes", 3–5 days/week; "you don't have to go to failure to see strength gains". A per-session prescription with no per-muscle weekly floor, and no statement on whether those heavy sets count toward the 10. Galpin only — [Huberman Lab guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/)
+- `[practitioner consensus]` Power work is quality work, programmed apart from volume: Galpin puts it at 40–70 % 1RM, "quick, explosive", never to fatigue; Israetel's band requires 0–4 RIR, which a jump or swing set never meets. Neither counts a power set as a hypertrophy working set. Held by Galpin and Israetel — [Huberman Lab, Galpin episode](https://www.hubermanlab.com/episode/dr-andy-galpin-how-to-build-strength-muscle-size-and-endurance), [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
+
+#### Where they split
+
+Two forks, one real.
+
+**1. Does a heavy triple fill the muscle's floor?** Israetel's landmark model says no — sets under 5 reps or over 85 % 1RM are not "volume" and sit in a separate strength bucket. Galpin's hypertrophy band (4–30 reps) admits a 4-rep set and says nothing about a triple, while his 3-to-5 rule programs strength per *session*, not per muscle per week. The literature sides with counting it: the one set-equated trained-men trial (Mangine 2015) found 4 × 3–5 grew as much or more than 4 × 10–12, and Campos 2002 found 3–5RM fibres grew like 9–11RM fibres; Schoenfeld 2014's 7 × 3 ≈ 3 × 10 is the only hint that a triple buys less per set, and its design cannot say so. Baz-Valle's set-as-unit review stops at 6 reps, so below that the per-set worth is honestly a band, ~0.4–1.0. **Tekiō must choose: pool 1–5-rep sets in full, or discount/exclude them as Israetel does.** Pool them in full — it is the doctrine's own rule (§6.0, "a set is a set"), the trained-men data lean that way, and any discount would be a number nobody holds. Do not resolve this by counting triples at 0.5: that is Pelland's *indirect-muscle* convention borrowed for a different question.
+
+**2. Does a power set fill it?** No split — this is the rare case where both practitioners and the literature agree, and the app disagrees with all of them. A jump, throw or swing set is never near failure; Israetel's band excludes it by RIR, Galpin programs it as a separate quality, and the trials (Pareja-Blanco 2017; Lasevicius 2018 at 20 % 1RM; Lasevicius 2022 low-load not-to-failure at +2.8 %) show far-from-failure and very light sets grow a fraction of a hard set, with the fraction unmeasured for ballistic work. **Tekiō must choose: count power sets in the pooled total (simple, over-counts), or count them in `byQuality.power` only (honest, one branch in `muscleStimulus`).** Exclude them. The pooled floor is a *hard-set* floor — that is what its 10 was grounded on — and a muscle trained only with swings reading "fed" on Home would be a costume on one fact (P2). The power map still shows those sets, so nothing is hidden.
+
+The claim's second half — "meeting 10 pooled sets covers the other three qualities" — splits by *dimension*, not by person. Strength needs less volume than hypertrophy (Pelland's steeper flattening; Androulakis-Korakakis; Ralston), so 10 pooled sets is enough *volume* for it; but strength is load-specific (Lopez SMD 0.60; Currier >80 % 1RM), endurance is rep-range-specific (Schoenfeld 2015, Campos), and power is velocity-specific (Jukic, Pareja-Blanco). The pooled total answers "has this muscle done enough hard work" and nothing else; the per-quality maps answer the specificity questions. That division of labour is exactly §6.0's design, and the total should be labelled as *hard sets*, not as coverage of four qualities.
+
+#### Caveats
+
+- Population mismatch: the load-equivalence trials are small and mostly untrained (Lasevicius 2018 n = 30, 2022 n = 25; Campos n = 32; Pareja-Blanco n = 22); the trained-men trials that decide the heavy end are n = 17–29 (Schoenfeld 2014, 2015; Mangine; Refalo 2024). The meta-analyses pool young adults (Pelland: 79 % male, mean age 25). One trained adult sits inside the bands, not on a point.
+- **The app cannot see effort.** Tekiō logs reps and load, not RIR or velocity loss. The pooling therefore *assumes* every non-power set is a hard set. The literature says that assumption fails for light sets stopped early (Lasevicius 2022: +2.8 vs +7.8 %) and holds for heavy sets stopped 1–2 short (Refalo 2024). A 20-rep set logged at 8 RIR is over-counted and nothing here can catch it; an RIR field would.
+- Light loads have a floor: below ~30 % 1RM a set to failure grows less (Lasevicius 2018 at 20 %). Any set the app classifies as muscular endurance at very light load is over-counted by an unknown amount; there is no way to see load-relative-to-1RM without a 1RM.
+- The 1–5-rep verdict rests on two small trained-men trials that point different ways when read per set. A set-equated trial of 1–5 vs 8–12 reps with direct muscle measures in trained adults would settle it; until then full credit is the default, not a finding.
+- Power exclusion is a classification change, not a new number: it moves sets between `total` and `byQuality.power` and depends on the keyword rule (row 2.6, S4) and the one override column being right. Today only one override exists (Dead Hang → muscular_endurance), so the practical effect on Home is small; that is a reason to do it cheaply, not a reason to skip it.
+- The cycle arithmetic (10 × 6 = 60 with a half-volume deload → honest 50–60) is unchanged from 010 and not re-argued here.
+- What would move this number: an RIR or velocity capture (would let the app discount sets far from failure instead of assuming); a set-equated heavy-vs-moderate trained trial (would fix the 1–5-rep worth); any dose-response for local muscular endurance (would say whether 10 pooled sets covers it); a decision to switch the read from "adequate" to "optimal" (010 §Where they split) would move the floor to 12–20 and the cycle target with it.
+
+#### Source comment
+```
+// 10 — weekly hard-set floor per muscle, pooled across every rep range (1–5 / 6–15 / 16–30+) at full
+// value: hypertrophy per hard set is load-independent from ~30–40 % 1RM up (Schoenfeld 2017, Lopez 2021,
+// Lasevicius 2018; set = unit, Baz-Valle 2018) and it is the volume-hungriest quality (Pelland 2026,
+// Androulakis-Korakakis 2020). Power-tagged sets are NOT hard sets — they count in byQuality.power only
+// (Pareja-Blanco 2017, Jukic 2023). Says nothing about strength's load, endurance's rep range or
+// power's velocity — the per-quality maps do. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+
+// 60 — WEEKLY_SET_FLOOR × CYCLE, hard sets pooled across rep ranges, power sets excluded; with a
+// half-volume deload the honest cycle band is 50–60 (010). Value grounded in 010 D10, pooling in
+// 039 S3. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S3, 2026-09-02):** the floor is a *hard-set* floor. `WEEKLY_SET_FLOOR = 10`
+now carries the pooling claim and `CYCLE_SET_TARGET` is derived from it
+(`× CYCLE`), both unchanged in value. Sets at 1–5 reps count in full (the
+literature leans that way and a discount would be a number nobody holds).
+**Power sets leave `total`:** `muscleStimulus` counts a power set (override or
+keyword) in `byQuality.power` only, so a muscle trained only with swings no
+longer reads "fed" on Home. The §6.0 bracket therefore holds over the three
+hard qualities, with power outside it. The muscle sheet says *hard sets* and
+that power sets count on their own map; its two PLACEHOLDER marks on the
+stimulus target are gone. Not addressed, by design: the app cannot see effort,
+so every non-power set is assumed hard (an RIR field would fix that — not this
+brief).
 
 ---
 
@@ -273,8 +430,9 @@ honest number on the page.
 overlap the honest statement is `max_q byQuality[q] ≤ total ≤ Σ_q byQuality[q]`:
 Home's per-muscle total still counts each set **once** (the muscle did one set
 of work), the per-adaptation maps count it once **per quality it trains**, and
-the tab's per-adaptation sums may therefore exceed the muscle's total. That is
-by design and it goes on screen — the tab already labels its window ("This
+the tab's per-adaptation sums may therefore exceed the muscle's total. (S3
+narrowed this on 2026-09-02: power sets sit outside `total`, so the bracket
+holds over the three hard qualities.) That is by design and it goes on screen — the tab already labels its window ("This
 Week"); it now also says *a set can count toward more than one quality*, once,
 where the four muscle-linked adaptations sit. The hero's "lifting sets" line
 must not sum the four `volume`s any more (it would double count); it reports
@@ -437,8 +595,12 @@ Each unit build-passes on its own; commit and push after each.
    text the verdicts change (record a changed value as a decision *before*
    editing the constant — `/ground` hard rule). Patch bump per pair.
    **Done so far:** S2 (v1.13.1) — block in `## Grounding`, source comments on
-   `statusFor` and `GAP_CUTOFF`; its inventory/ledger rows land with the rest
-   in one pass at the end.
+   `statusFor` and `GAP_CUTOFF`. S1 + S3 (v1.13.2) — blocks; `LEVEL_WEIGHT`
+   comment carries the convention label (level 3 zeroing waits on
+   [042](042-level-3-link-audit.md)); `WEEKLY_SET_FLOOR` created and
+   `CYCLE_SET_TARGET` derived from it, power sets out of `total`, sheet
+   PLACEHOLDERs replaced. Inventory/ledger rows for all three land with the
+   rest in one pass at the end.
 3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
    move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,

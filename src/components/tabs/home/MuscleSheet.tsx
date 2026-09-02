@@ -5,7 +5,7 @@ import {
   muscleStates, muscleWeeklySets, muscleSources, muscleQualityMix,
   CYCLE_WINDOW_DAYS, MUSCLE_QUALITIES, type MuscleSource,
 } from '../../../lib/fusedRead'
-import { CYCLE, RECOVER_DAYS, CYCLE_SET_TARGET } from '../../../constants/app'
+import { RECOVER_DAYS, CYCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
 import { today } from '../../../lib/utils'
 import { BottomSheet, SheetClose } from './BottomSheet'
 import { GAP_CUTOFF } from './GapMap'
@@ -13,8 +13,6 @@ import { GAP_CUTOFF } from './GapMap'
 // The muscle drill-in (T2, roadmap 018 unit 3): what a tap on the map reveals.
 // Logging goes through an exercise on purpose — sets classify into adaptations
 // by rep range, so a bare set count would write data no read can use.
-
-const WEEKLY_TARGET = CYCLE_SET_TARGET / CYCLE
 
 const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
@@ -108,7 +106,7 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
   const recPct = daysSince === null
     ? 100
     : Math.min(100, Math.round((100 * daysSince) / RECOVER_DAYS))
-  const weekScale = Math.max(WEEKLY_TARGET, ...weeks)
+  const weekScale = Math.max(WEEKLY_SET_FLOOR, ...weeks)
   const fedBy = sources.filter(s => s.windowSets > 0).sort((a, b) => b.windowSets - a.windowSets)
 
   const pick = (s: MuscleSource) => {
@@ -152,13 +150,13 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
           <div className="text-[8px] font-bold tracking-[0.12em] text-ink-3">STIMULUS</div>
           <div className="flex items-baseline gap-1 mt-0.5">
             <span className="text-[25px] font-bold tracking-[-0.03em]">{fmtSets(sets)}</span>
-            <span className="text-[11px] text-ink-2">/ {CYCLE_SET_TARGET} sets</span>
+            <span className="text-[11px] text-ink-2">/ {CYCLE_SET_TARGET} hard sets</span>
           </div>
           <div className="h-[5px] bg-line rounded-[2px] mt-[5px]">
             <div className="h-[5px] bg-ink rounded-[2px]" style={{ width: `${Math.min(100, Math.round(fill * 100))}%` }} />
           </div>
           <div className="text-[9px] text-ink-3 mt-1">
-            {CYCLE_WINDOW_DAYS}-day cycle · target {CYCLE_SET_TARGET} <strong className="text-ink">PLACEHOLDER</strong>
+            {CYCLE_WINDOW_DAYS}-day cycle · target {CYCLE_SET_TARGET} hard sets · power sets count on their own map
           </div>
         </div>
         <div className="border border-line rounded-[3px] px-2.5 pt-2 pb-[9px]">
@@ -181,7 +179,7 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
         <div className="flex items-baseline gap-1.5">
           <span className="text-[8px] font-bold tracking-[0.12em] text-ink-3">SETS PER WEEK, THIS CYCLE</span>
           <span className="grow" />
-          <span className="text-[9px] text-ink-3">target {WEEKLY_TARGET}/wk <strong className="text-ink">PLACEHOLDER</strong></span>
+          <span className="text-[9px] text-ink-3">target {WEEKLY_SET_FLOOR}/wk</span>
         </div>
         <div className="flex items-end gap-[7px] h-[54px] mt-[7px]">
           {weeks.map((n, i) => (
@@ -191,7 +189,7 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
                 className="w-full rounded-[1px]"
                 style={{
                   height: `${Math.max(2, Math.round((n / weekScale) * 40))}px`,
-                  background: n === 0 ? '#e2e2e0' : n < WEEKLY_TARGET ? '#8f8f8f' : '#1a1a1a',
+                  background: n === 0 ? '#e2e2e0' : n < WEEKLY_SET_FLOOR ? '#8f8f8f' : '#1a1a1a',
                 }}
               />
               <span className="text-[8px] text-ink-4">w{i + 1}</span>

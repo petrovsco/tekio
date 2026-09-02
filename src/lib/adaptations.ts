@@ -123,12 +123,15 @@ const perQuality = <T>(make: () => T): Record<MuscleQuality, T> =>
   Object.fromEntries(MUSCLE_QUALITIES.map(q => [q, make()])) as Record<MuscleQuality, T>
 
 export interface MuscleStimulus {
-  /** Level-weighted sets per muscle group, each set counted once — a set is one
-   *  set of work for the muscle however many qualities it trains. */
+  /** Level-weighted *hard* sets per muscle group, each set counted once — a set
+   *  is one set of work for the muscle however many qualities it trains. Power
+   *  sets are not hard sets (never near failure) and are left out: the floor
+   *  this is measured against was grounded on hard sets (039 S3). */
   total: Record<string, number>
   /** Level-weighted sets per muscle group per quality. A set counts in full for
-   *  every quality whose rep band covers it, so for each muscle
-   *  max_q byQuality[q] ≤ total ≤ Σ_q byQuality[q]. */
+   *  every quality whose rep band covers it, so over the three hard qualities
+   *  (strength, hypertrophy, muscular endurance) each muscle satisfies
+   *  max_q byQuality[q] ≤ total ≤ Σ_q byQuality[q]; `power` sits outside. */
   byQuality: Record<MuscleQuality, Record<string, number>>
   /** Plain set counts per quality (no muscle weighting), same multi-membership. */
   sets: Record<MuscleQuality, number>
@@ -139,9 +142,11 @@ export interface MuscleStimulus {
  * window [from, to]. Home's map (the 42-day cycle window) and the Adaptations
  * tab (week-to-date) both read this — one accounting; the window is the only
  * thing that differs, and each surface names its window on screen. Only
- * `stimulus` links count; recovery links never add sets. An override naming a
- * cardio quality still counts in `total` (the muscle did the work) and in no
- * `byQuality` bucket. See docs/roadmap/039-adaptations-read-grounding.md §6.
+ * `stimulus` links count; recovery links never add sets. A power set (override
+ * or keyword) counts in `byQuality.power` only, never in `total` — see
+ * docs/roadmap/039-adaptations-read-grounding.md#grounding (S3). An override
+ * naming a cardio quality still counts in `total` (the muscle did the work) and
+ * in no `byQuality` bucket. See the same brief, §6.
  */
 export function muscleStimulus(
   weights: WeightEntry[],
@@ -167,10 +172,11 @@ export function muscleStimulus(
     const links = linksByExercise.get(w.exercise.toLowerCase()) ?? []
     for (const set of w.sets) {
       const qualities = classifyWeightSet(set.reps, override).filter(isMuscleQuality)
+      const hard = !qualities.includes('power')
       for (const q of qualities) sets[q] += 1
       for (const l of links) {
         const lw = LEVEL_WEIGHT[l.level] ?? 0
-        total[l.group] = (total[l.group] ?? 0) + lw
+        if (hard) total[l.group] = (total[l.group] ?? 0) + lw
         for (const q of qualities) byQuality[q][l.group] = (byQuality[q][l.group] ?? 0) + lw
       }
     }

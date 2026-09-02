@@ -53,7 +53,8 @@ export interface MuscleState {
   parentId: string | null
   /** No other group names this one as parent (Chest is top-level AND a leaf). */
   leaf: boolean
-  /** Fractional (level-weighted) sets within the cycle window. */
+  /** Fractional (level-weighted) hard sets within the cycle window; power
+   *  sets count on the power map only (039 S3). */
   sets: number
   /** Days since the last stimulus over all history; null = never trained. */
   daysSince: number | null
@@ -67,8 +68,8 @@ export interface MuscleState {
  * Per-muscle fused state: level-weighted set volume over the last
  * {@link CYCLE_WINDOW_DAYS} days plus recency. Volume comes from
  * {@link muscleStimulus} — one accounting with the Adaptations tab (roadmap
- * 039 §6), each set counted once. Values are *direct* per group; parents are
- * not rolled up here.
+ * 039 §6), each hard set counted once and power sets left out (039 S3).
+ * Values are *direct* per group; parents are not rolled up here.
  */
 export function muscleStates(
   weights: WeightEntry[],
