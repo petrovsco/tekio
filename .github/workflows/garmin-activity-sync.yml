@@ -7,8 +7,10 @@ name: Garmin activity sync
 
 on:
   schedule:
-    # 09:20 UTC daily — shortly after the sleep sync, once the overnight watch sync has landed.
-    - cron: '20 9 * * *'
+    # 02:00 UTC daily = 5 AM Bulgaria time (EEST, UTC+3). GH Actions cron is
+    # fixed UTC with no DST awareness, so this drifts to 4 AM BG once Bulgaria
+    # falls back to EET (UTC+2) in late October.
+    - cron: '0 2 * * *'
   workflow_dispatch: # manual "Run workflow" button for testing / backfill
 
 concurrency:
