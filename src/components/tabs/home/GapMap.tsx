@@ -12,7 +12,11 @@ const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
 /** Everything sits here on a day with no data at all. */
 const NO_DATA = '#eeeeec'
 
-/** The ramp's top band; below it a muscle still reads as a visible gap. */
+/** 0.70 — the ramp's top band; below it a muscle still reads as a visible gap.
+ * Display convention, not a physiological line: no study places a cutoff at
+ * any fraction of the floor; 0.70 sits just above the maintenance zone
+ * (Bickel 2011: 1/9–1/3 of a full dose keeps muscle in young adults; Israetel
+ * MV ≈ 0.6 × floor). See docs/roadmap/039-adaptations-read-grounding.md#grounding */
 export const GAP_CUTOFF = 0.70
 
 function rampStep(fraction: number): number {

@@ -1,12 +1,11 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — §6.5 unit 1 shipped 2026-09-02 as v1.13.0: one
-`muscleStimulus` accounting behind Home and the tab, the classifier returns
-every quality whose band covers a set (edges unchanged for now), the coverage
-card and habit helpers deleted. Resume with `/roadmap 39` at §6.5 step 2 — the
-eleven scout runs in §6.3. Gates [031](031-adaptations-drill-down-read.md);
-retires [001](001-cross-adaptation-rep-ranges.md).
+**Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
+landed (v1.13.1); S1, S3–S11 still to run, two at a time (§6.5 step 2 — the
+2026-09-02 batch of eleven hit the session limit). Gates
+[031](031-adaptations-drill-down-read.md); retires
+[001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
 **Release:** 2.0.0
 **Covers inventory rows:** 2.1, 2.2, 2.3, 2.6, 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
@@ -155,6 +154,59 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 5. **Does it write a number claiming physiological meaning?** Yes, several. This
    brief *is* the grounding gate for them, so the `## Grounding` section is
    mandatory and must exist before 031 starts.
+
+---
+
+## Grounding
+
+One `###` per scout run from §6.3, pasted verbatim on receipt after the PMID
+check (`eutils esummary`, 2026-09-02). Landed so far: **S2**. Still to run,
+two at a time (§6.5 step 2): S1, S3, S4, S5, S6, S7, S8, S9, S10, S11.
+
+### S2 — statusFor / GAP_CUTOFF (the on-track cut and the ramp)
+
+**Claim:** Stimulus below the 10-weighted-sets/muscle/week floor is graded — every hard set buys some adaptation — so a continuous fill (sets ÷ floor) is the honest picture and the three-step cut in `statusFor` (0 → untouched, 0–10 → needs work, ≥10 → on track) is a coarsening of it. Sub-questions: (a) is any volume below the floor worth *zero* (a true threshold that would justify a step); (b) is `GAP_CUTOFF = 0.70` (7 sets/week) a physiological line or a display convention. Drives whether the Adaptations tab keeps three flat colours per muscle or draws Home's ramp, and where the "still a gap" callout stops.
+**Searched:** 2026-09-02 · **Verdict:** supported — the ramp is honest and no sub-floor threshold exists; the 0.70 line is **convention only**
+**Number to use:** fill = weighted sets ÷ 10 per week, continuous from 0; the only two steps with physiological content are **0** (no stimulus) and **1.0** (the grounded floor). `GAP_CUTOFF` 0.6–0.8 — default **0.70 (unchanged)**. No study draws a line at any fraction of the floor, but 0.70 sits just above the maintenance zone the literature does describe (roughly 0.1–0.6 of a full dose), so the callout stops nagging only once a muscle is clearly on the growth curve — a defensible convention, not a finding.
+
+#### Evidence
+- `[literature]` Hypertrophy rises with weekly sets in a graded, per-set way: each additional weekly set added ES +0.023 ≈ +0.37 % growth, modelled as a linear per-set slope with no threshold term. Systematic review + meta-analysis, 15 studies / 34 treatment groups, mixed training status — [Schoenfeld, Ogborn & Krieger 2017, J Sports Sci](https://pubmed.ncbi.nlm.nih.gov/27433992/) (PMID verified via eutils)
+- `[literature]` The largest dose-response model finds a 100 % posterior probability that the marginal slope of volume is > 0 for both hypertrophy and strength, with *diminishing* returns (much steeper flattening for strength). A concave curve means the first sets buy the most per set — the opposite of a threshold. Fractional set counting (indirect sets = 0.5) fit best. Bayesian meta-regression, 67 studies, n = 2,058 (79 % male, mean age 25) — [Pelland et al. 2026, Sports Med](https://pubmed.ncbi.nlm.nih.gov/41343037/) (PMID verified via eutils)
+- `[literature]` One set per exercise already produces hypertrophy: ES 0.24 for 1 set vs 0.34 for 2–3 and 0.44 for 4–6 sets; multiple sets give ~40 % more, not "some vs none". Meta-analysis, 8 studies / 19 treatment groups / 55 effect sizes, trained and untrained — [Krieger 2010, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/20300012/) (PMID verified via eutils)
+- `[literature]` In resistance-trained men, 1 set per exercise × 3 sessions/week (≈3 sets/muscle/week, ~0.3 of Tekiō's floor) still increased muscle size at most sites and matched the 3- and 5-set groups for strength; higher volume grew more. RCT, 34 resistance-trained men, 8 weeks — [Schoenfeld et al. 2019, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/30153194/) (PMID verified via eutils)
+- `[literature]` A single set performed 1–3×/week was sufficient for significant 1RM gains in resistance-trained men (overall +12.09 kg, 95 % CI 8.16–16.03). Systematic review + meta-analysis, 6 studies (5 pooled) — [Androulakis-Korakakis, Fisher & Steele 2020, Sports Med](https://pubmed.ncbi.nlm.nih.gov/31797219/) (PMID verified via eutils)
+- `[literature]` Intermediate–advanced powerlifters gained strength on ~3–6 working sets of 1–5 reps per week above 80 % 1RM, spread over 1–3 sessions. Multi-study paper (interviews, surveys, two interventions, n = 25 in the interventions) — [Androulakis-Korakakis et al. 2021, Front Sports Act Living](https://pubmed.ncbi.nlm.nih.gov/34527944/) (PMID verified via eutils)
+- `[literature]` Strength follows the same graded shape: low weekly sets ES 0.82 (95 % CI 0.47–1.17) vs high 1.01 (0.70–1.32) — the low category is large, not near zero. Meta-analysis, 9 studies / 61 treatment groups, novice to well-trained — [Ralston et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28755103/) (PMID verified via eutils)
+- `[literature]` After 16 weeks at 3 sessions/week, cutting the dose to one-third or one-ninth for 32 weeks preserved the muscle gained in young adults (20–35 y) but not in older adults (60–75 y); strength was largely retained even with complete detraining. This is the *maintenance* line: ~1/9–1/3 of a full dose keeps muscle in the young. Two-phase randomised trial, n = 70 — [Bickel, Cross & Bamman 2011, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/21131862/) (PMID verified via eutils)
+- `[literature]` Every resistance-training prescription beat control for both strength and hypertrophy; for hypertrophy "all prescriptions comparably promoted" growth. Any dose above zero counts. Bayesian network meta-analysis, 178 studies (n = 5,097) strength / 119 studies (n = 3,364) hypertrophy — [Currier et al. 2023, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/37414459/) (PMID verified via eutils)
+- `[literature]` A time-efficient practical minimum of 4 weekly sets per muscle group at 6–15 RM (≈0.4 of the floor) is proposed as still growth-producing. Narrative review — lowest literature tier — [Iversen et al. 2021, Sports Med](https://pubmed.ncbi.nlm.nih.gov/34125411/) (PMID verified via eutils)
+- `[practitioner consensus]` The adequacy floor sits near 10 working sets/muscle/week for a trained adult (Galpin: "target 10 working sets per muscle group, per week", up to 25 if highly trained; Israetel's MAV band 12–20 starts just above it). Held by Galpin and Israetel — [Galpin, Huberman Lab guest series pt 2](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth). Already recorded in 010; repeated here only because it anchors the 1.0 step.
+- `[single-practitioner position]` Israetel's landmark model is the only roster position that draws *steps* below the floor: MV ≈ 6 sets/week "preserve[s] your current muscle mass", below MV you lose, between MV and MEV you maintain but "only maintain" — i.e. growth is zero until MEV. Israetel only; Galpin names a single floor and no maintenance step; RP itself cut its MEV estimates in 2018 because "new research on even experienced lifters shows hypertrophy with much lower volumes than we had previously programmed" — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth), [RP Physique Templates 2.0](https://rpstrength.com/expert-advice/male-and-female-physique-templates-20)
+- `[single-practitioner position]` No roster member, and no located study, puts a line at 70 % of a target — or at any fraction of one. Nobody holds the number; it exists only in `GapMap.tsx`.
+
+#### Where they split
+The fork is Israetel's *threshold* model against the meta-analytic *curve*. Israetel's landmarks say volume below MEV grows nothing (a flat step, then growth); Schoenfeld 2017, Pelland 2026, Krieger 2010 and Currier 2023 fit curves that rise from the first set and flatten, and the trained-men trials (Schoenfeld 2019 at ~3 sets/week, Androulakis-Korakakis 2020 at one set) show growth and strength gains well inside Israetel's "maintenance only" band. Galpin sits with the literature: one floor, no step beneath it. This forces one choice on Tekiō: **is a muscle's state a category or a fraction?** The literature says fraction — draw Home's ramp on the tab, one ramp on both surfaces, and treat `statusFor`'s middle band as a *label* of the ramp (0 < fill < 1), never as a third flat colour with its own edge. The only step with physiological content below 1.0 is 0 vs > 0 ("untouched" is real: no set, no stimulus). Do not fix this by placing the middle edge at Israetel's MV or MEV — that would present one practitioner's model as the literature's shape.
+
+#### Caveats
+- Population mismatch: the dose-response models are group averages over 6–12 weeks in mostly young men (Pelland 79 % male, mean age 25); the trained-men data that matter most here are small (Schoenfeld 2019 n = 34; the powerlifter interventions n = 25). One trained adult sits somewhere on the curve, not at a point.
+- Age moves the maintenance line: Bickel's 60–75 y group needed more than one-third of the dose to keep muscle. A user past ~40 should expect the low end of the ramp (0.1–0.35) to maintain less than it does in the trials.
+- The ramp bands happen to bracket the maintenance literature — 0.10 ≈ Bickel's 1/9 dose, 0.35 ≈ his 1/3 dose, 0.70 just above Israetel's MV (≈ 0.6 of a 10-set floor). That is a coincidence worth noting, not a grounding: the steps were chosen for ink, and the literature merely does not contradict them.
+- The fraction is only as honest as its numerator and denominator: it assumes fractional set counting (S1) and the 10-set floor pooled across rep bands (S3). If S3 moves the floor, every band on the ramp moves with it and 0.70 means a different set count.
+- What would move this number: a trained-population trial showing *zero* growth at 3–6 direct sets/week (a real MEV) would justify a step at that fraction; a decision to change the read's meaning from "adequate" to "optimal" (010 §Where they split) would move the 1.0 step and, with it, where any gap line sits.
+
+#### Source comment
+```
+// statusFor — three states are a label of a continuous fill (sets ÷ floor), not three physiological
+// bands: stimulus is graded from the first set (Schoenfeld 2017, Pelland 2026, Krieger 2010; trained
+// men at ~3 sets/wk still grow, Schoenfeld 2019). Only 0 (untouched) and ≥ floor carry meaning.
+// See docs/roadmap/039-adaptations-read-grounding.md#grounding
+
+// 0.70 — display convention, not a physiological line: no study places a cutoff at any fraction of the
+// floor; 0.70 sits just above the maintenance zone (Bickel 2011: 1/9–1/3 of a full dose keeps muscle
+// in young adults; Israetel MV ≈ 0.6 × floor). See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S2, 2026-09-02):** `GAP_CUTOFF` stays 0.70 and `statusFor` keeps its three states, but both are now labelled as a *convention* over a continuous fill. 031 draws Home's ramp on the Adaptations tab (one ramp, both surfaces) instead of three flat per-muscle colours; the middle band is a label of the ramp, not a physiological edge.
 
 ---
 
@@ -375,10 +427,18 @@ Each unit build-passes on its own; commit and push after each.
    Browser-verify Home and the Adaptations tab (the tab loses its MUSCLE
    COVERAGE card — expected; 031 rebuilds the page).
    **Minor bump** (1.13.0, tagged) — the tab visibly changes.
-2. **Scouts** (§6.3) — dispatch all eleven at once; while they run, do the
-   eutils checks as they come back. Then land per §6.4, including any `rx`
+2. **Scouts** (§6.3) — **two at a time, never all at once.** The first
+   attempt (2026-09-02) dispatched all eleven in parallel; ten died on the
+   5-hour session limit and only S2 came back. One scout costs roughly an hour
+   of interactive work, so a batch of eleven is most of a window. Run them in
+   pairs (S1+S3, S4+S5, S6+S7, S8+S9, S10+S11), eutils-check each block as it
+   lands, paste it under `## Grounding`, and commit after each pair so a dead
+   session loses at most two runs. Then land per §6.4, including any `rx`
    text the verdicts change (record a changed value as a decision *before*
-   editing the constant — `/ground` hard rule). Patch bump.
+   editing the constant — `/ground` hard rule). Patch bump per pair.
+   **Done so far:** S2 (v1.13.1) — block in `## Grounding`, source comments on
+   `statusFor` and `GAP_CUTOFF`; its inventory/ledger rows land with the rest
+   in one pass at the end.
 3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
    move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,

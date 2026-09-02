@@ -230,6 +230,10 @@ export interface AdaptationSummary {
   met: boolean
 }
 
+// statusFor — three states are a label of a continuous fill (sets ÷ floor), not three physiological
+// bands: stimulus is graded from the first set (Schoenfeld 2017, Pelland 2026, Krieger 2010; trained
+// men at ~3 sets/wk still grow, Schoenfeld 2019). Only 0 (untouched) and ≥ floor carry meaning.
+// See docs/roadmap/039-adaptations-read-grounding.md#grounding
 function statusFor(aggSets: number, target: number): MuscleStatus {
   if (aggSets <= 0) return 'untouched'
   if (aggSets >= target) return 'on_track'
