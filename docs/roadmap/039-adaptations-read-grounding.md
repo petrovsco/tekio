@@ -1,12 +1,14 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — picked up 2026-09-02. The code read is done and the
-execution plan is written into §6 below; no code has changed yet. Resume with
-`/roadmap 39` and start at §6 step 1. Gates [031](031-adaptations-drill-down-read.md).
+**Status:** in progress — picked up 2026-09-02. Two planning sessions, no code
+changed yet: the execution plan is §6, amended the same day by §6.0 (Peter's
+decision: rep bands overlap, so a set counts toward every quality whose band
+covers it). Resume with `/roadmap 39` and start at §6.5 step 1. Gates
+[031](031-adaptations-drill-down-read.md); retires [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
 **Release:** 2.0.0
-**Covers inventory rows:** 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
+**Covers inventory rows:** 2.1, 2.2, 2.3, 2.6, 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
 [grounding-inventory.md](../grounding-inventory.md), plus one number that has no
 row at all (`CYCLE_SET_TARGET`).
 
@@ -100,7 +102,10 @@ keeps that text — behind an icon, but still on the page.
 
 1. **The accounting decision in §1**, written into this brief with its reason,
    and implemented: one weighted-set function, or two with on-screen labels.
-   Delete whichever of the three dialects loses.
+   Delete whichever of the three dialects loses. **Added 2026-09-02 (§6.0):**
+   the rep bands that classify a set (`repRange`, inventory rows 2.1–2.3, and
+   the keyword rules in 2.6) are in scope too — they are grounded here and
+   made to overlap, so one set can feed several qualities.
 2. **`/ground` runs** for the rows this brief covers, landing as a `## Grounding`
    section here:
    - `LEVEL_WEIGHT` `{1: 1, 2: 0.5, 3: 0.25}` (row 7.1) — the fractional-set
@@ -124,13 +129,14 @@ keeps that text — behind an icon, but still on the page.
 - **Target *values*** — 1.2–1.9 are already grounded or `convention` in
   [011](done/011-adaptation-weekly-targets.md); their *shapes* belong to
   [012](012-adaptation-target-shapes.md). Do not re-run the scout on them.
-- **Rep-range boundaries and fuzzy classification** — [001](001-cross-adaptation-rep-ranges.md).
+- ~~Rep-range boundaries and fuzzy classification — 001~~ **Pulled in
+  2026-09-02** (§6.0): 001's question is decided by this brief.
 - **Cardio classifier thresholds** (rows 6.1–6.5, the ≥25/≥8 min heuristic, the
   TE cutoff) — [005](005-hr-zone-intensity-classification.md).
 - **Any pixel of the redesign** — [031](031-adaptations-drill-down-read.md).
 
-The split to hold in mind: **039 grounds what the page *displays*; 001 and 005
-ground how the app *classifies*.**
+The split to hold in mind: **039 grounds what the page *displays* and how a
+resistance set *classifies*; 005 grounds how cardio *classifies*.**
 
 ---
 
@@ -159,6 +165,9 @@ ground how the app *classifies*.**
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
 - [ ] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
       or no longer ship it.
+- [ ] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
+      band covers the set; rows 2.1–2.3 and 2.6 carry verdicts here; the
+      per-quality sums may exceed a muscle's total and the tab says so on screen.
 - [ ] Every covered inventory row names this brief as its carrier and shows a
       current verdict; `CYCLE_SET_TARGET` has a row.
 - [ ] Citations verified through NCBI eutils before being pasted, not from a
@@ -173,6 +182,66 @@ ground how the app *classifies*.**
 The first session read every file in §1–§2 and stopped before touching code
 (context wrap-up). Everything below is settled enough to execute without
 re-reading; the one open check is marked.
+
+### 6.0 Amendment 2026-09-02 — rep bands overlap, and the sums may exceed the total
+
+Peter, picking the brief up again the same day: *if the rep-range stimulus per
+adaptation is not grounded, ground it here; and we know a rep range can trigger
+more than one stimulus, so on the Adaptations screen the combined sets across
+adaptations can pass beyond the muscle's total sets.*
+
+That is a decision, and it changes three things in the plan below.
+
+**1. The classifier becomes multi-valued.** Today `classifyWeightSet` is a
+strict partition — `[1,5]` strength, `[6,15]` hypertrophy, `[16,999]` muscular
+endurance — so a set of 5 is 100 % strength and a set of 16 is 0 % hypertrophy.
+The bands are made to **overlap** and the function returns every quality whose
+band covers the set; a set inside an overlap counts **in full** toward each.
+This is the model cardio already uses (`classifyCardioAdaptations` awards a
+hard ride to both VO₂max and anaerobic capacity). It is *not* the fractional
+scheme 001 sketched (0.7 strength + 0.3 hypertrophy): no weighting curve, no
+partial sets — a set is a set. Overrides still win outright: an exercise tagged
+power is one power set and nothing else.
+
+Why it matters here and not just in theory — the logged sets by rep band
+(Supabase, 2026-09-02, all history, 838 sets):
+
+| reps | 1–5 | 6–8 | 9–12 | 13–15 | 16–20 | 21–30 | 31+ |
+|---|---|---|---|---|---|---|---|
+| sets | 48 | 142 | 289 | 103 | 170 | 74 | 12 |
+
+A fifth of everything ever logged sits at 16–20 reps and today buys **zero**
+hypertrophy credit, against a literature that finds hypertrophy per hard set
+roughly load-independent from ~30 % 1RM up. The disjoint cut is the least
+honest number on the page.
+
+**2. The invariant flips.** §6.1 planned to assert `total = Σ byQuality`. Under
+overlap the honest statement is `max_q byQuality[q] ≤ total ≤ Σ_q byQuality[q]`:
+Home's per-muscle total still counts each set **once** (the muscle did one set
+of work), the per-adaptation maps count it once **per quality it trains**, and
+the tab's per-adaptation sums may therefore exceed the muscle's total. That is
+by design and it goes on screen — the tab already labels its window ("This
+Week"); it now also says *a set can count toward more than one quality*, once,
+where the four muscle-linked adaptations sit. The hero's "lifting sets" line
+must not sum the four `volume`s any more (it would double count); it reports
+the set count once.
+
+**3. Rows 2.1–2.3 and 2.6 come into this brief**, and 001 retires. The band
+edges are the numbers being grounded; the keyword rules (2.6 — "jumps, throws,
+Olympic lifts, swings, sprints are power regardless of reps") are the same
+claim as power's `rx` cue, so S4 carries them. 001 is set `blocked — decided,
+ships inside 039` now and moves to `done/` when this brief does.
+
+**Where the band edges come from:** the S11 scout run below, not this session.
+The current `repRange` values are the *disjoint* cut and will move; per the
+`/ground` hard rule the new edges are recorded as a decision in `## Grounding`
+before the constant is edited. The shape the code needs is unchanged —
+`repRange: [lo, hi]` per adaptation, now allowed to overlap — and
+`classifyWeightSet` walks all of `REP_DERIVED` instead of stopping at the first
+hit. Expected literature: the repetition-continuum re-examination
+(Schoenfeld, Grgic, Van Every, Plotkin 2021), the low- vs high-load
+meta-analyses (Schoenfeld 2017; Lopez 2021), and Campos 2002 for the classic
+three-zone specificity result — all to be verified through eutils.
 
 ### 6.1 The accounting decision — (a), made concrete
 
@@ -190,23 +259,29 @@ thing that stays plural, and it is named on screen.
 imports from there):
 
 ```ts
-/** Level-weighted sets per muscle group inside [from, to], split by the
- *  muscle-linked quality each set classified into. `total` is the sum of the
- *  four — Home's number and the drill-down's numbers are one accounting. */
+/** Level-weighted sets per muscle group inside [from, to]. `total` counts
+ *  each set once — a set is one set of stimulus for the muscle however many
+ *  qualities it trains. `byQuality[q]` counts the set in full for every
+ *  quality whose rep band covers it (§6.0), so Σ byQuality ≥ total. */
 export function muscleStimulus(
   weights, exerciseMuscles, window: { from: string; to: string }, overrides?,
 ): { total: Record<string, number>; byQuality: Record<MuscleQuality, Record<string, number>> }
 ```
 
-Classification per set is `classifyWeightSet(reps, resolveExerciseAdaptation(...))`
-— the same override-aware rule `muscleQualityMix` already uses, so
-`muscleQualityMix` becomes a thin caller as well. Add one test asserting the
-invariant: `total[m] === Σ byQuality[q][m]` for every muscle.
+Classification per set is `classifyWeightSet(reps, resolveExerciseAdaptation(...))`,
+which under §6.0 returns an **array** — the same override-aware rule
+`muscleQualityMix` already uses, so `muscleQualityMix` becomes a thin caller as
+well. Add one test asserting the two invariants:
+`max_q byQuality[q][m] ≤ total[m] ≤ Σ_q byQuality[q][m]` for every muscle, and
+a set of 5 reps counting once in `total` and once each in strength *and*
+hypertrophy.
 
-**Open check (5 min, Supabase):** whether any exercise override names a cardio
-quality (`exercises` rows read by `adaptationMap` in `store/app.ts`). If none,
-"total = Σ four qualities" is exact today; if some, decide whether those sets
-count in `total` and say so in the function comment.
+**Open check — closed 2026-09-02.** The override column is
+`exercises.default_adaptation`; exactly one row carries a value (Dead Hang →
+muscular_endurance). No override names a cardio quality, so every logged set
+classifies muscle-linked and `total` is exact. Keep the guard in the function
+comment: an override naming a cardio quality would still count in `total`
+(the muscle did the work) and in no `byQuality` bucket.
 
 **The denominator.** `CYCLE_SET_TARGET` stops being a literal: it becomes
 `WEEKLY_SET_FLOOR × CYCLE` where `WEEKLY_SET_FLOOR = 10` carries the
@@ -234,7 +309,7 @@ built (commit `ecfc547`). It no longer exists anywhere in `src/` — it went wit
 `RecoveryCard` (014 step 3). Strike row 7.4 as **retired**; drop it from this
 brief's scope. 031 §3c cuts the recovery axis from the page anyway.
 
-### 6.3 The scout runs — ten, one decision each, dispatch in parallel
+### 6.3 The scout runs — eleven, one decision each, dispatch in parallel
 
 All `subagent_type: science-scout`, each given the claim, the constant, the
 current value, this brief's path, and the date. Verify every citation through
@@ -245,13 +320,14 @@ NCBI eutils before pasting (acceptance box 5).
 | S1 | 7.1 | A set on an exercise where the muscle is a level-2 (secondary) mover counts as half a set of stimulus for that muscle, level-3 a quarter — the fractional-set convention every map is denominated in | `LEVEL_WEIGHT` [utils.ts:490](../../src/lib/utils.ts#L490) · `{1: 1, 2: 0.5, 3: 0.25}`. Pelland 2026's best-fit model counts indirect sets at 0.5 (already cited in [010 §Grounding](done/010-home-fused-reads.md#grounding)) — the scout's job is the 0.25 tier and whether 0.5 is "indirect" in the same sense |
 | S2 | 7.5 | Stimulus below the weekly floor is graded (each set buys some adaptation), so a continuous fill is honest and a three-step on-track / needs-work / untouched cut is a coarsening; is anything below the floor worth *zero*? | `statusFor` [lib/adaptations.ts:146](../../src/lib/adaptations.ts#L146) + `GAP_CUTOFF = 0.70` [GapMap.tsx:16](../../src/components/tabs/home/GapMap.tsx#L16) |
 | S3 | new row | 10 level-weighted sets/muscle/week **counted across every rep range** (strength, hypertrophy, endurance and power sets all pooled) is a defensible adequacy floor for *total* muscle stimulus — i.e. the hypertrophy floor is the right adaptation-agnostic denominator because it is the most volume-hungry of the four | `WEEKLY_SET_FLOOR` (new) · `10`, and `CYCLE_SET_TARGET` [app.ts:90](../../src/constants/app.ts#L90) · `60`. The *value* is grounded (010 D10); the *pooling* is the claim |
-| S4 | 3.3 | Power prescription: 30–70% 1RM, 1–5 reps, 3–5 sets, 2–5 min rest, never to fatigue | `ADAPTATIONS[power].rx` [adaptations.ts:78](../../src/constants/adaptations.ts#L78) |
+| S4 | 3.3, 2.6 | Power prescription: 30–70% 1RM, 1–5 reps, 3–5 sets, 2–5 min rest, never to fatigue; and the keyword rule that jumps, throws, Olympic lifts, swings, sleds and sprints are power work regardless of rep count (row 2.6) | `ADAPTATIONS[power].rx` [adaptations.ts:78](../../src/constants/adaptations.ts#L78) |
 | S5 | 3.4 | Strength prescription: 85–100% 1RM, 3–5 reps, 3–5 sets, 2–5 min rest, 1–2 RIR; and the cue "Galpin's 3–5 rule" (3–5 reps × sets × min rest × sessions/wk) — attribute or remove | `ADAPTATIONS[strength].rx` [adaptations.ts:109](../../src/constants/adaptations.ts#L109) |
 | S6 | 3.6 | Muscular-endurance prescription: <50% 1RM, 15–40+ reps, 2–4 sets, <60 s rest, to/near failure | `ADAPTATIONS[muscular_endurance].rx` [adaptations.ts:163](../../src/constants/adaptations.ts#L163) |
 | S7 | 3.7 | Anaerobic-capacity prescription: all-out 20 s–2 min efforts, 3–8 rounds, 1:2–1:4 work:rest | `ADAPTATIONS[anaerobic_capacity].rx` [adaptations.ts:189](../../src/constants/adaptations.ts#L189) |
 | S8 | 3.8 | VO₂max prescription: 90–100% HRmax, 3–8 min efforts, 4–6 sets, ≈1:1 rest; and the cue "classic 4×4 min at 90–95% HRmax, 3 min easy" — expected source Helgerud 2007 (verify) — attribute or remove | `ADAPTATIONS[vo2max].rx` [adaptations.ts:220](../../src/constants/adaptations.ts#L220) |
 | S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../src/constants/adaptations.ts#L251) |
 | S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../src/constants/adaptations.ts#L268) |
+| S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:94](../../src/constants/adaptations.ts#L94), [:125](../../src/constants/adaptations.ts#L125), [:153](../../src/constants/adaptations.ts#L153) |
 
 Hypertrophy's `rx` (row 3.5) is **out**: grounded in 011 and locked to the
 target (D3). Do not re-run it.
@@ -265,14 +341,14 @@ carries no attribution at all today.
 
 ### 6.4 Landing the blocks — the four `/ground` destinations
 
-1. **This brief:** paste all ten blocks verbatim under a `## Grounding` section
+1. **This brief:** paste all eleven blocks verbatim under a `## Grounding` section
    placed before `## Acceptance` (i.e. between §4 and §5), one `###` per run.
 2. **The constants:** source comments on `LEVEL_WEIGHT`, `WEEKLY_SET_FLOOR`,
    `CYCLE_SET_TARGET`, each `rx` block and `ADAPTATION_PRINCIPLE`, every one
    pointing at `docs/roadmap/039-adaptations-read-grounding.md#grounding`
    (repoint to `done/` when the brief moves — `grep -rn 039- src/`).
 3. **The inventory** ([grounding-inventory.md](../grounding-inventory.md)):
-   rows 3.3, 3.4, 3.6–3.10, 7.1, 7.5 → carrier `039`, verdict updated, and the
+   rows 2.1–2.3, 2.6, 3.3, 3.4, 3.6–3.10, 7.1, 7.5 → carrier `039`, verdict updated, and the
    `Where` line numbers refreshed (7.1 says `utils.ts:479`, now 490; 7.5 says
    `lib/adaptations.ts:135-139`, now 146-150 — both move again after §6.1).
    Row 7.4 struck as retired (§6.2). New row **7.7** for `WEEKLY_SET_FLOOR` /
@@ -287,15 +363,22 @@ carries no attribution at all today.
 
 Each unit build-passes on its own; commit and push after each.
 
-1. **Code — the accounting** (§6.1): shared function, both callers on it,
-   `muscleCoverage` + card + dead habit helpers deleted, tests updated, the
-   invariant test added. Browser-verify Home and the Adaptations tab (the tab
-   loses its MUSCLE COVERAGE card — expected; 031 rebuilds the page).
+1. **Code — the accounting** (§6.0 + §6.1): `classifyWeightSet` returns an
+   array (callers: `adaptationCoverage`, `muscleQualityMix`, `powerSetCount`,
+   the tests); shared function, both callers on it; `muscleCoverage` + card +
+   dead habit helpers deleted; the hero's "lifting sets" counts sets once; the
+   one-line "a set can count toward more than one quality" label on the tab;
+   tests updated, the invariant test added. The band *edges* stay at today's
+   values in this unit — overlap is only exercised by the test until S11 lands.
+   Browser-verify Home and the Adaptations tab (the tab loses its MUSCLE
+   COVERAGE card — expected; 031 rebuilds the page).
    **Minor bump** (1.13.0, tagged) — the tab visibly changes.
-2. **Scouts** (§6.3) — dispatch all ten at once; while they run, do the
+2. **Scouts** (§6.3) — dispatch all eleven at once; while they run, do the
    eutils checks as they come back. Then land per §6.4, including any `rx`
    text the verdicts change (record a changed value as a decision *before*
    editing the constant — `/ground` hard rule). Patch bump.
 3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
-   and set [031](031-adaptations-drill-down-read.md) to `planned` (019, 026,
-   039 all landed). Patch bump.
+   move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
+   `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
+   the inventory), and set [031](031-adaptations-drill-down-read.md) to
+   `planned` (019, 026, 039 all landed). Patch bump.

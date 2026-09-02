@@ -1,8 +1,8 @@
 # Roadmap: Cross-adaptation set/rep classification — TBC
 
 **Label:** backlog
-**Status:** backlog — the rep-range question is captured, not decided. 019 landed 2026-09-01, so the adaptation set it applies to is now settled (seven); it still needs a decision, not a blocker. Narrowed 2026-09-02: inventory rows 3.3, 3.4, 3.6 and 3.10 (the `rx` prose and `ADAPTATION_PRINCIPLE`) move to [039](039-adaptations-read-grounding.md); this brief keeps the classification question only.
-**Depends:** 019
+**Status:** blocked — decided 2026-09-02 and shipping inside [039 §6.0](039-adaptations-read-grounding.md): rep bands overlap and a set counts in full toward every quality whose band covers it (no fractional bleed, no weighting curve). Rows 2.1–2.3 and 2.6 are grounded there; this brief moves to `done/` when 039 lands.
+**Depends:** 039
 **Kickoff:** start a fresh session with this file as the brief.
 
 ## The context we don't want to lose
