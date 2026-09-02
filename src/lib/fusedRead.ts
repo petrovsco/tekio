@@ -9,8 +9,12 @@ import {
 import { LEVEL_WEIGHT, today } from './utils'
 import {
   classifyCardioAdaptations, classifyCardioByDuration,
-  classifyWeightSet, resolveExerciseAdaptation,
+  classifyWeightSet, resolveExerciseAdaptation, muscleStimulus,
+  MUSCLE_QUALITIES, type MuscleQuality,
 } from './adaptations'
+
+export { MUSCLE_QUALITIES }
+export type { MuscleQuality }
 
 // The pure functions behind the fused Home read (roadmap 010/018): per-muscle
 // state, whole-body quality state, systemic readiness, and the Push/Hold
@@ -26,6 +30,16 @@ const DAY_MS = 86400000
 export function daysBetween(from: string, to: string): number {
   return Math.round((new Date(to).getTime() - new Date(from).getTime()) / DAY_MS)
 }
+
+/** YYYY-MM-DD `n` days after `date` (negative = before). */
+function shiftDate(date: string, n: number): string {
+  const d = new Date(date)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+
+/** The inclusive cycle window ending on `date`: the last CYCLE_WINDOW_DAYS days. */
+const cycleWindow = (date: string) => ({ from: shiftDate(date, 1 - CYCLE_WINDOW_DAYS), to: date })
 
 const avg = (vals: number[]): number => vals.reduce((s, v) => s + v, 0) / vals.length
 
@@ -51,8 +65,10 @@ export interface MuscleState {
 
 /**
  * Per-muscle fused state: level-weighted set volume over the last
- * {@link CYCLE_WINDOW_DAYS} days plus recency. Values are *direct* per group
- * (same shape as `muscleCoverage`); parents are not rolled up here.
+ * {@link CYCLE_WINDOW_DAYS} days plus recency. Volume comes from
+ * {@link muscleStimulus} — one accounting with the Adaptations tab (roadmap
+ * 039 §6), each set counted once. Values are *direct* per group; parents are
+ * not rolled up here.
  */
 export function muscleStates(
   weights: WeightEntry[],
@@ -60,31 +76,26 @@ export function muscleStates(
   muscleGroups: MuscleGroup[],
   date: string = today(),
 ): MuscleState[] {
-  const byExercise = new Map<string, ExerciseMuscleLink[]>()
+  const { total } = muscleStimulus(weights, exerciseMuscles, cycleWindow(date))
+
+  // Recency scans all history — a muscle idle for months still has a last date.
+  const groupsByExercise = new Map<string, string[]>()
   for (const l of exerciseMuscles) {
     if (l.contribution !== 'stimulus') continue
     const k = l.exercise.toLowerCase()
-    const arr = byExercise.get(k) ?? []
-    arr.push(l)
-    byExercise.set(k, arr)
+    groupsByExercise.set(k, [...(groupsByExercise.get(k) ?? []), l.group])
   }
-
-  const sets: Record<string, number> = {}
   const lastDate: Record<string, string> = {}
   for (const w of weights) {
     if (w.date > date) continue
-    const links = byExercise.get(w.exercise.toLowerCase())
-    if (!links) continue
-    const inWindow = daysBetween(w.date, date) < CYCLE_WINDOW_DAYS
-    for (const l of links) {
-      if (inWindow) sets[l.group] = (sets[l.group] ?? 0) + w.sets.length * (LEVEL_WEIGHT[l.level] ?? 0)
-      if (!lastDate[l.group] || w.date > lastDate[l.group]) lastDate[l.group] = w.date
+    for (const g of groupsByExercise.get(w.exercise.toLowerCase()) ?? []) {
+      if (!lastDate[g] || w.date > lastDate[g]) lastDate[g] = w.date
     }
   }
 
   const parentIds = new Set(muscleGroups.map(g => g.parentId).filter(Boolean))
   return muscleGroups.map(g => {
-    const s = +(sets[g.name] ?? 0).toFixed(2)
+    const s = total[g.name] ?? 0
     const last = lastDate[g.name]
     const daysSince = last ? daysBetween(last, date) : null
     return {
@@ -177,7 +188,7 @@ export function powerSetCount(
   for (const w of weights) {
     if (w.date > date || daysBetween(w.date, date) >= CYCLE_WINDOW_DAYS) continue
     const override = resolveExerciseAdaptation(w.exercise, overrides)
-    for (const s of w.sets) if (classifyWeightSet(s.reps, override) === 'power') n++
+    for (const s of w.sets) if (classifyWeightSet(s.reps, override).includes('power')) n++
   }
   return n
 }
@@ -273,15 +284,11 @@ export function muscleSources(
       || a.exercise.localeCompare(b.exercise))
 }
 
-/** The four muscle-linked qualities (doctrine P2 — they read per muscle). */
-export const MUSCLE_QUALITIES = ['strength', 'hypertrophy', 'muscular_endurance', 'power'] as const
-export type MuscleQuality = typeof MUSCLE_QUALITIES[number]
-
 /**
  * One muscle's quality mix over the cycle window: level-weighted sets per
- * muscle-linked quality, classified by rep range with the same override-aware
- * rule as the Adaptations dashboard. Sums to the muscle's windowed volume when
- * every set classifies muscle-linked.
+ * muscle-linked quality from {@link muscleStimulus}. A set counts toward every
+ * quality whose rep band covers it, so the four can add up to more than the
+ * muscle's windowed total (roadmap 039 §6.0).
  */
 export function muscleQualityMix(
   weights: WeightEntry[],
@@ -290,20 +297,10 @@ export function muscleQualityMix(
   overrides?: Record<string, Adaptation>,
   date: string = today(),
 ): Record<MuscleQuality, number> {
-  const linkWeight = stimulusWeightsFor(exerciseMuscles, muscle)
-  const mix: Record<MuscleQuality, number> = { strength: 0, hypertrophy: 0, muscular_endurance: 0, power: 0 }
-  for (const w of weights) {
-    if (w.date > date || daysBetween(w.date, date) >= CYCLE_WINDOW_DAYS) continue
-    const lw = linkWeight.get(w.exercise.toLowerCase())
-    if (!lw) continue
-    const override = resolveExerciseAdaptation(w.exercise, overrides)
-    for (const s of w.sets) {
-      const q = classifyWeightSet(s.reps, override)
-      if (q in mix) mix[q as MuscleQuality] += lw
-    }
-  }
-  for (const k of MUSCLE_QUALITIES) mix[k] = +mix[k].toFixed(2)
-  return mix
+  const { byQuality } = muscleStimulus(weights, exerciseMuscles, cycleWindow(date), overrides)
+  return Object.fromEntries(
+    MUSCLE_QUALITIES.map(q => [q, byQuality[q][muscle] ?? 0]),
+  ) as Record<MuscleQuality, number>
 }
 
 // ── Systemic: readiness + verdict ───────────────────────────────────────────

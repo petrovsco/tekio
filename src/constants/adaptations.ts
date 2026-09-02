@@ -27,8 +27,9 @@ export interface AdaptationMeta {
   modality: AdaptationModality
   /**
    * Inclusive rep range used to auto-classify a resistance set into this
-   * adaptation. `null` = not rep-derived (needs an exercise tag, or comes from
-   * cardio logging).
+   * adaptation. Bands may overlap — a set counts in full toward every
+   * adaptation whose band covers it (roadmap 039 §6.0). `null` = not
+   * rep-derived (needs an exercise tag, or comes from cardio logging).
    */
   repRange: [number, number] | null
   /**

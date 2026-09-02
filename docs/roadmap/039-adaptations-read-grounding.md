@@ -1,11 +1,12 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — picked up 2026-09-02. Two planning sessions, no code
-changed yet: the execution plan is §6, amended the same day by §6.0 (Peter's
-decision: rep bands overlap, so a set counts toward every quality whose band
-covers it). Resume with `/roadmap 39` and start at §6.5 step 1. Gates
-[031](031-adaptations-drill-down-read.md); retires [001](001-cross-adaptation-rep-ranges.md).
+**Status:** in progress — §6.5 unit 1 shipped 2026-09-02 as v1.13.0: one
+`muscleStimulus` accounting behind Home and the tab, the classifier returns
+every quality whose band covers a set (edges unchanged for now), the coverage
+card and habit helpers deleted. Resume with `/roadmap 39` at §6.5 step 2 — the
+eleven scout runs in §6.3. Gates [031](031-adaptations-drill-down-read.md);
+retires [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
 **Release:** 2.0.0
 **Covers inventory rows:** 2.1, 2.2, 2.3, 2.6, 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
@@ -159,8 +160,9 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 
 ## 5. Acceptance
 
-- [ ] §1's accounting decision is made, written here with its reason, and the
-      losing dialect(s) deleted from the code.
+- [x] §1's accounting decision is made, written here with its reason, and the
+      losing dialect(s) deleted from the code. (2026-09-02, v1.13.0 — §6.1
+      option (a); `muscleCoverage` and its card are gone.)
 - [ ] A `## Grounding` section exists here carrying verdicts for rows 7.1, 7.5,
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
 - [ ] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,

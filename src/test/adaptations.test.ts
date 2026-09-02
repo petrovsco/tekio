@@ -6,24 +6,31 @@ import {
   resolveExerciseAdaptation,
   adaptationCoverage,
   buildMuscleStatusTree,
+  muscleStimulus,
+  weightSetsIn,
+  MUSCLE_QUALITIES,
 } from '../lib/adaptations'
-import type { CardioEntry, ExerciseMuscleLink, Habit, HabitCompletion, MuscleGroup, WeightEntry } from '../types'
+import type { CardioEntry, ExerciseMuscleLink, MuscleGroup, WeightEntry } from '../types'
 
 // ── classifyWeightSet ─────────────────────────────────────────────────────────
 
 describe('classifyWeightSet', () => {
   it('maps rep ranges to strength / hypertrophy / muscular endurance', () => {
-    expect(classifyWeightSet(1)).toBe('strength')
-    expect(classifyWeightSet(5)).toBe('strength')
-    expect(classifyWeightSet(6)).toBe('hypertrophy')
-    expect(classifyWeightSet(15)).toBe('hypertrophy')
-    expect(classifyWeightSet(16)).toBe('muscular_endurance')
-    expect(classifyWeightSet(30)).toBe('muscular_endurance')
+    // Bands may overlap (roadmap 039 §6.0); at today's disjoint edges each set
+    // lands in exactly one. Outside every edge it snaps to the nearest band.
+    expect(classifyWeightSet(1)).toEqual(['strength'])
+    expect(classifyWeightSet(5)).toEqual(['strength'])
+    expect(classifyWeightSet(6)).toEqual(['hypertrophy'])
+    expect(classifyWeightSet(15)).toEqual(['hypertrophy'])
+    expect(classifyWeightSet(16)).toEqual(['muscular_endurance'])
+    expect(classifyWeightSet(30)).toEqual(['muscular_endurance'])
+    expect(classifyWeightSet(0)).toEqual(['strength'])
+    expect(classifyWeightSet(1000)).toEqual(['muscular_endurance'])
   })
 
-  it('lets an exercise override win over reps', () => {
-    expect(classifyWeightSet(3, 'power')).toBe('power')
-    expect(classifyWeightSet(20, 'power')).toBe('power')
+  it('lets an exercise override win outright over reps', () => {
+    expect(classifyWeightSet(3, 'power')).toEqual(['power'])
+    expect(classifyWeightSet(20, 'power')).toEqual(['power'])
   })
 })
 
@@ -199,44 +206,38 @@ describe('adaptationCoverage', () => {
     expect(cov.strength.volume).toBe(0)
   })
 
-  it('folds manual exercise-linked habit ticks into the exercise\'s adaptation', () => {
-    const boxJumpHabit: Habit = {
-      id: 'hb', name: 'Box Jumps', cadence: 'daily', targetCount: 1, autoSource: 'none',
-      countLevel: 1, contribution: 'stimulus', singleTick: true, active: true, sortOrder: 0, exerciseId: 'bj',
+  it('counts each set once in total and once per quality it trains', () => {
+    const stim = muscleStimulus(
+      [w('a', '2025-01-02', 'Bench Press', 4, 3), w('b', '2025-01-03', 'Bench Press', 10, 4)],
+      links, { from: '2025-01-01', to: '2025-01-07' },
+    )
+    expect(stim.total.Chest).toBe(7)
+    expect(stim.byQuality.strength.Chest).toBe(3)
+    expect(stim.byQuality.hypertrophy.Chest).toBe(4)
+    expect(stim.sets.strength).toBe(3)
+    // The overlap invariant (039 §6.0): the per-quality figures bracket the
+    // total. With today's disjoint bands both bounds meet; once the S11 edges
+    // land the upper one may exceed the total.
+    for (const m of Object.keys(stim.total)) {
+      const parts = MUSCLE_QUALITIES.map(q => stim.byQuality[q][m] ?? 0)
+      expect(Math.max(...parts)).toBeLessThanOrEqual(stim.total[m])
+      expect(parts.reduce((s, v) => s + v, 0)).toBeGreaterThanOrEqual(stim.total[m])
     }
-    const comps: HabitCompletion[] = [
-      { id: 'c1', habitId: 'hb', periodStart: '2025-01-02', count: 1 },
-      { id: 'c3', habitId: 'hb', periodStart: '2025-01-04', count: 1 },
-      { id: 'c2', habitId: 'hb', periodStart: '2024-12-30', count: 5 }, // outside window → excluded
-    ]
-    const cov = adaptationCoverage({
-      weights: [], cardio: [], sports: [],
-      exerciseMuscles: links, muscleGroups: groups,
-      weekStart: '2025-01-01', date: '2025-01-07',
-      habits: [boxJumpHabit], habitCompletions: comps, exerciseNames: { bj: 'Box Jump' },
-    })
-    expect(cov.power.volume).toBe(2) // Box Jump → power (keyword), 2 in-week completions
-    const shoulders = cov.power.muscles.find(m => m.id === 'shoulders')!
-    expect(shoulders.aggSets).toBe(2) // Front Delt L1 × 2, rolled up to Shoulders
   })
 
-  it('counts a timed-hold habit completion as one set, not its duration', () => {
-    // A "hold 60 s" habit stores count = 60 (seconds). It must land as a single
-    // set of stimulus, not 60 — regression guard for the duration-as-sets bug.
-    const holdHabit: Habit = {
-      id: 'dh', name: 'Dead Hang', cadence: 'daily', targetCount: 60, unit: 'sec', autoSource: 'none',
-      countLevel: 1, contribution: 'recovery', singleTick: true, active: true, sortOrder: 0, exerciseId: 'bj',
-    }
-    const cov = adaptationCoverage({
-      weights: [], cardio: [], sports: [],
-      exerciseMuscles: links, muscleGroups: groups,
-      weekStart: '2025-01-01', date: '2025-01-07',
-      habits: [holdHabit],
-      habitCompletions: [{ id: 'c1', habitId: 'dh', periodStart: '2025-01-02', count: 60 }],
-      exerciseNames: { bj: 'Box Jump' },
-    })
-    expect(cov.power.volume).toBe(1) // one completion → one set (was 60)
-    const shoulders = cov.power.muscles.find(m => m.id === 'shoulders')!
-    expect(shoulders.aggSets).toBe(1)
+  it('routes an override to its quality only; recovery links never add sets', () => {
+    const recovery: ExerciseMuscleLink = { exercise: 'Bench Press', group: 'Front Delt', region: 'upper', level: 2, contribution: 'recovery' }
+    const stim = muscleStimulus(
+      [w('a', '2025-01-02', 'Bench Press', 10, 2)],
+      [...links, recovery], { from: '2025-01-01', to: '2025-01-07' }, { 'bench press': 'power' },
+    )
+    expect(stim.byQuality.power.Chest).toBe(2)
+    expect(stim.byQuality.hypertrophy.Chest).toBeUndefined()
+    expect(stim.total['Front Delt']).toBeUndefined()
+  })
+
+  it('weightSetsIn counts sets once inside the window', () => {
+    const ws = [w('a', '2025-01-02', 'Bench Press', 10, 2), w('z', '2024-12-01', 'Bench Press', 4, 9)]
+    expect(weightSetsIn(ws, '2025-01-01', '2025-01-07')).toBe(2)
   })
 })

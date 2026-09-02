@@ -1,9 +1,8 @@
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, ExerciseMuscleLink, MuscleGroup,
-  Habit, HabitCompletion,
 } from '../types'
 import { ADAPTATIONS, ADAPTATION_MAP, defaultAdaptationForExercise } from '../constants/adaptations'
-import { LEVEL_WEIGHT, habitCompletionSets, today } from './utils'
+import { LEVEL_WEIGHT, today } from './utils'
 
 // ── Classification ─────────────────────────────────────────────────────────────
 
@@ -29,14 +28,20 @@ const REP_DERIVED = ADAPTATIONS
   .filter(a => a.repRange !== null)
   .sort((a, b) => a.repRange![0] - b.repRange![0])
 
-/** Classify a single logged resistance set. An exercise `override` wins over reps. */
-export function classifyWeightSet(reps: number, override?: Adaptation | null): Adaptation {
-  if (override) return override
-  for (const a of REP_DERIVED) {
-    if (reps <= a.repRange![1]) return a.key
-  }
-  // Above every range's ceiling — the highest-rep adaptation still applies.
-  return REP_DERIVED[REP_DERIVED.length - 1].key
+/**
+ * Every adaptation a single logged resistance set trains. An exercise
+ * `override` wins outright (one quality, whatever the reps); otherwise every
+ * rep-derived adaptation whose `repRange` covers the set is returned, in
+ * continuum order. Bands may overlap, and a set inside an overlap counts in
+ * full toward each — the model cardio already uses (roadmap 039 §6.0). A set
+ * outside every band snaps to the nearest one.
+ */
+export function classifyWeightSet(reps: number, override?: Adaptation | null): Adaptation[] {
+  if (override) return [override]
+  const hits = REP_DERIVED.filter(a => reps >= a.repRange![0] && reps <= a.repRange![1])
+  if (hits.length > 0) return hits.map(a => a.key)
+  const edge = reps < REP_DERIVED[0].repRange![0] ? REP_DERIVED[0] : REP_DERIVED[REP_DERIVED.length - 1]
+  return [edge.key]
 }
 
 /**
@@ -105,6 +110,86 @@ export function classifyCardio(entry: CardioEntry): Adaptation {
   return classifyCardioAdaptations(entry)[0]
 }
 
+// ── Muscle stimulus — the one accounting (roadmap 039 §6) ──────────────────────
+
+/** The four muscle-linked qualities (doctrine P2 — they read per muscle). */
+export const MUSCLE_QUALITIES = ['strength', 'hypertrophy', 'muscular_endurance', 'power'] as const
+export type MuscleQuality = typeof MUSCLE_QUALITIES[number]
+
+const isMuscleQuality = (a: Adaptation): a is MuscleQuality =>
+  (MUSCLE_QUALITIES as readonly string[]).includes(a)
+
+const perQuality = <T>(make: () => T): Record<MuscleQuality, T> =>
+  Object.fromEntries(MUSCLE_QUALITIES.map(q => [q, make()])) as Record<MuscleQuality, T>
+
+export interface MuscleStimulus {
+  /** Level-weighted sets per muscle group, each set counted once — a set is one
+   *  set of work for the muscle however many qualities it trains. */
+  total: Record<string, number>
+  /** Level-weighted sets per muscle group per quality. A set counts in full for
+   *  every quality whose rep band covers it, so for each muscle
+   *  max_q byQuality[q] ≤ total ≤ Σ_q byQuality[q]. */
+  byQuality: Record<MuscleQuality, Record<string, number>>
+  /** Plain set counts per quality (no muscle weighting), same multi-membership. */
+  sets: Record<MuscleQuality, number>
+}
+
+/**
+ * Level-weighted resistance stimulus per muscle group inside the inclusive date
+ * window [from, to]. Home's map (the 42-day cycle window) and the Adaptations
+ * tab (week-to-date) both read this — one accounting; the window is the only
+ * thing that differs, and each surface names its window on screen. Only
+ * `stimulus` links count; recovery links never add sets. An override naming a
+ * cardio quality still counts in `total` (the muscle did the work) and in no
+ * `byQuality` bucket. See docs/roadmap/039-adaptations-read-grounding.md §6.
+ */
+export function muscleStimulus(
+  weights: WeightEntry[],
+  exerciseMuscles: ExerciseMuscleLink[],
+  window: { from: string; to: string },
+  overrides?: Record<string, Adaptation>,
+): MuscleStimulus {
+  const linksByExercise = new Map<string, ExerciseMuscleLink[]>()
+  for (const l of exerciseMuscles) {
+    if (l.contribution !== 'stimulus') continue
+    const k = l.exercise.toLowerCase()
+    const arr = linksByExercise.get(k) ?? []
+    arr.push(l)
+    linksByExercise.set(k, arr)
+  }
+
+  const total: Record<string, number> = {}
+  const byQuality = perQuality<Record<string, number>>(() => ({}))
+  const sets = perQuality(() => 0)
+  for (const w of weights) {
+    if (w.date < window.from || w.date > window.to) continue
+    const override = resolveExerciseAdaptation(w.exercise, overrides)
+    const links = linksByExercise.get(w.exercise.toLowerCase()) ?? []
+    for (const set of w.sets) {
+      const qualities = classifyWeightSet(set.reps, override).filter(isMuscleQuality)
+      for (const q of qualities) sets[q] += 1
+      for (const l of links) {
+        const lw = LEVEL_WEIGHT[l.level] ?? 0
+        total[l.group] = (total[l.group] ?? 0) + lw
+        for (const q of qualities) byQuality[q][l.group] = (byQuality[q][l.group] ?? 0) + lw
+      }
+    }
+  }
+  const round = (r: Record<string, number>) => { for (const k in r) r[k] = +r[k].toFixed(2) }
+  round(total)
+  for (const q of MUSCLE_QUALITIES) round(byQuality[q])
+  return { total, byQuality, sets }
+}
+
+/** Resistance sets logged inside [from, to], each counted once — the honest
+ *  "lifting sets" figure. Summing per-adaptation volumes double counts under
+ *  overlap. */
+export function weightSetsIn(weights: WeightEntry[], from: string, to: string): number {
+  let n = 0
+  for (const w of weights) if (inRange(w.date, from, to)) n += w.sets.length
+  return n
+}
+
 // ── Coverage ────────────────────────────────────────────────────────────────────
 
 export type MuscleStatus = 'on_track' | 'needs_work' | 'untouched'
@@ -119,6 +204,8 @@ export interface MuscleStatusRow {
   aggSets: number
   target: number
   status: MuscleStatus
+  /** aggSets / target, uncapped — the same ramp input Home's map uses (039 §6.1). */
+  fillFraction: number
   children: MuscleStatusRow[]
 }
 
@@ -154,7 +241,11 @@ const inRange = (d: string, start: string, end: string) => d >= start && d <= en
 /**
  * Per-adaptation weekly coverage across all modalities for [weekStart, date].
  * Resistance adaptations get a rolled-up muscle-group breakdown with status;
- * cardio adaptations report session counts.
+ * cardio adaptations report session counts. Resistance sets come from
+ * {@link muscleStimulus}, so a set inside a rep-band overlap counts toward every
+ * quality it trains — the four muscle-linked volumes may add up to more than
+ * the sets logged (roadmap 039 §6.0). The muscle read counts logged sets only;
+ * habits never feed it (doctrine §5).
  */
 export function adaptationCoverage(
   args: {
@@ -177,11 +268,6 @@ export function adaptationCoverage(
      * to the built-in defaults on each adaptation's metadata.
      */
     targets?: Partial<Record<Adaptation, { weeklyMuscleTarget: number; weeklySessionTarget: number }>>
-    /** Manual habits + their completions, folded into resistance adaptations. */
-    habits?: Habit[]
-    habitCompletions?: HabitCompletion[]
-    /** exercise id → name, for resolving exercise-linked habits. */
-    exerciseNames?: Record<string, string>
   },
 ): Record<Adaptation, AdaptationSummary> {
   const { weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, overrides, targets } = args
@@ -190,39 +276,11 @@ export function adaptationCoverage(
     ? new Set(args.trackedMuscleIds)
     : null
 
-  // exercise (lower) → stimulus links
-  const linksByExercise = new Map<string, ExerciseMuscleLink[]>()
-  for (const l of exerciseMuscles) {
-    if (l.contribution !== 'stimulus') continue
-    const k = l.exercise.toLowerCase()
-    const arr = linksByExercise.get(k) ?? []
-    arr.push(l)
-    linksByExercise.set(k, arr)
-  }
+  const stimulus = muscleStimulus(weights, exerciseMuscles, { from: weekStart, to: date }, overrides)
 
   const volume = {} as Record<Adaptation, number>
-  // adaptation → groupName → weighted sets
-  const muscle = {} as Record<Adaptation, Record<string, number>>
-  for (const a of ADAPTATIONS) {
-    volume[a.key] = 0
-    muscle[a.key] = {}
-  }
-
-  // Resistance work, classified per set.
-  for (const w of weights) {
-    if (!inRange(w.date, weekStart, date)) continue
-    const override = resolveExerciseAdaptation(w.exercise, overrides)
-    const links = linksByExercise.get(w.exercise.toLowerCase())
-    for (const set of w.sets) {
-      const a = classifyWeightSet(set.reps, override)
-      volume[a] += 1
-      if (links) {
-        for (const l of links) {
-          muscle[a][l.group] = (muscle[a][l.group] ?? 0) + (LEVEL_WEIGHT[l.level] ?? 0)
-        }
-      }
-    }
-  }
+  for (const a of ADAPTATIONS) volume[a.key] = 0
+  for (const q of MUSCLE_QUALITIES) volume[q] = stimulus.sets[q]
 
   // Cardio sessions. A Garmin ride can count toward multiple adaptations (e.g.
   // VO₂max + anaerobic) when several systems each got a real Training Effect.
@@ -233,38 +291,11 @@ export function adaptationCoverage(
 
   // Sport sessions count as cardio work, classified by duration like a cardio
   // session. Sessions without a logged duration default to VO₂max — the typical
-  // intermittent-sport stimulus. They no longer feed the `skill` adaptation.
+  // intermittent-sport stimulus.
   for (const s of sports) {
     if (!inRange(s.date, weekStart, date)) continue
     const a = s.duration ? classifyCardioByDuration(s.duration) : 'vo2max'
     volume[a] += 1
-  }
-
-  // Manual habit completions that produce a stimulus. Recovery contributions
-  // aren't one of the seven adaptations, so they're ignored here (they surface on
-  // the Muscle Coverage recovery axis instead). A repless habit can only be
-  // classified via its exercise's adaptation tag, so muscle-linked stimulus
-  // habits — which have no exercise, hence no adaptation — are skipped.
-  const habitById = new Map((args.habits ?? []).map(h => [h.id, h]))
-  const exerciseNames = args.exerciseNames ?? {}
-  for (const c of args.habitCompletions ?? []) {
-    if (c.count <= 0 || !inRange(c.periodStart, weekStart, date)) continue
-    const h = habitById.get(c.habitId)
-    if (!h || !h.active || h.autoSource !== 'none' || !h.exerciseId) continue
-    const name = exerciseNames[h.exerciseId]?.toLowerCase()
-    if (!name) continue
-    const a = resolveExerciseAdaptation(name, overrides)
-    if (!a) continue
-    const stimLinks = (linksByExercise.get(name) ?? [])
-    if (stimLinks.length === 0) continue
-    // One completion = one bout = one set; `count` is progress in the habit's own
-    // unit (e.g. seconds held), so it must not be summed as a set count.
-    const nSets = habitCompletionSets(h, c.count)
-    if (nSets <= 0) continue
-    volume[a] += nSets
-    for (const l of stimLinks) {
-      muscle[a][l.group] = (muscle[a][l.group] ?? 0) + nSets * (LEVEL_WEIGHT[l.level] ?? 0)
-    }
   }
 
   const out = {} as Record<Adaptation, AdaptationSummary>
@@ -272,9 +303,8 @@ export function adaptationCoverage(
     const muscleTarget = targets?.[meta.key]?.weeklyMuscleTarget ?? meta.weeklyMuscleTarget
     const sessionTarget = targets?.[meta.key]?.weeklySessionTarget ?? meta.weeklySessionTarget
     const isResistance = meta.modality === 'resistance' && muscleTarget > 0
-    const byGroup = muscle[meta.key]
-    const muscles = isResistance
-      ? buildMuscleStatusTree(byGroup, muscleGroups, muscleTarget)
+    const muscles = isResistance && isMuscleQuality(meta.key)
+      ? buildMuscleStatusTree(stimulus.byQuality[meta.key], muscleGroups, muscleTarget)
       : []
     // Judge completion against the tracked subset (or all muscles if none set).
     const relevant = trackedSet ? muscles.filter(m => trackedSet.has(m.id)) : muscles
@@ -307,6 +337,7 @@ export function buildMuscleStatusTree(
   target: number,
 ): MuscleStatusRow[] {
   const direct = (name: string) => +(byGroupName[name] ?? 0).toFixed(2)
+  const fill = (n: number) => (target > 0 ? +(n / target).toFixed(3) : 0)
 
   const tops = groups.filter(g => !g.parentId)
   return tops
@@ -318,7 +349,7 @@ export function buildMuscleStatusTree(
           return {
             id: c.id, name: c.name, parentId: c.parentId ?? null,
             sets, aggSets: sets, target,
-            status: statusFor(sets, target), children: [],
+            status: statusFor(sets, target), fillFraction: fill(sets), children: [],
           }
         })
       const selfSets = direct(top.name)
@@ -327,13 +358,15 @@ export function buildMuscleStatusTree(
         id: top.id, name: top.name, parentId: null,
         sets: selfSets, aggSets, target,
         status: statusFor(aggSets, target),
+        fillFraction: fill(aggSets),
         children: children.sort((a, b) => b.sets - a.sets || a.name.localeCompare(b.name)),
       }
     })
     .sort((a, b) => b.aggSets - a.aggSets || a.name.localeCompare(b.name))
 }
 
-/** Convenience: total tracked volume across all adaptations this week. */
+/** Convenience: > 0 iff anything counted this week. Not a set count — under
+ *  overlap one set appears in several adaptations. */
 export function totalAdaptationVolume(cov: Record<Adaptation, AdaptationSummary>): number {
   return ADAPTATIONS.reduce((s, a) => s + cov[a.key].volume, 0)
 }

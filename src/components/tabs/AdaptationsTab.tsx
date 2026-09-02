@@ -2,32 +2,33 @@ import { useMemo, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { startOfWeek, today } from '../../lib/utils'
-import { adaptationCoverage, totalAdaptationVolume } from '../../lib/adaptations'
+import { adaptationCoverage, totalAdaptationVolume, weightSetsIn } from '../../lib/adaptations'
 import { ADAPTATIONS } from '../../constants/adaptations'
 import type { Adaptation } from '../../types'
 import { Card } from '../ui/Card'
 import { AdaptationCard } from './home/AdaptationCard'
 import { AdaptationGuide } from './home/AdaptationGuide'
-import { MuscleCoverageCard } from './home/MuscleCoverageCard'
 
 interface AdaptationsTabProps {
   setTab: (t: string) => void
 }
 
 export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
-  const { weights, cardio, sports, exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets, habits, habitCompletions, exerciseNames } = useAppStore()
+  const { weights, cardio, sports, exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets } = useAppStore()
   const { weekStartDay, trackedMuscleGroupIds } = usePrefs()
-  const weekStart = startOfWeek(today(), weekStartDay)
+  const date = today()
+  const weekStart = startOfWeek(date, weekStartDay)
   const [openKey, setOpenKey] = useState<Adaptation | null>(null)
 
   const coverage = useMemo(
-    () => adaptationCoverage({ weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets, habits, habitCompletions, exerciseNames }),
-    [weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets, habits, habitCompletions, exerciseNames],
+    () => adaptationCoverage({ weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, date, overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets }),
+    [weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, date, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets],
   )
 
   const total = totalAdaptationVolume(coverage)
   const onTarget = ADAPTATIONS.filter(a => coverage[a.key].met).length
-  const liftingSets = ADAPTATIONS.filter(a => a.modality === 'resistance').reduce((s, a) => s + coverage[a.key].volume, 0)
+  // Each set once — the four lifting volumes overlap (roadmap 039 §6.0).
+  const liftingSets = weightSetsIn(weights, weekStart, date)
   const cardioSessions = ADAPTATIONS.filter(a => a.modality === 'cardio').reduce((s, a) => s + coverage[a.key].volume, 0)
 
   return (
@@ -90,9 +91,11 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
           Right-hand figure = muscle groups hitting their weekly set target (lifting),
           or sessions vs. weekly target (cardio).
         </p>
+        <p className="text-center leading-tight">
+          A lifting set counts toward every quality whose rep range covers it, so
+          the four lifting rows can add up to more than the sets logged.
+        </p>
       </div>
-
-      <MuscleCoverageCard />
 
       <AdaptationGuide />
     </div>

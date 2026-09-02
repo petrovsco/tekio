@@ -1,7 +1,7 @@
 import type {
   WeightEntry, Program, ProgramDay, ProgramWeekOverride, MobilityEntry, DayOfWeek,
   Habit, HabitCompletion, HabitCadence, HabitProgress, ExerciseMuscleLink, MuscleGroup,
-  MuscleContribution, WaterEntry, CardioEntry, LiftSet,
+  WaterEntry, CardioEntry, LiftSet,
 } from '../types'
 import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../constants/app'
 
@@ -484,171 +484,10 @@ export function habitProgress(
   return { current, target, done: current >= target, periodStart }
 }
 
-// ── Muscle coverage dashboard ─────────────────────────────────────────────────
+// ── Muscle stimulus accounting ────────────────────────────────────────────────
 
-/** Impact weight per link level (1 = most direct). */
+/** Impact weight per link level (1 = most direct): a secondary mover gets half a
+ *  set, a tertiary a quarter. Every muscle read is denominated in this
+ *  (inventory row 7.1); its grounding lands in
+ *  docs/roadmap/039-adaptations-read-grounding.md#grounding. */
 export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0.25 }
-
-/**
- * Weighted-set quantity a single manual-habit completion contributes toward
- * training stimulus / recovery. One completion is one *bout* of the habit, so it
- * counts as a single set — its `count` is progress in the habit's own unit
- * (seconds held, reps, ml), NOT a number of sets. Without this, a "hold 60 s"
- * habit would land as 60 sets. Only habits explicitly measured in `sets` scale
- * with count.
- */
-export function habitCompletionSets(habit: Habit, count: number): number {
-  if (count <= 0) return 0
-  return habit.unit === 'sets' ? count : 1
-}
-
-/** One muscle a habit tick credits, with its impact level & stimulus/recovery side. */
-export interface HabitMuscleContribution {
-  group: string
-  level: 1 | 2 | 3
-  contribution: MuscleContribution
-}
-
-/**
- * The muscle-group impact of ticking a manual habit once, honouring "log an
- * exercise, count its overall impact":
- * - Exercise-linked habits fold into that exercise's full muscle map, keeping
- *   each link's own level & stimulus/recovery contribution (so a dual-purpose
- *   exercise like Dead Hang credits grip stimulus *and* shoulder recovery).
- * - Muscle-linked habits credit that single group, with the direction taken
- *   from the habit's own `contribution` and impact from its `countLevel`.
- * Auto-sourced habits are intentionally excluded by the caller (their progress
- * already derives from real weight/mobility logs — folding them double-counts).
- */
-export function habitMuscleContributions(
-  habit: Habit,
-  exerciseMuscles: ExerciseMuscleLink[],
-  muscleGroups: MuscleGroup[],
-  exerciseNames: Record<string, string>,
-): HabitMuscleContribution[] {
-  if (habit.exerciseId) {
-    const name = exerciseNames[habit.exerciseId]?.toLowerCase()
-    if (!name) return []
-    return exerciseMuscles
-      .filter(l => l.exercise.toLowerCase() === name)
-      .map(l => ({ group: l.group, level: l.level, contribution: l.contribution }))
-  }
-  if (habit.muscleGroupId) {
-    const g = muscleGroups.find(mg => mg.id === habit.muscleGroupId)
-    if (!g) return []
-    return [{ group: g.name, level: habit.countLevel, contribution: habit.contribution }]
-  }
-  return []
-}
-
-export interface MuscleCoverageRow {
-  id: string
-  name: string
-  parentId: string | null
-  /** Weighted stimulus (Σ sets × level weight) within the week. */
-  stimulus: number
-  /** Recovery minutes (mobility / recovery-tagged work) within the week. */
-  recovery: number
-}
-
-/**
- * Direct per-muscle-group stimulus & recovery for [weekStartDate, date].
- * Values are *direct* (not rolled up); callers roll up to parents via `parentId`.
- */
-export function muscleCoverage(
-  weights: WeightEntry[],
-  mobility: MobilityEntry[],
-  exerciseMuscles: ExerciseMuscleLink[],
-  muscleGroups: MuscleGroup[],
-  weekStartDate: string,
-  date: string = today(),
-  habits: Habit[] = [],
-  habitCompletions: HabitCompletion[] = [],
-  exerciseNames: Record<string, string> = {},
-): MuscleCoverageRow[] {
-  const byExercise = new Map<string, ExerciseMuscleLink[]>()
-  for (const l of exerciseMuscles) {
-    const k = l.exercise.toLowerCase()
-    const arr = byExercise.get(k) ?? []
-    arr.push(l)
-    byExercise.set(k, arr)
-  }
-
-  const stim: Record<string, number> = {}
-  const rec: Record<string, number> = {}
-
-  for (const w of weights) {
-    if (w.date < weekStartDate || w.date > date) continue
-    const links = byExercise.get(w.exercise.toLowerCase())
-    if (!links) continue
-    for (const l of links) {
-      if (l.contribution !== 'stimulus') continue
-      stim[l.group] = (stim[l.group] ?? 0) + w.sets.length * (LEVEL_WEIGHT[l.level] ?? 0)
-    }
-  }
-
-  for (const m of mobility) {
-    if (m.date < weekStartDate || m.date > date) continue
-    for (const e of m.exercises) {
-      const groups = new Set<string>(e.muscleGroups ?? [])
-      const links = byExercise.get(e.name.toLowerCase())
-      if (links) for (const l of links) if (l.contribution === 'recovery') groups.add(l.group)
-      for (const g of groups) rec[g] = (rec[g] ?? 0) + e.duration
-    }
-  }
-
-  // Manual habit completions. Auto-sourced habits already derive from real
-  // weight/mobility logs (counted above), so only fold `none` habits here.
-  const habitById = new Map(habits.map(h => [h.id, h]))
-  for (const c of habitCompletions) {
-    if (c.count <= 0 || c.periodStart < weekStartDate || c.periodStart > date) continue
-    const h = habitById.get(c.habitId)
-    if (!h || !h.active || h.autoSource !== 'none') continue
-    const nSets = habitCompletionSets(h, c.count)
-    if (nSets <= 0) continue
-    for (const mc of habitMuscleContributions(h, exerciseMuscles, muscleGroups, exerciseNames)) {
-      if (mc.contribution === 'recovery') rec[mc.group] = (rec[mc.group] ?? 0) + nSets
-      else stim[mc.group] = (stim[mc.group] ?? 0) + nSets * (LEVEL_WEIGHT[mc.level] ?? 0)
-    }
-  }
-
-  return muscleGroups.map(g => ({
-    id: g.id,
-    name: g.name,
-    parentId: g.parentId ?? null,
-    stimulus: +(stim[g.name] ?? 0).toFixed(2),
-    recovery: +(rec[g.name] ?? 0).toFixed(2),
-  }))
-}
-
-/**
- * Total manual recovery-habit bouts within [weekStartDate, date] — the input to
- * the Recovery/Readiness axis's "Habits" sub-score. A bout counts if the habit
- * credits recovery on at least one muscle group (see `habitMuscleContributions`);
- * exercise-linked habits can be dual-purpose (e.g. Dead Hang = grip stimulus +
- * shoulder recovery), so this checks the resolved contributions rather than a
- * single habit-level flag. Auto-sourced habits are excluded — their progress
- * already derives from real mobility/weight logs counted elsewhere in the
- * readiness roll-up, so folding them here would double-count.
- */
-export function recoveryHabitSets(
-  habits: Habit[],
-  habitCompletions: HabitCompletion[],
-  exerciseMuscles: ExerciseMuscleLink[],
-  muscleGroups: MuscleGroup[],
-  exerciseNames: Record<string, string>,
-  weekStartDate: string,
-  date: string = today(),
-): number {
-  const habitById = new Map(habits.map(h => [h.id, h]))
-  let total = 0
-  for (const c of habitCompletions) {
-    if (c.count <= 0 || c.periodStart < weekStartDate || c.periodStart > date) continue
-    const h = habitById.get(c.habitId)
-    if (!h || !h.active || h.autoSource !== 'none') continue
-    const contributions = habitMuscleContributions(h, exerciseMuscles, muscleGroups, exerciseNames)
-    if (!contributions.some(mc => mc.contribution === 'recovery')) continue
-    total += habitCompletionSets(h, c.count)
-  }
-  return total
-}
