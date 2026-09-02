@@ -23,7 +23,10 @@ The next `develop` → `master` release onto production, and its objective is
   (row origin tagging, so restyle testing writes identifiable rows) → 026
   (chrome + shared primitives) → 027–032 (one sweep per page) → 033 (delete
   the old language and prove the walk). 024 carries the rest of the shared-
-  database guardrails and rides the same release.
+  database guardrails and rides the same release. **Amended 2026-09-02:** 031
+  is no longer a sweep — the Adaptations tab is a read whose composition, not
+  its paint, is the problem, so it became a rebuild gated on 039 (grounding
+  the numbers that read shows). The tail of the train is now 039 → 031 → 033.
 
 Releasing it unblocks the schema drops queued in
 [025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md) —

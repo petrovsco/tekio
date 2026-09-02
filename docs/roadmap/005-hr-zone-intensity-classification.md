@@ -1,7 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** backlog — needs avg HR actually arriving in `cardio_sessions`; the Garmin activity sync has never produced a row. Waiting on data, not on a task: 008 was discarded 2026-09-01, so nothing here parks behind it.
+**Status:** backlog — needs avg HR actually arriving in `cardio_sessions`; as of 2026-09-02 exactly 1 of 3 logged sessions carries HR zones and Training Effect. Waiting on data, not on a task: 008 was discarded 2026-09-01, so nothing here parks behind it. Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
 ## Goal
 

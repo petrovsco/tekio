@@ -1,0 +1,168 @@
+# Roadmap: Adaptations tab — the drill-down read
+
+**Label:** feature
+**Status:** blocked — waiting on [039](039-adaptations-read-grounding.md).
+Rescoped 2026-09-02 from a restyle into a rebuild: the page's composition is the
+problem, not its paint.
+**Depends:** 019, 026, 039
+**Release:** 2.0.0
+
+## Progress log
+
+- **2026-09-01** — written as "Adaptations tab — SIGNAL restyle", deliberately
+  sequenced after [019](done/019-adaptation-model-simplification.md) so nine rows
+  would not be restyled and then two deleted.
+- **2026-09-01** — unblocked: 019 and [026](done/026-signal-chrome-and-primitives.md)
+  both landed.
+- **2026-09-02** — rescoped. Restyling the current composition would have
+  preserved the thing that makes the page confusing. Grounding split out into
+  [039](039-adaptations-read-grounding.md), which now gates this brief. The
+  restyle is still in here — a rebuilt page is written in the SIGNAL language by
+  construction, so [033](033-retire-old-design-language.md)'s dependency is
+  satisfied either way.
+
+---
+
+## 1. What this page is
+
+**A second Home.** Not a logging screen — a *drill-down* on the read Home
+already carries. Home answers "what is missing" in five seconds without a tap;
+this page is where that answer gets interrogated, one adaptation at a time.
+
+Everything below follows from that sentence. Anything on the page that does not
+help interrogate an adaptation is not part of the read.
+
+## 2. What is wrong today
+
+**The survey (2026-09-01) — the old paint:**
+
+- **Hero card** — dark navy block, `/7` counter, lifting-set and cardio-session
+  tallies.
+- **Adaptation rows** — a different hue per adaptation on the left edge, emoji
+  icons, coloured info buttons.
+- **MUSCLE COVERAGE card** — bars in old tokens, ⚠ emoji for missing groups.
+- **HOW TO TRAIN EACH ADAPTATION** — 📖 emoji heading, old disclosure.
+
+**The diagnosis (2026-09-02) — the composition:**
+
+1. **Seven stacked cards is a list, not a read.** Each card hides its body map
+   behind a disclosure, so comparing two adaptations means opening one, closing
+   it, opening another. The spatial thing is buried inside the non-spatial thing.
+2. **MUSCLE COVERAGE · THIS WEEK earns nothing.** It restates Home's map in a
+   third dialect (see [039 §1](039-adaptations-read-grounding.md)) with no
+   target behind its bars, and it is the *only* consumer of
+   `MuscleCoverageCard.tsx` — so cutting it from the page deletes the component.
+3. **Per-adaptation rainbow hues** break design-system §1 (colour carries one
+   meaning). Seven hues claim seven meanings.
+4. **The whole-body three sit in the same card shape as the muscle-linked four**,
+   which quietly says they are the same kind of thing. They are not (P2): four
+   read per muscle, three read per session.
+
+## 3. The shape it should take
+
+### 3a. One body map, four toggles
+
+The map is the page, not a detail inside a card. One anatomical figure with a
+segmented control over it — **power · strength · hypertrophy · muscular
+endurance** — and the stimulus ramp recolours in place as you switch. Comparing
+two adaptations becomes one tap, which is the whole point of a drill-down.
+
+Reuses the existing `GapMap` / `BodyMap` geometry and the SIGNAL ink ramp, so
+the picture rhymes with Home instead of arguing with it. **What the ramp is
+denominated in is [039](039-adaptations-read-grounding.md)'s decision** — that is
+why this brief waits.
+
+Two affordances live on the selected adaptation, not on seven separate cards:
+
+- **How to train it** — the `rx` block (load / reps / sets / rest / effort /
+  cue), behind an icon. Same content as today's guide, summoned where the
+  question is raised (P1) instead of parked in a collapsed card at the bottom.
+  Its numbers are grounded by 039 before this ships.
+- **The muscle detail** — the per-muscle numbers *for the selected adaptation*:
+  which groups are on track, which are short, by how much. This is what
+  MUSCLE COVERAGE was reaching for and got wrong by not being per-adaptation.
+  Shape it as a ranked list, not a bar chart against an arbitrary maximum.
+
+### 3b. The whole-body three — a decision for kickoff
+
+VO₂max, anaerobic capacity and endurance cannot go on a silhouette (P2 says so
+explicitly). They need their own read.
+
+**Recommendation: the effort spectrum — one axis, three bands.**
+
+The three qualities are not unrelated tiles; they are **three regions of one
+continuum**, ordered by how long the effort lasts. Anaerobic capacity is
+seconds, VO₂max is minutes, endurance is hours — and `ADAPTATIONS` is already
+ordered along exactly that continuum in the constants. So draw the continuum:
+one horizontal axis, three labelled bands, each filled by volume against its
+target and carrying its recency. A gap is a visibly empty stretch of the axis,
+and the picture explains *why* the qualities differ instead of asserting it.
+
+It is one-dimensional, which matches the data honestly: outside Garmin sessions
+the app has duration and little else.
+
+**Rejected: a heart, or any organ diagram.** It reads well and it is a lie of
+exactly the kind P2 forbids for the body map. Endurance is largely peripheral —
+mitochondrial density, capillarity, fat oxidation — and anaerobic capacity is
+glycolytic and muscular. Drawing all three inside a heart asserts a location
+none of them has. If the silhouette is dishonest for whole-body qualities, a
+heart is dishonest for the same reason and looks more authoritative while doing
+it.
+
+**Deferred, not rejected: the effort plane** (duration × intensity, one dot per
+session, the three qualities as regions). It is the better picture and it needs
+an intensity per session that the app mostly does not have — of 3 logged cardio
+sessions, 1 carries Training Effect and HR zones. Revisit after
+[005](005-hr-zone-intensity-classification.md); do not build it on a duration
+proxy dressed as intensity.
+
+### 3c. What leaves the page
+
+- **MUSCLE COVERAGE · THIS WEEK** — cut; `MuscleCoverageCard.tsx` deleted with
+  it (this page is its only consumer).
+- **The seven-card stack** — replaced by the map plus the spectrum.
+- **The collapsed guide at the bottom** — folded into the per-adaptation icon.
+- **The rainbow hues and the emoji** — per 026 and design-system §1.
+
+The hero keeps a role: it is the only place the *whole* week gets one line.
+Whether it survives as a hero or shrinks to a header line is a build decision.
+
+## 4. Out of scope
+
+- **The numbers' meaning** — [039](039-adaptations-read-grounding.md). This brief
+  draws what that one decides.
+- **Target values and shapes** — [012](012-adaptation-target-shapes.md). If 012
+  lands first the units shown here follow it; neither blocks the other's kickoff.
+- **User-set adaptation goals** — [040](040-adaptation-goals.md), backlog.
+- **Classifier changes** — [001](001-cross-adaptation-rep-ranges.md),
+  [005](005-hr-zone-intensity-classification.md).
+
+## 5. Doctrine check (§4)
+
+1. **Which read?** Adaptations — an existing Core read. No new section, R1
+   untouched.
+2. **What does it let me stop doing?** Stop opening and closing seven cards to
+   compare two adaptations; stop maintaining a third muscle dialect; stop
+   carrying `MuscleCoverageCard`.
+3. **Input or destination?** Neither — it is a *rearrangement* of an existing
+   destination. Nothing new is stored.
+4. **Honest shape?** The centre of the brief: muscles are spatial and get the
+   map; the whole-body three are a continuum and get an axis; neither borrows
+   the other's picture (P2).
+5. **Does it write a number claiming physiological meaning?** No new number —
+   but it makes ungrounded ones *more* prominent, which is why 039 gates it.
+
+## 6. Acceptance
+
+- [ ] 039 is in `done/` before implementation starts.
+- [ ] One body map with a four-way adaptation toggle; switching does not reflow
+      the page.
+- [ ] The selected adaptation's `rx` and its per-muscle detail are each one tap
+      away, on the map, not in a stack of cards.
+- [ ] The whole-body three have their own read, and the shape chosen is recorded
+      in §3b with its reason.
+- [ ] `MuscleCoverageCard.tsx` is deleted and nothing imports it.
+- [ ] No old-token classes, per-adaptation hues, or emoji remain in
+      `AdaptationsTab` and its children.
+- [ ] Browser-verified with a screenshot next to Home for comparison; console
+      clean.
