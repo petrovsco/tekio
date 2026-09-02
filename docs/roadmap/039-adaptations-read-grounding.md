@@ -1,8 +1,9 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** planned — kickoff-ready. Gates [031](031-adaptations-drill-down-read.md):
-the redesign must not repaint numbers whose meaning is still undecided.
+**Status:** in progress — picked up 2026-09-02. The code read is done and the
+execution plan is written into §6 below; no code has changed yet. Resume with
+`/roadmap 39` and start at §6 step 1. Gates [031](031-adaptations-drill-down-read.md).
 **Depends:** 019
 **Release:** 2.0.0
 **Covers inventory rows:** 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
@@ -164,3 +165,137 @@ ground how the app *classifies*.**
       search-result summary.
 - [ ] The app still builds and every existing adaptation test passes; any number
       that moved is reflected in its test.
+
+---
+
+## 6. Kickoff findings — 2026-09-02 (where it left off)
+
+The first session read every file in §1–§2 and stopped before touching code
+(context wrap-up). Everything below is settled enough to execute without
+re-reading; the one open check is marked.
+
+### 6.1 The accounting decision — (a), made concrete
+
+**(a) is taken.** One accounting: *stimulus = level-weighted sets in a window;
+adequacy = a weekly rate × the weeks in that window.* The window is the only
+thing that stays plural, and it is named on screen.
+
+| Today | Under (a) |
+|---|---|
+| `muscleStates` ([fusedRead.ts:57](../../src/lib/fusedRead.ts#L57)) — its own loop, 42 d, all sets, ÷ `CYCLE_SET_TARGET` | Built on the shared function; window = rolling `CYCLE_WINDOW_DAYS`; `sets` = the sum of the four muscle-linked qualities |
+| `adaptationCoverage` ([lib/adaptations.ts:159](../../src/lib/adaptations.ts#L159)) — its own loop, week-to-date, per adaptation, + a habit fold | Built on the shared function; window = calendar week-to-date; per adaptation; **habit fold dropped** (doctrine §5 already ruled: the muscle read counts logged sets only — the `habits` / `habitCompletions` / `exerciseNames` args go, and so do the two habit tests in `adaptations.test.ts`) |
+| `muscleCoverage` ([utils.ts:558](../../src/lib/utils.ts#L558)) — week-to-date, no target, + recovery minutes, + habits | **Deleted**, with `MuscleCoverageRow`, `MuscleCoverageCard.tsx` (its only consumer), its `<MuscleCoverageCard />` line in `AdaptationsTab.tsx`, and the `muscleCoverage` block in `habits.test.ts`. `habitMuscleContributions` and `recoveryHabitSets` in utils.ts are then used only by tests — delete them too (035 was going to) |
+
+**The shared function** — new, in `src/lib/adaptations.ts` (fusedRead already
+imports from there):
+
+```ts
+/** Level-weighted sets per muscle group inside [from, to], split by the
+ *  muscle-linked quality each set classified into. `total` is the sum of the
+ *  four — Home's number and the drill-down's numbers are one accounting. */
+export function muscleStimulus(
+  weights, exerciseMuscles, window: { from: string; to: string }, overrides?,
+): { total: Record<string, number>; byQuality: Record<MuscleQuality, Record<string, number>> }
+```
+
+Classification per set is `classifyWeightSet(reps, resolveExerciseAdaptation(...))`
+— the same override-aware rule `muscleQualityMix` already uses, so
+`muscleQualityMix` becomes a thin caller as well. Add one test asserting the
+invariant: `total[m] === Σ byQuality[q][m]` for every muscle.
+
+**Open check (5 min, Supabase):** whether any exercise override names a cardio
+quality (`exercises` rows read by `adaptationMap` in `store/app.ts`). If none,
+"total = Σ four qualities" is exact today; if some, decide whether those sets
+count in `total` and say so in the function comment.
+
+**The denominator.** `CYCLE_SET_TARGET` stops being a literal: it becomes
+`WEEKLY_SET_FLOOR × CYCLE` where `WEEKLY_SET_FLOOR = 10` carries the
+adaptation-agnostic claim the scout below rules on. `MuscleSheet.tsx:17`
+already derives `WEEKLY_TARGET = CYCLE_SET_TARGET / CYCLE` — invert that.
+The DB shadow (inventory 1.11) means the tab reads `adaptation_targets` while
+Home reads the constant; they are byte-identical today. Note it, do not fix it.
+
+**The ramp.** Home colours by continuous `fillFraction`
+([GapMap.tsx:16-21](../../src/components/tabs/home/GapMap.tsx#L16), cutoff 0.70);
+the tab colours by the three-step `status` ([lib/adaptations.ts:146](../../src/lib/adaptations.ts#L146)).
+Add `fillFraction` to `MuscleStatusRow` so 031 can draw one ramp; whether
+`status` survives is the row-7.5 scout's call.
+
+**On-screen window labels** already exist on Home (`"N sets in 42 days"`,
+`"42-day cycle · target 60"`) and on the tab (`"This Week"`). The
+`<strong>PLACEHOLDER</strong>` after `target {CYCLE_SET_TARGET}` in
+[MuscleSheet.tsx:161](../../src/components/tabs/home/MuscleSheet.tsx#L161) is the
+mark 018 left for exactly this brief's verdict — replace it when the block lands.
+
+### 6.2 Row 7.4 is retired, not grounded
+
+`WEEKLY_STRETCH_TARGET_MIN = 5` sat at `utils.ts:338` when the inventory was
+built (commit `ecfc547`). It no longer exists anywhere in `src/` — it went with
+`RecoveryCard` (014 step 3). Strike row 7.4 as **retired**; drop it from this
+brief's scope. 031 §3c cuts the recovery axis from the page anyway.
+
+### 6.3 The scout runs — ten, one decision each, dispatch in parallel
+
+All `subagent_type: science-scout`, each given the claim, the constant, the
+current value, this brief's path, and the date. Verify every citation through
+NCBI eutils before pasting (acceptance box 5).
+
+| # | Row | Claim to hand the scout | Constant · value |
+|---|---|---|---|
+| S1 | 7.1 | A set on an exercise where the muscle is a level-2 (secondary) mover counts as half a set of stimulus for that muscle, level-3 a quarter — the fractional-set convention every map is denominated in | `LEVEL_WEIGHT` [utils.ts:490](../../src/lib/utils.ts#L490) · `{1: 1, 2: 0.5, 3: 0.25}`. Pelland 2026's best-fit model counts indirect sets at 0.5 (already cited in [010 §Grounding](done/010-home-fused-reads.md#grounding)) — the scout's job is the 0.25 tier and whether 0.5 is "indirect" in the same sense |
+| S2 | 7.5 | Stimulus below the weekly floor is graded (each set buys some adaptation), so a continuous fill is honest and a three-step on-track / needs-work / untouched cut is a coarsening; is anything below the floor worth *zero*? | `statusFor` [lib/adaptations.ts:146](../../src/lib/adaptations.ts#L146) + `GAP_CUTOFF = 0.70` [GapMap.tsx:16](../../src/components/tabs/home/GapMap.tsx#L16) |
+| S3 | new row | 10 level-weighted sets/muscle/week **counted across every rep range** (strength, hypertrophy, endurance and power sets all pooled) is a defensible adequacy floor for *total* muscle stimulus — i.e. the hypertrophy floor is the right adaptation-agnostic denominator because it is the most volume-hungry of the four | `WEEKLY_SET_FLOOR` (new) · `10`, and `CYCLE_SET_TARGET` [app.ts:90](../../src/constants/app.ts#L90) · `60`. The *value* is grounded (010 D10); the *pooling* is the claim |
+| S4 | 3.3 | Power prescription: 30–70% 1RM, 1–5 reps, 3–5 sets, 2–5 min rest, never to fatigue | `ADAPTATIONS[power].rx` [adaptations.ts:78](../../src/constants/adaptations.ts#L78) |
+| S5 | 3.4 | Strength prescription: 85–100% 1RM, 3–5 reps, 3–5 sets, 2–5 min rest, 1–2 RIR; and the cue "Galpin's 3–5 rule" (3–5 reps × sets × min rest × sessions/wk) — attribute or remove | `ADAPTATIONS[strength].rx` [adaptations.ts:109](../../src/constants/adaptations.ts#L109) |
+| S6 | 3.6 | Muscular-endurance prescription: <50% 1RM, 15–40+ reps, 2–4 sets, <60 s rest, to/near failure | `ADAPTATIONS[muscular_endurance].rx` [adaptations.ts:163](../../src/constants/adaptations.ts#L163) |
+| S7 | 3.7 | Anaerobic-capacity prescription: all-out 20 s–2 min efforts, 3–8 rounds, 1:2–1:4 work:rest | `ADAPTATIONS[anaerobic_capacity].rx` [adaptations.ts:189](../../src/constants/adaptations.ts#L189) |
+| S8 | 3.8 | VO₂max prescription: 90–100% HRmax, 3–8 min efforts, 4–6 sets, ≈1:1 rest; and the cue "classic 4×4 min at 90–95% HRmax, 3 min easy" — expected source Helgerud 2007 (verify) — attribute or remove | `ADAPTATIONS[vo2max].rx` [adaptations.ts:220](../../src/constants/adaptations.ts#L220) |
+| S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../src/constants/adaptations.ts#L251) |
+| S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../src/constants/adaptations.ts#L268) |
+
+Hypertrophy's `rx` (row 3.5) is **out**: grounded in 011 and locked to the
+target (D3). Do not re-run it.
+
+**Attribution already on the page:** `AdaptationGuide.tsx` ends with *"Based
+on the Huberman Lab × Dr. Andy Galpin guest series on physical adaptations."*
+That is a practitioner attribution for all seven blocks at once, in a collapsed
+card. After S4–S10 land, that line either becomes the honest provenance
+(literature where found, `convention` where not) or goes; the per-card InfoTip
+carries no attribution at all today.
+
+### 6.4 Landing the blocks — the four `/ground` destinations
+
+1. **This brief:** paste all ten blocks verbatim under a `## Grounding` section
+   placed before `## Acceptance` (i.e. between §4 and §5), one `###` per run.
+2. **The constants:** source comments on `LEVEL_WEIGHT`, `WEEKLY_SET_FLOOR`,
+   `CYCLE_SET_TARGET`, each `rx` block and `ADAPTATION_PRINCIPLE`, every one
+   pointing at `docs/roadmap/039-adaptations-read-grounding.md#grounding`
+   (repoint to `done/` when the brief moves — `grep -rn 039- src/`).
+3. **The inventory** ([grounding-inventory.md](../grounding-inventory.md)):
+   rows 3.3, 3.4, 3.6–3.10, 7.1, 7.5 → carrier `039`, verdict updated, and the
+   `Where` line numbers refreshed (7.1 says `utils.ts:479`, now 490; 7.5 says
+   `lib/adaptations.ts:135-139`, now 146-150 — both move again after §6.1).
+   Row 7.4 struck as retired (§6.2). New row **7.7** for `WEEKLY_SET_FLOOR` /
+   `CYCLE_SET_TARGET`-as-total. New ledger rows D13+ for each *decision*
+   (the pooling, the 0.25 tier, the ramp, each attribution kept or removed).
+   Bump the counts paragraph and add an "Updated 2026-09-xx by the 039 runs"
+   note in *How to read it*.
+4. **the user's own knowledge base:** only if a run produces durable life-knowledge
+   (unlikely here — these are training prescriptions).
+
+### 6.5 Running order and checkpoints
+
+Each unit build-passes on its own; commit and push after each.
+
+1. **Code — the accounting** (§6.1): shared function, both callers on it,
+   `muscleCoverage` + card + dead habit helpers deleted, tests updated, the
+   invariant test added. Browser-verify Home and the Adaptations tab (the tab
+   loses its MUSCLE COVERAGE card — expected; 031 rebuilds the page).
+   **Minor bump** (1.13.0, tagged) — the tab visibly changes.
+2. **Scouts** (§6.3) — dispatch all ten at once; while they run, do the
+   eutils checks as they come back. Then land per §6.4, including any `rx`
+   text the verdicts change (record a changed value as a decision *before*
+   editing the constant — `/ground` hard rule). Patch bump.
+3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
+   and set [031](031-adaptations-drill-down-read.md) to `planned` (019, 026,
+   039 all landed). Patch bump.
