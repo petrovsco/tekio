@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, cycleInfo, isDeloadDate, isTodayDone, programMode, activeVariantWeekdays, best1RM } from '../../../lib/utils'
+import { today, cycleInfo, isDeloadDate, isTodayDone, programMode, activeVariantWeekdays, best1RM, weightsPickerNames } from '../../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, DelBtn, EditBtn } from '../../ui/Button'
@@ -26,7 +26,7 @@ export function WeightsTab() {
   const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
   const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
 
-  const { weights, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, setToast } = useAppStore()
+  const { weights, exerciseMuscles, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, setToast } = useAppStore()
 
   // Auto-advance sequential (legacy index-mode) programs when today's day is done.
   // Weekday-pinned and flexible programs derive their day from the calendar/checklist
@@ -45,6 +45,7 @@ export function WeightsTab() {
   }, [weights])
 
   const exercises = [...new Set(weights.map(d => d.exercise))].sort()
+  const pickerNames = weightsPickerNames(weights, exerciseMuscles)
 
   const isAnyDeload = programs.some(ap => isDeloadDate(ap.startDate, today()))
 
@@ -204,7 +205,7 @@ export function WeightsTab() {
               <SmartInput
                 value={ex}
                 onChange={v => { setEx(v); if (!v) setSsExercises(null) }}
-                suggestions={exercises}
+                suggestions={pickerNames}
                 placeholder="e.g. Bench Press"
               />
             </div>

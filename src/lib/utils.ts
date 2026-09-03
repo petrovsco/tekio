@@ -501,3 +501,18 @@ export function habitProgress(
  *  See docs/roadmap/039-adaptations-read-grounding.md#grounding and
  *  docs/roadmap/done/042-level-3-link-audit.md */
 export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0 }
+
+// ── Weights picker ─────────────────────────────────────────────────────────────
+
+/**
+ * Names the Weights exercise picker offers: every exercise logged before, plus
+ * every catalogue exercise that trains a muscle (has a stimulus link). Recovery-
+ * only rows (stretches, foam rolling) and unmapped habit-era rows stay out, so a
+ * scout-named lift is selectable before its first set without the picker filling
+ * up with "Sauna". See docs/roadmap/done/043-scout-named-exercises-catalogue.md.
+ */
+export function weightsPickerNames(weights: WeightEntry[], links: ExerciseMuscleLink[]): string[] {
+  const names = new Set(weights.map(w => w.exercise))
+  for (const l of links) if (l.contribution === 'stimulus') names.add(l.exercise)
+  return [...names].sort()
+}

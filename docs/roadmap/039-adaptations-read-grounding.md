@@ -5,7 +5,9 @@
 landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
 [done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
 landed 2026-09-03 (v1.14.1) — **next: their code units, §6.7**; S5–S11
-still to run, two at a time (§6.5 step 2). Gates
+still to run, two at a time (§6.5 step 2). The exercises the scouts name are
+now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
+2026-09-03). Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -942,7 +944,10 @@ convention); ledger D15 (one load band kept, split in words), D16 (keyword
 rule stays exclusive; RIR field is the upgrade path), D17 (strength sets never
 feed the power map; the sheet's "heavy strength also builds power in the
 not-yet-strong" line goes to [031](031-adaptations-drill-down-read.md)'s
-scope — add it there in the same pass). Rows 7.5 (S2) and the new 7.7
+scope — add it there in the same pass). (5) [043](done/043-scout-named-exercises-catalogue.md)
+added **Clapping Push-up** (Galpin's list) and none of the 20 keywords match
+it, so its sets classify by reps — decide whether `clapping` joins the list
+in the same edit. Rows 7.5 (S2) and the new 7.7
 (`WEEKLY_SET_FLOOR`, S3) land in the same inventory pass.
 
 Then S5 + S6 (§6.5 step 2).

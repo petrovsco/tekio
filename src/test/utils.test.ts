@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM } from '../lib/utils'
-import type { WeightEntry, Program, ProgramDay } from '../types'
+import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames } from '../lib/utils'
+import type { WeightEntry, Program, ProgramDay, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
 // 1RM estimation
@@ -325,5 +325,29 @@ describe('mergeById', () => {
 
   it('returns empty array when both inputs are empty', () => {
     expect(mergeById([], [])).toEqual([])
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Weights picker — logged names plus the catalogue's stimulus exercises (043)
+// ---------------------------------------------------------------------------
+
+describe('weightsPickerNames', () => {
+  const link = (exercise: string, contribution: ExerciseMuscleLink['contribution'], level: 1 | 2 = 1): ExerciseMuscleLink =>
+    ({ exercise, group: 'Glutes', region: 'lower', level, contribution })
+  const logged = [{ exercise: 'Rows' }, { exercise: 'Bench Press' }, { exercise: 'Rows' }] as WeightEntry[]
+
+  it('offers everything logged plus every catalogue exercise with a stimulus link', () => {
+    const links = [link('Kettlebell Swing', 'stimulus'), link('Kettlebell Swing', 'stimulus', 2), link('Bench Press', 'stimulus')]
+    expect(weightsPickerNames(logged, links)).toEqual(['Bench Press', 'Kettlebell Swing', 'Rows'])
+  })
+
+  it('keeps recovery-only rows out, but a logged name stays in even without links', () => {
+    const links = [link('Couch Stretch', 'recovery'), link('Sprint', 'stimulus')]
+    expect(weightsPickerNames(logged, links)).toEqual(['Bench Press', 'Rows', 'Sprint'])
+  })
+
+  it('is empty when nothing is logged and nothing is mapped', () => {
+    expect(weightsPickerNames([], [])).toEqual([])
   })
 })
