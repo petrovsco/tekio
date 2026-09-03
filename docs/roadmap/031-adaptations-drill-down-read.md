@@ -1,10 +1,8 @@
 # Roadmap: Adaptations tab — the drill-down read
 
 **Label:** feature
-**Status:** planned — unblocked 2026-09-03: 019, 026 and
-[039](done/039-adaptations-read-grounding.md) have all landed. Rescoped
-2026-09-02 from a restyle into a rebuild: the page's composition is the
-problem, not its paint.
+**Status:** planned — unit 1 (the window argument) landed 2026-09-03 as
+v1.16.10; the page rebuild itself is not started. §7 is the kickoff.
 **Depends:** 019, 026, 039
 **Release:** 2.0.0
 
@@ -21,6 +19,10 @@ problem, not its paint.
   restyle is still in here — a rebuilt page is written in the SIGNAL language by
   construction, so [033](033-retire-old-design-language.md)'s dependency is
   satisfied either way.
+- **2026-09-03** — picked up; the session hit its context limit after unit 1.
+  `adaptationCoverage` now takes `from` + `windowDays` and scales the weekly
+  targets to the window (v1.16.10, no visible change). The build decisions
+  and the remaining units are in §7.
 
 ---
 
@@ -159,15 +161,99 @@ Whether it survives as a hero or shrinks to a header line is a build decision.
 
 ## 6. Acceptance
 
-- [ ] 039 is in `done/` before implementation starts.
+- [x] 039 is in `done/` before implementation starts.
 - [ ] One body map with a four-way adaptation toggle; switching does not reflow
       the page.
 - [ ] The selected adaptation's `rx` and its per-muscle detail are each one tap
       away, on the map, not in a stack of cards.
 - [ ] The whole-body three have their own read, and the shape chosen is recorded
       in §3b with its reason.
-- [ ] `MuscleCoverageCard.tsx` is deleted and nothing imports it.
+- [x] `MuscleCoverageCard.tsx` is deleted and nothing imports it (already gone
+      when 031 was picked up — 039 §6.1 took it).
 - [ ] No old-token classes, per-adaptation hues, or emoji remain in
       `AdaptationsTab` and its children.
 - [ ] Browser-verified with a screenshot next to Home for comparison; console
       clean.
+
+## 7. Where it left off — 2026-09-03
+
+**The page today** (the §2 survey is partly stale): hero card, seven
+`AdaptationCard`s (each with an `InfoTip`, a collapsed `rx` table and an old
+three-colour `BodyMap` / `MuscleStatusList` toggle), an emoji legend, and the
+collapsed `AdaptationGuide`. MUSCLE COVERAGE and `MuscleCoverageCard.tsx` are
+already gone. Every colour on the page is an old token or a per-adaptation hue.
+
+### Decisions made, so the next session does not re-derive them
+
+1. **Window: Home's rolling 14 days, not the calendar week.** 039 §6.1 left the
+   window to the caller; §6.6 called week-to-date "the wrong what's-missing
+   read" for Home, and the same objection holds for a drill-down — on Monday
+   morning every muscle would be a gap. Each quality's target is its weekly
+   rate × 14 / 7 (strength 12, hypertrophy 20, muscular endurance 12, power 12;
+   cardio 2 / 2 / 4 sessions). `/ground` Step 0 **exemption 2** (shape change,
+   no new claim) — the same construction as `MUSCLE_SET_TARGET`. Named on
+   screen as Home does: "6/wk · 14-day window". Unit 1 made
+   `adaptationCoverage` able to do this (`from`, `windowDays`); the tab still
+   passes a calendar week until the rebuild lands.
+2. **The map is `GapMap`, unchanged**, fed per quality. It already takes
+   `MuscleState[]` + ranked `gaps` + `onPick`; the callouts are the ranked
+   list, worst first, and a tap opens Home's `MuscleSheet` (lazy, as Home does)
+   — that *is* the per-muscle detail, one tap away on the map. The hatch
+   (recovering) stays muscle-level: a muscle recovers from any hard set, not
+   from a quality.
+3. **Default toggle: hypertrophy** — the quality Home's floor is grounded on
+   (010 D10), so the first picture is the one closest to Home's. Order on the
+   control is the continuum: POWER · STRENGTH · HYPERTROPHY · MUSC. END.
+4. **Whole-body three: the effort spectrum from §3b**, as one SVG. Three bands
+   left→right by effort duration (anaerobic · VO₂max · endurance), each filled
+   by the ramp step of sessions ÷ window target, edge in the accent when
+   `qualityStates` says stale (Home's polarity, design-system §4), recency
+   under each band, axis labels SECONDS · MINUTES · HOURS. Tap a band → the
+   rx sheet.
+5. **Both affordances are sheets** (P1, T2): an rx sheet (`BottomSheet` with
+   `AdaptationRxTable`, the power extra line from 039 S4, then
+   `ADAPTATION_PRINCIPLE` and the Galpin taxonomy credit from
+   `AdaptationGuide` as a footer) and a ranked-list sheet for all leaf muscles
+   of the selected quality. Two ghost buttons under the map open them.
+6. **Header line replaces the hero**: `LAST 14 DAYS` label + "N lifting sets ·
+   K cardio sessions" right; "3 of 7 on target" at 17–19px; a 12px sub naming
+   the untouched and the short ones. Sans only — the serif is Home's verdict.
+   Count cardio sessions as entries in the window (cardio + sports), not as a
+   sum of per-quality volumes, which double-counts a Garmin ride.
+
+### Remaining units, in order
+
+- **Unit 2 — `muscleQualityStates` in `src/lib/fusedRead.ts`** (beside
+  `muscleStates`, which already imports `muscleStimulus`):
+  `(weights, exerciseMuscles, muscleGroups, quality, weeklyTarget, overrides?, date?)
+  → MuscleState[]`. `sets` = `byQuality[quality]` over `muscleWindow(date)`;
+  `fillFraction` = sets ÷ (weeklyTarget × MUSCLE_WINDOW_DAYS / 7);
+  `daysSince` = last date a set *classified into that quality* fed the muscle
+  (all history, zero-weight links excluded); `recovering` from the any-set
+  recency, as `muscleStates`. Extract the last-date loop in `muscleStates` into
+  a helper taking an optional per-set filter so both share it. Export
+  `muscleWindow`. Tests in `fusedRead.test.ts`: a 10-rep set lands on the
+  hypertrophy map not the strength map; per-quality `daysSince` differs from
+  the any-set recency; a power set counts on the power map only.
+- **Unit 3 — the page.** New `src/components/tabs/adaptations/` with
+  `EffortSpectrum.tsx` and `RxSheet.tsx`; rebuild `AdaptationsTab.tsx` on
+  `Card`/tokens from `src/index.css` (`text-ink*`, `border-line`,
+  `text-signal`). Restyle `home/AdaptationRx.tsx` to the tokens (its two
+  consumers die in unit 4). Add an `info` and a `list` glyph to
+  `ui/Icon.tsx` for the two ghost buttons. Segmented control: one
+  `border-ink` row, selected segment `bg-ink text-white`, 10px tracked
+  uppercase. Empty state: `GapMap` handles `zeroData`; the header sub carries
+  "Log a session →" to Weights.
+- **Unit 4 — deletions.** `home/AdaptationCard.tsx`, `home/AdaptationGuide.tsx`,
+  `home/MuscleStatusList.tsx`, `ui/InfoTip.tsx` (its only consumer is the
+  card). Strip `home/BodyMap.tsx` to the geometry exports `GapMap` imports
+  (`HALF`, `MIRROR`, `ABS_LINES`, `FRONT_ZONES`, `BACK_ZONES`, `Zone`) —
+  drop the `BodyMap` component, `zoneResolver`, `SILHOUETTE`, `UNTOUCHED`.
+  Drop `icon` and `color` from `AdaptationMeta` and the seven entries in
+  `src/constants/adaptations.ts` — nothing else reads them (checked
+  2026-09-03; the `meta.icon` in ProfileTab is section meta). `usePrefs`'s
+  `weekStartDay` leaves the tab.
+- **Unit 5 — verify and close.** Browser-verify against Home (headless
+  chromium recipe in memory), screenshot, console clean; minor bump and tag;
+  tick §6; move to `done/`; then take [033](033-retire-old-design-language.md)
+  off `blocked` if it lists 031.

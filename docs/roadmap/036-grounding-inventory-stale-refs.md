@@ -16,7 +16,18 @@ rows were never marked so.
   readiness comparison); repoint or retire the other RecoveryCard/OverviewTab
   rows against what actually computes today (`src/lib/fusedRead.ts`).
 - Re-run the link check over `docs/` (extract `](…)` targets, `test -e`) and
-  fix any other dead target it finds.
+  fix any other dead target it finds. A first pass over `done/026–032`
+  (2026-09-03, folded in here rather than filed on its own) found 14, all
+  mechanical — relative paths not adjusted when the brief moved into `done/`,
+  and three source links one directory too shallow:
+  - `026` → `../032-profile-admin-signal-restyle.md` (032 is in `done/` now)
+  - `027` → `034-v2-1-candidates-tbc.md`, `038-favicon-and-app-icon.md` (need `../`)
+  - `028` → `005-hr-zone-intensity-classification.md`, `034-…` (need `../`)
+  - `029` → `038-favicon-and-app-icon.md` (needs `../`)
+  - `030` → `../032-…` (in `done/`), `../../src/constants/program.ts` (needs `../../../`)
+  - `032` → `033-…`, `034-…`, `035-…` (need `../`), `done/026-…` (same
+    folder — drop `done/`), `../../src/components/layout/ExportPane.tsx` and
+    `ImportPane.tsx` (need `../../../`)
 - **Repoint the drifted `#L<n>` anchors.** Found 2026-09-01 while reindexing §1–§3
   for [019](done/019-adaptation-model-simplification.md): the anchors into
   `src/lib/adaptations.ts` are off by 8–14 lines (e.g. §2's `classifyWeightSet`
