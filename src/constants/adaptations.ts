@@ -234,11 +234,21 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * physiological floor. See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 1,
+    // rx.anaerobic_capacity — anaerobic capacity (maximal accumulated O2 deficit) is separately trainable: 6 wk of
+    // sprint work +10 % (Medbø & Burgers 1990), 7–8 × 20 s at 170 % VO2max / 10 s +28 % where moderate continuous
+    // work moved nothing (Tabata 1996); 8 × 20 s / 10 s raised it where 4 × 4 min did not (Hov 2023, Helgerud 2023).
+    // All-out is the SIT definition (MacInnis & Gibala 2017; Weston 2014). 20 s–2 min: 20, 30 and 90 s efforts all
+    // raised an anaerobic outcome (Tabata; Gibala 2006; Ziemann 2011) and the anaerobic share is ≥ half up to ≈ 75 s
+    // (Gastin 2001). Rounds 4–8 and rest 1:1–1:4 are conventions inside the trials (4–10 rounds; 2:1 to 1:7) and
+    // Galpin's 30/30 × 4+ and 20/30 × 6–8 (Huberman Lab guest series pt 3, 2023); NSCA's rows are 1:3–1:5 (15–30 s)
+    // and 1:3–1:4 (1–3 min). Shorter rest builds the deficit (Tabata 1997), longer rest keeps power per rep (Hazell
+    // 2010). Floors moved 3 → 4 rounds and 1:2 → 1:1 on 2026-09-03 (039 S7 forks 1–2, ledger D21–D22) — no trial or
+    // practitioner used three rounds or less than 1:1. See docs/roadmap/039-adaptations-read-grounding.md#grounding
     rx: {
       load: 'All-out',
       reps: '20 s–2 min efforts',
-      sets: '3–8 rounds',
-      rest: 'Incomplete (1:2–1:4)',
+      sets: '4–8 rounds',
+      rest: 'Incomplete (1:1–1:4)',
       effort: 'Maximal',
       cue: 'Brutal short intervals with partial recovery.',
     },
@@ -265,13 +275,24 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 1,
+    // rx.vo2max — long hard intervals raise VO2max more than anything else at matched work: 4 × 4 min at 90–95 %
+    // HRmax / 3 min active +7.2 % vs 15/15 +5.5 % and no change for threshold or LSD (Helgerud 2007, the cue's
+    // protocol); 4 × 8 min at 90 % beat 4 × 4 at 94 % and 4 × 16 at 88 % — total work × intensity interact (Seiler
+    // 2013); intervals ≥ 2 min and ≥ 15 min/session are the only formats that beat continuous training (Wen 2019,
+    // 53 RCTs; Bacon 2013). 90–100 % HRmax: the "red zone" is ≥ 90 % VO2max (Buchheit & Laursen 2013; Wenger &
+    // Bell 1986). Sprints raise VO2max less and not stroke volume (Hov 2023; Helgerud 2023; Rosenblat 2022) — that
+    // is S7's card. Sets 4–6 and rest ≈1:1 are conventions inside "≥ 16 min of work" (Helgerud 4:3; Attia 4:4;
+    // Bacon ≥ 1:1). Effort is the hardest even pace that survives all reps (Seiler's isoeffort design), not a
+    // sprint — reworded 2026-09-03 (039 S8 fork 2, ledger D24). Cue attributed to Helgerud et al. 2007 the same
+    // day (fork 3, D23): Galpin does not prescribe the 4 × 4, Attia does without naming it.
+    // See docs/roadmap/039-adaptations-read-grounding.md#grounding
     rx: {
       load: '~90–100% max HR',
       reps: '3–8 min efforts',
       sets: '4–6',
       rest: '≈1:1',
-      effort: 'Maximal',
-      cue: 'Classic 4×4 min at 90–95% HRmax, 3 min easy between.',
+      effort: 'Max you can hold evenly across reps',
+      cue: 'Helgerud’s 4×4: 4 min at 90–95% HRmax, 3 min easy between.',
     },
   },
   {

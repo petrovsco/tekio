@@ -6,9 +6,8 @@ landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
 [done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
 landed 2026-09-03 (v1.14.1); units S12 (v1.16.0) and S4 (v1.16.1) shipped
 2026-09-03; S5 + S6 blocks and units shipped 2026-09-03 (v1.16.3, run
-inline in the main session — §6.9) — **next: S7 + S8** (their subagent runs died
-on API 529 overloads — §6.8; run them inline the same way), then S9–S11 (§6.5
-step 2). The exercises the scouts name are
+inline — §6.9); S7 + S8 blocks and units shipped 2026-09-03 (v1.16.4, inline —
+§6.10) — **next: S9 + S10** (inline the same way), then S11 (§6.5 step 2). The exercises the scouts name are
 now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
 2026-09-03). Gates
 [031](031-adaptations-drill-down-read.md); retires
@@ -778,6 +777,182 @@ line stays until S10.
 
 ---
 
+### S7 — ADAPTATIONS[anaerobic_capacity].rx (what an anaerobic-capacity effort is prescribed as)
+
+**Claim:** An anaerobic-capacity session is **all-out** efforts of **20 s–2 min**, **3–8 rounds**, with **incomplete rest at 1:2–1:4** work:rest, at **maximal** effort, cued as "brutal short intervals with partial recovery" (`rx`, row 3.7). Drives the prescription text the user reads before an anaerobic session; which logged cardio session *counts* as anaerobic (Garmin anaerobic training effect ≥ 2.0, rows 6.2–6.3) is [005](005-hr-zone-intensity-classification.md)'s classifier and untouched here.
+**Searched:** 2026-09-03 · **Verdict:** partially supported — the effort band and "all-out" are **supported** (anaerobic capacity, measured as the maximal accumulated oxygen deficit, rises after repeated 20-s, 30-s and 90-s efforts and not after moderate continuous work; anaerobic and aerobic energy supply are equal at ≈ 75 s–2 min); rounds and the rest ratio are **convention** — no located trial varied either against an anaerobic-capacity outcome — and the card's two floors sit outside every trial and both practitioner protocols: every protocol that moved the measure used **≥ 4 rounds**, and the two best-evidenced rested at **2:1** and **1:2**, not 1:2–1:4. Both floors move. The cue names nobody, so no attribution is owed.
+**Number to use:** field by field —
+- **load:** `All-out` — the definition of sprint-interval training: "supramaximal" efforts (MacInnis & Gibala 2017), "maximal or near maximal" (Weston 2014's inclusion rule); the trials ran at 170 % VO₂max (Tabata 1996) and 150–175 % of maximal aerobic speed (Hov 2023). Unchanged.
+- **reps (effort length):** `20 s–2 min` — 20 s (Tabata 1996; Hov 2023), 30 s (Gibala 2006; Helgerud 2023) and 90 s (Ziemann 2011) all raised an anaerobic outcome; the anaerobic and aerobic systems contribute equally at ≈ 75 s and the anaerobic share is still large at 2 min (Gastin 2001); Buchheit & Laursen's HIT formats run "short (< 45 s) to long (2–4 min)"; Galpin: "around 20 seconds but no longer than 90 seconds". Unchanged.
+- **sets (rounds):** **`4–8 rounds`** — **changes** from `3–8`. Tabata 7–8, Hov 8–10, Gibala 4–6, Hazell 4–6, Ziemann 6; Galpin "minimum 4 rounds" and 6–8; more sprints per session gave larger anaerobic effects (Hall 2023). No located protocol used three. Fork 1.
+- **rest:** **`Incomplete (1:1–1:4)`** — **changes** from `Incomplete (1:2–1:4)`. The ratio that raised anaerobic capacity most reliably is 2:1 (20 s / 10 s: +28 % in Tabata 1996; the only sprint arm to raise it in Hov 2023's men); 1:2 raised glycolytic work (Ziemann 2011); 30 s / 2 min (1:4) does *not* tax the anaerobic system fully within a session (Tabata 1997); Galpin's two protocols are 1:1 and 1:1.5; NSCA's textbook rows are 1:3–1:5 (15–30 s) and 1:3–1:4 (1–3 min). Fork 2.
+- **effort:** `Maximal` — every located protocol was exhaustive or all-out. Unchanged.
+- **cue:** unchanged. It names no protocol and no person.
+
+#### Evidence
+
+*(a) Is anaerobic capacity trainable, and by what?*
+
+- `[literature]` Anaerobic capacity (maximal accumulated O₂ deficit, MAOD) was **30 % larger in sprinters** than in untrained *and* endurance-trained men, with no difference between those two; **6 weeks of training raised it 10 %**. 7 women + 5 men trained — [Medbø & Burgers 1990, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/2402211/) (PMID verified via eutils)
+- `[literature]` 6 wk of moderate continuous work (70 % VO₂max, 60 min, 5 d/wk) raised VO₂max but **did not change anaerobic capacity**; **7–8 × 20 s at ≈ 170 % VO₂max with 10 s rest**, 5 d/wk for 6 wk, raised **MAOD by 28 %** and VO₂max by 7 mL·kg⁻¹·min⁻¹. Two small trials, PE students — [Tabata et al. 1996, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/8897392/) (PMID verified via eutils)
+- `[literature]` Within a session: 6–7 × 20 s / 10 s (IE1) accumulated an O₂ deficit equal to the subjects' MAOD (69 vs 69 mL/kg) and reached VO₂max in the last 10 s; **4–5 × 30 s at 200 % VO₂max with 2 min rest (IE2) reached only 46 mL/kg, below MAOD** — "IE1 may tax both the anaerobic and aerobic energy releasing systems almost maximally". n = 9 — [Tabata et al. 1997, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/9139179/) (PMID verified via eutils)
+- `[literature]` 48 well-trained men, 3×/wk for 8 wk, randomised to 4 × 4 min at ~95 % maximal aerobic speed / 3 min active; **8 × 20 s at ~150 % / 10 s passive**; or 10 × 30 s at ~175 % / 3.5 min active. **MAOD rose after 8 × 20 s only** (not after 4 × 4 min, not after 10 × 30 s); VO₂max rose more after 4 × 4 (6.5 %) than 8 × 20 s (3.3 %) and not after 10 × 30 s; 300-m sprint improved in both sprint arms — [Hov et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/36314990/) (PMID verified via eutils)
+- `[literature]` The same three protocols in 81 well-trained women: only 4 × 4 raised VO₂max (7.3 %); **MAOD rose after 8 × 20 s (+6.5 %) and 10 × 30 s (+14.4 %, more than after 4 × 4)**; **10 × 30 s all-out treadmill sprints produced eight injuries**, the other two arms none — [Helgerud et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/37608507/) (PMID verified via eutils)
+- `[literature]` 2 wk, 3×/wk, 4 rising to 6 bouts: 30 s / 4 min, 10 s / 4 min and 10 s / 2 min all raised Wingate peak power (9.5 / 8.5 / 4.2 %); mean power rose in 30:4 (12.1 %) and 10:4 (6.5 %); VO₂max rose in 30:4 and 10:4 (≈ 9 %) but not 10:2. n = 48 — [Hazell et al. 2010, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/20424855/) (PMID verified via eutils)
+- `[literature]` A **1:2 ratio** studied on purpose "because little performance enhancement data exist based on this ratio": 6 × 90 s at 80 % of peak VO₂ power / 180 s rest, 3×/wk for 6 wk, recreationally active men (21 y) — raised VO₂max, anaerobic threshold, **glycolytic work, peak and mean Wingate power** — [Ziemann et al. 2011, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/20661160/) (PMID verified via eutils)
+- `[literature]` **4–6 × 30 s all-out / 4 min**, six sessions in 14 days, matched 90–120 min continuous rides for time-trial gains, muscle oxidative capacity and **buffering capacity** at ≈ 90 % less volume (630 vs 6500 kJ). 16 active men — [Gibala et al. 2006, J Physiol](https://pubmed.ncbi.nlm.nih.gov/16825308/) (PMID verified via eutils)
+- `[literature]` Sprint-interval training meta-analysis, 55 studies: medium overall effect (ES 0.52, 95 % CrI 0.42–0.62), **largest for anaerobic outcomes (0.61, CrI 0.48–0.75)**; larger effects with longer interventions, **longer sprints and more sprints per session**; "extensive small study effects … suggest potential overestimation" — [Hall et al. 2023, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/36165995/) (PMID verified via eutils)
+- `[literature]` Low-volume HIT meta-analysis (30–60 s repetitions, work:rest < 1, "maximal or near maximal", 32 trials): VO₂max +6.2 % in active non-athletic men; **effects on Wingate peak and mean power unclear** — [Weston, Taylor, Batterham & Hopkins 2014, Sports Med](https://pubmed.ncbi.nlm.nih.gov/24743927/) (PMID verified via eutils)
+
+*(b) Where the anaerobic share ends — the 20 s–2 min band*
+
+- `[literature]` Energy comes from every pathway in almost all activities; the duration of maximal exercise at which anaerobic and aerobic contributions are equal "appears to occur **between 1 to 2 minutes and most probably around 75 seconds**", earlier than the old sequential picture. Review — [Gastin 2001, Sports Med](https://pubmed.ncbi.nlm.nih.gov/11547894/) (PMID verified via eutils)
+- `[literature]` HIT is "repeated short (< 45 s) to long (2–4 min) bouts"; formats that elicit similar, maximal cardiorespiratory responses "have been associated with **distinctly different anaerobic energy contributions**"; prescription manipulates at least nine variables. Review — [Buchheit & Laursen 2013 (Part II), Sports Med](https://pubmed.ncbi.nlm.nih.gov/23832851/) (PMID verified via eutils)
+- `[literature]` The NSCA textbook table the card's shape comes from: phosphagen 5–10 s at 1:12–1:20; **fast glycolysis 15–30 s at 1:3–1:5**; **fast glycolysis/oxidative 1–3 min at 1:3–1:4**; oxidative > 3 min at 1:1–1:3. Textbook (expert-consensus tier, not a study) — [NSCA Essentials, work:rest table as transcribed](https://www.themovementsystem.com/blog/nsca-cscs-work-to-rest-ratios)
+
+*(c) The practitioners*
+
+- `[single-practitioner position]` Anaerobic capacity: bursts "around 20 seconds but no longer than 90 seconds"; "30 seconds on, 30 seconds off … minimum 4 rounds per bout, at least 1–2 days per week"; "20 seconds on, 30 seconds off for improved recovery between effort × 6–8 rounds"; "rest needs to be sufficient enough to return back to the point of nasal breathing"; "shoot for about 5–6 minutes per week of all-out, max heart rate work"; "full-body movements like sledding, swimming, biking"; "you'll cause problems if you try to hit too many days per week". Galpin only — [guest series pt 3 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-how-to-build-physical-endurance-lose-fat-huberman-lab/)
+- `[single-practitioner position]` No anaerobic pillar (four pillars: zone 2, VO₂max, stability, strength — [The Drive #261 (notes)](https://podcastnotes.org/the-drive-with-dr-peter-attia/training-for-the-centenarian-decathlon-zone-2-vo2-max-stability-and-strength-the-drive-with-peter-attia-261/)); his own "zone 5" stair set is 1 min at VO₂max / 3 min at zone 2 (1:3), once a week at the end of an aerobic session; "most people spend too much time there and not enough time in zone 2". Attia only — [AMA #21 (peterattiamd.com)](https://peterattiamd.com/peter-attia-on-zone-5-anaerobic-training-protocols/)
+- `[practitioner consensus]` Anaerobic work is all-out, 20–90 s, a handful of rounds, once or twice a week, on a modality that cannot hurt you. Held by Galpin; Attia trains 1-min "zone 5" reps but keeps no separate quality (silent rather than opposed); the literature agrees on all-out and on the band and is silent on rounds and ratio as dose variables.
+
+#### Where they split
+
+**1. Three rounds or four.** The card's floor is 3; every protocol that moved anaerobic capacity used 4 or more (Gibala and Hazell start at 4, Tabata 7–8, Hov 8–10), Galpin's minimum is 4, and Hall 2023 finds more sprints per session give more. Nothing supports three. Move the floor to 4.
+
+**2. How much rest — the fork proper.** The card's 1:2–1:4 is one notch short of NSCA's 1:3–1:5 / 1:3–1:4 and excludes both Galpin protocols (1:1, 1:1.5) and the Tabata design (2:1). The evidence points two ways because it measures two things: *shorter* rest accumulates more O₂ deficit per session and is where the capacity measure rose most reliably (Tabata 1997 within-session; Tabata 1996 and Hov 2023 across weeks), while *longer* rest preserves power per rep (Hazell 2010) and raised capacity too in women, at the cost of injuries (Helgerud 2023). No trial held work constant and varied only the ratio. For a *capacity* card the honest band is "incomplete, from equal rest down to a quarter": move the floor to 1:1. 2:1 is a specific protocol, not a band; it goes in the source comment, not on the card.
+
+**3. Is it its own quality?** Hov 2023 and Helgerud 2023 answer this directly: 4 × 4 min raised VO₂max and not MAOD; 8 × 20 s raised MAOD and less VO₂max; Tabata 1996: continuous moderate work raised VO₂max and not MAOD. Anaerobic capacity is separately trainable, so [019](done/019-adaptation-model-simplification.md)'s split of anaerobic capacity from VO₂max stands. Attia's silence is a programming choice, not a contradiction.
+
+**4. Frequency.** The trials ran 3–5×/wk in 2–8-week blocks; Galpin says 1–2×/wk and warns against more; the card is silent and `weeklySessionTarget = 1` (011, convention) is not reopened here.
+
+#### Caveats
+
+- Population mismatch: every trial is in young adults (21–23 y) — PE students, active men, well-trained runners; Hall 2023 flags small-study inflation across the field. **No located trial is in 40-year-old recreational lifters.** Injury is the population-specific risk: all-out treadmill sprints injured eight women in one arm (Helgerud 2023); a bike, rower, sled or hill (Galpin's list) is the safer surface for this user.
+- "Anaerobic capacity" here means MAOD, which the app never measures; the read counts sessions typed anaerobic by Garmin's anaerobic training effect (005). The card's fields shape no read.
+- Rounds and the ratio are untested as dose variables for MAOD; both values are conventions inside the trial spread, and the two moves here are floor corrections, not optima.
+- The 20 s–2 min band is defined by energy share, not by a trial that compared 20 s with 2 min for MAOD.
+- What would move this number: a MAOD trial holding work constant and varying the ratio (2:1 vs 1:2 vs 1:4); an anaerobic dose–response in adults over 35; a power-drop or lactate field in the log that would let "incomplete rest" become a read.
+
+#### Source comment
+```
+// rx.anaerobic_capacity — anaerobic capacity (maximal accumulated O2 deficit) is separately trainable: 6 wk of
+// sprint work +10 % (Medbø & Burgers 1990), 7–8 × 20 s at 170 % VO2max / 10 s +28 % where moderate continuous
+// work moved nothing (Tabata 1996); 8 × 20 s / 10 s raised it where 4 × 4 min did not (Hov 2023, Helgerud 2023).
+// All-out is the SIT definition (MacInnis & Gibala 2017; Weston 2014). 20 s–2 min: 20, 30 and 90 s efforts all
+// raised an anaerobic outcome (Tabata; Gibala 2006; Ziemann 2011) and the anaerobic share is ≥ half up to ≈ 75 s
+// (Gastin 2001). Rounds 4–8 and rest 1:1–1:4 are conventions inside the trials (4–10 rounds; 2:1 to 1:7) and
+// Galpin's 30/30 × 4+ and 20/30 × 6–8 (Huberman Lab guest series pt 3, 2023); NSCA's rows are 1:3–1:5 (15–30 s)
+// and 1:3–1:4 (1–3 min). Shorter rest builds the deficit (Tabata 1997), longer rest keeps power per rep (Hazell
+// 2010). Floors moved 3 → 4 rounds and 1:2 → 1:1 on 2026-09-03 (039 S7 forks 1–2, ledger D21–D22) — no trial or
+// practitioner used three rounds or less than 1:1. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S7, 2026-09-03):** two numbers move, both floors. `rx.sets` goes
+from `3–8 rounds` to **`4–8 rounds`** (fork 1, ledger D21) and `rx.rest` from
+`Incomplete (1:2–1:4)` to **`Incomplete (1:1–1:4)`** (fork 2, ledger D22),
+each recorded before the constant was edited. Load, effort length, effort and
+cue stay as shipped; the band is labelled **supported** and the two moved
+fields **convention** in the source comment. Fork 3 is settled in
+[019](done/019-adaptation-model-simplification.md)'s favour by Hov 2023 and
+Helgerud 2023 and needs no change. `weeklySessionTarget = 1` (011, convention)
+and the Garmin classifier (005, rows 6.2–6.3) are not reopened. The cue names
+nobody, so acceptance box 3 owes nothing here.
+
+---
+
+### S8 — ADAPTATIONS[vo2max].rx and the "classic 4×4" cue (what a VO₂max session is prescribed as)
+
+**Claim:** A VO₂max session is **3–8 min efforts** at **~90–100 % HRmax**, **4–6 sets**, **≈ 1:1** rest, at **maximal** effort, cued as "Classic 4×4 min at 90–95 % HRmax, 3 min easy between" (`rx`, row 3.8). Drives the prescription text the user reads before a VO₂max session; which logged session *counts* as VO₂max (Garmin aerobic training effect and zone split, rows 6.2–6.4) is [005](005-hr-zone-intensity-classification.md)'s classifier and untouched here.
+**Searched:** 2026-09-03 · **Verdict:** supported — intensity, interval length and the ≈ 1:1 rest each sit inside a band a meta-analysis or a randomised trial gives; sets is **convention** inside the literature's real constraint, total hard work per session (≥ 15 min); "Maximal" is the wrong word for a 4-min interval — every trial prescribes the hardest *even* pace you can repeat, not a sprint — and is reworded; the cue is **Helgerud et al. 2007's protocol verbatim** and now carries that name (acceptance box 3).
+**Number to use:** field by field —
+- **load:** `~90–100% max HR` — Helgerud's 4 × 4 ran at 90–95 % HRmax; Seiler's effort-matched sessions landed at 94 % HRpeak (4 × 4), 90 % (4 × 8) and 88 % (4 × 16); ≥ 90 % VO₂max is the "red zone" interval training targets (Buchheit & Laursen 2013 I); the greatest VO₂max gains come at 90–100 % VO₂max (Wenger & Bell 1986); trained runners need 95–100 % (Midgley 2006). Unchanged.
+- **reps (effort length):** `3–8 min efforts` — 4-min intervals beat 15/15 s at matched work (7.2 vs 5.5 %, Helgerud 2007); 4 × 8 min beat 4 × 4 and 4 × 16 (Seiler 2013); intervals ≥ 2 min gave larger effects than ≤ 30 s and were the only format that beat continuous training (Wen 2019); longer intervals +0.8–0.9 L/min vs +0.51 overall (Bacon 2013); 4 × 4 beat 8 × 20 s and 10 × 30 s in well-trained men and women (Hov 2023, Helgerud 2023). Attia: "three to eight-minute intervals". Unchanged.
+- **sets:** `4–6` — Helgerud 4, Seiler 4, Attia 4–6, Galpin "4–8 bouts"; the literature's constraint is total hard work — ≥ 10 min per session (Bacon's inclusion rule), ≥ 15 min (Wen 2019), 32 min beat 16 min (Seiler 2013). Convention inside "≥ 16 min of work". Unchanged.
+- **rest:** `≈1:1` — Helgerud 4 : 3 active at 70 % HRmax; Attia 4 : 4; Bacon's inclusion rule ≥ 1:1; Yang 2025's best-fit ratio 0.85 in athletes; Milanović 2015 found the work:rest effect "unclear". Unchanged.
+- **effort:** `Maximal` → **`Max you can hold evenly across reps`** — Seiler's sessions were "prescribed at the maximal tolerable intensity" *for four repeats* and came out at 88–94 % HRpeak; Helgerud prescribes 90–95 %, not all-out; Attia "highest intensity, sustained" and "high, but sustainable for at least three minutes". A single all-out effort is a different session (Galpin's 5–15-min time trial). Wording change, fork 2, ledger D24.
+- **cue:** → **`Helgerud’s 4×4: 4 min at 90–95% HRmax, 3 min easy between.`** — the protocol is Helgerud et al. 2007 (NTNU, Trondheim) to the letter: 4 × 4 min at 90–95 % HRmax, 3 min active recovery at 70 %, 3 d/wk for 8 wk, VO₂max +7.2 %. Attributed, fork 3, ledger D23.
+
+#### Evidence
+
+*(a) Intensity — how hard is "VO₂max work"?*
+
+- `[literature]` 40 moderately trained men, four protocols matched for total work, 3 d/wk for 8 wk: long slow distance (70 % HRmax), lactate threshold (85 %), 15 s / 15 s at 90–95 %, and **4 × 4 min at 90–95 % HRmax with 3 min active rest at 70 %**. Only the two interval groups raised VO₂max (P < 0.01): **15/15 +5.5 %, 4 × 4 +7.2 %**; stroke volume +≈ 10 % after intervals. RCT — [Helgerud et al. 2007, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/17414804/) (PMID verified via eutils)
+- `[literature]` Pooled across populations, "the greatest improvements in aerobic power occur when … intensity is from **90 to 100 % of VO₂max**"; at least 3 sessions/wk once VO₂max exceeds 50 mL·kg⁻¹·min⁻¹. Review — [Wenger & Bell 1986, Sports Med](https://pubmed.ncbi.nlm.nih.gov/3529283/) (PMID verified via eutils)
+- `[literature]` The optimal interval stimulus is "one where athletes spend at least several minutes per session in their 'red zone,' which generally means reaching at least **90 % of their maximal oxygen uptake**"; prescription manipulates up to nine variables. Review — [Buchheit & Laursen 2013 (Part I), Sports Med](https://pubmed.ncbi.nlm.nih.gov/23539308/) (PMID verified via eutils)
+- `[literature]` For well-trained distance runners "training at or near VO₂max may be the most effective intensity" — protocols eliciting **95–100 % VO₂max** raise a plateaued VO₂max; lower intensities suffice for the moderately trained. Review — [Midgley, McNaughton & Wilkinson 2006, Sports Med](https://pubmed.ncbi.nlm.nih.gov/16464121/) (PMID verified via eutils)
+
+*(b) Interval length and session volume*
+
+- `[literature]` Trained recreational cyclists (29 M / 6 F, VO₂peak 52), 2 interval sessions/wk for 7 wk at "the maximal tolerable intensity": **4 × 8 min (at 90 % HRpeak) gained more** VO₂peak, power at VO₂peak and power at 4 mM lactate (11.4 %) than 4 × 4 min at 94 % (5.5 %) or 4 × 16 min at 88 % (5.6 %); "accumulating 32 min of work at 90 % HRmax induces greater adaptive gains than accumulating 16 min of work at ∼95 % HRmax despite lower RPE". RCT — [Seiler, Jøranson, Olesen & Hetlelid 2013, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/21812820/) (PMID verified via eutils)
+- `[literature]` 53 RCTs: short intervals (≤ 30 s), low volume (≤ 5 min) and short programmes (≤ 4 wk) all raised VO₂max vs control (SMD 0.79–1.65), but **long intervals (≥ 2 min), high volume (≥ 15 min) and ≥ 4–12 wk gave larger effects** (SMD 0.50–2.48) and were the **only formats that beat moderate continuous training** (SMD 0.65–1.07). Meta-analysis — [Wen et al. 2019, J Sci Med Sport](https://pubmed.ncbi.nlm.nih.gov/30733142/) (PMID verified via eutils)
+- `[literature]` 37 studies (334 subjects, < 45 y, ≥ 3 d/wk, ≥ 10 min hard work, ≥ 1:1 work:rest, 6–13 wk): VO₂max +0.51 L·min⁻¹ (95 % CI 0.43–0.60); the nine studies with **longer intervals gained ≈ 0.8–0.9 L·min⁻¹ "with evidence of a marked response in all subjects"**. Meta-analysis — [Bacon, Carter, Ogle & Joyner 2013, PLoS One](https://pubmed.ncbi.nlm.nih.gov/24066036/) (PMID verified via eutils)
+- `[literature]` 28 controlled trials, healthy adults 18–45 (mean 25 y): HIT +5.5 and endurance training +4.9 mL·kg⁻¹·min⁻¹ vs control, HIT a "possibly small" +1.2 over endurance training, with small extra gains for **longer HIT repetitions**, older subjects and longer programmes; the modifying effect of **work:rest ratio was unclear**. Meta-analysis — [Milanović, Sporiš & Weston 2015, Sports Med](https://pubmed.ncbi.nlm.nih.gov/26243014/) (PMID verified via eutils)
+- `[literature]` 51 studies in athletes (n = 1,261): HIIT, sprint and repeated-sprint training all raised VO₂max with no significant difference between them; meta-regression found an inverted-U for HIIT peaking at **140 s work and a work:recovery ratio of 0.85**. Network meta-analysis, athletes only — [Yang, Wang & Guan 2025, BMC Sports Sci Med Rehabil](https://pubmed.ncbi.nlm.nih.gov/40605061/) (PMID verified via eutils)
+
+*(c) Long intervals versus sprints — the mechanism behind the card*
+
+- `[literature]` Well-trained men, 8 wk: **4 × 4 min raised VO₂max 6.5 % vs 3.3 % for 8 × 20 s and no change for 10 × 30 s**, with a larger stroke-volume (O₂-pulse) gain after 4 × 4; MAOD rose only after 8 × 20 s — "HIIT should typically be the chosen interval format" — [Hov et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/36314990/) (PMID verified via eutils)
+- `[literature]` Well-trained women, same design: **only 4 × 4 raised VO₂max (7.3 %)**; both sprint arms raised MAOD; 10 × 30 s produced eight injuries — [Helgerud et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/37608507/) (PMID verified via eutils)
+- `[literature]` 32 studies: **only HIIT raised maximal stroke volume (+14.1 %) and cardiac output (+12.6 %)**; both HIIT and SIT raised citrate synthase activity; capillary density rose only with SIT. Meta-analysis — [Rosenblat, Granata & Thomas 2022, Sports Med](https://pubmed.ncbi.nlm.nih.gov/35041180/) (PMID verified via eutils)
+- `[literature]` "VO₂max is generally increased more by HIIT than MICT for a given training volume, whereas SIT and MICT similarly improve VO₂max despite differences in training volume". Review — [MacInnis & Gibala 2017, J Physiol](https://pubmed.ncbi.nlm.nih.gov/27748956/) (PMID verified via eutils)
+- `[literature]` Sprints still work, just less: SIT +≈ 8 % VO₂max, equal to endurance training (Cohen's d 0.04 vs ET) — [Gist et al. 2014, Sports Med](https://pubmed.ncbi.nlm.nih.gov/24129784/); SIT +4.2–13.4 % across 13 studies, driven by peripheral adaptations with "limited and equivocal" central evidence — [Sloth et al. 2013, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/23889316/); low-volume HIT +6.2 % in active non-athletic men — [Weston et al. 2014, Sports Med](https://pubmed.ncbi.nlm.nih.gov/24743927/) (all PMIDs verified via eutils)
+- `[literature]` In 273 patients with lifestyle-induced cardiometabolic disease the 4 × 4-shaped HIIT raised VO₂peak 9.1 % more than moderate continuous training — the protocol is tolerated by people far less fit than this user. Meta-analysis — [Weston, Wisløff & Coombes 2014, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/24144531/) (PMID verified via eutils)
+
+*(d) The practitioners, and the cue's provenance*
+
+- `[single-practitioner position]` "4 minutes of the highest intensity, sustained exercise followed by 4 minutes of recovery", repeated 4–6 times, one dedicated session a week (or shorter intervals at the end of zone-2 rides 2–3 days/wk); on the bike 4 min at 125 % of FTP / 4 min; VO₂max work is "three to eight-minute intervals" at "high, but sustainable for at least three minutes"; cardio split 80 % zone 2 / 20 % VO₂max. Attia only; he calls it the 4×4 and names no source — [peterattiamd.com, ep. #201](https://peterattiamd.com/high-intensity-training-zone-5-to-increase-vo2-max/), [AMA #21](https://peterattiamd.com/peter-attia-on-zone-5-anaerobic-training-protocols/), [The Drive #261 (notes)](https://podcastnotes.org/the-drive-with-dr-peter-attia/training-for-the-centenarian-decathlon-zone-2-vo2-max-stability-and-strength-the-drive-with-peter-attia-261/)
+- `[single-practitioner position]` Maximum aerobic output: "time frame 5–15 minutes at maximum intensity", "1–2× per week is sufficient", "run 10 minutes as fast and as far as you can once per week", "don't need repeats"; earlier: "do something once a week that gets you to max heart rate … × 4–8 bouts", "sustain hard work for 4–12 minutes". **Galpin does not prescribe the 4 × 4** — [guest series pt 3 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-how-to-build-physical-endurance-lose-fat-huberman-lab/), [episode 65 (notes)](https://podcastnotes.org/huberman-lab/episode-65-dr-andy-galpin-how-to-build-strength-muscle-size-endurance-huberman-lab/)
+- `[practitioner consensus]` VO₂max work is several minutes at a time near maximal heart rate, once or twice a week, kept small next to easy volume. Held by Attia and Galpin; they differ on shape (repeats vs one long effort) and the literature sides with repeats of 4–8 min (Helgerud, Seiler, Wen, Bacon).
+
+#### Where they split
+
+**1. Four minutes or eight.** Helgerud's 4 × 4 is the attributed protocol and the most replicated; Seiler shows 4 × 8 at a slightly lower heart rate beats it in trained cyclists, and Wen and Bacon both reward longer intervals and more total work. The card's `3–8 min` already spans both, and the cue names the 4 × 4 because it is the one with a name and a source. Keep both; the comment says 4 × 8 is the next step once 4 × 4 is routine.
+
+**2. "Maximal" on a 4-minute rep.** The word invites a sprint on the first interval; the trials prescribe the hardest pace that survives all four (Seiler's isoeffort design, Helgerud's 90–95 %, Attia's "sustainable for at least three minutes"). Galpin's single 5–15-min all-out effort is the only place "maximal" is literally meant, and it is a different session. Reword the effort field; no number changes.
+
+**3. Whose 4 × 4.** The protocol is Helgerud et al. 2007 from NTNU, Trondheim — the same group whose clinical 4 × 4 the patient meta-analysis pools (Weston, Wisløff & Coombes 2014), popularly "the Norwegian 4×4". Attia prescribes it without a source; Galpin does not prescribe it at all, so the reference card's line "Based on the Huberman Lab × Dr. Andy Galpin guest series" is **false for this cue**. Name Helgerud in the cue text, as "Galpin's 3–5 rule" already names Galpin (S5), so the attribution travels with the string wherever it is rendered; S10 settles the card-level line.
+
+**4. Sprints instead.** Hov 2023, Helgerud 2023, Rosenblat 2022: sprints raise VO₂max less and do not raise stroke volume; long intervals do. That is the same fork S7 resolves from the other side, and it is why the two cards prescribe different sessions.
+
+#### Caveats
+
+- Population mismatch: Milanović pools 18–45-year-olds with a mean age of 25; Bacon excludes anyone over 45; Helgerud 2007 is moderately trained men, Seiler trained recreational cyclists, Hov and Helgerud 2023 well-trained 22–23-year-olds; Weston 2014's "active non-athletic males" (+6.2 %) is the closest slice. **No located trial is in 40-year-old recreational lifters.** The patient meta-analysis (Weston, Wisløff & Coombes 2014) shows the protocol is tolerated well below this user's fitness, which bounds the risk rather than the gain.
+- "% HRmax" is only as good as the HRmax it is measured against; an estimated maximum makes the 90–100 % band soft by several beats. The card is a heaviness cue, not a number the app checks.
+- The classifier decides what counts (005, rows 6.2–6.4): a session Garmin types VO₂max from zones may never have reached this band. The card's fields shape no read.
+- Yang 2025's 140-s optimum comes from athletes with sprint and repeated-sprint formats pooled in; it is noted as the outlier, not used.
+- Frequency: Helgerud and Hov ran 3×/wk, Seiler 2×/wk, Attia and Galpin say 1–2×/wk; `weeklySessionTarget = 1` (011, grounded as a floor) is not reopened.
+- What would move this number: an RCT of 4 × 4 vs 4 × 8 in adults over 35; a measured HRmax in the profile (would make the band checkable); a work:rest trial at fixed interval length.
+
+#### Source comment
+```
+// rx.vo2max — long hard intervals raise VO2max more than anything else at matched work: 4 × 4 min at 90–95 %
+// HRmax / 3 min active +7.2 % vs 15/15 +5.5 % and no change for threshold or LSD (Helgerud 2007, the cue's
+// protocol); 4 × 8 min at 90 % beat 4 × 4 at 94 % and 4 × 16 at 88 % — total work × intensity interact (Seiler
+// 2013); intervals ≥ 2 min and ≥ 15 min/session are the only formats that beat continuous training (Wen 2019,
+// 53 RCTs; Bacon 2013). 90–100 % HRmax: the "red zone" is ≥ 90 % VO2max (Buchheit & Laursen 2013; Wenger &
+// Bell 1986). Sprints raise VO2max less and not stroke volume (Hov 2023; Helgerud 2023; Rosenblat 2022) — that
+// is S7's card. Sets 4–6 and rest ≈1:1 are conventions inside "≥ 16 min of work" (Helgerud 4:3; Attia 4:4;
+// Bacon ≥ 1:1). Effort is the hardest even pace that survives all reps (Seiler's isoeffort design), not a
+// sprint — reworded 2026-09-03 (039 S8 fork 2, ledger D24). Cue attributed to Helgerud et al. 2007 the same
+// day (fork 3, D23): Galpin does not prescribe the 4 × 4, Attia does without naming it.
+// See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S8, 2026-09-03):** no number moves; two strings change, both
+recorded in the ledger before the constant was edited. The cue becomes
+**"Helgerud’s 4×4: 4 min at 90–95% HRmax, 3 min easy between."** (fork 3,
+ledger D23), which closes row 3.8's half of acceptance box 3 — with S5's half
+(D18) the box is done. The effort field becomes **"Max you can hold evenly
+across reps"** (fork 2, ledger D24). Load, effort length, sets and rest stay
+as shipped, with sets and rest labelled **convention** inside the total-work
+constraint. Fork 1 is settled by the band already on the card. The reference
+card's Huberman/Galpin attribution line is now false for one cue and true for
+another; it is S10's to settle, noted for that run.
+`weeklySessionTarget = 1` (011) and the classifier (005) are not reopened.
+
+---
+
 ## 5. Acceptance
 
 - [x] §1's accounting decision is made, written here with its reason, and the
@@ -785,9 +960,9 @@ line stays until S10.
       option (a); `muscleCoverage` and its card are gone.)
 - [ ] A `## Grounding` section exists here carrying verdicts for rows 7.1, 7.5,
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
-- [ ] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
-      or no longer ship it. (3.4 done 2026-09-03 — S5 keeps "Galpin's 3–5 rule",
-      attributed, D18; 3.8 waits for S8.)
+- [x] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
+      or no longer ship it. (2026-09-03 — S5 keeps "Galpin's 3–5 rule",
+      attributed, D18; S8 renames "Classic 4×4" to "Helgerud’s 4×4", D23.)
 - [ ] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
       band covers the set; rows 2.1–2.3 and 2.6 carry verdicts here; the
       per-quality sums may exceed a muscle's total and the tab says so on screen.
@@ -1025,8 +1200,10 @@ Each unit build-passes on its own; commit and push after each.
    v1.16.1) — inventory rows 2.6, 3.3, 7.5, 7.7, 7.8 and ledger D14–D17
    landed with them. S5 + S6 (v1.16.3, run inline — §6.9) — blocks; source
    comments on both `rx` blocks; endurance load `<50%` → `40–60% 1RM` (D19);
-   rows 3.4 and 3.6, ledger D18–D20 — so the final pass owes only the S7–S11
-   rows.
+   rows 3.4 and 3.6, ledger D18–D20 — S7 + S8 (v1.16.4, inline — §6.10) — blocks; source comments
+   on both `rx` blocks; anaerobic floors 3 → 4 rounds and 1:2 → 1:1 (D21–D22);
+   VO₂max cue attributed to Helgerud 2007 and its effort reworded (D23–D24);
+   rows 3.7 and 3.8 — so the final pass owes only the S9–S11 rows.
 3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
    move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
@@ -1221,3 +1398,29 @@ block, any text a verdict changes (decision in the ledger *before* the
 constant), inventory rows 3.7 / 3.8 + ledger rows, test, build, browser check,
 patch bump. S8's "classic 4×4" is acceptance box 3's other half. Then
 S9 + S10, S11 (§6.5 step 2), then §6.5 step 3 closes the brief.
+
+### 6.10 Handoff 2026-09-03 (late) — S7 + S8 landed inline, S9 + S10 next
+
+S7 and S8 were run inline the same way as §6.9 (no subagents): 30 PMIDs
+verified through esummary — **six of the first 24 recalled from memory were
+wrong or missing** and were re-found by title before any abstract was read —
+abstracts through efetch (serialised: NCBI throttles parallel calls at
+3/second), the NSCA work:rest table and the Galpin / Attia positions through
+WebFetch. Both blocks landed under `## Grounding` with Decision paragraphs;
+two anaerobic floors moved (D21–D22), the VO₂max cue is attributed and its
+effort reworded (D23–D24); acceptance box 3 is closed. Cost: the pair filled
+the session to the context limit again. **Not browser-verified**, same as
+§6.9: the visible changes are four strings in the collapsed "How to train
+each adaptation" reference card (S6's `40–60% 1RM`, S7's `4–8 rounds` and
+`1:1–1:4`, S8's cue and effort) — screenshot that card when S9 + S10 land.
+
+**Next session — S9 + S10 (endurance, the principle), inline:** S9 verifies
+the Zone 2 band and the cue's two mechanistic claims ("nasal-breathing pace",
+"builds mitochondria & fat oxidation" — expected: San-Millán & Brooks 2018,
+Seiler's polarised-training reviews, the lactate-threshold literature);
+S10 grounds `ADAPTATION_PRINCIPLE` (velocity-loss and proximity-to-failure
+meta-analyses already cited in S5 — Robinson 2024, Grgic 2022, Vieira 2021
+for the power side) **and settles the reference card's attribution line**,
+which D23 has made false for one cue (Helgerud's 4×4) and true for another
+(Galpin's 3–5 rule): per-cue provenance or a rewritten line. Then S11
+(§6.5 step 2), then §6.5 step 3 closes the brief.

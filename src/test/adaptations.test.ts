@@ -13,7 +13,7 @@ import {
 import type { CardioEntry, ExerciseMuscleLink, MuscleGroup, WeightEntry } from '../types'
 import { ADAPTATIONS } from '../constants/adaptations'
 
-// ── rx blocks (grounded values, roadmap 039 S5 + S6) ──────────────────────────
+// ── rx blocks (grounded values, roadmap 039 S5–S8) ──────────────────────────
 
 describe('rx prescriptions', () => {
   const rx = (key: string) => ADAPTATIONS.find(a => a.key === key)!.rx
@@ -24,6 +24,16 @@ describe('rx prescriptions', () => {
     // effort describe the same set (a 15 RM is ≈65 % 1RM, not <50 %).
     expect(rx('muscular_endurance').load).toBe('40–60% 1RM')
     expect(rx('muscular_endurance').reps).toBe('15–40+')
+  })
+  it('keeps the grounded anaerobic and VO₂max fields (S7 + S8)', () => {
+    // S7 forks 1–2: both floors moved to what the trials used — no located
+    // protocol ran three rounds or rested less than 1:1 for anaerobic capacity.
+    expect(rx('anaerobic_capacity').sets).toBe('4–8 rounds')
+    expect(rx('anaerobic_capacity').rest).toBe('Incomplete (1:1–1:4)')
+    // S8 fork 3: the 4×4 is Helgerud 2007's protocol and the cue says so;
+    // fork 2: the effort is an even pace across reps, not a sprint.
+    expect(rx('vo2max').cue).toMatch(/^Helgerud’s 4×4/)
+    expect(rx('vo2max').effort).toBe('Max you can hold evenly across reps')
   })
 })
 
