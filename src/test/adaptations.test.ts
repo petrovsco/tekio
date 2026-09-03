@@ -200,7 +200,7 @@ describe('adaptationCoverage', () => {
       sports: [{ id: 's', date: '2025-01-04', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', duration: 20 }],
       exerciseMuscles: links,
       muscleGroups: groups,
-      weekStart: '2025-01-01',
+      from: '2025-01-01',
       date: '2025-01-07',
     })
 
@@ -230,7 +230,7 @@ describe('adaptationCoverage', () => {
       sports: [],
       exerciseMuscles: links,
       muscleGroups: groups,
-      weekStart: '2025-01-01',
+      from: '2025-01-01',
       date: '2025-01-07',
     })
     expect(cov.vo2max.volume).toBe(1)
@@ -245,10 +245,20 @@ describe('adaptationCoverage', () => {
       sports: [],
       exerciseMuscles: links,
       muscleGroups: groups,
-      weekStart: '2025-01-01',
+      from: '2025-01-01',
       date: '2025-01-07',
     })
     expect(cov.strength.volume).toBe(0)
+  })
+
+  it('scales the weekly targets to the window — rate × days / 7 (roadmap 031)', () => {
+    const cov = adaptationCoverage({
+      weights: [], cardio: [], sports: [],
+      exerciseMuscles: links, muscleGroups: groups,
+      from: '2025-01-01', date: '2025-01-14', windowDays: 14,
+    })
+    expect(cov.endurance.sessionTarget).toBe(4) // 2/wk over two weeks
+    expect(cov.strength.muscles.find(m => m.id === 'chest')!.target).toBe(12) // 6/wk over two weeks
   })
 
   it('counts each set once in total and once per quality it trains', () => {

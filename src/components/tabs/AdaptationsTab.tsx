@@ -21,7 +21,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
   const [openKey, setOpenKey] = useState<Adaptation | null>(null)
 
   const coverage = useMemo(
-    () => adaptationCoverage({ weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, date, overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets }),
+    () => adaptationCoverage({ weights, cardio, sports, exerciseMuscles, muscleGroups, from: weekStart, date, overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets }),
     [weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, date, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets],
   )
 

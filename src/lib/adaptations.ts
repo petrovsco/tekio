@@ -227,12 +227,12 @@ export interface AdaptationSummary {
   onTrack: number
   worked: number
   totalMuscles: number
-  /** Weekly session target for the cardio adaptations (0 for resistance). */
+  /** Session target for the cardio adaptations over the window (0 for resistance). */
   sessionTarget: number
   /**
-   * Whether the adaptation's weekly target is fully met — every tracked muscle
-   * on track (resistance), or the session target reached (cardio). Drives the
-   * "adaptations trained" counter.
+   * Whether the adaptation's target is fully met over the window — every
+   * tracked muscle on track (resistance), or the session target reached
+   * (cardio). Drives the "adaptations on target" counter.
    */
   met: boolean
 }
@@ -250,13 +250,17 @@ function statusFor(aggSets: number, target: number): MuscleStatus {
 const inRange = (d: string, start: string, end: string) => d >= start && d <= end
 
 /**
- * Per-adaptation weekly coverage across all modalities for [weekStart, date].
- * Resistance adaptations get a rolled-up muscle-group breakdown with status;
- * cardio adaptations report session counts. Resistance sets come from
- * {@link muscleStimulus}, so a set inside a rep-band overlap counts toward every
- * quality it trains — the four muscle-linked volumes may add up to more than
- * the sets logged (roadmap 039 §6.0). The muscle read counts logged sets only;
- * habits never feed it (doctrine §5).
+ * Per-adaptation coverage across all modalities inside the inclusive window
+ * [from, date]. Resistance adaptations get a rolled-up muscle-group breakdown
+ * with status; cardio adaptations report session counts. Resistance sets come
+ * from {@link muscleStimulus}, so a set inside a rep-band overlap counts toward
+ * every quality it trains — the four muscle-linked volumes may add up to more
+ * than the sets logged (roadmap 039 §6.0). The muscle read counts logged sets
+ * only; habits never feed it (doctrine §5).
+ *
+ * Every target on the metadata is a *weekly* rate; `windowDays` scales it to
+ * the window (rate × days / 7 — the same construction as MUSCLE_SET_TARGET,
+ * roadmap 039 §6.6). Default 7: a calendar week, targets as written.
  */
 export function adaptationCoverage(
   args: {
@@ -265,8 +269,10 @@ export function adaptationCoverage(
     sports: SportEntry[]
     exerciseMuscles: ExerciseMuscleLink[]
     muscleGroups: MuscleGroup[]
-    weekStart: string
+    from: string
     date?: string
+    /** Length of the window in days; weekly targets are scaled to it. Default 7. */
+    windowDays?: number
     /** Optional exercise-name → adaptation overrides (lowercased keys). */
     overrides?: Record<string, Adaptation>
     /**
@@ -281,13 +287,14 @@ export function adaptationCoverage(
     targets?: Partial<Record<Adaptation, { weeklyMuscleTarget: number; weeklySessionTarget: number }>>
   },
 ): Record<Adaptation, AdaptationSummary> {
-  const { weights, cardio, sports, exerciseMuscles, muscleGroups, weekStart, overrides, targets } = args
+  const { weights, cardio, sports, exerciseMuscles, muscleGroups, from, overrides, targets } = args
   const date = args.date ?? today()
+  const scale = (args.windowDays ?? 7) / 7
   const trackedSet = args.trackedMuscleIds && args.trackedMuscleIds.length > 0
     ? new Set(args.trackedMuscleIds)
     : null
 
-  const stimulus = muscleStimulus(weights, exerciseMuscles, { from: weekStart, to: date }, overrides)
+  const stimulus = muscleStimulus(weights, exerciseMuscles, { from, to: date }, overrides)
 
   const volume = {} as Record<Adaptation, number>
   for (const a of ADAPTATIONS) volume[a.key] = 0
@@ -296,7 +303,7 @@ export function adaptationCoverage(
   // Cardio sessions. A Garmin ride can count toward multiple adaptations (e.g.
   // VO₂max + anaerobic) when several systems each got a real Training Effect.
   for (const c of cardio) {
-    if (!inRange(c.date, weekStart, date)) continue
+    if (!inRange(c.date, from, date)) continue
     for (const a of classifyCardioAdaptations(c)) volume[a] += 1
   }
 
@@ -304,15 +311,15 @@ export function adaptationCoverage(
   // session. Sessions without a logged duration default to VO₂max — the typical
   // intermittent-sport stimulus.
   for (const s of sports) {
-    if (!inRange(s.date, weekStart, date)) continue
+    if (!inRange(s.date, from, date)) continue
     const a = s.duration ? classifyCardioByDuration(s.duration) : 'vo2max'
     volume[a] += 1
   }
 
   const out = {} as Record<Adaptation, AdaptationSummary>
   for (const meta of ADAPTATIONS) {
-    const muscleTarget = targets?.[meta.key]?.weeklyMuscleTarget ?? meta.weeklyMuscleTarget
-    const sessionTarget = targets?.[meta.key]?.weeklySessionTarget ?? meta.weeklySessionTarget
+    const muscleTarget = (targets?.[meta.key]?.weeklyMuscleTarget ?? meta.weeklyMuscleTarget) * scale
+    const sessionTarget = (targets?.[meta.key]?.weeklySessionTarget ?? meta.weeklySessionTarget) * scale
     const isResistance = meta.modality === 'resistance' && muscleTarget > 0
     const muscles = isResistance && isMuscleQuality(meta.key)
       ? buildMuscleStatusTree(stimulus.byQuality[meta.key], muscleGroups, muscleTarget)
