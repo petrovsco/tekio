@@ -4,9 +4,9 @@
 **Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
 landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
 [done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
-landed 2026-09-03 (v1.14.1); unit S12 shipped 2026-09-03 (v1.16.0) —
-**next: unit S4, §6.7**; S5–S11
-still to run, two at a time (§6.5 step 2). The exercises the scouts name are
+landed 2026-09-03 (v1.14.1); units S12 (v1.16.0) and S4 (v1.16.1) shipped
+2026-09-03 — **next: S5–S8 blocks** (dispatched 2026-09-03 as one batch of
+four), then S9–S11 (§6.5 step 2). The exercises the scouts name are
 now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
 2026-09-03). Gates
 [031](031-adaptations-drill-down-read.md); retires
@@ -573,7 +573,10 @@ set is one power set and nothing else, labelled a decision in the source
 comment; an RIR field is the upgrade path. `sled` and `agility` stay on the
 list as labelled conventions. The matcher collision is real: a DB check the
 same day found **Cable Woodchop** matching `hop`, so its sets read as power
-and leave the hard-set total today — fixed in the S4 code unit (§6.7). The
+and leave the hard-set total today — fixed in the S4 code unit (§6.7,
+v1.16.1), where `clapping` also joined the list: Galpin's list names clapping
+push-ups, [043](done/043-scout-named-exercises-catalogue.md) put the exercise
+in the catalogue, and no other keyword caught it. The
 NSCA textbook line is tier-6 expert consensus with its tier named inline; the
 tag vocabulary has no slot for a professional body's table, so it stays as
 delivered. The reference card's single attribution line stays until S10
@@ -823,8 +826,9 @@ Each unit build-passes on its own; commit and push after each.
    [done/042](done/042-level-3-link-audit.md) zeroed the tier (v1.14.0,
    2026-09-03); `WEEKLY_SET_FLOOR` created and
    `CYCLE_SET_TARGET` derived from it, power sets out of `total`, sheet
-   PLACEHOLDERs replaced. Inventory/ledger rows for all three land with the
-   rest in one pass at the end.
+   PLACEHOLDERs replaced. S12 + S4 (blocks v1.14.1; units v1.16.0 and
+   v1.16.1) — inventory rows 2.6, 3.3, 7.5, 7.7, 7.8 and ledger D14–D17
+   landed with them, so the final pass owes only the S5–S11 rows.
 3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
    move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
@@ -934,7 +938,11 @@ history — keep it via the display constant). Copy: MuscleSheet "this cycle"
 ledger D14 (the window leaves the program cycle; the fill is frequency-blind
 by design, recency stays in `daysSince`).
 
-**Unit S4 — power `rx` + keyword matcher (patch bump).** (1)
+**Unit S4 — power `rx` + keyword matcher — shipped 2026-09-03 (v1.16.1).**
+As shipped: `hop` / `jump` match whole words (plural-tolerant RegExp entries
+in `KEYWORD_ADAPTATION`), plus a one-entry `NOT_POWER` exclusion for "jump
+rope", which a word boundary cannot catch; `clapping` added; tests for both
+directions. The plan, kept for the record: (1)
 `ADAPTATIONS[power].rx` gets the three text values in the S4 decision and the
 S4 source comment above the block. (2) `KEYWORD_ADAPTATION` gets its comment
 and the collision fix: the DB check (2026-09-03, `exercises` matching
@@ -956,4 +964,5 @@ it, so its sets classify by reps — decide whether `clapping` joins the list
 in the same edit. Rows 7.5 (S2) and the new 7.7
 (`WEEKLY_SET_FLOOR`, S3) land in the same inventory pass.
 
-Then S5 + S6 (§6.5 step 2).
+Then S5–S8, dispatched 2026-09-03 as one batch of four (Peter's call for that
+session — the weekly limit was about to reset), then S9–S11.

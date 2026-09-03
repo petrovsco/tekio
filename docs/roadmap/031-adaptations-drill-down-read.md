@@ -77,7 +77,11 @@ Two affordances live on the selected adaptation, not on seven separate cards:
 - **How to train it** — the `rx` block (load / reps / sets / rest / effort /
   cue), behind an icon. Same content as today's guide, summoned where the
   question is raised (P1) instead of parked in a collapsed card at the bottom.
-  Its numbers are grounded by 039 before this ships.
+  Its numbers are grounded by 039 before this ships. The power sheet carries
+  one extra line from 039 S4 (inventory D17): heavy strength sets also build
+  power in the not-yet-strong (Cormie 2010), so an empty power fill is a
+  smaller gap than it looks for someone who squats heavy — the map itself
+  never credits a strength set to power.
 - **The muscle detail** — the per-muscle numbers *for the selected adaptation*:
   which groups are on track, which are short, by how much. This is what
   MUSCLE COVERAGE was reaching for and got wrong by not being per-adaptation.

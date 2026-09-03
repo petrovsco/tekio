@@ -76,12 +76,25 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
+    /**
+     * rx.power — 30–70 % 1RM is the pooled position-stand range (ACSM 2026,
+     * Currier) and Galpin's; the measured optima are exercise-specific:
+     * jumps/throws ≤30 %, squat/bench 30–70 %, cleans ≥70 % (Soriano 2015,
+     * 2017; Cormie 2011). Reps 1–5 / sets 3–5 / rest 2–5 min are NSCA's power
+     * rows (written for 75–90 % lifts); ≥2 min rest preserves power (Hernández
+     * Davó 2016, de Salles 2009), ≤24 reps·sets/session (ACSM 2026). "Never to
+     * fatigue" ≈ ≤20 % velocity loss (Pareja-Blanco 2017, 2020; Jukic 2023);
+     * intent is the stimulus (Behm & Sale 1993). Heavy strength sets also
+     * build power in the not-yet-strong (Cormie 2010) but never feed the
+     * power map — 039 S4 fork 1.
+     * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+     */
     rx: {
-      load: '30–70% 1RM',
-      reps: '1–5, explosive intent',
+      load: '30–70% 1RM (jumps & throws lighter, Olympic lifts heavier)',
+      reps: '1–5 (lifts) · 3–8 (jumps, throws), explosive intent',
       sets: '3–5',
       rest: '2–5 min (full)',
-      effort: 'Never to fatigue',
+      effort: 'Never to fatigue — stop when the reps slow',
       cue: 'Jumps, throws, Olympic lifts — move with maximal intent.',
     },
   },
@@ -272,10 +285,23 @@ export const ADAPTATION_PRINCIPLE =
 
 /**
  * Keyword → adaptation defaults for exercises whose quality can’t be read from
- * reps alone (explosive / plyometric / sprint work). Checked as case-insensitive
- * substring matches; first hit wins. User-set tags override these.
+ * reps alone (explosive / plyometric / sprint work). Checked in order against
+ * the lower-cased name — a string as a substring, a RegExp as itself; first
+ * hit wins. User-set tags override these.
+ *
+ * KEYWORD_ADAPTATION — Galpin's power exercise list as substrings. Jumps/plyo/
+ * Olympic lifts/throws/sprints/swings are power work by the load and velocity
+ * literature on `rx.power` above (swings: Lake & Lauder 2012, Otto 2012);
+ * `sled` is power only when sprinted (Alcaraz 2018, Cross 2017) and `agility`
+ * is a convention (Sheppard & Young 2006). A ≥16-rep swing set also trains
+ * endurance (Junior 2022) — the rule counts it as power only, by decision
+ * (039 S4 fork 3). `hop` and `jump` match whole words only: as substrings
+ * they caught "Cable Woodchop" and "Jumping Jacks", and a chop set silently
+ * left the hard-set total (DB check 2026-09-03). `clapping` is on Galpin's
+ * list and is the one ballistic push-up name no other keyword catches.
+ * See docs/roadmap/039-adaptations-read-grounding.md#grounding
  */
-const KEYWORD_ADAPTATION: [string, Adaptation][] = [
+const KEYWORD_ADAPTATION: [string | RegExp, Adaptation][] = [
   // Sprint / reactive work. These four tagged the retired `speed` adaptation
   // until 2026-08-29; they now tag power, which is the only remaining home for
   // maximal-velocity work. No new claim — the rule that already read "this is a
@@ -292,8 +318,9 @@ const KEYWORD_ADAPTATION: [string, Adaptation][] = [
   ['box jump', 'power'],
   ['broad jump', 'power'],
   ['jump squat', 'power'],
-  ['jump', 'power'],
+  [/\bjumps?\b/, 'power'],
   ['plyo', 'power'],
+  ['clapping', 'power'],
   ['throw', 'power'],
   ['med ball', 'power'],
   ['medicine ball', 'power'],
@@ -301,14 +328,21 @@ const KEYWORD_ADAPTATION: [string, Adaptation][] = [
   ['kettlebell swing', 'power'],
   ['kb swing', 'power'],
   ['sled', 'power'],
-  ['hop', 'power'],
+  [/\bhops?\b/, 'power'],
 ]
+
+/**
+ * Names that contain a power keyword but are conditioning, not power work —
+ * they fall back to reps like any ordinary exercise (039 S4).
+ */
+const NOT_POWER = ['jump rope']
 
 /** Built-in adaptation for an exercise name, or null if it should fall back to reps. */
 export function defaultAdaptationForExercise(name: string): Adaptation | null {
   const n = name.toLowerCase()
+  if (NOT_POWER.some(x => n.includes(x))) return null
   for (const [kw, a] of KEYWORD_ADAPTATION) {
-    if (n.includes(kw)) return a
+    if (typeof kw === 'string' ? n.includes(kw) : kw.test(n)) return a
   }
   return null
 }

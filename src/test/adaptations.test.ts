@@ -104,6 +104,21 @@ describe('resolveExerciseAdaptation', () => {
   it('lets user overrides win over keyword defaults', () => {
     expect(resolveExerciseAdaptation('Box Jump', { 'box jump': 'strength' })).toBe('strength')
   })
+
+  // `hop` / `jump` match whole words only, and rope skipping is conditioning —
+  // a chop or a skip must not become a power set (roadmap 039 S4).
+  it('keeps chops, jumping jacks and jump rope out of power', () => {
+    expect(resolveExerciseAdaptation('Cable Woodchop')).toBeNull()
+    expect(resolveExerciseAdaptation('Jumping Jacks')).toBeNull()
+    expect(resolveExerciseAdaptation('Jump Rope')).toBeNull()
+  })
+
+  it('still tags hops, jumps and clapping push-ups as power', () => {
+    expect(resolveExerciseAdaptation('Skater Hop')).toBe('power')
+    expect(resolveExerciseAdaptation('Skater Hops')).toBe('power')
+    expect(resolveExerciseAdaptation('Jump Back Squat')).toBe('power')
+    expect(resolveExerciseAdaptation('Clapping Push-up')).toBe('power')
+  })
 })
 
 // ── buildMuscleStatusTree ─────────────────────────────────────────────────────
