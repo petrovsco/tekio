@@ -2,8 +2,9 @@
 
 **Label:** feature
 **Status:** in progress — S1–S8 and S12 blocks and code units shipped
-(v1.16.4); S9 + S10 running as two parallel scouts since 2026-09-03; then S11,
-then §6.5 step 3 closes the brief. Gates
+(v1.16.4); S10's block and unit shipped and S9's block landed with its unit
+pending (v1.16.6, 2026-09-03) — **next: the S9 unit** (§6.7), then S11, then
+§6.5 step 3 closes the brief. Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -40,6 +41,13 @@ row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
   [grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)
   and §6's handoffs folded into this log (v1.16.5); S9 + S10 dispatched as
   two parallel scouts; Rhonda Patrick added to the scout roster's cardio row.
+- **2026-09-03 (late)** — S9 + S10 back from two parallel scouts (≈170k
+  tokens / 8–13 min each; every PMID resolved on first check). S10 unit shipped
+  (v1.16.6): `ADAPTATION_PRINCIPLE` two camps → three (D25), the reference
+  card's attribution → a taxonomy credit (D26), row 3.10, rows 3.7 / 3.8's
+  copied columns corrected; the reference card browser-checked (all S6–S10
+  strings render, one pre-existing 404 in the console). S9's block landed
+  verified with its decision pending — the unit is the next session's.
 
 ---
 
@@ -193,7 +201,7 @@ The blocks live in
 — one `###` per scout run, pasted verbatim on receipt after the citation check
 (`eutils esummary`; Crossref for the papers outside PubMed), each closing with
 the **Decision** paragraph the ledger rows cite. Landed: S1, S2, S3, S12, S4,
-S5, S6, S7, S8. In flight: S9, S10. To run: S11. Moved out of this file on
+S5, S6, S7, S8, S10, and S9 as a block only (its unit is next). To run: S11. Moved out of this file on
 2026-09-03 so a session picking the brief up reads the plan, not 800 lines of
 evidence; the source comments in `src/` and the inventory link to the new file.
 
@@ -539,14 +547,26 @@ one pair fills a session either way. A subagent's block is the last
 assistant text in its JSONL transcript; a 40-line extractor saves retyping
 it.
 
-**Debt carried:** the reference card ("How to train each adaptation",
-collapsed on Home) has not been screenshot since S6 — its S6, S7 and S8
-strings (`40–60% 1RM`; `4–8 rounds`, `1:1–1:4`; the Helgerud cue and the
-even-pace effort) are unverified in the browser. Check it with the S9 + S10
-unit.
+**Browser check 2026-09-03 (S10 unit):** the reference card on the
+Adaptations tab renders every S6–S10 string (`40–60% 1RM`; `4–8 rounds`,
+`1:1–1:4`; the Helgerud cue and even-pace effort; the three-camp principle;
+the taxonomy credit) — text check plus screenshot; the only console error is
+a pre-existing 404. The S6–S8 debt is cleared.
 
-**Next:** S9 + S10 blocks (running as two scouts) — S9 settles the Zone 2
-band, the 30-min bout floor and the cue's two mechanistic claims; S10 grounds
-`ADAPTATION_PRINCIPLE` and settles the reference card's attribution line
-(true for "Galpin's 3–5 rule", false for Helgerud's 4×4 — per-cue provenance
-or a rewritten line). Then S11 alone, then §6.5 step 3 closes the brief.
+**Next — the S9 unit** (block already in the grounding file, decision
+pending; scout's verdict: partially supported). Steps: (1) write the
+**Decision** paragraph — load, reps, sets, rest and effort unchanged, `reps`
+(`30 min–hours`) labelled convention (ACSM's daily dose used as a per-bout
+floor, fork 2); cue → *"Talk-test pace: full sentences, a little strained.
+Minutes are the dose; hard intervals build mitochondria too."* (forks 3–4:
+nasal breathing is a ventilation ceiling that moves with practice and was
+never tested against LT1; mitochondria and fat oxidation are not distinctive
+to Zone 2); no %HRmax printed on purpose (fork 1, [005](005-hr-zone-intensity-classification.md)'s
+question). (2) Ledger rows D27 (cue claim 1 replaced by the talk test), D28
+(cue claim 2 reworded to volume), D29 (30-min floor kept as convention) —
+*before* the constant is edited. (3) `rx.endurance` in `adaptations.ts`:
+the block's source comment (path → `docs/grounding/039-adaptations-read.md#grounding`)
+plus the cue string. (4) Inventory row 3.9 → carrier 039 S9, `grounded
+(partially supported — cue moved)`, an "Updated … S9 unit" note.
+(5) Tests, build, screenshot the endurance row of the reference card, patch
+bump, commit. Then S11 alone, then §6.5 step 3 closes the brief.

@@ -28,8 +28,10 @@ export function AdaptationGuide() {
               <AdaptationRxTable rx={a.rx} />
             </div>
           ))}
+          {/* A taxonomy credit only — the blanket attribution was false for four of the
+              protocols above (039 S10, ledger D26); named protocols carry their author. */}
           <p className="text-[10px] text-muted italic">
-            Based on the Huberman Lab × Dr. Andy Galpin guest series on physical adaptations.
+            Seven adaptations after Dr. Andy Galpin (Huberman Lab guest series, 2023). Each prescription is sourced separately; named protocols carry their author.
           </p>
         </div>
       )}

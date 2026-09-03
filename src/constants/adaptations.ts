@@ -334,9 +334,23 @@ export const ADAPTATION_MAP: Record<Adaptation, AdaptationMeta> = Object.fromEnt
 ) as Record<Adaptation, AdaptationMeta>
 
 /** Cross-cutting principle shown at the top of the reference card. */
+// ADAPTATION_PRINCIPLE — three camps, not two. Quality (power, strength): fatigue in the set costs power and RFD per
+// % velocity loss (Jukic 2023; Pareja-Blanco 2017, 2020) and strength gains are flat across RIR — failure is
+// unnecessary, not harmful (Robinson 2024; Grgic 2022; Davies 2016; Vieira 2021) — so "stop short of failure", not
+// "never"; rest > 2 min in trained lifters (Grgic 2018). Effort (hypertrophy, muscular endurance, anaerobic): volume
+// is the dose (Schoenfeld 2017; Pelland 2026), proximity to failure a modest slope that matters at light loads
+// (Refalo 2023; Lasevicius 2022); anaerobic is all-out (Tabata 1996; Hall 2023). Rest is not the divider — > 60–90 s
+// also grows more muscle (Singer 2024; Schoenfeld 2016). Pace (VO2max, endurance): hardest even pace across reps
+// (Seiler 2013; Helgerud 2007), and ~80 % of endurance time easy (Seiler 2010; Stöggl 2014) — "push effort" was
+// wrong for both. Framing: Galpin's "intensity drives strength/power, volume drives hypertrophy" (Huberman Lab guest
+// series pt 2, 2023; ep. 65, 2022) on Zatsiorsky's three methods and the NSCA rest table; Israetel's efficiency-vs-
+// stimulus is the same split. Nobody extends it to cardio — the seven-quality line is Tekiō's (039 S10).
+// See docs/grounding/039-adaptations-read.md#grounding
+// Two camps → three on 2026-09-03 (039 S10 forks 1–3, ledger D25); the card's attribution line is D26.
 export const ADAPTATION_PRINCIPLE =
-  'Power · Strength are quality-driven — never train to fatigue, rest fully. ' +
-  'Hypertrophy → Endurance are volume/fatigue-driven — accumulate work and push effort.'
+  'Power · Strength are quality-driven — heavy or fast, rest fully, stop short of failure. ' +
+  'Hypertrophy · Muscular endurance · Anaerobic are effort-driven — accumulate hard sets, close to failure or all-out. ' +
+  'VO₂max · Endurance are pace-driven — the hardest even pace you can repeat, or easy on purpose.'
 
 /**
  * Keyword → adaptation defaults for exercises whose quality can’t be read from
