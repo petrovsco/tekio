@@ -3,7 +3,7 @@
 **Label:** backlog
 **Status:** backlog — parked on purpose. Revisit once the Adaptations read has
 been rebuilt ([031](031-adaptations-drill-down-read.md)) and grounded
-([039](039-adaptations-read-grounding.md)) and the page has been lived with long
+([039](done/039-adaptations-read-grounding.md)) and the page has been lived with long
 enough to say whether a flat seven-way read feels wrong in practice.
 **Depends:** 031, 039
 

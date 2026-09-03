@@ -4,7 +4,7 @@
 **Status:** done — shipped 2026-09-03 (v1.15.0): 14 scout-named exercises
 added and linked, 14 logged-but-unmapped exercises linked, the Weights picker
 reads the catalogue. Created the same day from
-[039](../039-adaptations-read-grounding.md) runs S1 and S4.
+[039](039-adaptations-read-grounding.md) runs S1 and S4.
 **Release:** 2.0.0
 
 ---

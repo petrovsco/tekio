@@ -5,7 +5,7 @@
 every row in §2 in one interactive pass; 12 links moved to level 2, the
 duplicate Face Pull exercise was merged into Face Pulls, and `LEVEL_WEIGHT[3]`
 is now 0. Created 2026-09-02 from
-[039](../039-adaptations-read-grounding.md) scout run S1.
+[039](039-adaptations-read-grounding.md) scout run S1.
 **Release:** 2.0.0
 
 ---

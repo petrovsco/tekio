@@ -1,7 +1,7 @@
 # Roadmap: Cross-adaptation set/rep classification — TBC
 
 **Label:** backlog
-**Status:** blocked — decided 2026-09-02 and shipping inside [039 §6.0](039-adaptations-read-grounding.md): rep bands overlap and a set counts in full toward every quality whose band covers it (no fractional bleed, no weighting curve). Rows 2.1–2.3 and 2.6 are grounded there; this brief moves to `done/` when 039 lands.
+**Status:** done — decided and shipped inside [039 §6.0](039-adaptations-read-grounding.md) (classifier v1.13.0, band edges v1.16.8, closed 2026-09-03): rep bands overlap and a set counts in full toward every quality whose band covers it (no fractional bleed, no weighting curve). Rows 2.1–2.3 and 2.6 are grounded there.
 **Depends:** 039
 **Kickoff:** start a fresh session with this file as the brief.
 

@@ -1,8 +1,9 @@
 # Roadmap: Adaptations tab — the drill-down read
 
 **Label:** feature
-**Status:** blocked — waiting on [039](039-adaptations-read-grounding.md).
-Rescoped 2026-09-02 from a restyle into a rebuild: the page's composition is the
+**Status:** planned — unblocked 2026-09-03: 019, 026 and
+[039](done/039-adaptations-read-grounding.md) have all landed. Rescoped
+2026-09-02 from a restyle into a rebuild: the page's composition is the
 problem, not its paint.
 **Depends:** 019, 026, 039
 **Release:** 2.0.0
@@ -16,7 +17,7 @@ problem, not its paint.
   both landed.
 - **2026-09-02** — rescoped. Restyling the current composition would have
   preserved the thing that makes the page confusing. Grounding split out into
-  [039](039-adaptations-read-grounding.md), which now gates this brief. The
+  [039](done/039-adaptations-read-grounding.md), which now gates this brief. The
   restyle is still in here — a rebuilt page is written in the SIGNAL language by
   construction, so [033](033-retire-old-design-language.md)'s dependency is
   satisfied either way.
@@ -49,7 +50,7 @@ help interrogate an adaptation is not part of the read.
    behind a disclosure, so comparing two adaptations means opening one, closing
    it, opening another. The spatial thing is buried inside the non-spatial thing.
 2. **MUSCLE COVERAGE · THIS WEEK earns nothing.** It restates Home's map in a
-   third dialect (see [039 §1](039-adaptations-read-grounding.md)) with no
+   third dialect (see [039 §1](done/039-adaptations-read-grounding.md)) with no
    target behind its bars, and it is the *only* consumer of
    `MuscleCoverageCard.tsx` — so cutting it from the page deletes the component.
 3. **Per-adaptation rainbow hues** break design-system §1 (colour carries one
@@ -69,7 +70,7 @@ two adaptations becomes one tap, which is the whole point of a drill-down.
 
 Reuses the existing `GapMap` / `BodyMap` geometry and the SIGNAL ink ramp, so
 the picture rhymes with Home instead of arguing with it. **What the ramp is
-denominated in is [039](039-adaptations-read-grounding.md)'s decision** — that is
+denominated in is [039](done/039-adaptations-read-grounding.md)'s decision** — that is
 why this brief waits.
 
 Two affordances live on the selected adaptation, not on seven separate cards:
@@ -133,13 +134,13 @@ Whether it survives as a hero or shrinks to a header line is a build decision.
 
 ## 4. Out of scope
 
-- **The numbers' meaning** — [039](039-adaptations-read-grounding.md). This brief
+- **The numbers' meaning** — [039](done/039-adaptations-read-grounding.md). This brief
   draws what that one decides.
 - **Target values and shapes** — [012](012-adaptation-target-shapes.md). If 012
   lands first the units shown here follow it; neither blocks the other's kickoff.
 - **User-set adaptation goals** — [040](040-adaptation-goals.md), backlog.
-- **Classifier changes** — [001](001-cross-adaptation-rep-ranges.md),
-  [005](005-hr-zone-intensity-classification.md).
+- **Classifier changes** — [001](done/001-cross-adaptation-rep-ranges.md)
+  (retired — decided inside 039), [005](005-hr-zone-intensity-classification.md).
 
 ## 5. Doctrine check (§4)
 

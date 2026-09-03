@@ -1,15 +1,15 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — all twelve blocks and code units shipped (S11, the
-rep-band edges, v1.16.8, 2026-09-03) — **next: §6.5 step 3 closes the brief**
-(tick §5, move to `done/`, retire 001, unblock 031). Gates
-[031](031-adaptations-drill-down-read.md); retires
-[001](001-cross-adaptation-rep-ranges.md).
+**Status:** done — closed 2026-09-03 (v1.16.9): the twelve scout blocks live in
+[grounding/039-adaptations-read.md](../../grounding/039-adaptations-read.md#grounding),
+the code units shipped v1.13.0–v1.16.8, [001](001-cross-adaptation-rep-ranges.md)
+retired inside this brief and [031](../031-adaptations-drill-down-read.md) set
+to `planned`.
 **Depends:** 019
 **Release:** 2.0.0
 **Covers inventory rows:** 2.1, 2.2, 2.3, 2.6, 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
-[grounding-inventory.md](../grounding-inventory.md), plus one number that has no
+[grounding-inventory.md](../../grounding-inventory.md), plus one number that has no
 row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
 
 ## Progress log
@@ -21,11 +21,11 @@ row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
   `WEEKLY_SET_FLOOR` created, `CYCLE_SET_TARGET` derived from it, power sets
   out of `total`.
 - **2026-09-03** — S1's level-3 zeroing shipped via
-  [done/042](done/042-level-3-link-audit.md) (v1.14.0). S12 + S4 blocks
+  [done/042](042-level-3-link-audit.md) (v1.14.0). S12 + S4 blocks
   (v1.14.1). Unit S12 (v1.16.0): `MUSCLE_WINDOW_DAYS = 14` replaces
   `CYCLE_WINDOW_DAYS`, rows 7.7 / 7.8, D14. Unit S4 (v1.16.1): power `rx`
   split in words, `hop` / `jump` whole-word + `NOT_POWER`, `clapping`, rows
-  2.6 / 3.3 / 7.5, D15–D17. [done/043](done/043-scout-named-exercises-catalogue.md)
+  2.6 / 3.3 / 7.5, D15–D17. [done/043](043-scout-named-exercises-catalogue.md)
   put the scout-named exercises in the catalogue.
 - **2026-09-03 (evening)** — S5–S8 dispatched as a batch of four; all died on
   `529 Overloaded` after two resumes each; nothing landed (v1.16.2).
@@ -37,7 +37,7 @@ row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
   1:2 → 1:1 (D21–D22); "Classic 4×4" → "Helgerud's 4×4" and the effort
   reworded (D23–D24); acceptance box 3 closed; rows 3.7 / 3.8 (v1.16.4).
 - **2026-09-03** — the nine landed blocks moved to
-  [grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)
+  [grounding/039-adaptations-read.md](../../grounding/039-adaptations-read.md#grounding)
   and §6's handoffs folded into this log (v1.16.5); S9 + S10 dispatched as
   two parallel scouts; Rhonda Patrick added to the scout roster's cardio row.
 - **2026-09-03 (late)** — S9 + S10 back from two parallel scouts (≈170k
@@ -60,6 +60,8 @@ row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
   overlap at 5 and 15–30. Source comments on the three `repRange`s, the
   classifier and invariant tests moved with them, rows 2.1–2.3 grounded,
   acceptance boxes 4 and 6–8 closed (v1.16.8).
+- **2026-09-03 (close)** — §6.5 step 3: every §5 box already ticked; this brief
+  and 001 moved to `done/`, 031 set to `planned`, links repointed (v1.16.9).
 
 ---
 
@@ -70,7 +72,7 @@ Home's five-second answer. A read is only worth building if its numbers mean
 something. Right now the page shows three different answers to the same
 question and about thirty-five prescription numbers that nobody has checked.
 
-**This brief settles the meanings. [031](031-adaptations-drill-down-read.md)
+**This brief settles the meanings. [031](../031-adaptations-drill-down-read.md)
 then draws them.** In that order, for the same reason 031 already waited for
 019: repainting a number that is about to change its denominator is throwaway
 work.
@@ -83,9 +85,9 @@ All three ship today. Two of them are on this tab.
 
 | Where | Function | Window | Denominator | Split by adaptation? |
 |---|---|---|---|---|
-| Home's body map | `muscleStates` ([fusedRead.ts:57](../../src/lib/fusedRead.ts#L57)) | rolling **42 days** (`CYCLE_WINDOW_DAYS`) | `CYCLE_SET_TARGET` = **60** weighted sets | no — one total |
-| Adaptations tab, per-adaptation body map | `adaptationCoverage` ([lib/adaptations.ts](../../src/lib/adaptations.ts)) | **week-to-date** | that adaptation's `weeklyMuscleTarget` (6 / 6 / 10 / 6) | yes |
-| Adaptations tab, MUSCLE COVERAGE card | `muscleCoverage` ([utils.ts](../../src/lib/utils.ts)) | **week-to-date** | none — bars are relative to the busiest muscle | no |
+| Home's body map | `muscleStates` ([fusedRead.ts:57](../../../src/lib/fusedRead.ts#L57)) | rolling **42 days** (`CYCLE_WINDOW_DAYS`) | `CYCLE_SET_TARGET` = **60** weighted sets | no — one total |
+| Adaptations tab, per-adaptation body map | `adaptationCoverage` ([lib/adaptations.ts](../../../src/lib/adaptations.ts)) | **week-to-date** | that adaptation's `weeklyMuscleTarget` (6 / 6 / 10 / 6) | yes |
+| Adaptations tab, MUSCLE COVERAGE card | `muscleCoverage` ([utils.ts](../../../src/lib/utils.ts)) | **week-to-date** | none — bars are relative to the busiest muscle | no |
 
 Three windows, three denominators, one silhouette. A muscle can read dark on
 Home and pale one tap later, and both are "correct". That is the confusion the
@@ -94,7 +96,7 @@ page has, and no amount of restyling removes it.
 **A finding worth keeping:** `CYCLE_SET_TARGET = 60` is documented in its own
 comment as *"10 fractional sets/muscle/week × 6-wk cycle"* — that is the
 **hypertrophy** volume band (Schoenfeld 2017, Pelland 2026, Baz-Valle 2022,
-grounded in [010 §Grounding](done/010-home-fused-reads.md#grounding)). So Home's
+grounded in [010 §Grounding](010-home-fused-reads.md#grounding)). So Home's
 map is not a neutral total-stimulus read: it is denominated in hypertrophy and
 labelled as though it were adaptation-agnostic. That may still be the right
 default — hypertrophy is the volume-hungriest of the four — but it is a claim,
@@ -132,7 +134,7 @@ parked:
 |---|---|---|---|
 | 7.1, 7.4, 7.5 | `LEVEL_WEIGHT` (a level-2 muscle gets half a set), the 5 mobility-min target, and the on-track/needs-work/untouched cut | `home-fused-reads` **(due)** | 010 shipped and is in `done/`. These rows point at a brief that will never run again |
 | 3.3, 3.4, 3.6, 3.10 | Power / strength / muscular-endurance `rx` prose and `ADAPTATION_PRINCIPLE` | `cross-adaptation-rep-ranges` | [001](001-cross-adaptation-rep-ranges.md) is `backlog` and is about a *different* question — whether classification should be fuzzy |
-| 3.7, 3.8, 3.9 | Anaerobic / VO₂max / endurance `rx` prose | `hr-zone-intensity-classification` | [005](005-hr-zone-intensity-classification.md) is about *classifier thresholds*, not the prescriptions the page prints |
+| 3.7, 3.8, 3.9 | Anaerobic / VO₂max / endurance `rx` prose | `hr-zone-intensity-classification` | [005](../005-hr-zone-intensity-classification.md) is about *classifier thresholds*, not the prescriptions the page prints |
 | — | `CYCLE_SET_TARGET` = 60 | — | **Has no inventory row at all**, despite being the denominator of the whole Home map |
 
 Row 7.1 is the sharpest: *"Every muscle-coverage number and the whole BodyMap is
@@ -171,18 +173,18 @@ keeps that text — behind an icon, but still on the page.
 3. **Repoint the inventory** in the same change — rows 3.3–3.10 and 7.1/7.4/7.5
    name this brief as their carrier, verdicts updated, and a new row created for
    `CYCLE_SET_TARGET`. No TODOs left in the index (the rule
-   [019](done/019-adaptation-model-simplification.md) followed).
+   [019](019-adaptation-model-simplification.md) followed).
 
 **Out:**
 
 - **Target *values*** — 1.2–1.9 are already grounded or `convention` in
-  [011](done/011-adaptation-weekly-targets.md); their *shapes* belong to
-  [012](012-adaptation-target-shapes.md). Do not re-run the scout on them.
+  [011](011-adaptation-weekly-targets.md); their *shapes* belong to
+  [012](../012-adaptation-target-shapes.md). Do not re-run the scout on them.
 - ~~Rep-range boundaries and fuzzy classification — 001~~ **Pulled in
   2026-09-02** (§6.0): 001's question is decided by this brief.
 - **Cardio classifier thresholds** (rows 6.1–6.5, the ≥25/≥8 min heuristic, the
-  TE cutoff) — [005](005-hr-zone-intensity-classification.md).
-- **Any pixel of the redesign** — [031](031-adaptations-drill-down-read.md).
+  TE cutoff) — [005](../005-hr-zone-intensity-classification.md).
+- **Any pixel of the redesign** — [031](../031-adaptations-drill-down-read.md).
 
 The split to hold in mind: **039 grounds what the page *displays* and how a
 resistance set *classifies*; 005 grounds how cardio *classifies*.**
@@ -209,7 +211,7 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 ## Grounding
 
 The blocks live in
-**[grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)**
+**[grounding/039-adaptations-read.md](../../grounding/039-adaptations-read.md#grounding)**
 — one `###` per scout run, pasted verbatim on receipt after the citation check
 (`eutils esummary`; Crossref for the papers outside PubMed), each closing with
 the **Decision** paragraph the ledger rows cite. Landed: all twelve, each with its unit (S11 last, 2026-09-03). Moved out of this file on
@@ -224,7 +226,7 @@ evidence; the source comments in `src/` and the inventory link to the new file.
       losing dialect(s) deleted from the code. (2026-09-02, v1.13.0 — §6.1
       option (a); `muscleCoverage` and its card are gone.)
 - [x] A `## Grounding` section exists here (its blocks in
-      [grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding))
+      [grounding/039-adaptations-read.md](../../grounding/039-adaptations-read.md#grounding))
       carrying verdicts for rows 7.1, 7.5,
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
       (2026-09-03, v1.16.7 — S1–S10 and S12 landed with decisions; S11's rep
@@ -329,9 +331,9 @@ thing that stays plural, and it is named on screen.
 
 | Today | Under (a) |
 |---|---|
-| `muscleStates` ([fusedRead.ts:57](../../src/lib/fusedRead.ts#L57)) — its own loop, 42 d, all sets, ÷ `CYCLE_SET_TARGET` | Built on the shared function; window = rolling `CYCLE_WINDOW_DAYS` (→ `MUSCLE_WINDOW_DAYS`, §6.6); `sets` = the sum of the four muscle-linked qualities (→ the three hard ones, S3) |
-| `adaptationCoverage` ([lib/adaptations.ts:159](../../src/lib/adaptations.ts#L159)) — its own loop, week-to-date, per adaptation, + a habit fold | Built on the shared function; window = calendar week-to-date; per adaptation; **habit fold dropped** (doctrine §5 already ruled: the muscle read counts logged sets only — the `habits` / `habitCompletions` / `exerciseNames` args go, and so do the two habit tests in `adaptations.test.ts`) |
-| `muscleCoverage` ([utils.ts:558](../../src/lib/utils.ts#L558)) — week-to-date, no target, + recovery minutes, + habits | **Deleted**, with `MuscleCoverageRow`, `MuscleCoverageCard.tsx` (its only consumer), its `<MuscleCoverageCard />` line in `AdaptationsTab.tsx`, and the `muscleCoverage` block in `habits.test.ts`. `habitMuscleContributions` and `recoveryHabitSets` in utils.ts are then used only by tests — delete them too (035 was going to) |
+| `muscleStates` ([fusedRead.ts:57](../../../src/lib/fusedRead.ts#L57)) — its own loop, 42 d, all sets, ÷ `CYCLE_SET_TARGET` | Built on the shared function; window = rolling `CYCLE_WINDOW_DAYS` (→ `MUSCLE_WINDOW_DAYS`, §6.6); `sets` = the sum of the four muscle-linked qualities (→ the three hard ones, S3) |
+| `adaptationCoverage` ([lib/adaptations.ts:159](../../../src/lib/adaptations.ts#L159)) — its own loop, week-to-date, per adaptation, + a habit fold | Built on the shared function; window = calendar week-to-date; per adaptation; **habit fold dropped** (doctrine §5 already ruled: the muscle read counts logged sets only — the `habits` / `habitCompletions` / `exerciseNames` args go, and so do the two habit tests in `adaptations.test.ts`) |
+| `muscleCoverage` ([utils.ts:558](../../../src/lib/utils.ts#L558)) — week-to-date, no target, + recovery minutes, + habits | **Deleted**, with `MuscleCoverageRow`, `MuscleCoverageCard.tsx` (its only consumer), its `<MuscleCoverageCard />` line in `AdaptationsTab.tsx`, and the `muscleCoverage` block in `habits.test.ts`. `habitMuscleContributions` and `recoveryHabitSets` in utils.ts are then used only by tests — delete them too (035 was going to) |
 
 **The shared function** — new, in `src/lib/adaptations.ts` (fusedRead already
 imports from there):
@@ -370,15 +372,15 @@ The DB shadow (inventory 1.11) means the tab reads `adaptation_targets` while
 Home reads the constant; they are byte-identical today. Note it, do not fix it.
 
 **The ramp.** Home colours by continuous `fillFraction`
-([GapMap.tsx:16-21](../../src/components/tabs/home/GapMap.tsx#L16), cutoff 0.70);
-the tab colours by the three-step `status` ([lib/adaptations.ts:146](../../src/lib/adaptations.ts#L146)).
+([GapMap.tsx:16-21](../../../src/components/tabs/home/GapMap.tsx#L16), cutoff 0.70);
+the tab colours by the three-step `status` ([lib/adaptations.ts:146](../../../src/lib/adaptations.ts#L146)).
 Add `fillFraction` to `MuscleStatusRow` so 031 can draw one ramp; whether
 `status` survives is the row-7.5 scout's call.
 
 **On-screen window labels** already exist on Home (`"N sets in 42 days"`,
 `"42-day cycle · target 60"`) and on the tab (`"This Week"`). The
 `<strong>PLACEHOLDER</strong>` after `target {CYCLE_SET_TARGET}` in
-[MuscleSheet.tsx:161](../../src/components/tabs/home/MuscleSheet.tsx#L161) is the
+[MuscleSheet.tsx:161](../../../src/components/tabs/home/MuscleSheet.tsx#L161) is the
 mark 018 left for exactly this brief's verdict — replace it when the block lands.
 
 ### 6.2 Row 7.4 is retired, not grounded
@@ -399,9 +401,9 @@ or still to dispatch, so a dead run can be re-issued from here:
 
 | # | Row | Claim to hand the scout | Constant · value |
 |---|---|---|---|
-| S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../src/constants/adaptations.ts#L251) |
-| S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../src/constants/adaptations.ts#L268) |
-| S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:108](../../src/constants/adaptations.ts#L108), [:158](../../src/constants/adaptations.ts#L158), [:186](../../src/constants/adaptations.ts#L186) |
+| S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../../src/constants/adaptations.ts#L251) |
+| S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../../src/constants/adaptations.ts#L268) |
+| S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:108](../../../src/constants/adaptations.ts#L108), [:158](../../../src/constants/adaptations.ts#L158), [:186](../../../src/constants/adaptations.ts#L186) |
 
 Hypertrophy's `rx` (row 3.5) is **out**: grounded in 011 and locked to the
 target (D3). Do not re-run it.
@@ -416,7 +418,7 @@ carries no attribution at all today.
 ### 6.4 Landing the blocks — the four `/ground` destinations
 
 1. **The grounding file**
-   ([grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)):
+   ([grounding/039-adaptations-read.md](../../grounding/039-adaptations-read.md#grounding)):
    paste every block verbatim under its `## Grounding`, one `###` per run,
    and end each with a **Decision** paragraph; this brief's own `## Grounding`
    is a pointer. The file stays where it is when the brief retires, so nothing
@@ -425,7 +427,7 @@ carries no attribution at all today.
 2. **The constants:** source comments on `LEVEL_WEIGHT`, `WEEKLY_SET_FLOOR`,
    `MUSCLE_WINDOW_DAYS`, each `rx` block and `ADAPTATION_PRINCIPLE`, every one
    pointing at `docs/grounding/039-adaptations-read.md#grounding`.
-3. **The inventory** ([grounding-inventory.md](../grounding-inventory.md)):
+3. **The inventory** ([grounding-inventory.md](../../grounding-inventory.md)):
    rows 2.1–2.3, 2.6, 3.3, 3.4, 3.6–3.10, 7.1, 7.5 → carrier `039`, verdict updated, and the
    `Where` line numbers refreshed (7.1 says `utils.ts:479`, now 490; 7.5 says
    `lib/adaptations.ts:135-139`, now 146-150 — both move again after §6.1).
@@ -465,7 +467,7 @@ Each unit build-passes on its own; commit and push after each.
 3. **Close:** tick §5, move this file to `done/` (the grounding file and the source
    comments stay put), move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
-   the inventory), and set [031](031-adaptations-drill-down-read.md) to
+   the inventory), and set [031](../031-adaptations-drill-down-read.md) to
    `planned` (019, 026, 039 all landed). Patch bump.
 
 ### 6.6 Amendment 2026-09-03 — the muscle window leaves the program cycle
@@ -478,9 +480,9 @@ timings; do the same for muscles, so it is (1) easy to follow — we live in
 weeks — and (2) grounded. I don't push on the 60-set cycle.*
 
 **What the read hangs on today.** `CYCLE_WINDOW_DAYS = CYCLE × 7`
-([fusedRead.ts:25](../../src/lib/fusedRead.ts#L25), 42 days) and
+([fusedRead.ts:25](../../../src/lib/fusedRead.ts#L25), 42 days) and
 `CYCLE_SET_TARGET = WEEKLY_SET_FLOOR × CYCLE`
-([app.ts:99](../../src/constants/app.ts#L99), 60). `CYCLE` is the program's
+([app.ts:99](../../../src/constants/app.ts#L99), 60). `CYCLE` is the program's
 cycle length — the constant `cycleInfo` and the deload logic run on. Neither
 the 42 nor the 60 was ever grounded: S3 ruled on the *rate* (10 hard sets per
 muscle per week) and on the pooling; the 60 is that rate times a program length

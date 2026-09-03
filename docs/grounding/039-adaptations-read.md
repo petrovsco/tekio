@@ -2,7 +2,7 @@
 
 Reference only: this file states what the evidence *is*. It holds the verbatim
 `## Grounding` blocks the science-scout runs of
-[roadmap 039](../roadmap/039-adaptations-read-grounding.md) returned — one
+[roadmap 039](../roadmap/done/039-adaptations-read-grounding.md) returned — one
 `###` per run, S1–S12, in landing order — each pasted after its citations were
 checked through NCBI eutils or Crossref, and each closing with the **Decision**
 paragraph the run forced. What every decision changed is recorded in the brief
