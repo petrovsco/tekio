@@ -105,6 +105,12 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     color: '#ef4444',
     summary: 'Maximal force production',
     modality: 'resistance',
+    // repRange [1, 5] — kept 2026-09-03 (039 S11, ledger D32), now OVERLAPPING hypertrophy at 5: a 5-rep set is one
+    // strength set and one hypertrophy set (Campos 2002 — one 3–5 RM set fed both). A band counts a set in full toward
+    // each quality that covers it (039 §6.0). The hi edge 5 is a convention inside a grounded 5–8 band: 1RM gain is
+    // monotonic in load, the meta-analytic high-load bin ends at ≤7–8 RM (Carvalho 2022; Lopez 2021; Currier 2023) and
+    // every zone statement at 5–6 (ACSM 2009 1–6 RM; Galpin ≤5; Israetel 3–6); 5 not 8 so a 6–8-rep week reads as a
+    // strength gap. See docs/grounding/039-adaptations-read.md#grounding
     repRange: [1, 5],
     /**
      * 6 — DERIVED, not published. No source gives a weekly per-muscle set target
@@ -155,7 +161,13 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     color: '#6366f1',
     summary: 'Muscle growth',
     modality: 'resistance',
-    repRange: [6, 15],
+    // repRange [6, 15] → [5, 30] on 2026-09-03 (039 S11, ledger D30). Growth per hard set is load-independent from ~30 %
+    // 1RM (≈30–35 reps to failure) up to ≥80 % (Lasevicius 2018, 2022; Schoenfeld 2017; Lopez 2021), and 3–5 RM sets grow
+    // muscle when volume suffices (Schoenfeld 2014) though under-delivering per set at 2–4 RM (Schoenfeld 2016); 5–30 is
+    // Galpin's and Israetel's band. Edges are conventions inside grounded bands (lo 3–6, hi 25–35). The 30 edge assumes
+    // hard sets (S3): a 20-rep set far from failure grew 2.8 %, ns (Lasevicius 2022). Overlaps strength at 5 and muscular
+    // endurance at 15–30. See docs/grounding/039-adaptations-read.md#grounding
+    repRange: [5, 30],
     /**
      * 10 — grounded, and the only one of the five with a direct, replicated
      * per-muscle weekly threshold (ACSM 2026 "≥10 sets/week"; Schoenfeld 2017
@@ -183,7 +195,13 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     color: '#14b8a6',
     summary: 'Resistance to local muscle fatigue',
     modality: 'resistance',
-    repRange: [16, 999],
+    // repRange [16, 999] → [15, 999] on 2026-09-03 (039 S11, ledger D31). ≥15 reps beat 7–13 for relative local endurance
+    // (Hackett 2022 meta-analysis, g = 0.97 at post-training 1RM); ACSM 2009 says >15; the trained bands that produced the
+    // advantage were 20–28 and 25–35 RM (Campos 2002; Schoenfeld 2015). 15 not 16 because ≥15 is the cut that was tested;
+    // not Galpin's test-based 5 (every set would be an endurance set) nor Huberman's 12 — the lo edge is a convention
+    // inside a 12–20 band. Reps proxy load; a 15–30-rep set is also a hypertrophy set.
+    // See docs/grounding/039-adaptations-read.md#grounding
+    repRange: [15, 999],
     /**
      * 6 — convention only. Local muscular endurance is dosed by load and reps,
      * not weekly sets, in both the 2009 and 2026 ACSM position stands. Value

@@ -1,10 +1,9 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — S1–S10 and S12 blocks and code units shipped
-(v1.16.7, 2026-09-03); S11 (the rep-band edges) was dispatched and lost to the
-session limit — **next: re-run S11** (§6.3 claim, §6.7 recipe), then §6.5
-step 3 closes the brief. Gates
+**Status:** in progress — all twelve blocks and code units shipped (S11, the
+rep-band edges, v1.16.8, 2026-09-03) — **next: §6.5 step 3 closes the brief**
+(tick §5, move to `done/`, retire 001, unblock 031). Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -55,6 +54,12 @@ row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
   dispatched alone — the round's one scout — and lost when the session hit its
   limit before the block came back; the S9 unit was committed by the next
   session, which re-issues S11.
+- **2026-09-03 (S11 unit)** — S11 re-run as one scout (≈146k tokens, 10 min);
+  15 PMIDs + 1 DOI verified. Decision D30–D32: hypertrophy `[5, 30]`,
+  muscular endurance `[15, 999]`, strength `[1, 5]` kept — the bands now
+  overlap at 5 and 15–30. Source comments on the three `repRange`s, the
+  classifier and invariant tests moved with them, rows 2.1–2.3 grounded,
+  acceptance boxes 4 and 6–8 closed (v1.16.8).
 
 ---
 
@@ -207,8 +212,7 @@ The blocks live in
 **[grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)**
 — one `###` per scout run, pasted verbatim on receipt after the citation check
 (`eutils esummary`; Crossref for the papers outside PubMed), each closing with
-the **Decision** paragraph the ledger rows cite. Landed: S1–S10 and S12, each with its unit. To run: S11 (its
-2026-09-03 scout was lost to the session limit; re-issue from §6.3). Moved out of this file on
+the **Decision** paragraph the ledger rows cite. Landed: all twelve, each with its unit (S11 last, 2026-09-03). Moved out of this file on
 2026-09-03 so a session picking the brief up reads the plan, not 800 lines of
 evidence; the source comments in `src/` and the inventory link to the new file.
 
@@ -228,20 +232,25 @@ evidence; the source comments in `src/` and the inventory link to the new file.
 - [x] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
       or no longer ship it. (2026-09-03 — S5 keeps "Galpin's 3–5 rule",
       attributed, D18; S8 renames "Classic 4×4" to "Helgerud’s 4×4", D23.)
-- [ ] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
+- [x] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
       band covers the set; rows 2.1–2.3 and 2.6 carry verdicts here; the
       per-quality sums may exceed a muscle's total and the tab says so on screen.
+      (Classifier and tab line 2026-09-02, v1.13.0; edges `[1, 5]` /
+      `[5, 30]` / `[15, 999]` 2026-09-03, v1.16.8 — S11, D30–D32; 2.6 — S4, D16.)
 - [x] The muscle read's window is its own grounded constant (§6.6, S12), not
       the program's `CYCLE`; `CYCLE_WINDOW_DAYS` and `CYCLE_SET_TARGET` are
       gone and Home names the window and the weekly rate on screen.
       (2026-09-03, v1.16.0 — `MUSCLE_WINDOW_DAYS` / `MUSCLE_SET_TARGET` in
       app.ts, `HISTORY_WEEKS = 6` keeps the sheet's bars as history.)
-- [ ] Every covered inventory row names this brief as its carrier and shows a
+- [x] Every covered inventory row names this brief as its carrier and shows a
       current verdict; `WEEKLY_SET_FLOOR` and `MUSCLE_WINDOW_DAYS` have rows.
-- [ ] Citations verified through NCBI eutils before being pasted, not from a
-      search-result summary.
-- [ ] The app still builds and every existing adaptation test passes; any number
-      that moved is reflected in its test.
+      (2026-09-03, v1.16.8 — rows 2.1–2.3 were the last; 7.4 retired, §6.2.)
+- [x] Citations verified through NCBI eutils before being pasted, not from a
+      search-result summary. (Every block, S1–S12; Crossref for the DOIs
+      outside PubMed — §6.7.)
+- [x] The app still builds and every existing adaptation test passes; any number
+      that moved is reflected in its test. (2026-09-03, v1.16.8 — the
+      classifier and invariant tests carry the S11 edges.)
 
 ---
 
@@ -452,9 +461,7 @@ Each unit build-passes on its own; commit and push after each.
    Then land per §6.4, including any `rx` text the verdicts change (record a
    changed value as a decision *before* editing the constant — `/ground` hard
    rule). Patch bump per pair. **Landed:** S1–S8 and S12 (progress log).
-   **Remaining:** S9 + S10 (in flight), then S11 alone — its band edges are
-   the last value this brief moves, and the final inventory pass owes only
-   rows 2.1–2.3, 3.9 and 3.10.
+   **Remaining:** none — S9, S10 and S11 landed 2026-09-03 (v1.16.6–v1.16.8).
 3. **Close:** tick §5, move this file to `done/` (the grounding file and the source
    comments stay put), move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
@@ -567,10 +574,15 @@ a pre-existing 404. The S6–S8 debt is cleared.
 moved, the source comment and the talk-test cue on `rx.endurance`, row 3.9 →
 carrier 039 S9, the endurance row of the reference card screenshotted.
 
-**Next — S11** (the 2026-09-03 scout was lost to the session limit before its
-block landed; re-issue from §6.3's claim): verify every PMID, paste the block as
-`### S11 — …`, write its **Decision**, then the unit — the three `repRange`
-edges move (ledger row *first*), `classifyWeightSet`'s tests and the
-invariant test move with them, rows 2.1–2.3 → carrier 039 S11, and the tab's
-per-quality maps are browser-checked (expect the hypertrophy map to fill
-from the 16–20-rep sets). Then §6.5 step 3 closes the brief.
+**S11 unit landed 2026-09-03 (v1.16.8)** by the same recipe, after the first
+S11 scout was lost to a session limit and re-issued from §6.3: 15 PMIDs + 1
+DOI verified, block pasted, Decision D30–D32 written before the three
+`repRange` edges moved, the classifier, invariant and `muscleQualityMix`
+tests moved with them, rows 2.1–2.3 → carrier 039 S11. **Browser check:**
+the Adaptations tab's hero counts 45 lifting sets once while the strength /
+hypertrophy / endurance rows read 2 / 44 / 13 — the overlap is live in the
+data, not only in the test — and the hypertrophy card opens to a body map
+with 5 of 6 muscle groups on track (screenshot; the only console error is
+the pre-existing 404).
+
+**Next — §6.5 step 3** closes the brief.

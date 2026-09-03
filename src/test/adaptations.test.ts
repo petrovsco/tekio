@@ -41,14 +41,19 @@ describe('rx prescriptions', () => {
 
 describe('classifyWeightSet', () => {
   it('maps rep ranges to strength / hypertrophy / muscular endurance', () => {
-    // Bands may overlap (roadmap 039 §6.0); at today's disjoint edges each set
-    // lands in exactly one. Outside every edge it snaps to the nearest band.
+    // Bands overlap (roadmap 039 §6.0; edges grounded in S11, ledger D30–D32):
+    // strength [1, 5], hypertrophy [5, 30], muscular endurance [15, 999]. A set
+    // inside an overlap counts in full toward each, in continuum order.
+    // Outside every edge it snaps to the nearest band.
     expect(classifyWeightSet(1)).toEqual(['strength'])
-    expect(classifyWeightSet(5)).toEqual(['strength'])
+    expect(classifyWeightSet(4)).toEqual(['strength'])
+    expect(classifyWeightSet(5)).toEqual(['strength', 'hypertrophy'])
     expect(classifyWeightSet(6)).toEqual(['hypertrophy'])
-    expect(classifyWeightSet(15)).toEqual(['hypertrophy'])
-    expect(classifyWeightSet(16)).toEqual(['muscular_endurance'])
-    expect(classifyWeightSet(30)).toEqual(['muscular_endurance'])
+    expect(classifyWeightSet(14)).toEqual(['hypertrophy'])
+    expect(classifyWeightSet(15)).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet(20)).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet(30)).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet(31)).toEqual(['muscular_endurance'])
     expect(classifyWeightSet(0)).toEqual(['strength'])
     expect(classifyWeightSet(1000)).toEqual(['muscular_endurance'])
   })
@@ -248,16 +253,21 @@ describe('adaptationCoverage', () => {
 
   it('counts each set once in total and once per quality it trains', () => {
     const stim = muscleStimulus(
-      [w('a', '2025-01-02', 'Bench Press', 4, 3), w('b', '2025-01-03', 'Bench Press', 10, 4)],
+      [
+        w('a', '2025-01-02', 'Bench Press', 4, 3),
+        w('b', '2025-01-03', 'Bench Press', 10, 4),
+        w('c', '2025-01-04', 'Bench Press', 20, 2),
+      ],
       links, { from: '2025-01-01', to: '2025-01-07' },
     )
-    expect(stim.total.Chest).toBe(7)
+    // 9 sets of work; the 20-rep sets are hypertrophy AND endurance (S11).
+    expect(stim.total.Chest).toBe(9)
     expect(stim.byQuality.strength.Chest).toBe(3)
-    expect(stim.byQuality.hypertrophy.Chest).toBe(4)
+    expect(stim.byQuality.hypertrophy.Chest).toBe(6)
+    expect(stim.byQuality.muscular_endurance.Chest).toBe(2)
     expect(stim.sets.strength).toBe(3)
     // The overlap invariant (039 §6.0): the per-quality figures bracket the
-    // total. With today's disjoint bands both bounds meet; once the S11 edges
-    // land the upper one may exceed the total. Power sits outside the bracket
+    // total — here max 6 ≤ 9 ≤ sum 11. Power sits outside the bracket
     // (039 S3) — it never enters `total`.
     const hardQualities = MUSCLE_QUALITIES.filter(q => q !== 'power')
     for (const m of Object.keys(stim.total)) {

@@ -224,11 +224,13 @@ describe('muscleQualityMix', () => {
       { id: 'b', date: ago(2), exercise: 'Rows', sets: [{ weight: 60, reps: 20 }, { weight: 60, reps: 20 }] },
       { id: 'c', date: ago(MUSCLE_WINDOW_DAYS), exercise: 'Curls', sets: [{ weight: 50, reps: 3 }] }, // outside
     ]
+    // The 20-rep row sets sit in the hypertrophy/endurance overlap (039 S11),
+    // so they count toward both; at level 2 the pair weighs 1.
     expect(muscleQualityMix(weights, links, 'Biceps', undefined, TODAY)).toEqual({
-      strength: 1, hypertrophy: 1, muscular_endurance: 1, power: 0,
+      strength: 1, hypertrophy: 2, muscular_endurance: 1, power: 0,
     })
     expect(muscleQualityMix(weights, links, 'Biceps', { curls: 'power' }, TODAY)).toEqual({
-      strength: 0, hypertrophy: 0, muscular_endurance: 1, power: 2,
+      strength: 0, hypertrophy: 1, muscular_endurance: 1, power: 2,
     })
   })
 })
