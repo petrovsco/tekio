@@ -11,6 +11,21 @@ import {
   MUSCLE_QUALITIES,
 } from '../lib/adaptations'
 import type { CardioEntry, ExerciseMuscleLink, MuscleGroup, WeightEntry } from '../types'
+import { ADAPTATIONS } from '../constants/adaptations'
+
+// ── rx blocks (grounded values, roadmap 039 S5 + S6) ──────────────────────────
+
+describe('rx prescriptions', () => {
+  const rx = (key: string) => ADAPTATIONS.find(a => a.key === key)!.rx
+  it('keeps the grounded strength and endurance load bands', () => {
+    expect(rx('strength').load).toBe('85–100% 1RM')
+    expect(rx('strength').reps).toBe('3–5')
+    // S6 fork 2: the endurance load is the ACSM 2009 band, so load, reps and
+    // effort describe the same set (a 15 RM is ≈65 % 1RM, not <50 %).
+    expect(rx('muscular_endurance').load).toBe('40–60% 1RM')
+    expect(rx('muscular_endurance').reps).toBe('15–40+')
+  })
+})
 
 // ── classifyWeightSet ─────────────────────────────────────────────────────────
 

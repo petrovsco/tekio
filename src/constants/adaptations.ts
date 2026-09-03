@@ -120,6 +120,25 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
+    /**
+     * rx.strength — heavy loads drive 1RM strength: ≥80 % 1RM in the position
+     * stand (ACSM 2026, Currier) and the network meta-analysis (Currier 2023,
+     * n = 5,097); high > moderate > low load even volume-matched (Lopez 2021,
+     * Carvalho 2022, Schoenfeld 2017). 85–100 % is the floor 3–5 reps at 1–2
+     * RIR implies (a 5–7 RM; NSCA: >85 % for <6 reps) inside that band — do
+     * not "correct" it to 80. Reps 3–5 sit inside ACSM 2009's 1–6 RM
+     * (singles/doubles left out by choice); sets 3–5 inside 2–3 sets/exercise
+     * (ACSM 2026) and the weekly-set dose–response (Ralston 2017). Rest
+     * 2–5 min: >2 min maximises strength in trained lifters (Grgic 2018),
+     * 3–5 min (de Salles 2009, ACSM 2009). Effort: proximity to failure barely
+     * moves strength (Robinson 2024; Grgic 2022; Davies 2016; Vieira 2021) —
+     * 1–2 RIR is a default inside "not to failure". The cue is Galpin's
+     * "3 to 5" heuristic (Huberman Lab guest series pt 2, 2023; ep. 65, 2022)
+     * — a practitioner rule whose parts the literature supports piecewise;
+     * its "×/week" is a whole-body session count (frequency acts through
+     * volume — Grgic 2018) and is convention.
+     * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+     */
     rx: {
       load: '85–100% 1RM',
       reps: '3–5',
@@ -174,8 +193,23 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
+    /**
+     * rx.muscular_endurance — 40–60 % 1RM for >15 reps with <90 s rest is the
+     * ACSM 2009 prescription; the card's <60 s and 2–4 sets are conventions
+     * inside it (NSCA: <67 %, >12 reps, 2–3 sets, <30 s). Higher reps (≥15;
+     * 18–125) beat 7–13 for relative endurance when tested at post-training
+     * 1RM (Hackett 2022, 14 studies; Campos 2002; Schoenfeld 2015; Anderson &
+     * Kearney 1982) but not at pre-training 1RM — the load effect is equivocal
+     * (Schoenfeld 2021, Wang 2023), so the honest claim is specificity: you
+     * get better at repeating the load you practise. More sets help (Radaelli
+     * 2015: 5 > 3 > 1 for 20 RM); rest length did not (Schoenfeld 2016: 1 min
+     * = 3 min). "To/near failure" is how every located trial trained, not a
+     * tested variable. Load moved <50 % → 40–60 % on 2026-09-03 (039 S6 fork
+     * 2, ledger D19) so the load and rep fields describe one set.
+     * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+     */
     rx: {
-      load: '<50% 1RM',
+      load: '40–60% 1RM',
       reps: '15–40+',
       sets: '2–4',
       rest: 'Short (<60 s)',

@@ -5,9 +5,10 @@
 landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
 [done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
 landed 2026-09-03 (v1.14.1); units S12 (v1.16.0) and S4 (v1.16.1) shipped
-2026-09-03 — **next: re-run S5–S8** (dispatched 2026-09-03 as a batch of
-four; all four died on API 529 overloads and nothing landed — §6.8), then
-S9–S11 (§6.5 step 2). The exercises the scouts name are
+2026-09-03; S5 + S6 blocks and units shipped 2026-09-03 (v1.16.3, run
+inline in the main session — §6.9) — **next: S7 + S8** (their subagent runs died
+on API 529 overloads — §6.8; run them inline the same way), then S9–S11 (§6.5
+step 2). The exercises the scouts name are
 now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
 2026-09-03). Gates
 [031](031-adaptations-drill-down-read.md); retires
@@ -167,9 +168,9 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 
 One `###` per scout run from §6.3, pasted verbatim on receipt after the PMID
 check (`eutils esummary`, 2026-09-02; Crossref for the three papers outside
-PubMed). Landed so far: **S1, S2, S3, S12, S4** (S12's and S4's code units are
-§6.7). Still to run, two at a time (§6.5 step 2): S5 + S6, then S7 + S8,
-S9 + S10, S11.
+PubMed). Landed so far: **S1, S2, S3, S12, S4, S5, S6** (S12's and S4's code units are
+§6.7; S5's and S6's §6.9). Still to run, two at a time (§6.5 step 2): S7 + S8,
+then S9 + S10, S11.
 
 ### S1 — LEVEL_WEIGHT (fractional sets by muscle link level)
 
@@ -585,6 +586,198 @@ closes, when all seven blocks have provenance.
 
 ---
 
+### S5 — ADAPTATIONS[strength].rx and the "3–5 rule" cue (what a strength set is prescribed as)
+
+**Claim:** A strength set is trained at **85–100 % 1RM**, **3–5 reps**, **3–5 sets**, **2–5 min** full rest, stopping **1–2 reps shy of failure**; and the cue names "Galpin's 3–5 rule: 3–5 reps, 3–5 sets, 3–5 min rest, ~3–5×/week" as the way to do it (`rx`, row 3.4). Drives the prescription text the user reads before a strength session; the *classification* of a logged set (`repRange [1, 5]`, row 2.1) is S11's and untouched here.
+**Searched:** 2026-09-03 · **Verdict:** supported — load, sets, rest and effort each sit inside a band the position stands and meta-analyses give; reps 3–5 is a practical sub-band of the literature's 1–6 RM; the cue is a named `[single-practitioner position]` whose five parts the literature supports piecewise, so it stays **with attribution** (acceptance box 3).
+**Number to use:** field by field —
+- **load:** the literature's line is **≥ 80 % 1RM** (ACSM 2026; Currier 2023 network meta-analysis); the card's `85–100 %` is the floor that 3–5 reps at 1–2 RIR implies (a 6–7 RM ≈ 83–87 %; NSCA's strength row is >85 % for <6 reps). Default: unchanged, with the ≥ 80 % line in the source comment.
+- **reps:** `3–5` — inside ACSM 2009's heavy-loading emphasis of **1–6 RM** and Schoenfeld 2021's 1–5-rep "strength zone"; singles and doubles are left out by Galpin's practical choice, not by evidence. Unchanged.
+- **sets:** `3–5` — ACSM 2026 found strength enhanced by **2–3 sets per exercise**; more weekly sets per exercise give more strength in a graded way (Ralston 2017). Unchanged.
+- **rest:** `2–5 min` — **> 2 min** is what maximises strength in trained lifters (Grgic 2018 review); 3–5 min in ACSM 2009 and de Salles 2009. Unchanged.
+- **effort:** `1–2 reps shy of failure` — proximity to failure has a **negligible** relationship with strength gain across the RIR range (Robinson 2024); failure vs non-failure is a wash or slightly favours non-failure (Grgic 2022, Davies 2016, Vieira 2021). The honest band is "not to failure"; 1–2 RIR is a default inside it. Unchanged.
+- **cue:** keep, attributed — Galpin's "3 to 5" heuristic (Huberman Lab guest series part 2, 2023; first stated on episode 65, 2022). The days-per-week element is a whole-body session count, and frequency acts on strength through volume (Grgic 2018), so it is the one part that is convention rather than finding.
+
+#### Evidence
+
+*(a) Load — how heavy is "strength"?*
+
+- `[literature]` "Voluntary strength was enhanced by lifting heavier loads (**≥ 80 % one-repetition maximum**), through a complete range of motion, for **2–3 sets**, at the beginning of training sessions, and **≥ 2 sessions/wk**"; training to momentary muscle fatigue "did not consistently impact training outcomes". Overview of 137 systematic reviews, > 30,000 participants — [ACSM Position Stand, Currier et al. 2026, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/41843416/) (PMID verified via eutils, cited in S4)
+- `[literature]` Higher-load (**> 80 % 1RM**) prescriptions maximised strength gains; higher-load, multi-set, thrice-weekly training was the top-ranked prescription (SMD 1.60, 95 % CrI 1.38–1.82 vs control). Bayesian network meta-analysis, 178 studies, n = 5,097 (45 % women) — [Currier et al. 2023, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/37414459/) (PMID verified via eutils)
+- `[literature]` For intermediate-to-advanced lifters: a periodised 1–12 RM range "with eventual emphasis on **heavy loading (1–6 RM)** using **3- to 5-min rest** periods"; frequency 3–4 d/wk intermediate, 4–5 d/wk advanced. Position stand — [ACSM 2009, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/19204579/) (PMID verified via eutils, cited in S4)
+- `[literature]` 1RM gains significantly greater with high-load (> 60 % 1RM) than low-load (≤ 60 %) training, all sets to failure; isometric strength and hypertrophy no different. Meta-analysis, 21 studies — [Schoenfeld, Grgic, Ogborn & Krieger 2017, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/28834797/) (PMID verified via eutils)
+- `[literature]` Strength gain: high load (≤ 8 RM) and moderate load (9–15 RM) both beat low load (> 15 RM) — SMD 0.60–0.63 and 0.34–0.35 — with high vs moderate favouring high but not significant (SMD 0.26–0.28, p = 0.068). Network meta-analysis, 28 studies, 747 healthy adults, sets to volitional failure — [Lopez et al. 2021, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/33433148/) (PMID verified via eutils)
+- `[literature]` Even with volume load matched, **≥ 80 % 1RM (≤ 7 RM)** beat both moderate (60–79 %) and low (30–59 %) loads for 1RM strength, and moderate beat low; hypertrophy was load-independent. Meta-analysis — [Carvalho et al. 2022, Appl Physiol Nutr Metab](https://pubmed.ncbi.nlm.nih.gov/35015560/) (PMID verified via eutils)
+- `[literature]` The "strength zone" is **1–5 reps at 80–100 % 1RM** for 1RM outcomes (pooled ES 0.58 favouring high vs low load, 14 studies); the advantage dissipates when strength is tested isometrically or isokinetically, and low loads (≥ 20 reps) still produce 1RM gains, especially in the untrained. Narrative re-examination of the repetition continuum — [Schoenfeld, Grgic, Van Every & Plotkin 2021, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/33671664/) (PMID verified via eutils; full text [PMC7927075](https://pmc.ncbi.nlm.nih.gov/articles/PMC7927075/))
+- `[literature]` The NSCA textbook row the card's shape comes from: strength **> 85 % 1RM, < 6 reps, 2–6 sets, 2–5 min rest**; frequency 2–3 / 3–4 / 4–7 sessions/wk by training status. Textbook (expert-consensus tier, not a study) — [NSCA Essentials ch. 17 table, as transcribed](https://www.ptpioneer.com/personal-training/certifications/nsca-cscs/cscs-chapter-17/) (cited in S4)
+
+*(b) Sets, frequency*
+
+- `[literature]` Graded dose–response between weekly sets per exercise and strength: high weekly sets beat low (ES difference 0.18, 95 % CI 0.06–0.30) and medium beat low (0.15, CI 0.01–0.30); for well-trained lifters "either MWS or HWS may be an appropriate dose". Meta-analysis, 9 studies, 61 treatment groups — [Ralston et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28755103/) (PMID verified via eutils, cited in 011)
+- `[literature]` Strength ES rose with frequency — 0.74 / 0.82 / 0.93 / 1.08 for 1 / 2 / 3 / 4+ sessions/wk — but **volume-equated studies showed no frequency effect** (p = 0.421): frequency is a way to add volume, not a dose in itself. Meta-analysis, 22 studies, mostly untrained — [Grgic et al. 2018, Sports Med](https://pubmed.ncbi.nlm.nih.gov/29470825/) (PMID verified via eutils)
+
+*(c) Rest*
+
+- `[literature]` "Robust gains in muscular strength can be achieved even with short RIs (< 60 s). However, it seems that longer duration RIs (**> 2 min**) are required to maximize strength gains in resistance-trained individuals"; untrained: 60–120 s suffices. Systematic review, 23 studies, 491 participants (413 M / 78 F) — [Grgic, Schoenfeld, Skrepnik, Davies & Mikulic 2018, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28933024/) (PMID verified via eutils)
+- `[literature]` Resting **3–5 min** between sets at 50–90 % 1RM allowed more reps across sets and, chronically, "greater increases in absolute strength". Narrative review, 35 studies — [de Salles et al. 2009, Sports Med](https://pubmed.ncbi.nlm.nih.gov/19691365/) (PMID verified via eutils, cited in S4)
+- `[literature]` 3 min vs 1 min rest, 3 × 8–12 RM, 8 weeks: 1RM squat and bench both greater with the longer rest. RCT, 21 young resistance-trained men — [Schoenfeld et al. 2016, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/26605807/) (PMID verified via eutils)
+
+*(d) Effort — how close to failure?*
+
+- `[literature]` Across the estimated-RIR range, "strength gains were similar across a wide range of RIR" (every best-fit model's slope CI contained the null), while hypertrophy rose as sets ended closer to failure. Exploratory multilevel meta-regressions — [Robinson, Pelland, Remmert et al. 2024, Sports Med](https://pubmed.ncbi.nlm.nih.gov/38970765/) (PMID verified via eutils; DOI verified via Crossref)
+- `[literature]` Failure vs non-failure: no difference for strength (ES −0.09, 95 % CI −0.22 to 0.05); when volume was not equated, **non-failure won** (ES −0.32). Meta-analysis, 15 studies, all young adults — [Grgic, Schoenfeld, Orazem & Sabol 2022, J Sport Health Sci](https://pubmed.ncbi.nlm.nih.gov/33497853/) (PMID verified via eutils)
+- `[literature]` Non-failure training gave 0.6–1.3 % more strength (small ES 0.34 favouring non-failure, larger for compound lifts and trained participants); "it seems unnecessary to perform failure training to maximise muscular strength". Meta-analysis, 8 studies — [Davies, Orr, Halaki & Hackett 2016, Sports Med](https://pubmed.ncbi.nlm.nih.gov/26666744/) (PMID verified via eutils)
+- `[literature]` Same result a third time, plus power: strength SMD −0.08 (ns), non-failure ahead when volumes differ (−0.34), and non-failure ahead for **power output** when volumes differ (−0.61). Meta-analysis, 13 studies — [Vieira et al. 2021, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/33555822/) (PMID verified via eutils)
+
+*(e) The practitioners, and the cue's provenance*
+
+- `[single-practitioner position]` The "3 to 5" concept, verbatim: "3–5 days per week, choose 3–5 exercises, do 3–5 repetitions per set, 3–5 working sets, rest 3–5 minutes between each set"; strength load "70 % 1RM or higher" in the guest-series notes and "at least 85 % of your one-rep max … typically five or fewer per set" in Huberman Lab's own summary — the same person, two load floors; "you don't have to go to failure to see strength gains". Galpin only; Israetel and Attia do not use the rule — [guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [Huberman Lab "sets and reps for strength"](https://ai.hubermanlab.com/s/eE3Mp5Q4), [guest series pt 2 episode page](https://www.hubermanlab.com/episode/dr-andy-galpin-optimal-protocols-to-build-strength-and-grow-muscles), [episode 65 (notes)](https://podcastnotes.org/huberman-lab/episode-65-dr-andy-galpin-how-to-build-strength-muscle-size-endurance-huberman-lab/)
+- `[single-practitioner position]` Strength is "roughly three to six reps", 5–15 sets per muscle or movement per week, compound lifts that match the test ("deadlifts are an excellent movement"); strength is "moving heavier weights and building neural efficiency" where hypertrophy is "fatigue, pump, and volume". No rest or RIR number given for strength. Israetel only — [RP article, mirrored](https://www.goodreads.com/author_blog_posts/26017357-exercise-scientist-explains-size-vs-strength-training)
+- `[practitioner consensus]` Strength work is heavy, low-rep, fully rested and stopped short of failure. Held by Galpin and Israetel; Attia trains heavy but publishes no rep scheme (silent); the literature above agrees on every element except that it draws the load line at 80 %, not 85 %.
+
+#### Where they split
+
+No practitioner-vs-practitioner fork of the S4 kind. Four smaller gaps, each between the card and the literature, and each is a decision Tekiō has to name:
+
+**1. 85 or 80.** Every review draws the strength line at **≥ 80 % 1RM**; the card and Galpin's summary say 85. A 5-point gap, not a contradiction: 3–5 reps stopped 1–2 short is a 5–7 RM set, which sits at ≈ 83–87 % on any rep table, so 85 is what the reps and effort fields already imply. Keep 85–100 on the card and write the 80 % line into the source comment, so nobody later "corrects" 85 to 80 and breaks the set the fields describe.
+
+**2. 3–5 or 1–6.** ACSM 2009's heavy emphasis is 1–6 RM and Schoenfeld 2021's zone is 1–5 reps; the card's 3–5 excludes singles, doubles and sixes. That is Galpin's practical rule for a recreational lifter (singles need a spotter and a warm-up ladder), not a finding. Keep 3–5; label it in the comment. The *classification* edge (`repRange [1, 5]`, row 2.1) is S11's and may end up wider than the prescription — that is fine: the prescription says what to do, the band says what counts.
+
+**3. "1–2 reps shy" is more precise than the evidence.** The evidence says *proximity to failure barely matters for strength* and *non-failure is at least as good*. Any RIR from 1 to 3–4 is inside that. 1–2 is a defensible default (heaviest set you can repeat across 3–5 sets) and the app has no RIR field to act on a wider band anyway. Keep, as a default inside "not to failure".
+
+**4. The cue's "~3–5×/week".** Strength sessions per week, Galpin's element five. ACSM 2009's status ladder (3–4 → 4–5), NSCA's (3–4 → 4–7) and ACSM 2026's floor (≥ 2) all bracket it, but Grgic 2018 shows frequency adds strength only by adding volume. So the number is a whole-body *session count*, and it is the one element of the rule that is convention. Keep it in the cue (it is how the user plans a week); say so in the comment. Per-muscle strength dose stays on `weeklyMuscleTarget = 6` (011 D2), which this run does not reopen.
+
+#### Caveats
+
+- Population mismatch: the position stand pools healthy adults 18+ of every training age; Currier 2023 is 45 % women; the rest-interval review is 84 % men with a small trained subset; the failure meta-analyses are all young adults (Grgic 2022 says so outright); Robinson 2024 is exploratory with *estimated* RIR. **No located trial is in 40-year-old recreational lifters**, and the trained-lifter subgroup is where "> 2 min rest" and "non-failure" matter most, so the card leans on the smallest slices of these reviews.
+- Strength here means **1RM on the trained lift** (Schoenfeld 2021): the heavy-load advantage largely vanishes on isometric or isokinetic tests. The app's per-muscle strength map inherits that specificity — a bench 1RM says little about a push-up.
+- "% 1RM" is actionable only through the app's *estimated* 1RM (inventory §8), itself a formula with its own error; on the card it is a heaviness cue, not a prescription the user can set a bar to.
+- The app has no RIR field, so "1–2 reps shy" cannot be checked against a logged set; it is guidance, and it shapes no read.
+- What would move this number: a volume-equated trial of 80 vs 90 % 1RM in trained adults over 35 (would settle 85 vs 80 with data instead of arithmetic); a dedicated meta-analysis of RIR on 1RM in trained lifters (Robinson is exploratory); an RIR field in the log (would let "1–2 shy" become a read rather than a cue).
+
+#### Source comment
+```
+// rx.strength — heavy loads drive 1RM strength: ≥80 % 1RM in the position stand (ACSM 2026, Currier) and
+// the network meta-analysis (Currier 2023, n = 5,097); high > moderate > low load even volume-matched
+// (Lopez 2021, Carvalho 2022, Schoenfeld 2017). 85–100 % is the floor 3–5 reps at 1–2 RIR implies (a 5–7 RM;
+// NSCA: >85 % for <6 reps) inside that band — do not "correct" it to 80. Reps 3–5 sit inside ACSM 2009's 1–6
+// RM (singles/doubles left out by choice); sets 3–5 inside 2–3 sets/exercise (ACSM 2026) and the weekly-set
+// dose–response (Ralston 2017). Rest 2–5 min: >2 min maximises strength in trained lifters (Grgic 2018),
+// 3–5 min (de Salles 2009, ACSM 2009). Effort: proximity to failure barely moves strength (Robinson 2024;
+// Grgic 2022; Davies 2016; Vieira 2021) — 1–2 RIR is a default inside "not to failure". The cue is Galpin's
+// "3 to 5" heuristic (Huberman Lab guest series pt 2, 2023; ep. 65, 2022) — a practitioner rule whose parts
+// the literature supports piecewise; its "×/week" is a whole-body session count (frequency acts through
+// volume — Grgic 2018) and is convention. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S5, 2026-09-03):** no number moves and no text changes. All five
+`rx` fields stay as shipped; the source comment carries the literature's
+≥ 80 % line and the reason 85 stays (fork 1), the 1–6 RM band behind 3–5
+(fork 2), the "not to failure" band behind 1–2 RIR (fork 3) and the
+session-count nature of "~3–5×/week" (fork 4). **The cue keeps "Galpin's 3–5
+rule" and is now attributed** — Huberman Lab guest series part 2 (2023) and
+episode 65 (2022) in the source comment and inventory row 3.4 — which closes
+row 3.4's half of acceptance box 3; on screen the reference card's existing
+"Based on the Huberman Lab × Dr. Andy Galpin guest series" line is literally
+true for this cue and stays until S10 closes. `weeklyMuscleTarget = 6` (011
+D2) and `repRange [1, 5]` (S11) are not reopened.
+
+---
+
+### S6 — ADAPTATIONS[muscular_endurance].rx (what a muscular-endurance set is prescribed as)
+
+**Claim:** A local muscular-endurance set is trained at **< 50 % 1RM**, **15–40+ reps**, **2–4 sets**, **< 60 s** rest, **to / near failure**, as "high-rep, short-rest circuits and bodyweight work" (`rx`, row 3.6). Drives the prescription text the user reads before an endurance session; the *classification* edge (`repRange [16, 999]`, row 2.3) is S11's and untouched here.
+**Searched:** 2026-09-03 · **Verdict:** partially supported — high reps **supported** (≥ 15 reps beat 7–13 for relative endurance in the one meta-analysis on the question, and in every trained- and untrained-adult trial that tested at post-training 1RM); the load band is **partially supported** and the card's `< 50 %` does not describe the same set as its `15–40+` reps (a 15 RM is ≈ 65 % 1RM) — it moves to the position stand's **40–60 %**; sets and rest are **convention only** inside the stands' bands (one trained-lifter trial found rest length irrelevant to the endurance outcome); "to / near failure" is how every located trial trained, not a variable anyone tested.
+**Number to use:** field by field —
+- **load:** **40–60 % 1RM** (ACSM 2009's local-endurance prescription; NSCA < 67 %). The trials that produced the endurance advantage trained at 20–35 RM (≈ 50–65 %) and 30–40 RM (≈ 40–50 %). Default: `40–60% 1RM` — **changes** from `<50% 1RM`, see fork 2.
+- **reps:** `15–40+` — ACSM 2009 says > 15; Hackett 2022's winning band is 18–125; the trials ran 20–28, 25–35 and 30–40 RM. Unchanged.
+- **sets:** `2–4` — ACSM 2009 gives no set count for endurance; NSCA says 2–3; the trials used 1–3 sets; more sets gave more endurance in the one dose–response trial (5 > 3 > 1). Convention inside the band; unchanged.
+- **rest:** `Short (<60 s)` — ACSM 2009 says < 90 s, NSCA < 30 s, de Salles 20–60 s; the one chronic trial with an endurance outcome in trained men found 1 min = 3 min. Convention; unchanged.
+- **effort:** `To / near failure` — every located trial prescribed RM sets; Galpin says "practice frequently to the point of failure". No failure-vs-non-failure trial with an endurance outcome was located. Convention by design of the evidence; unchanged.
+- **cue:** unchanged. "Bodyweight work" is the honest escape from "% 1RM" for a quality the user mostly trains without a bar.
+
+#### Evidence
+
+*(a) Load and reps — is there an endurance zone at all?*
+
+- `[literature]` "For local muscular endurance training, it is recommended that **light to moderate loads (40–60 % of 1 RM)** be performed for **high repetitions (> 15)** using **short rest periods (< 90 s)**." Position stand — [ACSM 2009, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/19204579/) (PMID verified via eutils, cited in S4). The 2026 update reports that resistance training improves endurance vs no exercise but gives no endurance-specific prescription — [ACSM 2026, Currier et al.](https://pubmed.ncbi.nlm.nih.gov/41843416/) (PMID verified via eutils)
+- `[literature]` Higher reps per set improve relative local endurance more than lower reps **when tested at a percentage of post-training 1RM** (g = 0.97, 95 % CI 0.53–1.40; **18–125 reps vs 7–13 reps: g = 1.08**) but not at pre-training 1RM (g = 0.09); "strength gains moderated training outcomes". Systematic review + meta-analysis + meta-regression, 14 studies — [Hackett, Ghayomzadeh, Farrell, Davies & Sabag 2022, Science & Sports](https://doi.org/10.1016/j.scispo.2021.11.002) (DOI verified via Crossref)
+- `[literature]` "Evidence for a load-specific effect on local muscular endurance remains equivocal … If there is in fact a load-induced effect on muscular endurance, which remains questionable, it seemingly is limited to the far rightward aspect of the repetition continuum." The answer flips with the test: post-training-1RM tests favour light loads, pre-training-1RM tests show nothing (Jessee 2018, Buckner: 70 % vs 15 % 1RM, no difference at 42.5 % of *pre* 1RM). Narrative re-examination — [Schoenfeld, Grgic, Van Every & Plotkin 2021, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/33671664/) (PMID verified via eutils; full text [PMC7927075](https://pmc.ncbi.nlm.nih.gov/articles/PMC7927075/))
+- `[literature]` The strength–endurance continuum trial: 4 × 3–5 RM (3 min rest) vs 3 × 9–11 RM (2 min) vs **2 × 20–28 RM (1 min)**, 8 weeks; the high-rep group gained the most reps at 60 % 1RM, was the only group to raise maximal aerobic power and time to exhaustion, and the only trained group whose fibres did not hypertrophy. RCT, 32 untrained men (22.5 y; 9 / 11 / 7 / 5 control) — [Campos et al. 2002, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/12436270/) (PMID verified via eutils)
+- `[literature]` In trained men: **25–35 RM** vs 8–12 RM, 3 sets × 7 exercises, 3×/wk, 8 weeks — bench-press endurance at 50 % 1RM **+16.6 % vs −1.2 %**, while squat 1RM went +8.8 % vs +19.6 % and muscle thickness was equal. RCT, 18 resistance-trained young men (9 / 9) — [Schoenfeld et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25853914/) (PMID verified via eutils)
+- `[literature]` The oldest split: 3 × 6–8 RM vs 2 × **30–40 RM** vs 1 × 100–150 RM, 9 weeks — absolute endurance +28 / +41 / +39 %, relative endurance (40 % 1RM) **−7 / +28 / +22 %**: heavy training *lost* relative endurance. 43 untrained young men — [Anderson & Kearney 1982, Res Q Exerc Sport](https://pubmed.ncbi.nlm.nih.gov/7079558/) (PMID verified via eutils; PubMed carries no abstract — figures as reported in Schoenfeld 2021)
+- `[literature]` In women the picture is mixed by region: 3 × 6–8 RM vs 2 × 15–20 RM vs 1 × 30–40 RM, 9 weeks — upper-body absolute endurance favoured the *medium* load (44 vs 31 vs 20 %), lower-body favoured the light load (137 vs 84 vs 80 %); re-scored on post-training 1RM the upper-body difference vanished. 50 untrained young women — Stone & Coulter 1994 (not on PubMed; as summarised in [Schoenfeld 2021, PMC7927075](https://pmc.ncbi.nlm.nih.gov/articles/PMC7927075/))
+- `[literature]` In middle-aged and older adults resistance training raises local endurance a lot (upper body g = 1.10, lower g = 1.18) **"irrespective of training intensity or other resistance exercise program variables"** — no load or volume dose–response found. Systematic review + meta-analysis + meta-regression, 15 studies — [Wang et al. 2023, Arch Gerontol Geriatr](https://pubmed.ncbi.nlm.nih.gov/36758486/) (PMID verified via eutils)
+- `[literature]` The NSCA row: endurance **< 67 % 1RM, > 12 reps, 2–3 sets, < 30 s rest** — lighter, more reps, less rest than the card in every field but sets. Textbook (expert-consensus tier) — [NSCA Essentials ch. 17 table, as transcribed](https://www.ptpioneer.com/personal-training/certifications/nsca-cscs/cscs-chapter-17/) (cited in S4)
+
+*(b) Sets*
+
+- `[literature]` Dose–response by sets over 6 months: bench-press **20 RM** rose most with 5 sets, then 3, then 1 (each step significant); leg-press 20 RM 5 sets > 1 set. RCT, 48 untrained men (1 / 3 / 5 sets / control), 3×/wk — [Radaelli et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25546444/) (PMID verified via eutils). More sets buy more endurance; the card's 2–4 is a mid-band convention.
+
+*(c) Rest*
+
+- `[literature]` "The research on rest interval length in relation to chronic muscular endurance adaptations is less clear": short rests (**20 s to 1 min**) kept rep velocity higher during repeated submaximal actions and raised total torque in a high-intensity cycle test — "indirect" support for short rests. Narrative review, 35 studies — [de Salles et al. 2009, Sports Med](https://pubmed.ncbi.nlm.nih.gov/19691365/) (PMID verified via eutils, cited in S4)
+- `[literature]` 1 min vs 3 min rest for 8 weeks in trained men: strength and thickness favoured 3 min, but **local endurance (50 % 1RM bench to failure) rose equally in both groups**. RCT, 21 resistance-trained men — [Schoenfeld et al. 2016, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/26605807/) (PMID verified via eutils, cited in S5). The only chronic rest trial with an endurance outcome in this population found rest length did not matter.
+
+*(d) Effort*
+
+- `[literature]` Every trial above that produced an endurance advantage trained with **RM sets** — reps to momentary failure at the set load (Campos 2002, Schoenfeld 2015, Anderson & Kearney 1982, Radaelli 2015). No trial comparing failure with non-failure *on an endurance outcome* was located; the failure meta-analyses (Grgic 2022, Davies 2016, Vieira 2021 — S5) report strength, hypertrophy and power only. "To / near failure" therefore rests on the design of the evidence, not on a comparison.
+
+*(e) The practitioners*
+
+- `[single-practitioner position]` Muscular endurance is load-specific practice: "you don't need heavy load — it only needs to be around what your target is (e.g. want to improve at 50 % 1RM, just train in that range)"; rep range "5–50 per the definition"; "the best way to train for muscular endurance is to practice frequently to the point of failure"; "you won't be as sore so you can easily do 3–4× per week per muscle group"; progress by "1–2 reps per week". Galpin only — [guest series pt 3 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-how-to-build-physical-endurance-lose-fat-huberman-lab/), [episode page](https://www.hubermanlab.com/episode/dr-andy-galpin-how-to-build-physical-endurance-and-lose-fat)
+- `[single-practitioner position]` No separate endurance quality: 5–30 reps per set is all hypertrophy "as long as you're working close to failure"; local endurance is not programmed as its own goal. Israetel only; Galpin disagrees by giving it a card of its own; Attia silent — [RP article, mirrored](https://www.goodreads.com/author_blog_posts/26017357-exercise-scientist-explains-size-vs-strength-training)
+- `[practitioner consensus]` Whatever the load, endurance sets are long, near failure and repeated often. Held by Galpin and (implicitly, as the top of his hypertrophy range) Israetel; the literature above does not contradict.
+
+#### Where they split
+
+Four forks; the first is the literature's own, the others are Tekiō's.
+
+**1. Does load matter for endurance, or only the test?** The continuum (ACSM 2009, NSCA, Hackett 2022, Campos, Schoenfeld 2015) says light-load high-rep work builds endurance that heavy work does not; Schoenfeld 2021 and Wang 2023 say the effect appears only when endurance is scored against the *new* 1RM — heavy training raises the 1RM, so its "60 %" is a heavier weight, which is a harder test, not a worse adaptation. Both are true. What survives either reading is **specificity**: you get better at repeating the load you practise repeating (Galpin's framing, and the one the pre-1RM tests do not refute). The card should claim that, not "light loads build a separate quality". The decision: keep the card, keep it load-banded, and let the comment say what the band is *for* — practising the load you want to repeat.
+
+**2. `< 50 %` or `40–60 %`.** The card's load ceiling and its rep floor describe two different sets: a 15-rep set to failure is ≈ 65 % 1RM, and nothing at < 50 % fails at 15. Every source with a number gives a *band* — ACSM 40–60 %, NSCA < 67 %, the trials 40–65 % — and the card's `< 50 %` came from nowhere the search could find (Galpin's example is "50 %", as an example of a target, not a ceiling). Move the load to **`40–60% 1RM`** so that load, reps and effort describe one set; bodyweight work sidesteps the percentage through the cue. This is the run's one value change, recorded as ledger D19 *before* the constant is edited (`/ground` hard rule).
+
+**3. Rest: 30, 60 or 90 s.** Three conventions (NSCA, the card, ACSM), one trial (Schoenfeld 2016) in which the difference between 1 and 3 min did not reach the endurance outcome, and de Salles' indirect acute support for 20–60 s. Keep `< 60 s` and label it convention: it is the middle number, it matches the acute evidence, and it is what a circuit is.
+
+**4. Is endurance a quality or the top of hypertrophy's range?** Israetel folds 20–30-rep sets into hypertrophy; Galpin and the app give them a card. [019](done/019-adaptation-model-simplification.md) already answered for the app (seven qualities, endurance among them), and §6.0's overlap is the honest reconciliation: once S11 lands, a 20-rep set can count toward hypertrophy *and* endurance, so the card does not have to choose. Nothing to decide here; recorded so S11 knows the fork exists.
+
+#### Caveats
+
+- Population mismatch: the endurance trials are untrained young men (Campos n = 32, Anderson n = 43, Radaelli n = 48), untrained young women (Stone n = 50) and one group of trained young men (Schoenfeld 2015, n = 18); the meta-analyses pool those (Hackett, 14 studies) or older adults (Wang, 15 studies). **No located trial is in 40-year-old recreational lifters**, and the trained-adult evidence is a single 18-man study.
+- The outcome measure decides the answer: at post-training 1RM light loads win, at pre-training 1RM nothing does. The app measures neither — it counts sets — so the card's claim is a training cue, not a read, and the muscle map's endurance fill inherits nothing from this run.
+- "% 1RM" is not actionable for bodyweight circuits, planks or tennis footwork — the modality this user trains endurance with; for those the reps and effort fields carry the prescription and the load field is decoration. The cue names them for that reason.
+- The app has no RIR field: "to / near failure" cannot be checked against a logged set, and a 20-rep set stopped at 5 RIR reads the same as one to failure.
+- What would move this number: a trained-adult trial with *both* absolute and relative endurance tests (would say whether the load effect is real or a scoring artefact); a failure-vs-non-failure trial with an endurance outcome (would ground the effort field); an RIR field (would make the effort field a read).
+
+#### Source comment
+```
+// rx.muscular_endurance — 40–60 % 1RM for >15 reps with <90 s rest is the ACSM 2009 prescription; the card's
+// <60 s and 2–4 sets are conventions inside it (NSCA: <67 %, >12 reps, 2–3 sets, <30 s). Higher reps (≥15;
+// 18–125) beat 7–13 for relative endurance when tested at post-training 1RM (Hackett 2022, 14 studies;
+// Campos 2002; Schoenfeld 2015; Anderson & Kearney 1982) but not at pre-training 1RM — the load effect is
+// equivocal (Schoenfeld 2021, Wang 2023), so the honest claim is specificity: you get better at repeating the
+// load you practise. More sets help (Radaelli 2015: 5 > 3 > 1 for 20 RM); rest length did not (Schoenfeld
+// 2016: 1 min = 3 min). "To/near failure" is how every located trial trained, not a tested variable. Load
+// moved <50 % → 40–60 % on 2026-09-03 (039 S6 fork 2, ledger D19) so the load and rep fields describe one
+// set. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+```
+
+**Decision (S6, 2026-09-03):** one number moves. `rx.load` goes from
+`<50% 1RM` to **`40–60% 1RM`** (fork 2) — the position stand's band, and the
+only value under which the card's load, reps and effort describe the same set;
+recorded as ledger D19 before the constant was edited. Reps, sets, rest,
+effort and cue stay as shipped, with sets and rest labelled **convention** in
+the source comment (forks 3) and effort labelled as inherited from the trials'
+design. Fork 1 is settled by wording, not by a number: the comment states the
+claim as specificity ("you get better at repeating the load you practise")
+rather than "light loads build a separate quality", which is what survives
+both readings of the evidence. Fork 4 is [019](done/019-adaptation-model-simplification.md)'s
+and §6.0's, noted for S11. `weeklyMuscleTarget = 6` (011, convention) and
+`repRange [16, 999]` (S11) are not reopened. The reference card's attribution
+line stays until S10.
+
+---
+
 ## 5. Acceptance
 
 - [x] §1's accounting decision is made, written here with its reason, and the
@@ -593,7 +786,8 @@ closes, when all seven blocks have provenance.
 - [ ] A `## Grounding` section exists here carrying verdicts for rows 7.1, 7.5,
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
 - [ ] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
-      or no longer ship it.
+      or no longer ship it. (3.4 done 2026-09-03 — S5 keeps "Galpin's 3–5 rule",
+      attributed, D18; 3.8 waits for S8.)
 - [ ] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
       band covers the set; rows 2.1–2.3 and 2.6 carry verdicts here; the
       per-quality sums may exceed a muscle's total and the tab says so on screen.
@@ -829,7 +1023,10 @@ Each unit build-passes on its own; commit and push after each.
    `CYCLE_SET_TARGET` derived from it, power sets out of `total`, sheet
    PLACEHOLDERs replaced. S12 + S4 (blocks v1.14.1; units v1.16.0 and
    v1.16.1) — inventory rows 2.6, 3.3, 7.5, 7.7, 7.8 and ledger D14–D17
-   landed with them, so the final pass owes only the S5–S11 rows.
+   landed with them. S5 + S6 (v1.16.3, run inline — §6.9) — blocks; source
+   comments on both `rx` blocks; endurance load `<50%` → `40–60% 1RM` (D19);
+   rows 3.4 and 3.6, ledger D18–D20 — so the final pass owes only the S7–S11
+   rows.
 3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
    move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
@@ -999,3 +1196,28 @@ A 40-line extractor (last assistant message containing `**Claim:**`,
 HTML-unescaped, code fence stripped) writes it straight to a file, so the
 block never has to be retyped into the brief by hand. Worth recreating in the
 session scratchpad before dispatching.
+
+### 6.9 Handoff 2026-09-03 (night) — S5 + S6 landed inline, S7 + S8 next
+
+Peter asked for no subagents this run, so S5 and S6 were done **in the main
+session**: PMIDs verified with a 30-line `cite-check.mjs` (esummary /
+efetch abstracts / Crossref for DOIs), practitioner statements pulled with
+WebFetch from the podcast-notes pages and Huberman Lab's own summaries, and
+the blocks written straight into `## Grounding` (v1.16.3). Cost: the pair
+filled one session to the context limit — the same budget a scout pair
+costs, with none of the 529 deaths. **Not browser-verified:** the only visible
+change is the endurance card's load string (`40–60% 1RM`) in the collapsed
+"How to train each adaptation" reference; the session hit the wrap-up limit
+before a screenshot — check it when S7 + S8 land.
+
+**Next session — S7 + S8 (anaerobic capacity, VO₂max), inline, the same
+way:** for each, esummary-verify the expected literature first (S8: Helgerud
+2007 for the 4×4 attribution; S7: SIT / repeated-sprint meta-analyses),
+efetch the abstracts, fetch Galpin's and Attia's positions (guest series pt 3
+and The Drive #261 — URLs in S4/S6), write the block in S5/S6's shape
+(number-to-use field by field, evidence grouped by field, forks, caveats,
+source comment, Decision), then the code unit: source comment on the `rx`
+block, any text a verdict changes (decision in the ledger *before* the
+constant), inventory rows 3.7 / 3.8 + ledger rows, test, build, browser check,
+patch bump. S8's "classic 4×4" is acceptance box 3's other half. Then
+S9 + S10, S11 (§6.5 step 2), then §6.5 step 3 closes the brief.
