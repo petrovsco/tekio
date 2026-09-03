@@ -5,8 +5,9 @@
 landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
 [done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
 landed 2026-09-03 (v1.14.1); units S12 (v1.16.0) and S4 (v1.16.1) shipped
-2026-09-03 — **next: S5–S8 blocks** (dispatched 2026-09-03 as one batch of
-four), then S9–S11 (§6.5 step 2). The exercises the scouts name are
+2026-09-03 — **next: re-run S5–S8** (dispatched 2026-09-03 as a batch of
+four; all four died on API 529 overloads and nothing landed — §6.8), then
+S9–S11 (§6.5 step 2). The exercises the scouts name are
 now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
 2026-09-03). Gates
 [031](031-adaptations-drill-down-read.md); retires
@@ -966,3 +967,35 @@ in the same edit. Rows 7.5 (S2) and the new 7.7
 
 Then S5–S8, dispatched 2026-09-03 as one batch of four (Peter's call for that
 session — the weekly limit was about to reset), then S9–S11.
+
+### 6.8 Handoff 2026-09-03 (evening) — S5–S8 dispatched, lost to API overload
+
+Unit S4 shipped (v1.16.1) and S5–S8 were dispatched in parallel in the same
+session. All four scouts died on server-side `529 Overloaded` errors — each
+was resumed twice with `SendMessage` and died again within minutes, before
+finishing its opening reads — so **no block landed and nothing in this brief
+is owed to them**. The session then hit the context wrap-up limit.
+
+**Next session:** re-run S5–S8 from the §6.3 table. Each prompt hands the
+scout the claim, the constant with its line numbers, the current value, this
+brief's path and the date, names what is out of scope (011 targets, S11's
+band edges, 005's classifier), lists the expected literature to verify, and
+asks for S4's structure — number-to-use field by field, evidence grouped by
+field, the forks Tekiō must choose on, caveats with the population mismatch,
+and a multi-line source comment. Two at a time unless Peter says otherwise.
+When a block lands: run the eutils/Crossref check (a 30-line
+`cite-check.mjs` — PMIDs via `esummary`, DOIs via
+`api.crossref.org/works/<DOI>`), decode HTML entities, paste it under
+`## Grounding` as `### S<n> — …` with heading levels shifted one down, write
+the **Decision** paragraph, then the code unit: source comment on the `rx`
+block, any text the verdict changes (recorded as a decision *before* editing
+the constant), inventory row + ledger rows, tests, build, browser check,
+patch bump. S5 and S8 each carry a named protocol ("Galpin's 3–5 rule",
+"4×4") whose attribution or removal is acceptance box 3.
+
+**A cheaper way to receive a block:** a subagent's transcript is a JSONL
+file the task notification names, and the block is its last assistant text.
+A 40-line extractor (last assistant message containing `**Claim:**`,
+HTML-unescaped, code fence stripped) writes it straight to a file, so the
+block never has to be retyped into the brief by hand. Worth recreating in the
+session scratchpad before dispatching.
