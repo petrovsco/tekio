@@ -2,15 +2,16 @@
 
 **Label:** feature
 **Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
-landed (v1.13.1), S1 + S3 landed (v1.13.2); S4–S11 still to run, two at a
-time (§6.5 step 2). Gates
+landed (v1.13.1), S1 + S3 landed (v1.13.2); S4–S12 still to run, two at a
+time (§6.5 step 2), S12 + S4 next — S12 is the muscle window, cut loose from
+the program cycle on 2026-09-03 (§6.6). Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
 **Release:** 2.0.0
 **Covers inventory rows:** 2.1, 2.2, 2.3, 2.6, 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
 [grounding-inventory.md](../grounding-inventory.md), plus one number that has no
-row at all (`CYCLE_SET_TARGET`).
+row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
 
 ---
 
@@ -162,7 +163,7 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 One `###` per scout run from §6.3, pasted verbatim on receipt after the PMID
 check (`eutils esummary`, 2026-09-02; Crossref for the three papers outside
 PubMed). Landed so far: **S1, S2, S3**. Still to run, two at a time (§6.5
-step 2): S4, S5, S6, S7, S8, S9, S10, S11.
+step 2): S12 + S4, then S5, S6, S7, S8, S9, S10, S11.
 
 ### S1 — LEVEL_WEIGHT (fractional sets by muscle link level)
 
@@ -365,6 +366,10 @@ stimulus target are gone. Not addressed, by design: the app cannot see effort,
 so every non-power set is assumed hard (an RIR field would fix that — not this
 brief).
 
+**Amended 2026-09-03 (§6.6):** the `× CYCLE` above is retired. The rate stays;
+the window it multiplies becomes `MUSCLE_WINDOW_DAYS` (S12), and
+`CYCLE_SET_TARGET` goes with it.
+
 ---
 
 ## 5. Acceptance
@@ -379,8 +384,11 @@ brief).
 - [ ] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
       band covers the set; rows 2.1–2.3 and 2.6 carry verdicts here; the
       per-quality sums may exceed a muscle's total and the tab says so on screen.
+- [ ] The muscle read's window is its own grounded constant (§6.6, S12), not
+      the program's `CYCLE`; `CYCLE_WINDOW_DAYS` and `CYCLE_SET_TARGET` are
+      gone and Home names the window and the weekly rate on screen.
 - [ ] Every covered inventory row names this brief as its carrier and shows a
-      current verdict; `CYCLE_SET_TARGET` has a row.
+      current verdict; `WEEKLY_SET_FLOOR` and `MUSCLE_WINDOW_DAYS` have rows.
 - [ ] Citations verified through NCBI eutils before being pasted, not from a
       search-result summary.
 - [ ] The app still builds and every existing adaptation test passes; any number
@@ -463,7 +471,7 @@ thing that stays plural, and it is named on screen.
 
 | Today | Under (a) |
 |---|---|
-| `muscleStates` ([fusedRead.ts:57](../../src/lib/fusedRead.ts#L57)) — its own loop, 42 d, all sets, ÷ `CYCLE_SET_TARGET` | Built on the shared function; window = rolling `CYCLE_WINDOW_DAYS`; `sets` = the sum of the four muscle-linked qualities |
+| `muscleStates` ([fusedRead.ts:57](../../src/lib/fusedRead.ts#L57)) — its own loop, 42 d, all sets, ÷ `CYCLE_SET_TARGET` | Built on the shared function; window = rolling `CYCLE_WINDOW_DAYS` (→ `MUSCLE_WINDOW_DAYS`, §6.6); `sets` = the sum of the four muscle-linked qualities (→ the three hard ones, S3) |
 | `adaptationCoverage` ([lib/adaptations.ts:159](../../src/lib/adaptations.ts#L159)) — its own loop, week-to-date, per adaptation, + a habit fold | Built on the shared function; window = calendar week-to-date; per adaptation; **habit fold dropped** (doctrine §5 already ruled: the muscle read counts logged sets only — the `habits` / `habitCompletions` / `exerciseNames` args go, and so do the two habit tests in `adaptations.test.ts`) |
 | `muscleCoverage` ([utils.ts:558](../../src/lib/utils.ts#L558)) — week-to-date, no target, + recovery minutes, + habits | **Deleted**, with `MuscleCoverageRow`, `MuscleCoverageCard.tsx` (its only consumer), its `<MuscleCoverageCard />` line in `AdaptationsTab.tsx`, and the `muscleCoverage` block in `habits.test.ts`. `habitMuscleContributions` and `recoveryHabitSets` in utils.ts are then used only by tests — delete them too (035 was going to) |
 
@@ -499,6 +507,7 @@ comment: an override naming a cardio quality would still count in `total`
 `WEEKLY_SET_FLOOR × CYCLE` where `WEEKLY_SET_FLOOR = 10` carries the
 adaptation-agnostic claim the scout below rules on. `MuscleSheet.tsx:17`
 already derives `WEEKLY_TARGET = CYCLE_SET_TARGET / CYCLE` — invert that.
+(Done 2026-09-02; superseded on 2026-09-03 — the `× CYCLE` goes too, §6.6.)
 The DB shadow (inventory 1.11) means the tab reads `adaptation_targets` while
 Home reads the constant; they are byte-identical today. Note it, do not fix it.
 
@@ -521,7 +530,7 @@ built (commit `ecfc547`). It no longer exists anywhere in `src/` — it went wit
 `RecoveryCard` (014 step 3). Strike row 7.4 as **retired**; drop it from this
 brief's scope. 031 §3c cuts the recovery axis from the page anyway.
 
-### 6.3 The scout runs — eleven, one decision each, dispatch in parallel
+### 6.3 The scout runs — twelve, one decision each, two at a time
 
 All `subagent_type: science-scout`, each given the claim, the constant, the
 current value, this brief's path, and the date. Verify every citation through
@@ -540,6 +549,7 @@ NCBI eutils before pasting (acceptance box 5).
 | S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../src/constants/adaptations.ts#L251) |
 | S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../src/constants/adaptations.ts#L268) |
 | S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:94](../../src/constants/adaptations.ts#L94), [:125](../../src/constants/adaptations.ts#L125), [:153](../../src/constants/adaptations.ts#L153) |
+| S12 | new row | A muscle's stimulus is judged over a **rolling 14-day window** against twice the weekly floor (20 hard sets), shown as "10/wk" (§6.6): long enough that a muscle trained once a week does not read as untouched on the morning of its session, short enough that a muscle silent for the whole window has genuinely missed its dose. Return the honest band for the window length and the default — expected literature: per-muscle training-frequency meta-analyses (Schoenfeld 2016, 2019), detraining time-courses (Bosquet 2013, Ogasawara 2013), how long one session's muscle-protein-synthesis response lasts | `MUSCLE_WINDOW_DAYS` (new, in app.ts beside `QUALITY_STALENESS_DAYS`) · `14`, replacing `CYCLE_WINDOW_DAYS = CYCLE × 7` [fusedRead.ts:25](../../src/lib/fusedRead.ts#L25) · `42`; target `WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7` · `20`, replacing `CYCLE_SET_TARGET` · `60` |
 
 Hypertrophy's `rx` (row 3.5) is **out**: grounded in 011 and locked to the
 target (D3). Do not re-run it.
@@ -553,19 +563,20 @@ carries no attribution at all today.
 
 ### 6.4 Landing the blocks — the four `/ground` destinations
 
-1. **This brief:** paste all eleven blocks verbatim under a `## Grounding` section
+1. **This brief:** paste all twelve blocks verbatim under a `## Grounding` section
    placed before `## Acceptance` (i.e. between §4 and §5), one `###` per run.
 2. **The constants:** source comments on `LEVEL_WEIGHT`, `WEEKLY_SET_FLOOR`,
-   `CYCLE_SET_TARGET`, each `rx` block and `ADAPTATION_PRINCIPLE`, every one
+   `MUSCLE_WINDOW_DAYS`, each `rx` block and `ADAPTATION_PRINCIPLE`, every one
    pointing at `docs/roadmap/039-adaptations-read-grounding.md#grounding`
    (repoint to `done/` when the brief moves — `grep -rn 039- src/`).
 3. **The inventory** ([grounding-inventory.md](../grounding-inventory.md)):
    rows 2.1–2.3, 2.6, 3.3, 3.4, 3.6–3.10, 7.1, 7.5 → carrier `039`, verdict updated, and the
    `Where` line numbers refreshed (7.1 says `utils.ts:479`, now 490; 7.5 says
    `lib/adaptations.ts:135-139`, now 146-150 — both move again after §6.1).
-   Row 7.4 struck as retired (§6.2). New row **7.7** for `WEEKLY_SET_FLOOR` /
-   `CYCLE_SET_TARGET`-as-total. New ledger rows D13+ for each *decision*
-   (the pooling, the 0.25 tier, the ramp, each attribution kept or removed).
+   Row 7.4 struck as retired (§6.2). New row **7.7** for `WEEKLY_SET_FLOOR`
+   as the pooled total (S3) and **7.8** for `MUSCLE_WINDOW_DAYS` (S12). New
+   ledger rows D13+ for each *decision* (the pooling, the 0.25 tier, the ramp,
+   the window leaving the cycle, each attribution kept or removed).
    Bump the counts paragraph and add an "Updated 2026-09-xx by the 039 runs"
    note in *How to read it*.
 4. **the user's own knowledge base:** only if a run produces durable life-knowledge
@@ -589,8 +600,9 @@ Each unit build-passes on its own; commit and push after each.
    attempt (2026-09-02) dispatched all eleven in parallel; ten died on the
    5-hour session limit and only S2 came back. One scout costs roughly an hour
    of interactive work, so a batch of eleven is most of a window. Run them in
-   pairs (S1+S3, S4+S5, S6+S7, S8+S9, S10+S11), eutils-check each block as it
-   lands, paste it under `## Grounding`, and commit after each pair so a dead
+   pairs (S1+S3 done; then S12+S4, S5+S6, S7+S8, S9+S10, S11 alone — reordered
+   2026-09-03 so the window lands before the `rx` blocks), eutils-check each
+   block as it lands, paste it under `## Grounding`, and commit after each pair so a dead
    session loses at most two runs. Then land per §6.4, including any `rx`
    text the verdicts change (record a changed value as a decision *before*
    editing the constant — `/ground` hard rule). Patch bump per pair.
@@ -606,3 +618,79 @@ Each unit build-passes on its own; commit and push after each.
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
    the inventory), and set [031](031-adaptations-drill-down-read.md) to
    `planned` (019, 026, 039 all landed). Patch bump.
+
+### 6.6 Amendment 2026-09-03 — the muscle window leaves the program cycle
+
+Peter, after S1 + S3 landed: *the six-week cycle is the program's — the one
+saved program in the database. Home and the Adaptations reads were never meant
+to be grounded on it. Everything there should be science- or convention-based,
+and muscle adaptation is researched per week. Cardio already has its own
+timings; do the same for muscles, so it is (1) easy to follow — we live in
+weeks — and (2) grounded. I don't push on the 60-set cycle.*
+
+**What the read hangs on today.** `CYCLE_WINDOW_DAYS = CYCLE × 7`
+([fusedRead.ts:25](../../src/lib/fusedRead.ts#L25), 42 days) and
+`CYCLE_SET_TARGET = WEEKLY_SET_FLOOR × CYCLE`
+([app.ts:99](../../src/constants/app.ts#L99), 60). `CYCLE` is the program's
+cycle length — the constant `cycleInfo` and the deload logic run on. Neither
+the 42 nor the 60 was ever grounded: S3 ruled on the *rate* (10 hard sets per
+muscle per week) and on the pooling; the 60 is that rate times a program length
+nobody asked the research about, and §6.1's "the window is the only thing that
+stays plural" left it unexamined. Cardio's equivalents —
+`QUALITY_STALENESS_DAYS` (14 / 14 / 28) and each quality's
+`weeklySessionTarget` — are grounded per quality in 011 and owe nothing to the
+program. Four consumers read the cycle window: `muscleStates` (the fill),
+`powerSetCount`, `muscleWeeks` (the sheet's six weekly bars) and
+`muscleSources`; Home's copy says "this cycle" twice.
+
+**Decision (Peter, 2026-09-03).** The per-muscle read gets its own window
+constant, `MUSCLE_WINDOW_DAYS`, in app.ts beside `QUALITY_STALENESS_DAYS`. Its
+target is `WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7`. `CYCLE_WINDOW_DAYS` and
+`CYCLE_SET_TARGET` go. `CYCLE` stays exactly what it is — the program's cycle
+— and nothing on Home or the Adaptations tab reads it any more. The weekly
+rate stays the unit on screen ("10/wk"), with the window named beside it
+("N hard sets in 14 days").
+
+**Value: rolling 14 days, target 20 — pending S12.** Chosen from three:
+
+- **Rolling 14 days ÷ 20 (taken).** The shortest window in which a muscle
+  trained once a week does not flip to empty on the morning of its session;
+  one rhythm with the 14-day cardio staleness; and the detraining literature
+  puts measurable loss past roughly two to three weeks, so a muscle silent for
+  the whole window has honestly missed its dose.
+- Rolling 7 days ÷ 10. The literature's own unit, but on leg-day morning the
+  quads read as untouched as a muscle ignored for a month, and rank top of
+  "what's missing".
+- Calendar week-to-date, Monday start. What the Adaptations tab does today;
+  on Monday morning every muscle is a gap — the wrong "what's missing" read.
+- 42 days was not on the list: no muscle evidence speaks for it. Its one merit
+  was averaging over the deload week, which is a program concern.
+
+The window length is a number claiming physiological meaning (doctrine §4
+q5), so it runs as **S12** before the constant changes. 14 is the value handed
+to the scout; a verdict with a different default is a decision recorded here
+first (`/ground` hard rule).
+
+**What survives untouched:** S3's rate and pooling; S2's continuous fill and
+`GAP_CUTOFF` (fractions of the window's target, whatever the window — 0.70
+keeps meaning "70 % of the target"); S1's weights; `RECOVER_DAYS` and
+`daysSince` (all-history recency).
+
+**Code, when S12 lands** — one unit, minor bump (Home's map visibly changes):
+
+1. app.ts: `MUSCLE_WINDOW_DAYS = 14` with its source comment pointing here;
+   `MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR * MUSCLE_WINDOW_DAYS / 7`; delete
+   `CYCLE_SET_TARGET`.
+2. fusedRead.ts: `CYCLE_WINDOW_DAYS` → `MUSCLE_WINDOW_DAYS` in `cycleWindow`
+   (rename it `muscleWindow`), `muscleStates`, `powerSetCount` and
+   `muscleSources`; `fillFraction` over `MUSCLE_SET_TARGET`; the
+   `MuscleState.sets` doc. `muscleWeeks` keeps six weekly bars as *history* —
+   history is not a claim — but driven by a plain display constant in the
+   sheet, not by `CYCLE`.
+3. MuscleSheet.tsx and HomeTab.tsx: "N hard sets in 14 days", "14-day window ·
+   10/wk · power sets count on their own map"; "this cycle" → "in the last 14
+   days"; the bars' caption says "last 6 weeks".
+4. fusedRead.test.ts: eight references assume 42 / 60 — move them.
+5. Inventory row 7.8 and a ledger row for this decision (§6.4 step 3).
+6. Browser-verify Home: expect more muscles to read as gaps — a 14-day window
+   is stricter on anything trained once a fortnight, which is the honest read.
