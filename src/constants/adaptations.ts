@@ -87,7 +87,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * intent is the stimulus (Behm & Sale 1993). Heavy strength sets also
      * build power in the not-yet-strong (Cormie 2010) but never feed the
      * power map — 039 S4 fork 1.
-     * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+     * See docs/grounding/039-adaptations-read.md#grounding
      */
     rx: {
       load: '30–70% 1RM (jumps & throws lighter, Olympic lifts heavier)',
@@ -137,7 +137,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * — a practitioner rule whose parts the literature supports piecewise;
      * its "×/week" is a whole-body session count (frequency acts through
      * volume — Grgic 2018) and is convention.
-     * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+     * See docs/grounding/039-adaptations-read.md#grounding
      */
     rx: {
       load: '85–100% 1RM',
@@ -206,7 +206,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * = 3 min). "To/near failure" is how every located trial trained, not a
      * tested variable. Load moved <50 % → 40–60 % on 2026-09-03 (039 S6 fork
      * 2, ledger D19) so the load and rep fields describe one set.
-     * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+     * See docs/grounding/039-adaptations-read.md#grounding
      */
     rx: {
       load: '40–60% 1RM',
@@ -243,7 +243,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     // Galpin's 30/30 × 4+ and 20/30 × 6–8 (Huberman Lab guest series pt 3, 2023); NSCA's rows are 1:3–1:5 (15–30 s)
     // and 1:3–1:4 (1–3 min). Shorter rest builds the deficit (Tabata 1997), longer rest keeps power per rep (Hazell
     // 2010). Floors moved 3 → 4 rounds and 1:2 → 1:1 on 2026-09-03 (039 S7 forks 1–2, ledger D21–D22) — no trial or
-    // practitioner used three rounds or less than 1:1. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+    // practitioner used three rounds or less than 1:1. See docs/grounding/039-adaptations-read.md#grounding
     rx: {
       load: 'All-out',
       reps: '20 s–2 min efforts',
@@ -285,7 +285,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     // Bacon ≥ 1:1). Effort is the hardest even pace that survives all reps (Seiler's isoeffort design), not a
     // sprint — reworded 2026-09-03 (039 S8 fork 2, ledger D24). Cue attributed to Helgerud et al. 2007 the same
     // day (fork 3, D23): Galpin does not prescribe the 4 × 4, Attia does without naming it.
-    // See docs/roadmap/039-adaptations-read-grounding.md#grounding
+    // See docs/grounding/039-adaptations-read.md#grounding
     rx: {
       load: '~90–100% max HR',
       reps: '3–8 min efforts',
@@ -354,7 +354,7 @@ export const ADAPTATION_PRINCIPLE =
  * they caught "Cable Woodchop" and "Jumping Jacks", and a chop set silently
  * left the hard-set total (DB check 2026-09-03). `clapping` is on Galpin's
  * list and is the one ballistic push-up name no other keyword catches.
- * See docs/roadmap/039-adaptations-read-grounding.md#grounding
+ * See docs/grounding/039-adaptations-read.md#grounding
  */
 const KEYWORD_ADAPTATION: [string | RegExp, Adaptation][] = [
   // Sprint / reactive work. These four tagged the retired `speed` adaptation

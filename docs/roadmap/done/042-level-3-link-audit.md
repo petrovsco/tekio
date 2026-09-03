@@ -32,7 +32,7 @@ zero. The relabel is a judgement about the user's own anatomy tags, which is why
 this is a brief with a checklist and not a migration.
 
 The full evidence and the fork it settles are in
-[039 §Grounding, run S1](../039-adaptations-read-grounding.md#grounding). Grounding
+[039 §Grounding, run S1](../../grounding/039-adaptations-read.md#grounding). Grounding
 blocks travel with their brief and are never copied; this file only points.
 
 ---

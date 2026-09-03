@@ -1,15 +1,9 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
-landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
-[done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
-landed 2026-09-03 (v1.14.1); units S12 (v1.16.0) and S4 (v1.16.1) shipped
-2026-09-03; S5 + S6 blocks and units shipped 2026-09-03 (v1.16.3, run
-inline — §6.9); S7 + S8 blocks and units shipped 2026-09-03 (v1.16.4, inline —
-§6.10) — **next: S9 + S10** (inline the same way), then S11 (§6.5 step 2). The exercises the scouts name are
-now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
-2026-09-03). Gates
+**Status:** in progress — S1–S8 and S12 blocks and code units shipped
+(v1.16.4); S9 + S10 running as two parallel scouts since 2026-09-03; then S11,
+then §6.5 step 3 closes the brief. Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -17,6 +11,35 @@ now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.
 **Covers inventory rows:** 2.1, 2.2, 2.3, 2.6, 3.3, 3.4, 3.6, 3.7, 3.8, 3.9, 3.10, 7.1, 7.4, 7.5 in
 [grounding-inventory.md](../grounding-inventory.md), plus one number that has no
 row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
+
+## Progress log
+
+- **2026-09-02** — kickoff: §1–§2 read, accounting decision §6.1 made; unit 1
+  shipped (v1.13.0): `classifyWeightSet` returns every quality, `muscleCoverage`
+  and its card deleted. Eleven scouts dispatched at once — ten died on the
+  5-hour limit, S2 came back (v1.13.1). S1 + S3 blocks (v1.13.2):
+  `WEEKLY_SET_FLOOR` created, `CYCLE_SET_TARGET` derived from it, power sets
+  out of `total`.
+- **2026-09-03** — S1's level-3 zeroing shipped via
+  [done/042](done/042-level-3-link-audit.md) (v1.14.0). S12 + S4 blocks
+  (v1.14.1). Unit S12 (v1.16.0): `MUSCLE_WINDOW_DAYS = 14` replaces
+  `CYCLE_WINDOW_DAYS`, rows 7.7 / 7.8, D14. Unit S4 (v1.16.1): power `rx`
+  split in words, `hop` / `jump` whole-word + `NOT_POWER`, `clapping`, rows
+  2.6 / 3.3 / 7.5, D15–D17. [done/043](done/043-scout-named-exercises-catalogue.md)
+  put the scout-named exercises in the catalogue.
+- **2026-09-03 (evening)** — S5–S8 dispatched as a batch of four; all died on
+  `529 Overloaded` after two resumes each; nothing landed (v1.16.2).
+- **2026-09-03 (night)** — S5 + S6 run inline, no subagents (§6.7): blocks,
+  source comments, endurance load `<50%` → `40–60% 1RM` (D19), rows 3.4 / 3.6,
+  D18–D20 (v1.16.3).
+- **2026-09-03 (late)** — S7 + S8 inline: six of the first 24 recalled PMIDs
+  were wrong and were re-found by title; anaerobic floors 3 → 4 rounds and
+  1:2 → 1:1 (D21–D22); "Classic 4×4" → "Helgerud's 4×4" and the effort
+  reworded (D23–D24); acceptance box 3 closed; rows 3.7 / 3.8 (v1.16.4).
+- **2026-09-03** — the nine landed blocks moved to
+  [grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)
+  and §6's handoffs folded into this log (v1.16.5); S9 + S10 dispatched as
+  two parallel scouts; Rhonda Patrick added to the scout roster's cardio row.
 
 ---
 
@@ -165,791 +188,14 @@ resistance set *classifies*; 005 grounds how cardio *classifies*.**
 
 ## Grounding
 
-One `###` per scout run from §6.3, pasted verbatim on receipt after the PMID
-check (`eutils esummary`, 2026-09-02; Crossref for the three papers outside
-PubMed). Landed so far: **S1, S2, S3, S12, S4, S5, S6** (S12's and S4's code units are
-§6.7; S5's and S6's §6.9). Still to run, two at a time (§6.5 step 2): S7 + S8,
-then S9 + S10, S11.
-
-### S1 — LEVEL_WEIGHT (fractional sets by muscle link level)
-
-**Claim:** `LEVEL_WEIGHT = {1: 1, 2: 0.5, 3: 0.25}` — a logged set is credited to each muscle the exercise trains at 1.0 weighted set when the muscle is the primary mover, 0.5 when it is a secondary mover / synergist doing substantial work (triceps in a bench press, biceps in a row), 0.25 when it is a tertiary contributor or stabiliser (forearms in a deadlift, abs in an overhead press). The physiological claim: an indirect set delivers about half the growth/strength stimulus of a direct set, a tertiary set about a quarter. Every muscle-coverage number (Home map, per-adaptation maps, the "missing" ranking) is the sum of these weights against the 10-weighted-sets/muscle/week floor, so the tiers decide which muscles the app calls missing.
-**Searched:** 2026-09-02 · **Verdict:** partially supported — level 2 = 0.5 is **supported**; level 3 = 0.25 is **convention only**, and the nearest measurements sit at zero
-**Number to use:** level 1 = **1**; level 2 = **0.5** (pair-by-pair truth runs roughly 0.4–1.0; 0.5 is the pooled best fit and the only fraction ever tested against alternatives); level 3 = 0–0.25 — default **0**, i.e. collapse to two tiers. No study measures a quarter-set stimulus, the best-fit counting scheme in the literature has no tier below "meaningfully trained", and the minor contributors that were measured (hamstrings in squats, medial deltoid in bench press) did not grow — crediting them 0.25 hides gaps, the one error a "what's missing" read must not make.
-
-#### Evidence
-- `[literature]` The largest dose-response model classifies every set as *direct* ("the measured muscle(s) was likely to be the primary force generator in the exercise", e.g. pectoralis major in bench press) or *indirect* ("likely to be meaningfully trained but not the primary force generator (i.e., synergist)", e.g. triceps in bench press), then tests three counting schemes — total (indirect = 1), fractional (indirect = 0.5), direct (indirect = 0). "The relative evidence for the 'fractional' quantification method was strongest" for both hypertrophy and strength, and the authors conclude "distinguishing between direct and indirect sets appears essential". Two points for Tekiō: Pelland's "indirect" is exactly the level-2 definition (a synergist doing meaningful work), and the scheme has **no third tier** — a muscle below "meaningfully trained" is not an indirect set at all, so a stabiliser carries 0. Only 0, 0.5 and 1 were compared; 0.25 and 0.75 were never tested. Bayesian multi-level meta-regression, 67 studies, n = 2,058 (79 % male, mean age 25, mixed training status) — [Pelland et al. 2026, Sports Med](https://pubmed.ncbi.nlm.nih.gov/41343037/) (PMID verified via eutils; full text paywalled — definitions quoted from the abstract and the authors' preprint)
-- `[literature]` A review of the EMG evidence on counting limb muscles during multi-joint lifts concludes "the best advice would be to view set-volume on a 1:1 basis, then use logical rationale and personal expertise", while noting hamstring activation is "markedly lower" than quadriceps in squats and leg presses — i.e. the right fraction is pair-specific and can approach zero for some links. Narrative review, EMG studies — lowest literature tier — [Schoenfeld, Grgic, Haun, Itagaki & Helms 2019, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/31336594/) (PMID verified via eutils)
-- `[literature]` Row vs curl, same arm-count and effort: elbow-flexor thickness +5.16 % from unilateral dumbbell rows vs +11.06 % from curls (p = 0.009) — the synergist set was worth **0.47** of the direct set. Within-subject (one arm each), 10 untrained men, 8 weeks, 2×/wk, 4–6 sets of 8–12 to failure — [Mannarino et al. 2021, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/31268995/) (PMID verified via eutils)
-- `[literature]` Same comparison by region: after 8 weeks, dumbbell curls grew the elbow flexors proximally 5 % and distally 11 %; dumbbell rows grew them proximally 5 % and distally 1 %. The indirect set matches the direct set at one site and does almost nothing at the other. Chronic experiment: 9 untrained men, 8 weeks, 2×/wk (an acute swelling experiment in 16 trained men is in the same paper) — [Leitão et al. 2025, Sport Sci Health 21:3197–3205](https://link.springer.com/article/10.1007/s11332-025-01530-7) (no PMID; not indexed in PubMed)
-- `[literature]` Pulldown vs curl runs the other way: a multi-joint programme (lat pulldown / bench press) and a single-joint programme (curls / extensions) grew elbow-flexor thickness +6.10 % vs +5.83 %, no difference — for this pair the indirect set was worth **≈ 1.0**. RCT, 29 untrained men (MJ 14 / SJ 15), 10 weeks — [Gentil, Soares & Bottaro 2015, Asian J Sports Med](https://pubmed.ncbi.nlm.nih.gov/26446291/) (PMID verified via eutils)
-- `[literature]` Adding curls and extensions on top of pulldowns and presses added nothing: +6.5 % (MJ only) vs +7.04 % (MJ + SJ) thickness, no between-group difference. RCT, 29 untrained men, 10 weeks — [Gentil et al. 2013, Appl Physiol Nutr Metab](https://pubmed.ncbi.nlm.nih.gov/23537028/) (PMID verified via eutils)
-- `[literature]` The same null result in **trained** men: MJ vs MJ + SJ for 8 weeks — "no significant difference in any variable" for upper-body strength or size; the authors call MJ-only "time-efficient". RCT, 20 trained men (10 / 10), 8 weeks — [de França et al. 2015, Appl Physiol Nutr Metab](https://pubmed.ncbi.nlm.nih.gov/26244600/) (PMID verified via eutils)
-- `[literature]` Pooled, single- vs multi-joint exercise produces a "trivial" difference in whole-muscle hypertrophy of the limb muscles, with individual studies showing single-joint work grows specific *subdivisions* better. Systematic review + meta-analysis, 7 studies / 10 nested comparisons — [Rosa et al. 2023, Strength Cond J 45(1)](https://journals.lww.com/nsca-scj/fulltext/2023/02000/hypertrophic_effects_of_single__versus_multi_joint.5.aspx) (not in PubMed; journal abstract page)
-- `[literature]` Bench press vs skull crusher for the triceps, by head: the bench-press groups grew the **lateral head** significantly more than the extension-only group; the extension groups grew the **long head** significantly more than the bench-only group; the medial head was "statistically similar between conditions". So the synergist fraction is ≈ 1 for one head and low for another; secondary readings of the figures put bench-only whole-triceps growth at roughly half the extension groups' (figure data, not in the abstract). RCT, 43 untrained young men in 4 groups (MJ, SJ, MJ + SJ, SJ + MJ), 10 weeks — [Brandão et al. 2020, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/32149887/) (PMID verified via eutils)
-- `[literature]` Bench press alone for 10 weeks grew the pectoralis major, pectoralis minor, anterior deltoid and triceps brachii versus control, with the pectoralis major growing more than the triceps and pectoralis minor. The **medial deltoid** — the minor contributor in the lift — is the one measured muscle not reported as growing more than control. This is the only trial measuring a primary mover, its synergists and a minor contributor from the same sets. RCT, 24 men (13 trained bench only 3×/wk, 3–4 sets; 11 control), 10 weeks — [Lanza et al. 2024, J Bodyw Mov Ther 40:1417–1422](https://pubmed.ncbi.nlm.nih.gov/39593465/) (PMID verified via eutils)
-- `[literature]` Over 24 weeks of bench press only (3 × 10 at 75 % 1RM, 3×/wk), triceps brachii and pectoralis major CSA both increased and followed the same time-course — the indirect stimulus is durable, not a beginner artefact. RCT (continuous vs periodic), 14 untrained young men — [Ogasawara et al. 2013, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/23053130/) (PMID verified via eutils)
-- `[literature]` Squats for 10 weeks: knee extensors +4.9 % (full) / +4.6 % (half), gluteus maximus +6.7 % / +2.2 %, adductors +6.2 % / +2.7 %, **hamstrings no significant change in either group** (rectus femoris also unchanged). A muscle that "assists" a squat the way a level-3 link is meant to received no measurable growth stimulus. RCT, 17 males (8 / 9), 10 weeks, 2×/wk — [Kubo et al. 2019, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/31230110/) (PMID verified via eutils)
-- `[literature]` Squats for 9 weeks grew quadriceps (+3.6 ± 1.5 cm² vs hip thrust) and adductors (+2.5 ± 0.7 cm²) and glutes (similar to hip thrust), while "hamstrings growth was equivocal across both conditions" (0.1 ± 0.6 cm² between-group). Second independent zero for the same tertiary pair. RCT, 34 untrained college-aged adults (squat 16 / hip thrust 18), 9 weeks — [Plotkin et al. 2023, Front Physiol](https://pubmed.ncbi.nlm.nih.gov/37877099/) (PMID verified via eutils)
-- `[literature]` Fractional sets have become the field's working unit: a pre-registered multi-site equivalence trial prescribed "9 fractional sets per week" vs "36 fractional sets per week" in previously trained adults and found the two statistically equivalent for arm and thigh muscle area (0.023, 90 % CI −0.044 to 0.091). Bears on S3 (how much volume), cited here only because it shows the unit in use. **Preprint, not peer-reviewed**; 22 sites, 120 randomised / 87 completed, 12 weeks — [Steele, Gschneidner, Carlson & Fisher 2026, SportRxiv](https://sportrxiv.org/index.php/server/preprint/view/810)
-- `[practitioner consensus]` Indirect stimulus is real and large enough to change programming. Israetel sets rear-delt MV and MEV at 0–4 sets/week "because the rear delts can get enough work to grow robustly … through proper back training", and warns that "if you reduce or remove upper body pressing movements from your program, the volume landmarks for the triceps will climb substantially"; Galpin: a chin-up "is primarily working back but indirectly working biceps". Held by Israetel and Galpin — [RP rear-delt guide](https://rpstrength.com/blogs/articles/rear-delt-hypertrophy-training-tips), [RP triceps guide](https://rpstrength.com/blogs/articles/triceps-hypertrophy-training-tips), [Galpin, Huberman Lab guest series pt 2](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/). No literature contradicts it (Brandão, Lanza, Ogasawara).
-- `[single-practitioner position]` Do **not** count indirect sets; discount the *target* instead. "We only count sets where the target muscle is the prime mover or isolation exercises specifically targeting that muscle … when we say '18 sets is the MRV for triceps,' we mean direct triceps work only. We've already factored in the indirect volume from pressing movements, reducing our estimates." Israetel only (RP's written landmarks); Galpin disagrees (below). RP's own podcast pages, written by staff who are not roster members (Milo Wolf; "Dr. Pak"), teach the opposite bookkeeping explicitly — "Bench press: 1.0 sets for chest, 0.5 sets for front delts and triceps … Rows: 1.0 sets for lats, 0.5 sets for rear delts and biceps … Squats: 1.0 sets for quads, 0.5 sets for glutes" — so RP as an organisation holds both models at once — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth), [RP "11-set rule" page](https://rpstrength.com/blogs/podcasts/training-frequency-decoded-the-11-set-rule-every-lifter-should-know), [RP "truth about volume" page](https://rpstrength.com/blogs/podcasts/the-truth-about-volume-how-little-training-you-need-to-grow)
-- `[single-practitioner position]` Count-or-don't is the lifter's call: "you can count it or not towards working set[s] — really depends on goals", against a baseline of "10 working sets per muscle group, per week (or up to 25 if highly trained)". Galpin only; Israetel says never count — [Galpin, Huberman Lab guest series pt 2](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/)
-- `[single-practitioner position]` No roster member, no RP page and no located study uses a **quarter-set** tier. Nobody holds 0.25; it exists only in `LEVEL_WEIGHT`.
-
-#### Where they split
-Three forks, and only the third is Tekiō's alone.
-
-**1. Weight the set, weight the target, or let the lifter decide.** Pelland (and RP's podcast pages) put the discount on the *set* (0.5); Israetel's written landmarks put it on the *target* (direct-only counts against a pre-reduced MEV/MRV that differs per muscle); Galpin leaves it to the lifter per exercise. Everyone agrees the stimulus is real — this is a bookkeeping disagreement, not a physiological one. Tekiō has **one** floor (10/week) for every muscle, so the target-discount model is not available to it without a per-muscle target table; set-weighting is the only scheme that keeps a single denominator. That puts Tekiō on Pelland's side by construction, and 0.5 is his best-fit value.
-
-**2. One constant or one fraction per link.** Inside the literature the level-2 fraction is pair-specific: ≈ 1.0 for pulldown → biceps (Gentil 2015) and for bench → lateral-head triceps (Brandão), ≈ 0.4–0.5 for row → biceps (Mannarino, Leitão), low for bench → long-head triceps. Schoenfeld 2019 says as much: default 1:1, then adjust per muscle. Pelland's 0.5 is the pooled compromise that beat 0 and 1 — it is a model fit, not a measured constant. The fork for Tekiō: keep one number per level, or move the fraction into the per-link `contribution` column of `exercise_muscle_groups`. Keep the constant at 0.5 now; the per-link column is the upgrade path. Do not replace 0.5 with an average of the pair results above — no study or practitioner holds such a number.
-
-**3. Zero or a quarter for level 3.** Nobody outside this codebase holds 0.25. Pelland's scheme drops anything below "meaningfully trained" to 0; the three measured minor-contributor pairs (hamstrings in squats twice, medial deltoid in bench) show no growth over 9–10 weeks. The decision this forces: **collapse to two tiers** — but first audit the link table, because the change only removes stimulus that is not there if level 3 is reserved for stabilisers and minor contributors. Any real synergist currently tagged level 3 (RP's own examples: glutes in squats, rear delts in rows, front delts in bench) must be relabelled level 2 before the tier is zeroed, or the edit deletes real stimulus. If the caller keeps 0.25 anyway, it ships as a labelled convention, not as a finding.
-
-#### Caveats
-- Population mismatch: every synergist trial is 8–10 weeks in untrained men with n = 9–43, almost all on biceps and triceps. The one trained-men trial (de França, n = 20) found compounds cover the synergists at least as well in trained lifters as in novices, so the level-2 credit is not a beginner artefact. Pelland's pool is 79 % male, mean age 25, mixed status. One trained adult sits somewhere in the 0.4–1.0 spread per pair, not at 0.5.
-- The fraction is hypertrophy-shaped. Strength gains in the same trials were exercise-specific (Mannarino: 10RM improved most on whatever exercise the arm trained), so crediting a row set as 0.5 of biceps *strength* is a looser claim than 0.5 of biceps *size*. S3 inherits this when it pools rep bands under one floor.
-- A per-muscle read cannot see regions: bench alone grows the lateral head of the triceps ≈ fully and the long head little; rows grow the proximal biceps and not the distal. 0.5 is right on average and wrong at the head level, and the app should not pretend otherwise.
-- 0.5 was never optimised. Pelland compared 0, 0.5 and 1 only; "fractional fits best" means 0.5 beat both extremes, not that it beats 0.4 or 0.6.
-- The level-3 evidence is thin: two squat trials (hamstrings, n = 17 and 34) and one bench trial (medial deltoid, n = 24). Enough to say a quarter set is unmeasured and the nearest measurements are zero; not enough to say *every* stabiliser gets nothing. The bracing muscles the claim names (abs, erectors, forearms) simply have no growth data from compound lifts without direct work.
-- What would move this number: a Pelland-style model comparison that includes 0.25 and 0.75 (would settle level 2's exact value); any trial showing a stabiliser grows from compound lifts alone (would resurrect a level-3 weight above 0); filling `exercise_muscle_groups.contribution` per link from the pair data above (would retire the level constant altogether).
-
-#### Source comment
-```
-// LEVEL_WEIGHT — level 2 (synergist) = 0.5: the best-fit "fractional" set counting in the largest dose-response
-// model (Pelland 2026) and synergist growth of ~0.4–1.0 × direct in trials (Mannarino 2021, Gentil 2015,
-// Brandão 2020). Level 3 = 0 (convention band 0–0.25): no study measures a quarter-set stimulus and measured
-// minor contributors did not grow (hamstrings in squats — Kubo 2019, Plotkin 2023; medial deltoid in bench —
-// Lanza 2024). See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S1, 2026-09-02):** level 2 stays **0.5** (supported). Level 3 stays
-**0.25 for now, labelled a convention.** The scout's default is 0, but its
-precondition is not met: an audit of `exercise_muscle_groups` the same day
-found 24 stimulus links at level 3, and roughly ten of them are real synergists
-(adductors in squats, upper back in rows, face pulls and reverse flys) that
-must move to level 2 before the tier can be zeroed, or the edit deletes real
-stimulus. The relabel is Peter's call on his own anatomy tags —
-[042](done/042-level-3-link-audit.md) carries the list and the proposed level per
-link, and zeroing the tier lands there. The bookkeeping fork is settled by
-construction: one floor for every muscle means the discount sits on the *set*
-(Pelland), not on the *target* (Israetel's written landmarks).
-**Landed 2026-09-03 (042, v1.14.0):** Peter ticked every row — 12 links to
-level 2, the rest left at 3 — and `LEVEL_WEIGHT[3]` is now **0, grounded**;
-inventory row 7.1 and ledger decision D13 record it.
-
-### S2 — statusFor / GAP_CUTOFF (the on-track cut and the ramp)
-
-**Claim:** Stimulus below the 10-weighted-sets/muscle/week floor is graded — every hard set buys some adaptation — so a continuous fill (sets ÷ floor) is the honest picture and the three-step cut in `statusFor` (0 → untouched, 0–10 → needs work, ≥10 → on track) is a coarsening of it. Sub-questions: (a) is any volume below the floor worth *zero* (a true threshold that would justify a step); (b) is `GAP_CUTOFF = 0.70` (7 sets/week) a physiological line or a display convention. Drives whether the Adaptations tab keeps three flat colours per muscle or draws Home's ramp, and where the "still a gap" callout stops.
-**Searched:** 2026-09-02 · **Verdict:** supported — the ramp is honest and no sub-floor threshold exists; the 0.70 line is **convention only**
-**Number to use:** fill = weighted sets ÷ 10 per week, continuous from 0; the only two steps with physiological content are **0** (no stimulus) and **1.0** (the grounded floor). `GAP_CUTOFF` 0.6–0.8 — default **0.70 (unchanged)**. No study draws a line at any fraction of the floor, but 0.70 sits just above the maintenance zone the literature does describe (roughly 0.1–0.6 of a full dose), so the callout stops nagging only once a muscle is clearly on the growth curve — a defensible convention, not a finding.
-
-#### Evidence
-- `[literature]` Hypertrophy rises with weekly sets in a graded, per-set way: each additional weekly set added ES +0.023 ≈ +0.37 % growth, modelled as a linear per-set slope with no threshold term. Systematic review + meta-analysis, 15 studies / 34 treatment groups, mixed training status — [Schoenfeld, Ogborn & Krieger 2017, J Sports Sci](https://pubmed.ncbi.nlm.nih.gov/27433992/) (PMID verified via eutils)
-- `[literature]` The largest dose-response model finds a 100 % posterior probability that the marginal slope of volume is > 0 for both hypertrophy and strength, with *diminishing* returns (much steeper flattening for strength). A concave curve means the first sets buy the most per set — the opposite of a threshold. Fractional set counting (indirect sets = 0.5) fit best. Bayesian meta-regression, 67 studies, n = 2,058 (79 % male, mean age 25) — [Pelland et al. 2026, Sports Med](https://pubmed.ncbi.nlm.nih.gov/41343037/) (PMID verified via eutils)
-- `[literature]` One set per exercise already produces hypertrophy: ES 0.24 for 1 set vs 0.34 for 2–3 and 0.44 for 4–6 sets; multiple sets give ~40 % more, not "some vs none". Meta-analysis, 8 studies / 19 treatment groups / 55 effect sizes, trained and untrained — [Krieger 2010, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/20300012/) (PMID verified via eutils)
-- `[literature]` In resistance-trained men, 1 set per exercise × 3 sessions/week (≈3 sets/muscle/week, ~0.3 of Tekiō's floor) still increased muscle size at most sites and matched the 3- and 5-set groups for strength; higher volume grew more. RCT, 34 resistance-trained men, 8 weeks — [Schoenfeld et al. 2019, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/30153194/) (PMID verified via eutils)
-- `[literature]` A single set performed 1–3×/week was sufficient for significant 1RM gains in resistance-trained men (overall +12.09 kg, 95 % CI 8.16–16.03). Systematic review + meta-analysis, 6 studies (5 pooled) — [Androulakis-Korakakis, Fisher & Steele 2020, Sports Med](https://pubmed.ncbi.nlm.nih.gov/31797219/) (PMID verified via eutils)
-- `[literature]` Intermediate–advanced powerlifters gained strength on ~3–6 working sets of 1–5 reps per week above 80 % 1RM, spread over 1–3 sessions. Multi-study paper (interviews, surveys, two interventions, n = 25 in the interventions) — [Androulakis-Korakakis et al. 2021, Front Sports Act Living](https://pubmed.ncbi.nlm.nih.gov/34527944/) (PMID verified via eutils)
-- `[literature]` Strength follows the same graded shape: low weekly sets ES 0.82 (95 % CI 0.47–1.17) vs high 1.01 (0.70–1.32) — the low category is large, not near zero. Meta-analysis, 9 studies / 61 treatment groups, novice to well-trained — [Ralston et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28755103/) (PMID verified via eutils)
-- `[literature]` After 16 weeks at 3 sessions/week, cutting the dose to one-third or one-ninth for 32 weeks preserved the muscle gained in young adults (20–35 y) but not in older adults (60–75 y); strength was largely retained even with complete detraining. This is the *maintenance* line: ~1/9–1/3 of a full dose keeps muscle in the young. Two-phase randomised trial, n = 70 — [Bickel, Cross & Bamman 2011, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/21131862/) (PMID verified via eutils)
-- `[literature]` Every resistance-training prescription beat control for both strength and hypertrophy; for hypertrophy "all prescriptions comparably promoted" growth. Any dose above zero counts. Bayesian network meta-analysis, 178 studies (n = 5,097) strength / 119 studies (n = 3,364) hypertrophy — [Currier et al. 2023, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/37414459/) (PMID verified via eutils)
-- `[literature]` A time-efficient practical minimum of 4 weekly sets per muscle group at 6–15 RM (≈0.4 of the floor) is proposed as still growth-producing. Narrative review — lowest literature tier — [Iversen et al. 2021, Sports Med](https://pubmed.ncbi.nlm.nih.gov/34125411/) (PMID verified via eutils)
-- `[practitioner consensus]` The adequacy floor sits near 10 working sets/muscle/week for a trained adult (Galpin: "target 10 working sets per muscle group, per week", up to 25 if highly trained; Israetel's MAV band 12–20 starts just above it). Held by Galpin and Israetel — [Galpin, Huberman Lab guest series pt 2](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth). Already recorded in 010; repeated here only because it anchors the 1.0 step.
-- `[single-practitioner position]` Israetel's landmark model is the only roster position that draws *steps* below the floor: MV ≈ 6 sets/week "preserve[s] your current muscle mass", below MV you lose, between MV and MEV you maintain but "only maintain" — i.e. growth is zero until MEV. Israetel only; Galpin names a single floor and no maintenance step; RP itself cut its MEV estimates in 2018 because "new research on even experienced lifters shows hypertrophy with much lower volumes than we had previously programmed" — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth), [RP Physique Templates 2.0](https://rpstrength.com/expert-advice/male-and-female-physique-templates-20)
-- `[single-practitioner position]` No roster member, and no located study, puts a line at 70 % of a target — or at any fraction of one. Nobody holds the number; it exists only in `GapMap.tsx`.
-
-#### Where they split
-The fork is Israetel's *threshold* model against the meta-analytic *curve*. Israetel's landmarks say volume below MEV grows nothing (a flat step, then growth); Schoenfeld 2017, Pelland 2026, Krieger 2010 and Currier 2023 fit curves that rise from the first set and flatten, and the trained-men trials (Schoenfeld 2019 at ~3 sets/week, Androulakis-Korakakis 2020 at one set) show growth and strength gains well inside Israetel's "maintenance only" band. Galpin sits with the literature: one floor, no step beneath it. This forces one choice on Tekiō: **is a muscle's state a category or a fraction?** The literature says fraction — draw Home's ramp on the tab, one ramp on both surfaces, and treat `statusFor`'s middle band as a *label* of the ramp (0 < fill < 1), never as a third flat colour with its own edge. The only step with physiological content below 1.0 is 0 vs > 0 ("untouched" is real: no set, no stimulus). Do not fix this by placing the middle edge at Israetel's MV or MEV — that would present one practitioner's model as the literature's shape.
-
-#### Caveats
-- Population mismatch: the dose-response models are group averages over 6–12 weeks in mostly young men (Pelland 79 % male, mean age 25); the trained-men data that matter most here are small (Schoenfeld 2019 n = 34; the powerlifter interventions n = 25). One trained adult sits somewhere on the curve, not at a point.
-- Age moves the maintenance line: Bickel's 60–75 y group needed more than one-third of the dose to keep muscle. A user past ~40 should expect the low end of the ramp (0.1–0.35) to maintain less than it does in the trials.
-- The ramp bands happen to bracket the maintenance literature — 0.10 ≈ Bickel's 1/9 dose, 0.35 ≈ his 1/3 dose, 0.70 just above Israetel's MV (≈ 0.6 of a 10-set floor). That is a coincidence worth noting, not a grounding: the steps were chosen for ink, and the literature merely does not contradict them.
-- The fraction is only as honest as its numerator and denominator: it assumes fractional set counting (S1) and the 10-set floor pooled across rep bands (S3). If S3 moves the floor, every band on the ramp moves with it and 0.70 means a different set count.
-- What would move this number: a trained-population trial showing *zero* growth at 3–6 direct sets/week (a real MEV) would justify a step at that fraction; a decision to change the read's meaning from "adequate" to "optimal" (010 §Where they split) would move the 1.0 step and, with it, where any gap line sits.
-
-#### Source comment
-```
-// statusFor — three states are a label of a continuous fill (sets ÷ floor), not three physiological
-// bands: stimulus is graded from the first set (Schoenfeld 2017, Pelland 2026, Krieger 2010; trained
-// men at ~3 sets/wk still grow, Schoenfeld 2019). Only 0 (untouched) and ≥ floor carry meaning.
-// See docs/roadmap/039-adaptations-read-grounding.md#grounding
-
-// 0.70 — display convention, not a physiological line: no study places a cutoff at any fraction of the
-// floor; 0.70 sits just above the maintenance zone (Bickel 2011: 1/9–1/3 of a full dose keeps muscle
-// in young adults; Israetel MV ≈ 0.6 × floor). See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S2, 2026-09-02):** `GAP_CUTOFF` stays 0.70 and `statusFor` keeps its three states, but both are now labelled as a *convention* over a continuous fill. 031 draws Home's ramp on the Adaptations tab (one ramp, both surfaces) instead of three flat per-muscle colours; the middle band is a label of the ramp, not a physiological edge.
-
-### S3 — WEEKLY_SET_FLOOR / CYCLE_SET_TARGET as an adaptation-agnostic total
-
-**Claim:** 10 level-weighted hard sets per muscle per week (60 per 6-week cycle), counted across every rep range — a 3-rep strength set, a 10-rep hypertrophy set, a 20-rep endurance set and a power set each worth one set — is a defensible floor for *total* muscle stimulus, because hypertrophy is the most volume-hungry of the four muscle-linked qualities and hard sets grow muscle about equally across the load spectrum. Drives Home's per-muscle fill (`muscleStimulus().total ÷ WEEKLY_SET_FLOOR × weeks`) and the "what's missing" ranking. The *value* 10 is settled in 010 D10 and is not re-run here; this run rules on the *pooling*.
-**Searched:** 2026-09-02 · **Verdict:** partially supported — pooling across 6–30+ reps is **supported**; pooling 1–5-rep heavy sets in full is **partially supported** (default: count in full); pooling power sets is **not supported** (default: exclude from the total); "meeting the floor covers strength, endurance and power too" is **partially supported** — it covers their *volume*, it is silent on strength's load, endurance's rep range and power's velocity.
-**Number to use:** 10–20 pooled hard sets/muscle/week — default **10 (unchanged)**, cycle **60 (unchanged; honest band 50–60 per 010)**, where "hard set" = any resistance set at 1–30+ reps taken within a few reps of failure, and power-tagged sets (jumps, throws, swings — never near failure) count in `byQuality.power` only, at **0** toward the pooled total. A set near failure is the unit the volume literature is built on; a jump is not that unit, and no study gives it a fraction.
-
-#### Evidence
-
-*(a) Is a hard set worth the same across loads?*
-
-- `[literature]` Hypertrophy is similar between low-load (≤60 % 1RM) and high-load (>60 % 1RM) training taken to failure; 1RM strength is significantly greater with high load. Systematic review + meta-analysis, 21 studies, mixed training status — [Schoenfeld, Grgic, Ogborn & Krieger 2017, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/28834797/) (PMID verified via eutils)
-- `[literature]` No hypertrophy difference between low (>15 RM), moderate (9–15 RM) and high (≤8 RM) loads to failure (p = 0.113–0.469); strength superior for high and moderate vs low load (SMD 0.60–0.63 and 0.34–0.35). Network meta-analysis, 28 studies, n = 747 healthy adults, trained and untrained — [Lopez et al. 2021, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/33433148/) (PMID verified via eutils)
-- `[literature]` The *set* is a valid unit of hypertrophy volume "when the repetition range lies between 6 and 20+" and sets are taken to failure or near it. This is the review that licenses "a set is a set" — and it stops at 6 reps. Systematic review, 14 studies, resistance-trained 18–35 y — [Baz-Valle et al. 2021 (epub 2018), J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/30063555/) (PMID verified via eutils)
-- `[literature]` With volume load equated, 40 %, 60 % and 80 % 1RM grew the quadriceps equally (20.5 / 20.4 / 19.5 %) and the elbow flexors equally (25.3 / 25.1 / 25.0 %); 20 % 1RM grew less than half as much (8.9 % / 11.4 %). The floor of load-independence is ~30–40 % 1RM, not zero. Within-subject contralateral-limb trial, 30 untrained men, 12 weeks — [Lasevicius et al. 2018, Eur J Sport Sci](https://pubmed.ncbi.nlm.nih.gov/29564973/) (PMID verified via eutils)
-- `[literature]` In well-trained men, 25–35 reps/set and 8–12 reps/set produced the same thickness gains (elbow flexors 8.6 vs 5.3 %, quads 9.5 vs 9.3 %, ns); squat 1RM favoured heavy (19.6 vs 8.8 %); upper-body endurance favoured light (+16.6 vs −1.2 %). RCT, 18 resistance-trained men, 8 weeks — [Schoenfeld et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25853914/) (PMID verified via eutils)
-- `[literature]` For hypertrophy "all prescriptions comparably promoted" growth; for strength, loads >80 % 1RM maximised gains (top-ranked SMD 1.60). Bayesian network meta-analysis, 178 studies (n = 5,097) strength / 119 studies (n = 3,364) hypertrophy — [Currier et al. 2023, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/37414459/) (PMID verified via eutils)
-- `[literature]` **The heavy end (1–5 reps), set-equated:** 4 × 3–5 reps at ~90 % 1RM grew lean arm mass *more* than 4 × 10–12 at ~70 % (5.2 vs 2.2 %) and bench 1RM more (14.8 vs 6.9 %). A heavy set counted per set is at least a full set. RCT, 29 resistance-trained men (14 / 15), 8 weeks — [Mangine et al. 2015, Physiol Rep](https://pubmed.ncbi.nlm.nih.gov/26272733/) (PMID verified via eutils)
-- `[literature]` **The heavy end, volume-load-equated:** 7 × 3RM and 3 × 10RM produced no significant difference in biceps thickness; strength favoured 3RM. Read per set this hints a triple is worth ~0.4 of a 10-rep set, but the design cannot separate that from the extra sets — it is a caveat on Mangine, not a contradiction. RCT, 17 resistance-trained men, 8 weeks — [Schoenfeld et al. 2014, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/24714538/) (PMID verified via eutils)
-- `[literature]` The classic three-zone trial: 3–5RM and 9–11RM both hypertrophied all three fibre types; 20–28RM did not, but was the only zone to improve local endurance and aerobic power. RCT with control, 32 untrained men, 8 weeks — [Campos et al. 2002, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/12436270/) (PMID verified via eutils)
-- `[literature]` The repetition-continuum re-examination: hypertrophy can be obtained across a wide loading spectrum, strength is load-specific, local endurance favours light loads. Narrative review — lowest literature tier — [Schoenfeld, Grgic, Van Every & Plotkin 2021, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/33671664/) (PMID verified via eutils)
-
-*(b) Does a set that stops short of failure still count in full?*
-
-- `[literature]` Heavy sets do not need failure: quadriceps CSA +7.7 % not-to-failure vs +8.1 % to failure at high load (1RM +33.4 vs +33.8 %). Light sets do: +2.8 % not-to-failure vs +7.8 % to failure at low load. Within-subject, 4 conditions, 25 untrained men, 8 weeks — [Lasevicius et al. 2022, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/31895290/) (PMID verified via eutils)
-- `[literature]` In trained lifters, 1–2 RIR matched failure for quadriceps thickness (+0.182 vs +0.181 cm). RCT, within-subject legs, 18 resistance-trained (12 M / 6 F), 8 weeks — [Refalo et al. 2024, J Sports Sci](https://pubmed.ncbi.nlm.nih.gov/38393985/) (PMID verified via eutils)
-- `[literature]` Failure vs non-failure: trivial advantage for failure (ES 0.19, 95 % CI 0.00–0.37); momentary failure vs non-failure ES 0.12 (CI −0.13–0.37, ns). Systematic review + meta-analysis, 15 studies, healthy adults — [Refalo et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36334240/) (PMID verified via eutils)
-- `[literature]` Failure vs non-failure: no difference for strength (ES −0.09) or hypertrophy (ES 0.22, CI −0.11–0.55); trained subgroup shows a small failure benefit for hypertrophy (ES 0.15, CI 0.03–0.26). Systematic review + meta-analysis, 15 studies, young adults — [Grgic et al. 2022, J Sport Health Sci](https://pubmed.ncbi.nlm.nih.gov/33497853/) (PMID verified via eutils)
-- `[literature]` Continuous dose-response: hypertrophy slopes for RIR were negative with CIs excluding zero (more growth the closer to failure, "modest" fit); strength slopes contained zero ("similar across a wide range of RIR"). Series of multilevel meta-regressions; study count not stated in the abstract — [Robinson et al. 2024, Sports Med](https://pubmed.ncbi.nlm.nih.gov/38970765/) (PMID verified via eutils)
-- `[literature]` Velocity-loss thresholds: higher in-set fatigue → more hypertrophy (b = 0.006 per % VL, CI 0.001–0.012) but worse countermovement jump (b = −0.040, CI −0.079 to −0.001), sprint and velocity; strength and endurance gains unaffected by VL magnitude. Systematic review + meta-analysis, 18 acute + 19 longitudinal studies — [Jukic et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36178597/) (PMID verified via eutils)
-- `[literature]` Stopping at 20 % velocity loss (≈40 % fewer reps than 40 % VL) gave similar squat strength, *greater* CMJ gain (+9.5 vs +3.5 %), preserved type IIX fibres — and *less* vastus lateralis hypertrophy. Fatigue-free sets are power sets, and power sets grow less muscle. RCT, 22 young men (12 / 10), 8 weeks — [Pareja-Blanco et al. 2017, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/27038416/) (PMID verified via eutils)
-
-*(c) Is the most volume-hungry quality's floor the right umbrella?*
-
-- `[literature]` Volume raises both hypertrophy and strength (100 % posterior probability) with diminishing returns "considerably more pronounced" for strength; fractional set counting fit best. Bayesian meta-regression, 67 studies, n = 2,058 — [Pelland et al. 2026, Sports Med](https://pubmed.ncbi.nlm.nih.gov/41343037/) (PMID verified via eutils)
-- `[literature]` Strength's floor is far below 10: one set at ~70–85 % 1RM, 2–3×/week, to high effort, significantly raises 1RM in trained men. Systematic review + meta-analysis, 6 studies — [Androulakis-Korakakis, Fisher & Steele 2020, Sports Med](https://pubmed.ncbi.nlm.nih.gov/31797219/) (PMID verified via eutils); powerlifters progress on ~3–6 sets of 1–5 reps/week above 80 % 1RM — [Androulakis-Korakakis et al. 2021, Front Sports Act Living](https://pubmed.ncbi.nlm.nih.gov/34527944/) (PMID verified via eutils)
-- `[literature]` Strength's volume curve is shallow: low weekly sets ES 0.82, medium 0.98, high 1.01. Meta-analysis, 9 studies / 61 treatment groups — [Ralston et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28755103/) (PMID verified via eutils)
-- `[literature]` Power's dose is counted in jumps, not sets: minimal effective dosage "4 weeks (8 sessions), and 92 weekly jumps". Systematic review + meta-analysis, 11 studies, n = 744 — youth athletes grouped by maturity, so a population mismatch — [Ramirez-Campillo et al. 2023, Sports Med Open](https://pubmed.ncbi.nlm.nih.gov/37036542/) (PMID verified via eutils). Across the lifespan (8–73 y), reactive-strength gains favoured >7 weeks and 3 sessions/week, but "none of the analysed training variables explained the effects" in meta-regression — no set-count dose-response exists for power. Systematic review + meta-analysis, 61 studies, n = 2,576 — [Ramirez-Campillo et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36906633/) (PMID verified via eutils)
-- `[literature]` Local muscular endurance is rep-range-specific (Schoenfeld 2015: +16.6 % light vs −1.2 % heavy; Campos 2002: only the 20–28RM zone improved it). **No systematic review or meta-analysis of a weekly-set dose-response for local muscular endurance was located** (searched 2026-09-02); the pooled floor cannot claim to cover it.
-
-*(d) The roster*
-
-- `[single-practitioner position]` A working set counts toward the landmarks only inside "Load range: 30–85 % of 1RM, Rep range: 5–30 reps per set, Effort level: 0–4 reps in reserve", and within that band "a 5-rep set and a 30-rep set produce similar stimulus and fatigue". Sets below 5 reps / above 85 % 1RM, and any set at ≥5 RIR, are outside the model. Israetel only; Galpin's band starts at 4 reps and he is silent on pooling — [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
-- `[single-practitioner position]` Hypertrophy: "target 10 working sets per muscle group, per week (or up to 25 if highly trained)", "reps between 4–30 per set, stopping about 2 reps short of failure". Strength: the 3-to-5 concept — "3–5 exercises, 3–5 repetitions per set, 3–5 working sets, rest 3–5 minutes", 3–5 days/week; "you don't have to go to failure to see strength gains". A per-session prescription with no per-muscle weekly floor, and no statement on whether those heavy sets count toward the 10. Galpin only — [Huberman Lab guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/)
-- `[practitioner consensus]` Power work is quality work, programmed apart from volume: Galpin puts it at 40–70 % 1RM, "quick, explosive", never to fatigue; Israetel's band requires 0–4 RIR, which a jump or swing set never meets. Neither counts a power set as a hypertrophy working set. Held by Galpin and Israetel — [Huberman Lab, Galpin episode](https://www.hubermanlab.com/episode/dr-andy-galpin-how-to-build-strength-muscle-size-and-endurance), [RP volume landmarks](https://rpstrength.com/blogs/articles/training-volume-landmarks-muscle-growth)
-
-#### Where they split
-
-Two forks, one real.
-
-**1. Does a heavy triple fill the muscle's floor?** Israetel's landmark model says no — sets under 5 reps or over 85 % 1RM are not "volume" and sit in a separate strength bucket. Galpin's hypertrophy band (4–30 reps) admits a 4-rep set and says nothing about a triple, while his 3-to-5 rule programs strength per *session*, not per muscle per week. The literature sides with counting it: the one set-equated trained-men trial (Mangine 2015) found 4 × 3–5 grew as much or more than 4 × 10–12, and Campos 2002 found 3–5RM fibres grew like 9–11RM fibres; Schoenfeld 2014's 7 × 3 ≈ 3 × 10 is the only hint that a triple buys less per set, and its design cannot say so. Baz-Valle's set-as-unit review stops at 6 reps, so below that the per-set worth is honestly a band, ~0.4–1.0. **Tekiō must choose: pool 1–5-rep sets in full, or discount/exclude them as Israetel does.** Pool them in full — it is the doctrine's own rule (§6.0, "a set is a set"), the trained-men data lean that way, and any discount would be a number nobody holds. Do not resolve this by counting triples at 0.5: that is Pelland's *indirect-muscle* convention borrowed for a different question.
-
-**2. Does a power set fill it?** No split — this is the rare case where both practitioners and the literature agree, and the app disagrees with all of them. A jump, throw or swing set is never near failure; Israetel's band excludes it by RIR, Galpin programs it as a separate quality, and the trials (Pareja-Blanco 2017; Lasevicius 2018 at 20 % 1RM; Lasevicius 2022 low-load not-to-failure at +2.8 %) show far-from-failure and very light sets grow a fraction of a hard set, with the fraction unmeasured for ballistic work. **Tekiō must choose: count power sets in the pooled total (simple, over-counts), or count them in `byQuality.power` only (honest, one branch in `muscleStimulus`).** Exclude them. The pooled floor is a *hard-set* floor — that is what its 10 was grounded on — and a muscle trained only with swings reading "fed" on Home would be a costume on one fact (P2). The power map still shows those sets, so nothing is hidden.
-
-The claim's second half — "meeting 10 pooled sets covers the other three qualities" — splits by *dimension*, not by person. Strength needs less volume than hypertrophy (Pelland's steeper flattening; Androulakis-Korakakis; Ralston), so 10 pooled sets is enough *volume* for it; but strength is load-specific (Lopez SMD 0.60; Currier >80 % 1RM), endurance is rep-range-specific (Schoenfeld 2015, Campos), and power is velocity-specific (Jukic, Pareja-Blanco). The pooled total answers "has this muscle done enough hard work" and nothing else; the per-quality maps answer the specificity questions. That division of labour is exactly §6.0's design, and the total should be labelled as *hard sets*, not as coverage of four qualities.
-
-#### Caveats
-
-- Population mismatch: the load-equivalence trials are small and mostly untrained (Lasevicius 2018 n = 30, 2022 n = 25; Campos n = 32; Pareja-Blanco n = 22); the trained-men trials that decide the heavy end are n = 17–29 (Schoenfeld 2014, 2015; Mangine; Refalo 2024). The meta-analyses pool young adults (Pelland: 79 % male, mean age 25). One trained adult sits inside the bands, not on a point.
-- **The app cannot see effort.** Tekiō logs reps and load, not RIR or velocity loss. The pooling therefore *assumes* every non-power set is a hard set. The literature says that assumption fails for light sets stopped early (Lasevicius 2022: +2.8 vs +7.8 %) and holds for heavy sets stopped 1–2 short (Refalo 2024). A 20-rep set logged at 8 RIR is over-counted and nothing here can catch it; an RIR field would.
-- Light loads have a floor: below ~30 % 1RM a set to failure grows less (Lasevicius 2018 at 20 %). Any set the app classifies as muscular endurance at very light load is over-counted by an unknown amount; there is no way to see load-relative-to-1RM without a 1RM.
-- The 1–5-rep verdict rests on two small trained-men trials that point different ways when read per set. A set-equated trial of 1–5 vs 8–12 reps with direct muscle measures in trained adults would settle it; until then full credit is the default, not a finding.
-- Power exclusion is a classification change, not a new number: it moves sets between `total` and `byQuality.power` and depends on the keyword rule (row 2.6, S4) and the one override column being right. Today only one override exists (Dead Hang → muscular_endurance), so the practical effect on Home is small; that is a reason to do it cheaply, not a reason to skip it.
-- The cycle arithmetic (10 × 6 = 60 with a half-volume deload → honest 50–60) is unchanged from 010 and not re-argued here.
-- What would move this number: an RIR or velocity capture (would let the app discount sets far from failure instead of assuming); a set-equated heavy-vs-moderate trained trial (would fix the 1–5-rep worth); any dose-response for local muscular endurance (would say whether 10 pooled sets covers it); a decision to switch the read from "adequate" to "optimal" (010 §Where they split) would move the floor to 12–20 and the cycle target with it.
-
-#### Source comment
-```
-// 10 — weekly hard-set floor per muscle, pooled across every rep range (1–5 / 6–15 / 16–30+) at full
-// value: hypertrophy per hard set is load-independent from ~30–40 % 1RM up (Schoenfeld 2017, Lopez 2021,
-// Lasevicius 2018; set = unit, Baz-Valle 2018) and it is the volume-hungriest quality (Pelland 2026,
-// Androulakis-Korakakis 2020). Power-tagged sets are NOT hard sets — they count in byQuality.power only
-// (Pareja-Blanco 2017, Jukic 2023). Says nothing about strength's load, endurance's rep range or
-// power's velocity — the per-quality maps do. See docs/roadmap/039-adaptations-read-grounding.md#grounding
-
-// 60 — WEEKLY_SET_FLOOR × CYCLE, hard sets pooled across rep ranges, power sets excluded; with a
-// half-volume deload the honest cycle band is 50–60 (010). Value grounded in 010 D10, pooling in
-// 039 S3. See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S3, 2026-09-02):** the floor is a *hard-set* floor. `WEEKLY_SET_FLOOR = 10`
-now carries the pooling claim and `CYCLE_SET_TARGET` is derived from it
-(`× CYCLE`), both unchanged in value. Sets at 1–5 reps count in full (the
-literature leans that way and a discount would be a number nobody holds).
-**Power sets leave `total`:** `muscleStimulus` counts a power set (override or
-keyword) in `byQuality.power` only, so a muscle trained only with swings no
-longer reads "fed" on Home. The §6.0 bracket therefore holds over the three
-hard qualities, with power outside it. The muscle sheet says *hard sets* and
-that power sets count on their own map; its two PLACEHOLDER marks on the
-stimulus target are gone. Not addressed, by design: the app cannot see effort,
-so every non-power set is assumed hard (an RIR field would fix that — not this
-brief).
-
-**Amended 2026-09-03 (§6.6):** the `× CYCLE` above is retired. The rate stays;
-the window it multiplies becomes `MUSCLE_WINDOW_DAYS` (S12), and
-`CYCLE_SET_TARGET` goes with it.
-
-
-### S12 — MUSCLE_WINDOW_DAYS (the muscle read's own window)
-
-**Claim:** `MUSCLE_WINDOW_DAYS = 14` — a muscle's level-weighted hard sets are summed over a rolling 14-day window and compared with 20 (= `WEEKLY_SET_FLOOR` 10 × 14 / 7), shown as the weekly rate. It drives Home's per-muscle fill and the "what's missing" ranking, i.e. how many days of silence turn a fed muscle into a gap. Sub-claims: (a) 14 d is long enough that a muscle trained once a week is not a gap on the morning of its own session; (b) 14 d is short enough that a muscle silent for the whole window has genuinely missed its dose, because measurable loss of the adaptation begins around or after two weeks without stimulus. Replaces the ungrounded 42 d / 60.
-**Searched:** 2026-09-03 · **Verdict:** partially supported — the *band* is supported at both edges (must exceed one weekly rhythm; must stay under the ~3-week strength-retention limit); the *value* 14 inside it is a convention, because no study tests a 14-day accounting window and the per-session anabolic signal the brief assumed lasts "5–7 days" actually ends in 1–2 days
-**Number to use:** 8–21 days — default **14**. Volume-equated, once a week per muscle matches two to five times a week in trained men, so a muscle 7 days silent is not under-dosed and the window must be longer than a week; strength holds for 2–3 weeks of complete cessation and the earliest measured tissue change in trained lifters is at 14 days, so a window past ~21 days would hide real loss. 14 is the only whole-week value in that band, makes one missed weekly dose a half-fill and two a gap, and shares a rhythm with the 14-day cardio staleness already grounded.
-
-#### Evidence
-
-*(a) Is a muscle trained once a week under-dosed? — the lower edge*
-
-- `[literature]` When weekly volume is equated, training frequency "does not significantly or meaningfully impact muscle hypertrophy"; a modest effect favouring higher frequency appears only in studies where higher frequency also meant more sets. Systematic review + meta-analysis, 25 studies, mixed training status with a resistance-trained sub-analysis — [Schoenfeld, Grgic & Krieger 2019, J Sports Sci](https://pubmed.ncbi.nlm.nih.gov/30558493/) (PMID 30558493, verified via eutils)
-- `[literature]` Same for strength: effect sizes climb 0.74 → 0.82 → 0.93 → 1.08 from 1 to 4+ sessions/week, but "when the volume is equated, there was no significant effect of RT frequency on muscular strength gains" (p = 0.421). Systematic review + meta-analysis, 22 studies, trained and untrained, young and older — [Grgic et al. 2018, Sports Med](https://pubmed.ncbi.nlm.nih.gov/29470825/) (PMID 29470825, verified via eutils)
-- `[literature]` The earlier, non-equated pool did find twice a week beats once (ES 0.49 ± 0.08 vs 0.30 ± 0.07, p = 0.002) and concluded "major muscle groups should be trained at least twice a week" — the source of the practitioner rule below; its 2019 successor attributes the gap to volume. Systematic review + meta-analysis, 10 studies — [Schoenfeld, Ogborn & Krieger 2016, Sports Med](https://pubmed.ncbi.nlm.nih.gov/27102172/) (PMID 27102172, verified via eutils)
-- `[literature]` In trained men, 1 session/muscle/week (16 sets in one go) vs 2 sessions/week (8 + 8), volume equated: no difference in 1RM squat, 1RM bench, or thickness of elbow flexors, elbow extensors or quadriceps after 8 weeks. RCT, 20 trained men (10 / 10) — [Brigatto et al. 2019, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/29528962/) (PMID 29528962, verified via eutils)
-- `[literature]` In well-trained men (6.9 ± 3.1 y), 1×/week split vs 5×/week total-body at the same 10–15 sets/muscle/week: bench +5.6 vs +9.7 kg (p = 0.168), squat +8.0 vs +12.0 kg (p = 0.312), lean mass +0.5 vs +0.8 kg (p = 0.619) — "similar overload strategies … when the sets and intensity are equated per week". RCT, 23 well-trained men (12 / 11), 8 weeks — [Gomes et al. 2019, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/29489727/) (PMID 29489727, verified via eutils)
-- `[literature]` The counter-case is *not* volume-equated: 1×/week split vs 3×/week total-body in well-trained men grew forearm flexors more at 3× with no strength difference — the higher-frequency arm also did the sets on more days. RCT, 20 well-trained men (10 / 10), 8 weeks — [Schoenfeld et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25932981/) (PMID 25932981, verified via eutils). Same pattern at 1× vs 5× — RCT, 18 well-trained men — [Zaroni et al. 2019, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/31260419/) (PMID 31260419, verified via eutils)
-- `[literature]` In untrained subjects with volume matched, 1×/week and 3×/week both grew the quadriceps; strength gain was larger at 3× (65.2 vs 43.5 % MVC). Frequency buys strength (a skill) in novices even when it buys no size. RCT, 20 untrained (10 / 10) — [Ochi et al. 2018, Front Physiol](https://pubmed.ncbi.nlm.nih.gov/30013480/) (PMID 30013480, verified via eutils)
-
-*(b) How long does one session's signal last? — why the window is not an MPS window*
-
-- `[literature]` Mixed muscle protein synthesis after heavy resistance exercise: +50 % at 4 h, +109 % at 24 h, back to within 14 % of control by 36 h. n = 6 young men, exercised vs control arm — [MacDougall et al. 1995, Can J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/8563679/) (PMID 8563679, verified via eutils)
-- `[literature]` Fractional synthesis +112 % at 3 h, +65 % at 24 h, +34 % at 48 h; net balance positive "for up to 48 h". n = 8 untrained (4 M / 4 F) — [Phillips et al. 1997, Am J Physiol](https://pubmed.ncbi.nlm.nih.gov/9252485/) (PMID 9252485, verified via eutils)
-- `[literature]` Training *shortens* the response: after 8 weeks of unilateral training the trained leg's synthesis was back to rest by 28 h while the untrained leg was still +70 % at 28 h — "resistance training attenuates the protein synthetic response … by shortening the duration for which protein synthesis is elevated". Within-subject unilateral RCT, n = 10 young men — [Tang et al. 2008, Am J Physiol Regul Integr Comp Physiol](https://pubmed.ncbi.nlm.nih.gov/18032468/) (PMID 18032468, verified via eutils)
-- `[literature]` Review of the same: "exercise-induced increases in MPS are shorter lived and peak earlier in the trained state than in the untrained state". Narrative review — lowest literature tier — [Damas, Phillips et al. 2015, Sports Med](https://pubmed.ncbi.nlm.nih.gov/25739559/) (PMID 25739559, verified via eutils). Myofibrillar synthesis still elevated at 24 and 48 h in weeks 1, 3 and 10 of training, attenuating with training. Longitudinal biopsy study, n = 10 untrained men — [Damas et al. 2016, J Physiol](https://pubmed.ncbi.nlm.nih.gov/27219125/) (PMID 27219125, verified via eutils). Feeding sensitivity "for at least 24 h" — n = 15 young men — [Burd et al. 2011, J Nutr](https://pubmed.ncbi.nlm.nih.gov/21289204/) (PMID 21289204, verified via eutils)
-- `[literature]` The mechanistic case for frequency: because the trained response is short, "increasing the training frequency … may be a more appropriate strategy for trained individuals" — a hypothesis paper, contradicted at the outcome level by the volume-equated trials above. Narrative review — lowest literature tier — [Dankel et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/27752983/) (PMID 27752983, verified via eutils)
-
-*(c) When does a silent muscle start losing what it built? — the upper edge*
-
-- `[literature]` Training cessation reduces every component of muscular performance — submaximal strength SMD −0.62, maximal force −0.46, maximal power −0.20 — with "a dose-response relationship between the amplitude of SMD and the duration of training cessation"; the effect is larger over 65 y and in inactive people. The abstract does not give duration strata and the full text is paywalled, so no day-threshold is quoted from it. Meta-analysis, 103 studies — [Bosquet et al. 2013, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/23347054/) (PMID 23347054, verified via eutils)
-- `[literature]` "Strength levels can be maintained for up to 3 weeks of detraining, but decay rates will increase thereafter (i.e. 5–16 weeks)"; across the pool strength fell 14.5 % over a mean 7.2 ± 5.8 weeks off and power 0.4 % over 7.6 weeks. Systematic review, 27 studies, n = 1,015 elite rugby / American-football players — [McMaster et al. 2013, Sports Med](https://pubmed.ncbi.nlm.nih.gov/23529287/) (PMID 23529287, verified via eutils)
-- `[literature]` Strength performance is "readily retained for up to 4 wk of inactivity", while "fibre cross-sectional area declines rapidly in strength/sprint athletes" and eccentric force / sport-specific power may fall sooner. Narrative review — lowest literature tier — [Mujika & Padilla 2001, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/11474330/) (PMID 11474330, verified via eutils); Part I of the same pair (short-term, < 4 weeks): "training-induced changes in fibre cross-sectional area are reversed, but strength performance declines are limited" — [Mujika & Padilla 2000, Sports Med](https://pubmed.ncbi.nlm.nih.gov/10966148/) (PMID 10966148, verified via eutils)
-- `[literature]` **The 14-day point in trained lifters:** after exactly 14 days off, bench −1.7 % (ns), squat −0.9 % (ns), eccentric knee-extension force −12 % (significant), **type II fibre area −6.4 % (significant)** — "short-term resistive exercise detraining may thus specifically affect eccentric strength or the size of the Type II muscle fibers, leaving other aspects of neuromuscular performance uninfluenced". Pre/post, 12 power athletes (powerlifters and Division I football players) — [Hortobágyi et al. 1993, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/8371654/) (PMID 8371654, verified via eutils)
-- `[literature]` After 8 weeks of training, 2 weeks of complete detraining left leg-press strength unchanged in resistance-trained men. RCT (whey vs placebo, detraining common to both), 20 resistance-trained men — [Hwang et al. 2017, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/28328712/) (PMID 28328712, verified via eutils)
-- `[literature]` A 3-week gap cost nothing measurable in novices: 6 weeks on / 3 weeks off / 6 weeks on — "no significant decreases in muscle CSA and 1-RM" during the 3-week break, and the final 15-week result matched continuous training. RCT, 15 untrained young men — [Ogasawara et al. 2011, Clin Physiol Funct Imaging](https://pubmed.ncbi.nlm.nih.gov/21771261/) (PMID 21771261, verified via eutils). Repeated three times over 24 weeks: same total hypertrophy as continuous — RCT, 14 untrained young men — [Ogasawara et al. 2013, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/23053130/) (PMID 23053130, verified via eutils)
-- `[literature]` A 10-week break is not free: leg-press and curl 1RM, vastus lateralis and biceps CSA and jump height all fell (p < 0.05), then were regained faster than first built. RCT, 55 randomised / 42 completed, 45 % female, 32 ± 5 y, untrained, twice-weekly whole-body — [Halonen et al. 2024, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/39364857/) (PMID 39364857, verified via eutils). This bounds the old 42-day window: six weeks of silence sits inside a range where loss is measured, not tolerated.
-- `[literature]` Reduced dose rather than zero: 1/9–1/3 of the training dose preserved the muscle gained in 20–35-year-olds over 32 weeks, not in 60–75-year-olds. Two-phase randomised trial, n = 70 — [Bickel, Cross & Bamman 2011, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/21131862/) (PMID 21131862, verified in S2)
-- `[literature]` The only systematic review restricted to detraining after resistance training could pool just 2 of 20 trials; strength stayed above control at 16–24 weeks of detraining and not at 32–48; "there was not enough data to conduct a meta-analysis on muscular hypertrophy" and "no sufficient high-quality evidence to make any unbiased claim about how long changes in muscle strength … last". Systematic review, 20 trials — [Encarnação et al. 2022, Muscles 1(1)](https://www.mdpi.com/2813-0413/1/1/1) (DOI 10.3390/muscles1010001, verified via Crossref; not indexed in PubMed)
-
-*(d) The roster*
-
-- `[practitioner consensus]` Train each muscle at least twice a week. Israetel (RP chest guide, his byline): "most individuals can recover from chest training at a timecourse that allows for 2–4 sessions of chest per week", justified by a "24–48 hour increase in muscle growth" after a session, so training less often than every 2–4 days means "missing out"; RP quad guide: 2–5 sessions/week and "higher frequency programs, at least in the short term, have shown to generate more muscle growth than needlessly lower ones". Galpin (Huberman guest series pt 2): "train hypertrophy about every 48 hours". Huberman (via Galpin): "a generally good frequency for muscle building is twice per week per muscle group". Held by Israetel, Galpin, Huberman — [RP chest guide](https://rpstrength.com/blogs/articles/chest-hypertrophy-training-tips), [RP quad guide](https://rpstrength.com/blogs/articles/quad-hypertrophy-training-tips), [Galpin, guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [Huberman Lab AI answer](https://ai.hubermanlab.com/s/6ZP6Hz6m). **The volume-equated literature contradicts this at the outcome level** (Schoenfeld 2019, Grgic 2018, Brigatto, Gomes) — the consensus rests on Israetel's 24–48 h mechanism and on the non-equated 2016 pool, so it is reported as a practitioner position, not settled science.
-- `[single-practitioner position]` Frequency is secondary to weekly volume: "the most important consideration is how many times per week / total volume of muscle group per week you are training a muscle group — target 10 working sets per muscle group, per week"; "you can train muscles every day — it comes down to volume". Galpin only; Israetel ranks frequency as a lever in its own right — [Galpin, guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/)
-- `[single-practitioner position]` Frequency scales with volume: 1–2×/week per muscle at 5–10 sets/week, 2–3× at 10–20, 3–4+× at 20+, with "no minimum required rest period — even 24 hours between sessions works if volume per session is modest", and roughly 10–11 productive sets per muscle per session. RP staff page (Milo Wolf), not a roster member; Israetel's own guides give 2–4 without the volume ladder — [RP "11-set rule" page](https://rpstrength.com/blogs/podcasts/training-frequency-decoded-the-11-set-rule-every-lifter-should-know)
-- `[single-practitioner position]` No roster member gives a day count for when a silent muscle starts to lose size. Israetel: "if you go to five days a week training to four days a week training, you will lose zero muscle and strength" (gym days, not per muscle) — [Israetel video, quoted at FitnessVolt 2024](https://fitnessvolt.com/exercise-scientist-training-frequency/); RP staff (Trevor Fullbright, not a roster member): "You won't lose muscle in two weeks" — [RP burnout survival guide](https://rpstrength.com/blogs/articles/the-burnout-survival-guide). Galpin and Attia are silent on the timing (searched 2026-09-03). Nobody in the roster holds 14 days, 42 days, or any window as an accounting unit — the window exists only in Tekiō.
-
-#### Where they split
-
-**1. "Frequency matters" vs "volume-equated frequency doesn't."** Israetel builds the 2–4×/week rule on the 24–48 h anabolic window (train again before it closes); Dankel 2017 makes the same argument for trained lifters; Schoenfeld 2016's non-equated pool and the split-vs-total-body trials (Schoenfeld 2015, Zaroni 2019) look like support. Against them, the two largest reviews (Schoenfeld 2019, 25 studies; Grgic 2018, 22 studies) and both trained-men volume-equated trials (Brigatto 2019, Gomes 2019) find that once weekly sets are held constant, once a week per muscle matches two to five times. Galpin straddles it — "every 48 hours" as a preference, "it comes down to volume" as the rule. The mechanism and the outcome disagree because the anabolic window (24–48 h; 28 h trained) is far shorter than any practical frequency: even Israetel's 2–4 sessions leave the muscle "unsignalled" most of the week, so the signal's duration cannot be what sets the dose. **What this forces on Tekiō:** a rolling window that *sums sets* is frequency-blind by construction — it sides with the volume-equated literature, and that is the right side for a "have I fed this muscle" read. Do not shrink the window to 7 days to enforce frequency: that reintroduces the leg-day-morning artefact and calls a fully dosed once-a-week muscle a gap, which Brigatto and Gomes say it is not. If Peter wants the practitioner side (reward spreading, warn on a 7+-day gap), that is a *recency* signal — `daysSince` / `RECOVER_DAYS` already exist — layered on the fill, not a shorter window. Two questions, two reads (P2).
-
-**2. What "too long" means: strength, whole muscle, or fibre.** The retention literature gives three different clocks — type II fibre area moves by 14 days (Hortobágyi), strength holds to ~3–4 weeks (McMaster, Mujika, Hwang), whole-muscle CSA in novices tolerates 3 weeks (Ogasawara) and is clearly lost by 10 (Halonen). No practitioner picks one. **The design choice:** which clock ends the window. 14 (fibre) is the strict choice; 21 (strength) the lenient one. Both are inside the evidence; 42 is outside it. Tekiō's read exists to say what is missing, so the stricter clock is the honest default; 21 would show a fortnight of silence as a one-third fill.
-
-The three §6.6 candidates, ruled on: **7 d ÷ 10** — the literature's unit for the *rate*, wrong as a *window* (a muscle 7 days silent is not under-dosed, and it flips to zero on session morning). **Calendar week-to-date** — same flaw, worse on Monday; and no evidence uses calendar weeks. **42 d ÷ 60** — beyond every retention limit found (3–4 weeks); it would let three weeks of silence read as half-fed. **14 d ÷ 20** — the shortest whole-week window longer than one weekly rhythm; the first missed weekly dose halves the fill, the second empties it, and that second week is where the earliest measured loss sits.
-
-#### Caveats
-
-- Population mismatch: the volume-equated frequency trials in trained men are small (Brigatto n = 20, Gomes n = 23) and 8 weeks long; the 14-day detraining data come from 12 power athletes (Hortobágyi) and 20 trained men (Hwang); the 3-week-gap trials (Ogasawara) and the 10-week-break trial (Halonen) are untrained. Bosquet finds the cessation effect larger only past 65 y, and Bickel's maintenance failure is at 60–75 y, so a trained 40-year-old sits with the young-trained data, with a small age discount on the upper edge (lean toward 14, not 21).
-- The brief's premise that the MPS response takes "~5–7 days" to return to baseline is not what the literature shows: 36 h (MacDougall), 48 h (Phillips), 28 h in the trained state (Tang). The window is therefore not modelling the anabolic signal; it is a schedule tolerance bounded below by the once-a-week equivalence and above by detraining onset. The source comment should say so, or a later reader will "correct" 14 toward 2.
-- Detraining studies measure *all* training stopping. A muscle silent while the rest of the body trains is a different state (systemic hormones, general activity, sport) and no study measures it; the local read extrapolates.
-- Sport is invisible to the sum. the user's quads and shoulders get tennis stimulus that never logs as a set, so a 14-day window will call some muscles gaps that are fed off-ledger — the honest fix is logging or a sport-to-muscle credit, not a longer window.
-- The per-session cap: a once-a-week muscle at 10 hard sets is at RP's ~10–11 productive sets per session; a lifter trying to reach 20 in 14 days in *one* session is past it. The window does not know how the sets were spread — that is the frequency question the fill deliberately ignores (split 1).
-- The deload week now halves every muscle's fill for a week; 42's only merit was averaging it away. That is a program concern, not a read concern (Peter, 2026-09-03), but Home will look emptier in deload weeks and should say why.
-- The window is 20 sets *or* 10/wk shown; with 14 days the target is exact. If `WEEKLY_SET_FLOOR` moves (S3's 10–20 band), the 20 moves with it; the days do not.
-- What would move this number: a trial spacing a muscle at 10–14-day intervals in trained adults with muscle-size outcomes (would fix the upper edge directly — none exists); evidence that whole-muscle size falls inside 10 days in trained lifters (would pull the default to 10); an RIR or sport-credit capture (would change the numerator, not the window); a decision to read the muscle map as "optimal" rather than "adequate" (010) would raise the target, not the days.
-
-#### Source comment
-```
-// 14 — MUSCLE_WINDOW_DAYS: rolling window for the per-muscle hard-set fill (target = WEEKLY_SET_FLOOR × 14 / 7 = 20).
-// Honest band 8–21 d. Lower edge: volume-equated, 1×/wk per muscle matches 2–5×/wk in trained men (Schoenfeld 2019,
-// Grgic 2018, Brigatto 2019, Gomes 2019), so a muscle 7 d silent is not under-dosed and the window must exceed one
-// weekly rhythm. Upper edge: strength holds ~3–4 wk without training (McMaster 2013, Mujika 2001, Hwang 2017) and the
-// earliest measured tissue loss in trained lifters is at 14 d (Hortobágyi 1993, type II fibre area −6.4 %). 14 is a
-// convention inside that band — whole weeks, one missed weekly dose = half fill, one rhythm with QUALITY_STALENESS_DAYS.
-// Not an MPS window: the per-session signal ends in 28–48 h (Tang 2008, Phillips 1997). The sum is frequency-blind by
-// design; recency lives in daysSince / RECOVER_DAYS. See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S12, 2026-09-03):** `MUSCLE_WINDOW_DAYS = 14` ships, unchanged
-from the value handed to the scout, labelled a **convention inside a grounded
-band (8–21 d)**. Target `MUSCLE_SET_TARGET = 20`. Three things the run
-settled beyond the value: the fill is *frequency-blind by design* (the
-volume-equated literature's side — a once-a-week muscle at its dose is not a
-gap), recency stays a separate read in `daysSince` / `RECOVER_DAYS` rather
-than a shorter window, and the window is a schedule tolerance, not a
-muscle-protein-synthesis window — the "5–7 day MPS" premise came from the
-dispatch prompt, not the literature, and is dropped. The deload dip on Home
-is accepted as a program concern; the sheet names the window so the reader
-can see why. 42 days is outside every retention limit found and goes.
-
-### S4 — ADAPTATIONS[power].rx and KEYWORD_ADAPTATION (what makes a set a power set)
-
-**Claim:** A power set is trained at **30–70 % 1RM**, **1–5 reps** with explosive intent, **3–5 sets**, **2–5 min** full rest, **never to fatigue**, and is what jumps, throws and Olympic lifts are (`rx`, row 3.3); and any exercise whose name contains one of 20 substrings (`sprint, dash, agility, pogo, clean, snatch, jerk, box jump, broad jump, jump squat, jump, plyo, throw, med ball, medicine ball, slam, kettlebell swing, kb swing, sled, hop`) is a power set **regardless of rep count** and counts in `byQuality.power` only (row 2.6, per S3). Drives which logged sets land on the per-muscle power map instead of the hard-set total, and the prescription text the user reads before a power session.
-**Searched:** 2026-09-03 · **Verdict:** partially supported — reps, sets, rest and "never to fatigue" **supported**; the 30–70 % load band **partially supported** (a defensible pooled range that hides three exercise-specific optima); 17 of the 20 keywords **supported**, `sled` **partially supported**, `agility` **convention only**; two substrings (`hop`, `jump`) collide with non-power exercise names; and the rule's *exclusivity* ("power and nothing else") is **not supported** for high-rep kettlebell swings.
-**Number to use:** field by field —
-- **load:** keep `30–70% 1RM` as the headline (it is the 2026 ACSM position-stand range and Galpin's), but the honest statement is exercise-specific: **jumps and throws 0–30 %, squat/bench-type lifts 30–70 %, Olympic lifts 70–90 %** (Soriano 2015/2017, Cormie 2011). Default: `30–70% 1RM (jumps & throws lighter, Olympic lifts heavier)`.
-- **reps:** `1–5` for barbell, Olympic and loaded-jump sets is supported (NSCA 1–2 / 3–5; Galpin 3–5); jump and throw sets in the located trials ran **3–8** contacts. Default: `1–5 (lifts) · 3–8 (jumps, throws), explosive intent`.
-- **sets:** `3–5` — supported; the literature's actual ceiling is **≤ 24 total reps per session** (ACSM 2026), which 3–5 × 1–5 sits inside. Unchanged.
-- **rest:** `2–5 min` — supported; ≥ 2 min preserves power output and 3 min = 5 min. Unchanged.
-- **effort:** `Never to fatigue` — supported; the measured line is **≈ ≤ 20 % velocity loss in the set**. Default: `Never to fatigue — stop when the reps slow`.
-- **cue:** supported (Behm & Sale on intent; ACSM 2026 on Olympic lifts and fast concentrics). Unchanged apart from carrying the load split.
-- **keywords:** keep 18, fix 2 collisions (`hop` matches "chop"/"woodchop"; `jump` matches "jump rope"/"jumping jacks" — add exclusions or exact tokens), keep `sled` and `agility` as **labelled conventions**, and record that a kettlebell-swing set of ≥ 16 reps is the one case where "a power set is never near failure" is false — see *Where they split* 3.
-
-#### Evidence
-
-*(a) Load — is 30–70 % one band or three?*
-
-- `[literature]` Lower body: the load that maximises power is exercise-specific — squat **> 30 to < 70 % 1RM**, jump squat **≤ 30 %**, power clean / hang power clean **≥ 70 %**. A single band is therefore a costume on three facts. Meta-analysis, 27 studies, 468 subjects, 5,766 effect sizes — [Soriano et al. 2015, Sports Med](https://pubmed.ncbi.nlm.nih.gov/26063470/) (PMID verified via eutils)
-- `[literature]` Upper body: bench press **> 30 to < 70 %**, bench press throw **< 30 %**; heterogeneity I² > 75 %. Meta-analysis, 11 studies, 434 subjects, 7,680 effect sizes — [Soriano, Suchomel & Marín 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/27699699/) (PMID verified via eutils)
-- `[literature]` The pooled range the app prints is nonetheless the position-stand number: "Power was enhanced by moderate loads (30 %–70 % one repetition maximum), low-to-moderate volume (≤ 24 repetitions·sets), Olympic-style weightlifting, and power RT (fast concentric phase)." No rest interval is given for power. Overview of 137 systematic reviews, > 30,000 participants — [ACSM Position Stand, Currier et al. 2026, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/41843416/) (PMID verified via eutils)
-- `[literature]` The previous stand split the light-load strategy by region: **0–60 % 1RM lower body, 30–60 % upper body**, fast contraction velocity, **3–5 sets, 3–5 min rest**, alongside heavy strength work. Position stand — [ACSM 2009, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/19204579/) (PMID verified via eutils)
-- `[literature]` The training-methods review behind most textbook prescriptions: ballistic exercises at **0–50 % 1RM**, weightlifting movements at **50–90 % 1RM** ("the most potent loading stimulus"), plyometrics matched to the sport's stretch rates — three families, three load bands. Narrative review — [Cormie, McGuigan & Newton 2011 (part 2), Sports Med](https://pubmed.ncbi.nlm.nih.gov/21244105/) (PMID verified via eutils)
-- `[literature]` The "optimal load" concept itself — the load at which mechanical power peaks differs by exercise and training at it is recommended for maximal power. Narrative review — [Kawamori & Haff 2004, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/15320680/) (PMID verified via eutils; abstract gives no numbers)
-- `[literature]` Heavy strength work trains power too, in the not-yet-strong: 10 weeks of back squats at 75–90 % 1RM vs maximal-effort jump squats at 0–30 % gave the same jump peak-power gain (+17.7 vs +17.6 %) and 40 m sprint gain (+2.2 vs +3.6 %, ns), while only the squat group got strong (1RM +31.2 vs +4.5 %). RCT, 24 "relatively weak" men (8 / 8 / 8 control) — [Cormie, McGuigan & Newton 2010, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/20139780/) (PMID verified via eutils)
-
-*(b) Reps, sets, rest*
-
-- `[literature]` The lineage of "1–5 reps, 3–5 sets, 2–5 min": the NSCA textbook table gives power **single-effort 80–90 % 1RM, 1–2 reps; multiple-effort 75–85 % 1RM, 3–5 reps; both 3–5 sets, 2–5 min rest**. Note the loads: NSCA's rows are Olympic-lift-shaped (75–90 %), so the app has fused NSCA's reps/sets/rest with ACSM's/Galpin's 30–70 % load — two sources, one card. Textbook (expert-consensus tier, not a study) — [NSCA Essentials ch. 17 table, as transcribed](https://www.ptpioneer.com/personal-training/certifications/nsca-cscs/cscs-chapter-17/)
-- `[literature]` Reps per set in ballistic training scale with load: the jump-squat arm trained from **4 × 3 at 60 % 1RM to 8 × 6 at 0 %**; the swing arm did 12 × 30 s on / 30 s off with 12–16 kg. RCT, 21 healthy men 18–27 y, 6 weeks, 2×/wk — [Lake & Lauder 2012, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/22580981/) (PMID verified via eutils)
-- `[literature]` Two minutes is enough between ballistic sets: 5 × 8 bench-press throws at 40 % 1RM with 1, 2 or 3 min rest — 1 min produced larger power drops and higher physiological/perceptual strain; **2 min = 3 min**. Crossover, 31 college students (18 M / 13 F) — [Hernández Davó et al. 2016, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/27097306/) (PMID verified via eutils)
-- `[literature]` Three minutes is enough for bar speed on loaded lifts: 3 × 5 at 10RM in squat and bench, 1 vs 3 vs 5 min — 1 min slowed sets 2–3 and cut F₀ and Pmax; **3 min = 5 min**. Crossover, 15 male university students — [González-Hernández et al. 2023 (epub 2020), Sports Biomech](https://pubmed.ncbi.nlm.nih.gov/32567492/) (PMID verified via eutils)
-- `[literature]` Rest-interval review: power is better maintained with **3 or 5 min than with 1 min**; 3–5 min for absolute strength. Narrative review of 35 studies — [de Salles et al. 2009, Sports Med](https://pubmed.ncbi.nlm.nih.gov/19691365/) (PMID verified via eutils)
-- `[literature]` Power's dose is counted in contacts, not sets: minimal effective jump-training dose ≈ **92 weekly jumps** (youth athletes — population mismatch). Systematic review + meta-analysis, 11 studies, n = 744 — [Ramirez-Campillo et al. 2023, Sports Med Open](https://pubmed.ncbi.nlm.nih.gov/37036542/) (PMID verified via eutils, cited in S3). 3–5 sets × 1–5 reps is 3–25 contacts per session — under that minimum unless jump sets run longer or sessions are frequent.
-
-*(c) "Never to fatigue" and "maximal intent"*
-
-- `[literature]` Intent is the stimulus: 16 weeks of *attempted* ballistic contractions produced the same high-velocity-specific gain (+38 % peak torque at 5.23 rad/s, +26 % rate of torque development) whether the limb actually moved fast or was held isometric. Within-subject (one limb each), 16 university students (8 M / 8 F), 3×/wk, 5 × 10 — [Behm & Sale 1993, J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/8444715/) (PMID verified via eutils)
-- `[literature]` Fatigue inside the set costs power: four velocity-loss thresholds (0 / 10 / 20 / 40 %) at 70–85 % 1RM, 3 sets, 4 min rest — only VL20 and VL40 grew muscle, but **VL40 reduced early rate of force development** and slowed muscle contractile delay; "moderate VL thresholds should be chosen". RCT, 64 young resistance-trained men — [Pareja-Blanco et al. 2020, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/32049887/) (PMID verified via eutils)
-- `[literature]` Stopping at 20 % velocity loss beat 40 % for countermovement jump (+9.5 vs +3.5 %) and preserved type IIX fibres. RCT, 22 young men, 8 weeks — [Pareja-Blanco et al. 2017, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/27038416/) (PMID verified via eutils, cited in S3)
-- `[literature]` Across studies, every extra % of in-set velocity loss lowers the jump gain (b = −0.040, CI −0.079 to −0.001) while raising hypertrophy. Systematic review + meta-analysis, 18 acute + 19 longitudinal studies — [Jukic et al. 2023, Sports Med](https://pubmed.ncbi.nlm.nih.gov/36178597/) (PMID verified via eutils, cited in S3)
-
-*(d) The keywords, family by family*
-
-- `[literature]` **Kettlebell swing → power: supported.** Swing peak and mean power exceeded back-squat power and were "largely comparable with jump squat power"; net impulse with 32 kg (276 N·s) beat the 40 % 1RM jump squat (231) and 60 % back squat (183). Lab cross-sectional, 16 men — [Lake & Lauder 2012, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/22207261/) (PMID verified via eutils). Six weeks of swings raised vertical jump **+19.8 %** and half-squat 1RM +9.8 % — RCT, 21 men — [Lake & Lauder 2012 (training)](https://pubmed.ncbi.nlm.nih.gov/22580981/). Swings (3 × 6 + 4 × 4 accelerated) matched high pulls + power cleans for vertical jump; weightlifting won on strength — RCT, 30 men (13 / 17), 6 weeks — [Otto et al. 2012, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/22344061/) (PMID verified via eutils)
-- `[literature]` **…but a high-rep swing set is not *only* a power set.** Six weeks of 20 kg swings improved jump height +8.7–10.1 %, 1RM +7.8–8.7 % **and muscular endurance +23.8 %**. RCT, 28 HIFT practitioners (11 / 11 / 6 control) — [Junior et al. 2022, Int J Exerc Sci](https://pubmed.ncbi.nlm.nih.gov/35518365/) (PMID verified via eutils). Tabata-style swings (8 × 20 s / 10 s) for 8 weeks did **not** improve sprint performance — RCT, 18 recreationally active women (8 / 10) — [Holmstrup et al. 2016, Int J Exerc Sci](https://pubmed.ncbi.nlm.nih.gov/27766131/) (PMID verified via eutils). Swings done as intervals train endurance as much as power, and the keyword cannot see which was done.
-- `[literature]` **Sled → partially supported.** Resisted-sled *sprinting* improves acceleration (ES 0.61, p = 0.0001) but not maximal velocity; recommended > 160 m per session, 2–3×/wk, ≥ 6 weeks. Systematic review + meta-analysis, 13 studies, 32 RST groups / 15 control — [Alcaraz et al. 2018, Sports Med](https://pubmed.ncbi.nlm.nih.gov/29926369/) (PMID verified via eutils). Peak power in sled sprinting is reached at **78–82 % body mass** (optimal 69–96 % by friction) at 4.2–4.9 m/s — still a run. Lab, 27 athletes (12 recreational / 15 sprinters) — [Cross et al. 2017, Int J Sports Physiol Perform](https://pubmed.ncbi.nlm.nih.gov/28051333/) (PMID verified via eutils). A heavy prowler push at walking pace for distance is outside both studies; the substring `sled` cannot tell a sprint from a march.
-- `[literature]` **Sprint / dash → supported.** Sprint time is treated as a power outcome and responds to both jump-squat and heavy-squat training (Cormie 2010 above); sled work is modelled as a force–velocity–power profile (Cross 2017/2018 above). The app's 2026-08-29 move of sprints from `speed` to `power` is the literature's own bookkeeping.
-- `[literature]` **Agility → convention only.** Agility is "a rapid whole-body movement with change of velocity or direction *in response to a stimulus*", with cognitive components (scanning, anticipation) as well as strength, power and technique. Narrative review — [Sheppard & Young 2006, J Sports Sci](https://pubmed.ncbi.nlm.nih.gov/16882626/) (PMID verified via eutils). Resistance training does improve change-of-direction speed (SMD −0.82; adults −0.63), so COD has a strength/power component — Systematic review + meta-analysis, 15 studies / 19 groups — [Chaabene et al. 2020, Sports Med](https://pubmed.ncbi.nlm.nih.gov/32451922/) (PMID verified via eutils). But an "agility" entry in a gym log is usually ladder or cone drills — coordination at low force — and no study credits those to a muscle's power.
-- `[literature]` **Throw / med ball / medicine ball / slam → supported.** Adding rotational and full-body medicine-ball work 3×/wk for 12 weeks roughly doubled torso rotational strength gains (17.1 / 18.3 % vs 10.5 / 10.2 %) and the hitter's-throw gain (10.6 vs 3.0 %). RCT, 49 high-school baseball players (15.4 y) — [Szymanski et al. 2007, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/17685676/) (PMID verified via eutils). Twelve weeks of medicine-ball training raised bench- and shoulder-press power at 30 and 50 % 1RM vs control; throw tests correlated with power tests more than with 1RM. RCT, 21 female handball players (16.9 y) — [Ignjatovic et al. 2012, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/22027860/) (PMID verified via eutils). No trial isolates the *slam*; it is a downward throw and is credited by extension.
-- `[literature]` **Clean / snatch / jerk → supported** (Soriano 2015: cleans peak power ≥ 70 %; Cormie 2011: weightlifting 50–90 %; ACSM 2026: "Olympic-style weightlifting" enhances power; Otto 2012). **Box jump / broad jump / jump squat / jump / plyo / pogo / hop → supported** (Cormie 2010: jump squats 0–30 %; Cormie 2011: plyometrics; Ramirez-Campillo 2023, both reviews cited in S3).
-- `[practitioner consensus]` Power is quality work, non-fatiguing, programmed apart from volume; strength underpins it ("power = strength × speed" — Galpin; "having a strength foundation is a MUST" — Israetel). Held by Galpin and Israetel; the literature (Cormie 2010, Pareja-Blanco, Jukic) does not contradict — [Galpin, Huberman Lab guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [RP, Dr Israetel blog preview](https://rpstrength.com/blogs/articles/dr-israetel-blog-preview)
-- `[single-practitioner position]` The app's card, nearly verbatim: "30–70 % 1RM", "3–5 exercises, 3–5 reps × 3–5 sets, 3–5 min rest, 3–5 days/week", "true speed work by definition is non-fatiguing — high rest, low fatigue, trying to reach a new velocity", exercises "plyo, med ball throws, short sprints, air bike, snatch, clean and jerk, clapping push-ups, jump squats, kettlebell swings". Galpin only. In the earlier solo episode his band was **40–70 % "plus or minus"** — same person, two numbers — [guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [episode 65 (notes)](https://podcastnotes.org/huberman-lab/episode-65-dr-andy-galpin-how-to-build-strength-muscle-size-endurance-huberman-lab/), [hubermanlab.com episode page](https://www.hubermanlab.com/episode/dr-andy-galpin-how-to-build-strength-muscle-size-and-endurance)
-- `[single-practitioner position]` "Power training is like the tuning of a car. Power training works best for people who are already strong, and makes them just a bit better … some very good research shows that strength training improves power MORE THAN POWER TRAINING for athletes that are not already VERY strong" (his marker: ~2× body-weight squat). Israetel only; Galpin prescribes power as a standalone quality for everyone; Cormie 2010 is the research he means — [RP, Dr Israetel blog preview](https://rpstrength.com/blogs/articles/dr-israetel-blog-preview)
-- `[single-practitioner position]` No power pillar: Attia's training model is four pillars — zone 2, VO₂max, strength, stability — with power folded into strength and no separate prescription. Attia only, silent rather than opposed — [The Drive #261 (notes)](https://podcastnotes.org/the-drive-with-dr-peter-attia/training-for-the-centenarian-decathlon-zone-2-vo2-max-stability-and-strength-the-drive-with-peter-attia-261/)
-- `[single-practitioner position]` No roster member, no position stand and no located study holds the 20-substring list as such. It is Galpin's exercise list turned into string matching; the list is defensible, the matching is a code convention.
-
-#### Where they split
-
-Three forks; the first is real, the other two are Tekiō's.
-
-**1. Is power a standalone quality for a not-very-strong lifter, or a tuning layer on strength?** Galpin programs power for everyone as its own adaptation with its own card; Israetel says below ~2× body-weight squat, heavy strength work *is* the power training, and the literature he points at exists (Cormie 2010: squats at 75–90 % grew jump power as much as jump squats in weak men). ACSM 2026 sits between them — "power RT" and "Olympic-style weightlifting" both enhance power, with no strength prerequisite stated. The decision this forces: **does a heavy strength set feed the power map?** Under §6.0 and S3 the answer is no (power fills only via keyword or override) — that is Galpin's bookkeeping, and it is the right one for a *"what's missing"* read, because velocity work is the thing that silently disappears from a lifter's week; Cormie's result means the *penalty* for a missing power map is smaller than the map implies for someone who squats heavy. Keep Galpin's bookkeeping; say on the sheet that heavy strength sets also build power in the not-yet-strong. Do not credit strength sets to power at some fraction — nobody holds that number.
-
-**2. One load band or three.** Every source that gives one number gives 30–70 % (ACSM 2026, Galpin); every source that measures gives three (Soriano ×2, Cormie 2011). The app must choose between a *training range* (the position stand's pooled statement, easy to read) and an *exercise-specific optimum* (what the meta-analyses actually found). Keep the headline and add the split in words — the user picks a load per exercise, not per adaptation, and "30–70 %" sends him to jump with a 50 % bar on his back.
-
-**3. Keyword exclusivity vs the high-rep swing.** S3 excluded power sets from the hard-set total on the premise that "a jump, throw or swing set is never near failure". For jumps, throws and Olympic lifts that holds. For kettlebell swings at 15–20+ reps it does not: Junior 2022 measured a 23.8 % endurance gain and a 1RM gain from a fixed-load swing protocol, and Israetel's landmark model would count a 20-rep swing set at 0–4 RIR as a working set. The rule as written makes such a set **one power set and nothing else**. Tekiō must choose: (a) keep the keyword exclusive (simple, conservative, consistent with S3 and with the fact that the app cannot see effort), or (b) let reps add a second tag for ballistic sets above the endurance edge (a ≥ 16-rep swing counts in `power` *and* `muscular_endurance`, still 0 toward the hard-set total). Default **(a)**, labelled — no study gives the fraction, an RIR field would make (b) honest, and today it affects one exercise family. The dishonest option is to leave it unlabelled.
-
-#### Caveats
-
-- Population mismatch: the load meta-analyses pool young trained men and athletes (Soriano: 468 and 434 subjects); Cormie 2010 is 24 "relatively weak" men; the velocity-loss trials are young resistance-trained men (n = 22, 64); the swing trials are young men or recreationally active women (n = 18–30); the medicine-ball RCTs are adolescents (n = 21, 49); the sled work is athletes (n = 27). **No located trial is in 40-year-old recreational lifters**, and no located primary source in this run quantifies how power declines with age — third-party pages claim ~2× the rate of strength, but none of that was verified here, so it is not in the block.
-- The user cannot act on "% 1RM" for a kettlebell or a jump: he has no 1RM for the implement and logs no velocity. For those sets the actionable rule is the cue ("light enough to move fast, stop when the reps slow"), not the load band. `% 1RM` is only actionable on barbell lifts he has a max for.
-- The app cannot see fatigue or velocity; "never to fatigue" is assumed for every keyword set. That assumption is safe for jumps, throws and cleans and unsafe for swings and sled pushes done as conditioning (fork 3). Tennis sessions — his most frequent power expression — are logged as cardio/sport and never reach this rule at all.
-- `hop` is a substring of "chop" / "woodchop" (a cable-chop set would silently become a power set and leave the hard-set total); `jump` matches "jump rope" and "jumping jacks" (conditioning, not power); `agility` matches ladder drills. Two of these are bugs in the matcher, not in the model. Whether any logged exercise name currently collides was not checked (read-only run, no DB access).
-- The two rx fields with a lineage problem are reps/sets/rest (NSCA's 75–90 % rows) and load (ACSM's/Galpin's 30–70 %): the card is a splice of two prescriptions written for different exercises. It still reads correctly for a mixed power session, but the attribution line on the reference card ("Based on the Huberman Lab × Galpin guest series") should become "ACSM 2026 position stand; Galpin's protocol matches" for this block.
-- What would move this number: an RIR or velocity field (would make fork 3's option (b) honest and let swings be credited to endurance when trained that way); a power-training trial in 35–50-year-old recreational lifters with per-muscle outcomes (would ground the per-muscle map's claim rather than its inputs); a Soriano-style meta-analysis of *longitudinal* power gains by training load (would say whether training at the optimal load beats training across the spectrum — Cormie 2011 argues the spectrum, no meta-analysis settles it); a check of the exercise table for the `hop`/`jump`/`agility` collisions.
-
-#### Source comment
-```
-// rx.power — 30–70 % 1RM is the pooled position-stand range (ACSM 2026, Currier) and Galpin's; the
-// measured optima are exercise-specific: jumps/throws ≤30 %, squat/bench 30–70 %, cleans ≥70 %
-// (Soriano 2015, 2017; Cormie 2011). Reps 1–5 / sets 3–5 / rest 2–5 min are NSCA's power rows
-// (written for 75–90 % lifts); ≥2 min rest preserves power (Hernández Davó 2016, de Salles 2009),
-// ≤24 reps·sets/session (ACSM 2026). "Never to fatigue" ≈ ≤20 % velocity loss (Pareja-Blanco 2017,
-// 2020; Jukic 2023); intent is the stimulus (Behm & Sale 1993).
-// See docs/roadmap/039-adaptations-read-grounding.md#grounding
-
-// KEYWORD_ADAPTATION — Galpin's power exercise list as substrings. Jumps/plyo/Olympic lifts/throws/
-// sprints/swings are power work by the load and velocity literature above (swings: Lake & Lauder 2012,
-// Otto 2012); `sled` is power only when sprinted (Alcaraz 2018, Cross 2017) and `agility` is a
-// convention (Sheppard & Young 2006). A ≥16-rep swing set also trains endurance (Junior 2022) — the
-// rule counts it as power only, by decision (039 S4 fork 3). `hop` also matches "chop", `jump` also
-// matches "jump rope". See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S4, 2026-09-03):** no number moves; the block gains the split the
-meta-analyses found and two labels. `rx` load reads
-`30–70% 1RM (jumps & throws lighter, Olympic lifts heavier)`, reps
-`1–5 (lifts) · 3–8 (jumps, throws), explosive intent`, effort
-`Never to fatigue — stop when the reps slow`; sets, rest and cue unchanged.
-Fork 1: heavy strength sets do **not** feed the power map (Galpin's
-bookkeeping, S3's rule) — the one-line "heavy strength also builds power in the
-not-yet-strong" note is 031's to draw on the sheet. Fork 2: one headline band,
-split in words. Fork 3: the keyword rule stays **exclusive** — a ≥16-rep swing
-set is one power set and nothing else, labelled a decision in the source
-comment; an RIR field is the upgrade path. `sled` and `agility` stay on the
-list as labelled conventions. The matcher collision is real: a DB check the
-same day found **Cable Woodchop** matching `hop`, so its sets read as power
-and leave the hard-set total today — fixed in the S4 code unit (§6.7,
-v1.16.1), where `clapping` also joined the list: Galpin's list names clapping
-push-ups, [043](done/043-scout-named-exercises-catalogue.md) put the exercise
-in the catalogue, and no other keyword caught it. The
-NSCA textbook line is tier-6 expert consensus with its tier named inline; the
-tag vocabulary has no slot for a professional body's table, so it stays as
-delivered. The reference card's single attribution line stays until S10
-closes, when all seven blocks have provenance.
-
----
-
-### S5 — ADAPTATIONS[strength].rx and the "3–5 rule" cue (what a strength set is prescribed as)
-
-**Claim:** A strength set is trained at **85–100 % 1RM**, **3–5 reps**, **3–5 sets**, **2–5 min** full rest, stopping **1–2 reps shy of failure**; and the cue names "Galpin's 3–5 rule: 3–5 reps, 3–5 sets, 3–5 min rest, ~3–5×/week" as the way to do it (`rx`, row 3.4). Drives the prescription text the user reads before a strength session; the *classification* of a logged set (`repRange [1, 5]`, row 2.1) is S11's and untouched here.
-**Searched:** 2026-09-03 · **Verdict:** supported — load, sets, rest and effort each sit inside a band the position stands and meta-analyses give; reps 3–5 is a practical sub-band of the literature's 1–6 RM; the cue is a named `[single-practitioner position]` whose five parts the literature supports piecewise, so it stays **with attribution** (acceptance box 3).
-**Number to use:** field by field —
-- **load:** the literature's line is **≥ 80 % 1RM** (ACSM 2026; Currier 2023 network meta-analysis); the card's `85–100 %` is the floor that 3–5 reps at 1–2 RIR implies (a 6–7 RM ≈ 83–87 %; NSCA's strength row is >85 % for <6 reps). Default: unchanged, with the ≥ 80 % line in the source comment.
-- **reps:** `3–5` — inside ACSM 2009's heavy-loading emphasis of **1–6 RM** and Schoenfeld 2021's 1–5-rep "strength zone"; singles and doubles are left out by Galpin's practical choice, not by evidence. Unchanged.
-- **sets:** `3–5` — ACSM 2026 found strength enhanced by **2–3 sets per exercise**; more weekly sets per exercise give more strength in a graded way (Ralston 2017). Unchanged.
-- **rest:** `2–5 min` — **> 2 min** is what maximises strength in trained lifters (Grgic 2018 review); 3–5 min in ACSM 2009 and de Salles 2009. Unchanged.
-- **effort:** `1–2 reps shy of failure` — proximity to failure has a **negligible** relationship with strength gain across the RIR range (Robinson 2024); failure vs non-failure is a wash or slightly favours non-failure (Grgic 2022, Davies 2016, Vieira 2021). The honest band is "not to failure"; 1–2 RIR is a default inside it. Unchanged.
-- **cue:** keep, attributed — Galpin's "3 to 5" heuristic (Huberman Lab guest series part 2, 2023; first stated on episode 65, 2022). The days-per-week element is a whole-body session count, and frequency acts on strength through volume (Grgic 2018), so it is the one part that is convention rather than finding.
-
-#### Evidence
-
-*(a) Load — how heavy is "strength"?*
-
-- `[literature]` "Voluntary strength was enhanced by lifting heavier loads (**≥ 80 % one-repetition maximum**), through a complete range of motion, for **2–3 sets**, at the beginning of training sessions, and **≥ 2 sessions/wk**"; training to momentary muscle fatigue "did not consistently impact training outcomes". Overview of 137 systematic reviews, > 30,000 participants — [ACSM Position Stand, Currier et al. 2026, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/41843416/) (PMID verified via eutils, cited in S4)
-- `[literature]` Higher-load (**> 80 % 1RM**) prescriptions maximised strength gains; higher-load, multi-set, thrice-weekly training was the top-ranked prescription (SMD 1.60, 95 % CrI 1.38–1.82 vs control). Bayesian network meta-analysis, 178 studies, n = 5,097 (45 % women) — [Currier et al. 2023, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/37414459/) (PMID verified via eutils)
-- `[literature]` For intermediate-to-advanced lifters: a periodised 1–12 RM range "with eventual emphasis on **heavy loading (1–6 RM)** using **3- to 5-min rest** periods"; frequency 3–4 d/wk intermediate, 4–5 d/wk advanced. Position stand — [ACSM 2009, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/19204579/) (PMID verified via eutils, cited in S4)
-- `[literature]` 1RM gains significantly greater with high-load (> 60 % 1RM) than low-load (≤ 60 %) training, all sets to failure; isometric strength and hypertrophy no different. Meta-analysis, 21 studies — [Schoenfeld, Grgic, Ogborn & Krieger 2017, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/28834797/) (PMID verified via eutils)
-- `[literature]` Strength gain: high load (≤ 8 RM) and moderate load (9–15 RM) both beat low load (> 15 RM) — SMD 0.60–0.63 and 0.34–0.35 — with high vs moderate favouring high but not significant (SMD 0.26–0.28, p = 0.068). Network meta-analysis, 28 studies, 747 healthy adults, sets to volitional failure — [Lopez et al. 2021, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/33433148/) (PMID verified via eutils)
-- `[literature]` Even with volume load matched, **≥ 80 % 1RM (≤ 7 RM)** beat both moderate (60–79 %) and low (30–59 %) loads for 1RM strength, and moderate beat low; hypertrophy was load-independent. Meta-analysis — [Carvalho et al. 2022, Appl Physiol Nutr Metab](https://pubmed.ncbi.nlm.nih.gov/35015560/) (PMID verified via eutils)
-- `[literature]` The "strength zone" is **1–5 reps at 80–100 % 1RM** for 1RM outcomes (pooled ES 0.58 favouring high vs low load, 14 studies); the advantage dissipates when strength is tested isometrically or isokinetically, and low loads (≥ 20 reps) still produce 1RM gains, especially in the untrained. Narrative re-examination of the repetition continuum — [Schoenfeld, Grgic, Van Every & Plotkin 2021, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/33671664/) (PMID verified via eutils; full text [PMC7927075](https://pmc.ncbi.nlm.nih.gov/articles/PMC7927075/))
-- `[literature]` The NSCA textbook row the card's shape comes from: strength **> 85 % 1RM, < 6 reps, 2–6 sets, 2–5 min rest**; frequency 2–3 / 3–4 / 4–7 sessions/wk by training status. Textbook (expert-consensus tier, not a study) — [NSCA Essentials ch. 17 table, as transcribed](https://www.ptpioneer.com/personal-training/certifications/nsca-cscs/cscs-chapter-17/) (cited in S4)
-
-*(b) Sets, frequency*
-
-- `[literature]` Graded dose–response between weekly sets per exercise and strength: high weekly sets beat low (ES difference 0.18, 95 % CI 0.06–0.30) and medium beat low (0.15, CI 0.01–0.30); for well-trained lifters "either MWS or HWS may be an appropriate dose". Meta-analysis, 9 studies, 61 treatment groups — [Ralston et al. 2017, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28755103/) (PMID verified via eutils, cited in 011)
-- `[literature]` Strength ES rose with frequency — 0.74 / 0.82 / 0.93 / 1.08 for 1 / 2 / 3 / 4+ sessions/wk — but **volume-equated studies showed no frequency effect** (p = 0.421): frequency is a way to add volume, not a dose in itself. Meta-analysis, 22 studies, mostly untrained — [Grgic et al. 2018, Sports Med](https://pubmed.ncbi.nlm.nih.gov/29470825/) (PMID verified via eutils)
-
-*(c) Rest*
-
-- `[literature]` "Robust gains in muscular strength can be achieved even with short RIs (< 60 s). However, it seems that longer duration RIs (**> 2 min**) are required to maximize strength gains in resistance-trained individuals"; untrained: 60–120 s suffices. Systematic review, 23 studies, 491 participants (413 M / 78 F) — [Grgic, Schoenfeld, Skrepnik, Davies & Mikulic 2018, Sports Med](https://pubmed.ncbi.nlm.nih.gov/28933024/) (PMID verified via eutils)
-- `[literature]` Resting **3–5 min** between sets at 50–90 % 1RM allowed more reps across sets and, chronically, "greater increases in absolute strength". Narrative review, 35 studies — [de Salles et al. 2009, Sports Med](https://pubmed.ncbi.nlm.nih.gov/19691365/) (PMID verified via eutils, cited in S4)
-- `[literature]` 3 min vs 1 min rest, 3 × 8–12 RM, 8 weeks: 1RM squat and bench both greater with the longer rest. RCT, 21 young resistance-trained men — [Schoenfeld et al. 2016, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/26605807/) (PMID verified via eutils)
-
-*(d) Effort — how close to failure?*
-
-- `[literature]` Across the estimated-RIR range, "strength gains were similar across a wide range of RIR" (every best-fit model's slope CI contained the null), while hypertrophy rose as sets ended closer to failure. Exploratory multilevel meta-regressions — [Robinson, Pelland, Remmert et al. 2024, Sports Med](https://pubmed.ncbi.nlm.nih.gov/38970765/) (PMID verified via eutils; DOI verified via Crossref)
-- `[literature]` Failure vs non-failure: no difference for strength (ES −0.09, 95 % CI −0.22 to 0.05); when volume was not equated, **non-failure won** (ES −0.32). Meta-analysis, 15 studies, all young adults — [Grgic, Schoenfeld, Orazem & Sabol 2022, J Sport Health Sci](https://pubmed.ncbi.nlm.nih.gov/33497853/) (PMID verified via eutils)
-- `[literature]` Non-failure training gave 0.6–1.3 % more strength (small ES 0.34 favouring non-failure, larger for compound lifts and trained participants); "it seems unnecessary to perform failure training to maximise muscular strength". Meta-analysis, 8 studies — [Davies, Orr, Halaki & Hackett 2016, Sports Med](https://pubmed.ncbi.nlm.nih.gov/26666744/) (PMID verified via eutils)
-- `[literature]` Same result a third time, plus power: strength SMD −0.08 (ns), non-failure ahead when volumes differ (−0.34), and non-failure ahead for **power output** when volumes differ (−0.61). Meta-analysis, 13 studies — [Vieira et al. 2021, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/33555822/) (PMID verified via eutils)
-
-*(e) The practitioners, and the cue's provenance*
-
-- `[single-practitioner position]` The "3 to 5" concept, verbatim: "3–5 days per week, choose 3–5 exercises, do 3–5 repetitions per set, 3–5 working sets, rest 3–5 minutes between each set"; strength load "70 % 1RM or higher" in the guest-series notes and "at least 85 % of your one-rep max … typically five or fewer per set" in Huberman Lab's own summary — the same person, two load floors; "you don't have to go to failure to see strength gains". Galpin only; Israetel and Attia do not use the rule — [guest series pt 2 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-optimal-protocols-to-build-strength-grow-muscles-part-2-huberman-lab/), [Huberman Lab "sets and reps for strength"](https://ai.hubermanlab.com/s/eE3Mp5Q4), [guest series pt 2 episode page](https://www.hubermanlab.com/episode/dr-andy-galpin-optimal-protocols-to-build-strength-and-grow-muscles), [episode 65 (notes)](https://podcastnotes.org/huberman-lab/episode-65-dr-andy-galpin-how-to-build-strength-muscle-size-endurance-huberman-lab/)
-- `[single-practitioner position]` Strength is "roughly three to six reps", 5–15 sets per muscle or movement per week, compound lifts that match the test ("deadlifts are an excellent movement"); strength is "moving heavier weights and building neural efficiency" where hypertrophy is "fatigue, pump, and volume". No rest or RIR number given for strength. Israetel only — [RP article, mirrored](https://www.goodreads.com/author_blog_posts/26017357-exercise-scientist-explains-size-vs-strength-training)
-- `[practitioner consensus]` Strength work is heavy, low-rep, fully rested and stopped short of failure. Held by Galpin and Israetel; Attia trains heavy but publishes no rep scheme (silent); the literature above agrees on every element except that it draws the load line at 80 %, not 85 %.
-
-#### Where they split
-
-No practitioner-vs-practitioner fork of the S4 kind. Four smaller gaps, each between the card and the literature, and each is a decision Tekiō has to name:
-
-**1. 85 or 80.** Every review draws the strength line at **≥ 80 % 1RM**; the card and Galpin's summary say 85. A 5-point gap, not a contradiction: 3–5 reps stopped 1–2 short is a 5–7 RM set, which sits at ≈ 83–87 % on any rep table, so 85 is what the reps and effort fields already imply. Keep 85–100 on the card and write the 80 % line into the source comment, so nobody later "corrects" 85 to 80 and breaks the set the fields describe.
-
-**2. 3–5 or 1–6.** ACSM 2009's heavy emphasis is 1–6 RM and Schoenfeld 2021's zone is 1–5 reps; the card's 3–5 excludes singles, doubles and sixes. That is Galpin's practical rule for a recreational lifter (singles need a spotter and a warm-up ladder), not a finding. Keep 3–5; label it in the comment. The *classification* edge (`repRange [1, 5]`, row 2.1) is S11's and may end up wider than the prescription — that is fine: the prescription says what to do, the band says what counts.
-
-**3. "1–2 reps shy" is more precise than the evidence.** The evidence says *proximity to failure barely matters for strength* and *non-failure is at least as good*. Any RIR from 1 to 3–4 is inside that. 1–2 is a defensible default (heaviest set you can repeat across 3–5 sets) and the app has no RIR field to act on a wider band anyway. Keep, as a default inside "not to failure".
-
-**4. The cue's "~3–5×/week".** Strength sessions per week, Galpin's element five. ACSM 2009's status ladder (3–4 → 4–5), NSCA's (3–4 → 4–7) and ACSM 2026's floor (≥ 2) all bracket it, but Grgic 2018 shows frequency adds strength only by adding volume. So the number is a whole-body *session count*, and it is the one element of the rule that is convention. Keep it in the cue (it is how the user plans a week); say so in the comment. Per-muscle strength dose stays on `weeklyMuscleTarget = 6` (011 D2), which this run does not reopen.
-
-#### Caveats
-
-- Population mismatch: the position stand pools healthy adults 18+ of every training age; Currier 2023 is 45 % women; the rest-interval review is 84 % men with a small trained subset; the failure meta-analyses are all young adults (Grgic 2022 says so outright); Robinson 2024 is exploratory with *estimated* RIR. **No located trial is in 40-year-old recreational lifters**, and the trained-lifter subgroup is where "> 2 min rest" and "non-failure" matter most, so the card leans on the smallest slices of these reviews.
-- Strength here means **1RM on the trained lift** (Schoenfeld 2021): the heavy-load advantage largely vanishes on isometric or isokinetic tests. The app's per-muscle strength map inherits that specificity — a bench 1RM says little about a push-up.
-- "% 1RM" is actionable only through the app's *estimated* 1RM (inventory §8), itself a formula with its own error; on the card it is a heaviness cue, not a prescription the user can set a bar to.
-- The app has no RIR field, so "1–2 reps shy" cannot be checked against a logged set; it is guidance, and it shapes no read.
-- What would move this number: a volume-equated trial of 80 vs 90 % 1RM in trained adults over 35 (would settle 85 vs 80 with data instead of arithmetic); a dedicated meta-analysis of RIR on 1RM in trained lifters (Robinson is exploratory); an RIR field in the log (would let "1–2 shy" become a read rather than a cue).
-
-#### Source comment
-```
-// rx.strength — heavy loads drive 1RM strength: ≥80 % 1RM in the position stand (ACSM 2026, Currier) and
-// the network meta-analysis (Currier 2023, n = 5,097); high > moderate > low load even volume-matched
-// (Lopez 2021, Carvalho 2022, Schoenfeld 2017). 85–100 % is the floor 3–5 reps at 1–2 RIR implies (a 5–7 RM;
-// NSCA: >85 % for <6 reps) inside that band — do not "correct" it to 80. Reps 3–5 sit inside ACSM 2009's 1–6
-// RM (singles/doubles left out by choice); sets 3–5 inside 2–3 sets/exercise (ACSM 2026) and the weekly-set
-// dose–response (Ralston 2017). Rest 2–5 min: >2 min maximises strength in trained lifters (Grgic 2018),
-// 3–5 min (de Salles 2009, ACSM 2009). Effort: proximity to failure barely moves strength (Robinson 2024;
-// Grgic 2022; Davies 2016; Vieira 2021) — 1–2 RIR is a default inside "not to failure". The cue is Galpin's
-// "3 to 5" heuristic (Huberman Lab guest series pt 2, 2023; ep. 65, 2022) — a practitioner rule whose parts
-// the literature supports piecewise; its "×/week" is a whole-body session count (frequency acts through
-// volume — Grgic 2018) and is convention. See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S5, 2026-09-03):** no number moves and no text changes. All five
-`rx` fields stay as shipped; the source comment carries the literature's
-≥ 80 % line and the reason 85 stays (fork 1), the 1–6 RM band behind 3–5
-(fork 2), the "not to failure" band behind 1–2 RIR (fork 3) and the
-session-count nature of "~3–5×/week" (fork 4). **The cue keeps "Galpin's 3–5
-rule" and is now attributed** — Huberman Lab guest series part 2 (2023) and
-episode 65 (2022) in the source comment and inventory row 3.4 — which closes
-row 3.4's half of acceptance box 3; on screen the reference card's existing
-"Based on the Huberman Lab × Dr. Andy Galpin guest series" line is literally
-true for this cue and stays until S10 closes. `weeklyMuscleTarget = 6` (011
-D2) and `repRange [1, 5]` (S11) are not reopened.
-
----
-
-### S6 — ADAPTATIONS[muscular_endurance].rx (what a muscular-endurance set is prescribed as)
-
-**Claim:** A local muscular-endurance set is trained at **< 50 % 1RM**, **15–40+ reps**, **2–4 sets**, **< 60 s** rest, **to / near failure**, as "high-rep, short-rest circuits and bodyweight work" (`rx`, row 3.6). Drives the prescription text the user reads before an endurance session; the *classification* edge (`repRange [16, 999]`, row 2.3) is S11's and untouched here.
-**Searched:** 2026-09-03 · **Verdict:** partially supported — high reps **supported** (≥ 15 reps beat 7–13 for relative endurance in the one meta-analysis on the question, and in every trained- and untrained-adult trial that tested at post-training 1RM); the load band is **partially supported** and the card's `< 50 %` does not describe the same set as its `15–40+` reps (a 15 RM is ≈ 65 % 1RM) — it moves to the position stand's **40–60 %**; sets and rest are **convention only** inside the stands' bands (one trained-lifter trial found rest length irrelevant to the endurance outcome); "to / near failure" is how every located trial trained, not a variable anyone tested.
-**Number to use:** field by field —
-- **load:** **40–60 % 1RM** (ACSM 2009's local-endurance prescription; NSCA < 67 %). The trials that produced the endurance advantage trained at 20–35 RM (≈ 50–65 %) and 30–40 RM (≈ 40–50 %). Default: `40–60% 1RM` — **changes** from `<50% 1RM`, see fork 2.
-- **reps:** `15–40+` — ACSM 2009 says > 15; Hackett 2022's winning band is 18–125; the trials ran 20–28, 25–35 and 30–40 RM. Unchanged.
-- **sets:** `2–4` — ACSM 2009 gives no set count for endurance; NSCA says 2–3; the trials used 1–3 sets; more sets gave more endurance in the one dose–response trial (5 > 3 > 1). Convention inside the band; unchanged.
-- **rest:** `Short (<60 s)` — ACSM 2009 says < 90 s, NSCA < 30 s, de Salles 20–60 s; the one chronic trial with an endurance outcome in trained men found 1 min = 3 min. Convention; unchanged.
-- **effort:** `To / near failure` — every located trial prescribed RM sets; Galpin says "practice frequently to the point of failure". No failure-vs-non-failure trial with an endurance outcome was located. Convention by design of the evidence; unchanged.
-- **cue:** unchanged. "Bodyweight work" is the honest escape from "% 1RM" for a quality the user mostly trains without a bar.
-
-#### Evidence
-
-*(a) Load and reps — is there an endurance zone at all?*
-
-- `[literature]` "For local muscular endurance training, it is recommended that **light to moderate loads (40–60 % of 1 RM)** be performed for **high repetitions (> 15)** using **short rest periods (< 90 s)**." Position stand — [ACSM 2009, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/19204579/) (PMID verified via eutils, cited in S4). The 2026 update reports that resistance training improves endurance vs no exercise but gives no endurance-specific prescription — [ACSM 2026, Currier et al.](https://pubmed.ncbi.nlm.nih.gov/41843416/) (PMID verified via eutils)
-- `[literature]` Higher reps per set improve relative local endurance more than lower reps **when tested at a percentage of post-training 1RM** (g = 0.97, 95 % CI 0.53–1.40; **18–125 reps vs 7–13 reps: g = 1.08**) but not at pre-training 1RM (g = 0.09); "strength gains moderated training outcomes". Systematic review + meta-analysis + meta-regression, 14 studies — [Hackett, Ghayomzadeh, Farrell, Davies & Sabag 2022, Science & Sports](https://doi.org/10.1016/j.scispo.2021.11.002) (DOI verified via Crossref)
-- `[literature]` "Evidence for a load-specific effect on local muscular endurance remains equivocal … If there is in fact a load-induced effect on muscular endurance, which remains questionable, it seemingly is limited to the far rightward aspect of the repetition continuum." The answer flips with the test: post-training-1RM tests favour light loads, pre-training-1RM tests show nothing (Jessee 2018, Buckner: 70 % vs 15 % 1RM, no difference at 42.5 % of *pre* 1RM). Narrative re-examination — [Schoenfeld, Grgic, Van Every & Plotkin 2021, Sports (Basel)](https://pubmed.ncbi.nlm.nih.gov/33671664/) (PMID verified via eutils; full text [PMC7927075](https://pmc.ncbi.nlm.nih.gov/articles/PMC7927075/))
-- `[literature]` The strength–endurance continuum trial: 4 × 3–5 RM (3 min rest) vs 3 × 9–11 RM (2 min) vs **2 × 20–28 RM (1 min)**, 8 weeks; the high-rep group gained the most reps at 60 % 1RM, was the only group to raise maximal aerobic power and time to exhaustion, and the only trained group whose fibres did not hypertrophy. RCT, 32 untrained men (22.5 y; 9 / 11 / 7 / 5 control) — [Campos et al. 2002, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/12436270/) (PMID verified via eutils)
-- `[literature]` In trained men: **25–35 RM** vs 8–12 RM, 3 sets × 7 exercises, 3×/wk, 8 weeks — bench-press endurance at 50 % 1RM **+16.6 % vs −1.2 %**, while squat 1RM went +8.8 % vs +19.6 % and muscle thickness was equal. RCT, 18 resistance-trained young men (9 / 9) — [Schoenfeld et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25853914/) (PMID verified via eutils)
-- `[literature]` The oldest split: 3 × 6–8 RM vs 2 × **30–40 RM** vs 1 × 100–150 RM, 9 weeks — absolute endurance +28 / +41 / +39 %, relative endurance (40 % 1RM) **−7 / +28 / +22 %**: heavy training *lost* relative endurance. 43 untrained young men — [Anderson & Kearney 1982, Res Q Exerc Sport](https://pubmed.ncbi.nlm.nih.gov/7079558/) (PMID verified via eutils; PubMed carries no abstract — figures as reported in Schoenfeld 2021)
-- `[literature]` In women the picture is mixed by region: 3 × 6–8 RM vs 2 × 15–20 RM vs 1 × 30–40 RM, 9 weeks — upper-body absolute endurance favoured the *medium* load (44 vs 31 vs 20 %), lower-body favoured the light load (137 vs 84 vs 80 %); re-scored on post-training 1RM the upper-body difference vanished. 50 untrained young women — Stone & Coulter 1994 (not on PubMed; as summarised in [Schoenfeld 2021, PMC7927075](https://pmc.ncbi.nlm.nih.gov/articles/PMC7927075/))
-- `[literature]` In middle-aged and older adults resistance training raises local endurance a lot (upper body g = 1.10, lower g = 1.18) **"irrespective of training intensity or other resistance exercise program variables"** — no load or volume dose–response found. Systematic review + meta-analysis + meta-regression, 15 studies — [Wang et al. 2023, Arch Gerontol Geriatr](https://pubmed.ncbi.nlm.nih.gov/36758486/) (PMID verified via eutils)
-- `[literature]` The NSCA row: endurance **< 67 % 1RM, > 12 reps, 2–3 sets, < 30 s rest** — lighter, more reps, less rest than the card in every field but sets. Textbook (expert-consensus tier) — [NSCA Essentials ch. 17 table, as transcribed](https://www.ptpioneer.com/personal-training/certifications/nsca-cscs/cscs-chapter-17/) (cited in S4)
-
-*(b) Sets*
-
-- `[literature]` Dose–response by sets over 6 months: bench-press **20 RM** rose most with 5 sets, then 3, then 1 (each step significant); leg-press 20 RM 5 sets > 1 set. RCT, 48 untrained men (1 / 3 / 5 sets / control), 3×/wk — [Radaelli et al. 2015, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/25546444/) (PMID verified via eutils). More sets buy more endurance; the card's 2–4 is a mid-band convention.
-
-*(c) Rest*
-
-- `[literature]` "The research on rest interval length in relation to chronic muscular endurance adaptations is less clear": short rests (**20 s to 1 min**) kept rep velocity higher during repeated submaximal actions and raised total torque in a high-intensity cycle test — "indirect" support for short rests. Narrative review, 35 studies — [de Salles et al. 2009, Sports Med](https://pubmed.ncbi.nlm.nih.gov/19691365/) (PMID verified via eutils, cited in S4)
-- `[literature]` 1 min vs 3 min rest for 8 weeks in trained men: strength and thickness favoured 3 min, but **local endurance (50 % 1RM bench to failure) rose equally in both groups**. RCT, 21 resistance-trained men — [Schoenfeld et al. 2016, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/26605807/) (PMID verified via eutils, cited in S5). The only chronic rest trial with an endurance outcome in this population found rest length did not matter.
-
-*(d) Effort*
-
-- `[literature]` Every trial above that produced an endurance advantage trained with **RM sets** — reps to momentary failure at the set load (Campos 2002, Schoenfeld 2015, Anderson & Kearney 1982, Radaelli 2015). No trial comparing failure with non-failure *on an endurance outcome* was located; the failure meta-analyses (Grgic 2022, Davies 2016, Vieira 2021 — S5) report strength, hypertrophy and power only. "To / near failure" therefore rests on the design of the evidence, not on a comparison.
-
-*(e) The practitioners*
-
-- `[single-practitioner position]` Muscular endurance is load-specific practice: "you don't need heavy load — it only needs to be around what your target is (e.g. want to improve at 50 % 1RM, just train in that range)"; rep range "5–50 per the definition"; "the best way to train for muscular endurance is to practice frequently to the point of failure"; "you won't be as sore so you can easily do 3–4× per week per muscle group"; progress by "1–2 reps per week". Galpin only — [guest series pt 3 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-how-to-build-physical-endurance-lose-fat-huberman-lab/), [episode page](https://www.hubermanlab.com/episode/dr-andy-galpin-how-to-build-physical-endurance-and-lose-fat)
-- `[single-practitioner position]` No separate endurance quality: 5–30 reps per set is all hypertrophy "as long as you're working close to failure"; local endurance is not programmed as its own goal. Israetel only; Galpin disagrees by giving it a card of its own; Attia silent — [RP article, mirrored](https://www.goodreads.com/author_blog_posts/26017357-exercise-scientist-explains-size-vs-strength-training)
-- `[practitioner consensus]` Whatever the load, endurance sets are long, near failure and repeated often. Held by Galpin and (implicitly, as the top of his hypertrophy range) Israetel; the literature above does not contradict.
-
-#### Where they split
-
-Four forks; the first is the literature's own, the others are Tekiō's.
-
-**1. Does load matter for endurance, or only the test?** The continuum (ACSM 2009, NSCA, Hackett 2022, Campos, Schoenfeld 2015) says light-load high-rep work builds endurance that heavy work does not; Schoenfeld 2021 and Wang 2023 say the effect appears only when endurance is scored against the *new* 1RM — heavy training raises the 1RM, so its "60 %" is a heavier weight, which is a harder test, not a worse adaptation. Both are true. What survives either reading is **specificity**: you get better at repeating the load you practise repeating (Galpin's framing, and the one the pre-1RM tests do not refute). The card should claim that, not "light loads build a separate quality". The decision: keep the card, keep it load-banded, and let the comment say what the band is *for* — practising the load you want to repeat.
-
-**2. `< 50 %` or `40–60 %`.** The card's load ceiling and its rep floor describe two different sets: a 15-rep set to failure is ≈ 65 % 1RM, and nothing at < 50 % fails at 15. Every source with a number gives a *band* — ACSM 40–60 %, NSCA < 67 %, the trials 40–65 % — and the card's `< 50 %` came from nowhere the search could find (Galpin's example is "50 %", as an example of a target, not a ceiling). Move the load to **`40–60% 1RM`** so that load, reps and effort describe one set; bodyweight work sidesteps the percentage through the cue. This is the run's one value change, recorded as ledger D19 *before* the constant is edited (`/ground` hard rule).
-
-**3. Rest: 30, 60 or 90 s.** Three conventions (NSCA, the card, ACSM), one trial (Schoenfeld 2016) in which the difference between 1 and 3 min did not reach the endurance outcome, and de Salles' indirect acute support for 20–60 s. Keep `< 60 s` and label it convention: it is the middle number, it matches the acute evidence, and it is what a circuit is.
-
-**4. Is endurance a quality or the top of hypertrophy's range?** Israetel folds 20–30-rep sets into hypertrophy; Galpin and the app give them a card. [019](done/019-adaptation-model-simplification.md) already answered for the app (seven qualities, endurance among them), and §6.0's overlap is the honest reconciliation: once S11 lands, a 20-rep set can count toward hypertrophy *and* endurance, so the card does not have to choose. Nothing to decide here; recorded so S11 knows the fork exists.
-
-#### Caveats
-
-- Population mismatch: the endurance trials are untrained young men (Campos n = 32, Anderson n = 43, Radaelli n = 48), untrained young women (Stone n = 50) and one group of trained young men (Schoenfeld 2015, n = 18); the meta-analyses pool those (Hackett, 14 studies) or older adults (Wang, 15 studies). **No located trial is in 40-year-old recreational lifters**, and the trained-adult evidence is a single 18-man study.
-- The outcome measure decides the answer: at post-training 1RM light loads win, at pre-training 1RM nothing does. The app measures neither — it counts sets — so the card's claim is a training cue, not a read, and the muscle map's endurance fill inherits nothing from this run.
-- "% 1RM" is not actionable for bodyweight circuits, planks or tennis footwork — the modality this user trains endurance with; for those the reps and effort fields carry the prescription and the load field is decoration. The cue names them for that reason.
-- The app has no RIR field: "to / near failure" cannot be checked against a logged set, and a 20-rep set stopped at 5 RIR reads the same as one to failure.
-- What would move this number: a trained-adult trial with *both* absolute and relative endurance tests (would say whether the load effect is real or a scoring artefact); a failure-vs-non-failure trial with an endurance outcome (would ground the effort field); an RIR field (would make the effort field a read).
-
-#### Source comment
-```
-// rx.muscular_endurance — 40–60 % 1RM for >15 reps with <90 s rest is the ACSM 2009 prescription; the card's
-// <60 s and 2–4 sets are conventions inside it (NSCA: <67 %, >12 reps, 2–3 sets, <30 s). Higher reps (≥15;
-// 18–125) beat 7–13 for relative endurance when tested at post-training 1RM (Hackett 2022, 14 studies;
-// Campos 2002; Schoenfeld 2015; Anderson & Kearney 1982) but not at pre-training 1RM — the load effect is
-// equivocal (Schoenfeld 2021, Wang 2023), so the honest claim is specificity: you get better at repeating the
-// load you practise. More sets help (Radaelli 2015: 5 > 3 > 1 for 20 RM); rest length did not (Schoenfeld
-// 2016: 1 min = 3 min). "To/near failure" is how every located trial trained, not a tested variable. Load
-// moved <50 % → 40–60 % on 2026-09-03 (039 S6 fork 2, ledger D19) so the load and rep fields describe one
-// set. See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S6, 2026-09-03):** one number moves. `rx.load` goes from
-`<50% 1RM` to **`40–60% 1RM`** (fork 2) — the position stand's band, and the
-only value under which the card's load, reps and effort describe the same set;
-recorded as ledger D19 before the constant was edited. Reps, sets, rest,
-effort and cue stay as shipped, with sets and rest labelled **convention** in
-the source comment (forks 3) and effort labelled as inherited from the trials'
-design. Fork 1 is settled by wording, not by a number: the comment states the
-claim as specificity ("you get better at repeating the load you practise")
-rather than "light loads build a separate quality", which is what survives
-both readings of the evidence. Fork 4 is [019](done/019-adaptation-model-simplification.md)'s
-and §6.0's, noted for S11. `weeklyMuscleTarget = 6` (011, convention) and
-`repRange [16, 999]` (S11) are not reopened. The reference card's attribution
-line stays until S10.
-
----
-
-### S7 — ADAPTATIONS[anaerobic_capacity].rx (what an anaerobic-capacity effort is prescribed as)
-
-**Claim:** An anaerobic-capacity session is **all-out** efforts of **20 s–2 min**, **3–8 rounds**, with **incomplete rest at 1:2–1:4** work:rest, at **maximal** effort, cued as "brutal short intervals with partial recovery" (`rx`, row 3.7). Drives the prescription text the user reads before an anaerobic session; which logged cardio session *counts* as anaerobic (Garmin anaerobic training effect ≥ 2.0, rows 6.2–6.3) is [005](005-hr-zone-intensity-classification.md)'s classifier and untouched here.
-**Searched:** 2026-09-03 · **Verdict:** partially supported — the effort band and "all-out" are **supported** (anaerobic capacity, measured as the maximal accumulated oxygen deficit, rises after repeated 20-s, 30-s and 90-s efforts and not after moderate continuous work; anaerobic and aerobic energy supply are equal at ≈ 75 s–2 min); rounds and the rest ratio are **convention** — no located trial varied either against an anaerobic-capacity outcome — and the card's two floors sit outside every trial and both practitioner protocols: every protocol that moved the measure used **≥ 4 rounds**, and the two best-evidenced rested at **2:1** and **1:2**, not 1:2–1:4. Both floors move. The cue names nobody, so no attribution is owed.
-**Number to use:** field by field —
-- **load:** `All-out` — the definition of sprint-interval training: "supramaximal" efforts (MacInnis & Gibala 2017), "maximal or near maximal" (Weston 2014's inclusion rule); the trials ran at 170 % VO₂max (Tabata 1996) and 150–175 % of maximal aerobic speed (Hov 2023). Unchanged.
-- **reps (effort length):** `20 s–2 min` — 20 s (Tabata 1996; Hov 2023), 30 s (Gibala 2006; Helgerud 2023) and 90 s (Ziemann 2011) all raised an anaerobic outcome; the anaerobic and aerobic systems contribute equally at ≈ 75 s and the anaerobic share is still large at 2 min (Gastin 2001); Buchheit & Laursen's HIT formats run "short (< 45 s) to long (2–4 min)"; Galpin: "around 20 seconds but no longer than 90 seconds". Unchanged.
-- **sets (rounds):** **`4–8 rounds`** — **changes** from `3–8`. Tabata 7–8, Hov 8–10, Gibala 4–6, Hazell 4–6, Ziemann 6; Galpin "minimum 4 rounds" and 6–8; more sprints per session gave larger anaerobic effects (Hall 2023). No located protocol used three. Fork 1.
-- **rest:** **`Incomplete (1:1–1:4)`** — **changes** from `Incomplete (1:2–1:4)`. The ratio that raised anaerobic capacity most reliably is 2:1 (20 s / 10 s: +28 % in Tabata 1996; the only sprint arm to raise it in Hov 2023's men); 1:2 raised glycolytic work (Ziemann 2011); 30 s / 2 min (1:4) does *not* tax the anaerobic system fully within a session (Tabata 1997); Galpin's two protocols are 1:1 and 1:1.5; NSCA's textbook rows are 1:3–1:5 (15–30 s) and 1:3–1:4 (1–3 min). Fork 2.
-- **effort:** `Maximal` — every located protocol was exhaustive or all-out. Unchanged.
-- **cue:** unchanged. It names no protocol and no person.
-
-#### Evidence
-
-*(a) Is anaerobic capacity trainable, and by what?*
-
-- `[literature]` Anaerobic capacity (maximal accumulated O₂ deficit, MAOD) was **30 % larger in sprinters** than in untrained *and* endurance-trained men, with no difference between those two; **6 weeks of training raised it 10 %**. 7 women + 5 men trained — [Medbø & Burgers 1990, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/2402211/) (PMID verified via eutils)
-- `[literature]` 6 wk of moderate continuous work (70 % VO₂max, 60 min, 5 d/wk) raised VO₂max but **did not change anaerobic capacity**; **7–8 × 20 s at ≈ 170 % VO₂max with 10 s rest**, 5 d/wk for 6 wk, raised **MAOD by 28 %** and VO₂max by 7 mL·kg⁻¹·min⁻¹. Two small trials, PE students — [Tabata et al. 1996, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/8897392/) (PMID verified via eutils)
-- `[literature]` Within a session: 6–7 × 20 s / 10 s (IE1) accumulated an O₂ deficit equal to the subjects' MAOD (69 vs 69 mL/kg) and reached VO₂max in the last 10 s; **4–5 × 30 s at 200 % VO₂max with 2 min rest (IE2) reached only 46 mL/kg, below MAOD** — "IE1 may tax both the anaerobic and aerobic energy releasing systems almost maximally". n = 9 — [Tabata et al. 1997, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/9139179/) (PMID verified via eutils)
-- `[literature]` 48 well-trained men, 3×/wk for 8 wk, randomised to 4 × 4 min at ~95 % maximal aerobic speed / 3 min active; **8 × 20 s at ~150 % / 10 s passive**; or 10 × 30 s at ~175 % / 3.5 min active. **MAOD rose after 8 × 20 s only** (not after 4 × 4 min, not after 10 × 30 s); VO₂max rose more after 4 × 4 (6.5 %) than 8 × 20 s (3.3 %) and not after 10 × 30 s; 300-m sprint improved in both sprint arms — [Hov et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/36314990/) (PMID verified via eutils)
-- `[literature]` The same three protocols in 81 well-trained women: only 4 × 4 raised VO₂max (7.3 %); **MAOD rose after 8 × 20 s (+6.5 %) and 10 × 30 s (+14.4 %, more than after 4 × 4)**; **10 × 30 s all-out treadmill sprints produced eight injuries**, the other two arms none — [Helgerud et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/37608507/) (PMID verified via eutils)
-- `[literature]` 2 wk, 3×/wk, 4 rising to 6 bouts: 30 s / 4 min, 10 s / 4 min and 10 s / 2 min all raised Wingate peak power (9.5 / 8.5 / 4.2 %); mean power rose in 30:4 (12.1 %) and 10:4 (6.5 %); VO₂max rose in 30:4 and 10:4 (≈ 9 %) but not 10:2. n = 48 — [Hazell et al. 2010, Eur J Appl Physiol](https://pubmed.ncbi.nlm.nih.gov/20424855/) (PMID verified via eutils)
-- `[literature]` A **1:2 ratio** studied on purpose "because little performance enhancement data exist based on this ratio": 6 × 90 s at 80 % of peak VO₂ power / 180 s rest, 3×/wk for 6 wk, recreationally active men (21 y) — raised VO₂max, anaerobic threshold, **glycolytic work, peak and mean Wingate power** — [Ziemann et al. 2011, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/20661160/) (PMID verified via eutils)
-- `[literature]` **4–6 × 30 s all-out / 4 min**, six sessions in 14 days, matched 90–120 min continuous rides for time-trial gains, muscle oxidative capacity and **buffering capacity** at ≈ 90 % less volume (630 vs 6500 kJ). 16 active men — [Gibala et al. 2006, J Physiol](https://pubmed.ncbi.nlm.nih.gov/16825308/) (PMID verified via eutils)
-- `[literature]` Sprint-interval training meta-analysis, 55 studies: medium overall effect (ES 0.52, 95 % CrI 0.42–0.62), **largest for anaerobic outcomes (0.61, CrI 0.48–0.75)**; larger effects with longer interventions, **longer sprints and more sprints per session**; "extensive small study effects … suggest potential overestimation" — [Hall et al. 2023, J Strength Cond Res](https://pubmed.ncbi.nlm.nih.gov/36165995/) (PMID verified via eutils)
-- `[literature]` Low-volume HIT meta-analysis (30–60 s repetitions, work:rest < 1, "maximal or near maximal", 32 trials): VO₂max +6.2 % in active non-athletic men; **effects on Wingate peak and mean power unclear** — [Weston, Taylor, Batterham & Hopkins 2014, Sports Med](https://pubmed.ncbi.nlm.nih.gov/24743927/) (PMID verified via eutils)
-
-*(b) Where the anaerobic share ends — the 20 s–2 min band*
-
-- `[literature]` Energy comes from every pathway in almost all activities; the duration of maximal exercise at which anaerobic and aerobic contributions are equal "appears to occur **between 1 to 2 minutes and most probably around 75 seconds**", earlier than the old sequential picture. Review — [Gastin 2001, Sports Med](https://pubmed.ncbi.nlm.nih.gov/11547894/) (PMID verified via eutils)
-- `[literature]` HIT is "repeated short (< 45 s) to long (2–4 min) bouts"; formats that elicit similar, maximal cardiorespiratory responses "have been associated with **distinctly different anaerobic energy contributions**"; prescription manipulates at least nine variables. Review — [Buchheit & Laursen 2013 (Part II), Sports Med](https://pubmed.ncbi.nlm.nih.gov/23832851/) (PMID verified via eutils)
-- `[literature]` The NSCA textbook table the card's shape comes from: phosphagen 5–10 s at 1:12–1:20; **fast glycolysis 15–30 s at 1:3–1:5**; **fast glycolysis/oxidative 1–3 min at 1:3–1:4**; oxidative > 3 min at 1:1–1:3. Textbook (expert-consensus tier, not a study) — [NSCA Essentials, work:rest table as transcribed](https://www.themovementsystem.com/blog/nsca-cscs-work-to-rest-ratios)
-
-*(c) The practitioners*
-
-- `[single-practitioner position]` Anaerobic capacity: bursts "around 20 seconds but no longer than 90 seconds"; "30 seconds on, 30 seconds off … minimum 4 rounds per bout, at least 1–2 days per week"; "20 seconds on, 30 seconds off for improved recovery between effort × 6–8 rounds"; "rest needs to be sufficient enough to return back to the point of nasal breathing"; "shoot for about 5–6 minutes per week of all-out, max heart rate work"; "full-body movements like sledding, swimming, biking"; "you'll cause problems if you try to hit too many days per week". Galpin only — [guest series pt 3 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-how-to-build-physical-endurance-lose-fat-huberman-lab/)
-- `[single-practitioner position]` No anaerobic pillar (four pillars: zone 2, VO₂max, stability, strength — [The Drive #261 (notes)](https://podcastnotes.org/the-drive-with-dr-peter-attia/training-for-the-centenarian-decathlon-zone-2-vo2-max-stability-and-strength-the-drive-with-peter-attia-261/)); his own "zone 5" stair set is 1 min at VO₂max / 3 min at zone 2 (1:3), once a week at the end of an aerobic session; "most people spend too much time there and not enough time in zone 2". Attia only — [AMA #21 (peterattiamd.com)](https://peterattiamd.com/peter-attia-on-zone-5-anaerobic-training-protocols/)
-- `[practitioner consensus]` Anaerobic work is all-out, 20–90 s, a handful of rounds, once or twice a week, on a modality that cannot hurt you. Held by Galpin; Attia trains 1-min "zone 5" reps but keeps no separate quality (silent rather than opposed); the literature agrees on all-out and on the band and is silent on rounds and ratio as dose variables.
-
-#### Where they split
-
-**1. Three rounds or four.** The card's floor is 3; every protocol that moved anaerobic capacity used 4 or more (Gibala and Hazell start at 4, Tabata 7–8, Hov 8–10), Galpin's minimum is 4, and Hall 2023 finds more sprints per session give more. Nothing supports three. Move the floor to 4.
-
-**2. How much rest — the fork proper.** The card's 1:2–1:4 is one notch short of NSCA's 1:3–1:5 / 1:3–1:4 and excludes both Galpin protocols (1:1, 1:1.5) and the Tabata design (2:1). The evidence points two ways because it measures two things: *shorter* rest accumulates more O₂ deficit per session and is where the capacity measure rose most reliably (Tabata 1997 within-session; Tabata 1996 and Hov 2023 across weeks), while *longer* rest preserves power per rep (Hazell 2010) and raised capacity too in women, at the cost of injuries (Helgerud 2023). No trial held work constant and varied only the ratio. For a *capacity* card the honest band is "incomplete, from equal rest down to a quarter": move the floor to 1:1. 2:1 is a specific protocol, not a band; it goes in the source comment, not on the card.
-
-**3. Is it its own quality?** Hov 2023 and Helgerud 2023 answer this directly: 4 × 4 min raised VO₂max and not MAOD; 8 × 20 s raised MAOD and less VO₂max; Tabata 1996: continuous moderate work raised VO₂max and not MAOD. Anaerobic capacity is separately trainable, so [019](done/019-adaptation-model-simplification.md)'s split of anaerobic capacity from VO₂max stands. Attia's silence is a programming choice, not a contradiction.
-
-**4. Frequency.** The trials ran 3–5×/wk in 2–8-week blocks; Galpin says 1–2×/wk and warns against more; the card is silent and `weeklySessionTarget = 1` (011, convention) is not reopened here.
-
-#### Caveats
-
-- Population mismatch: every trial is in young adults (21–23 y) — PE students, active men, well-trained runners; Hall 2023 flags small-study inflation across the field. **No located trial is in 40-year-old recreational lifters.** Injury is the population-specific risk: all-out treadmill sprints injured eight women in one arm (Helgerud 2023); a bike, rower, sled or hill (Galpin's list) is the safer surface for this user.
-- "Anaerobic capacity" here means MAOD, which the app never measures; the read counts sessions typed anaerobic by Garmin's anaerobic training effect (005). The card's fields shape no read.
-- Rounds and the ratio are untested as dose variables for MAOD; both values are conventions inside the trial spread, and the two moves here are floor corrections, not optima.
-- The 20 s–2 min band is defined by energy share, not by a trial that compared 20 s with 2 min for MAOD.
-- What would move this number: a MAOD trial holding work constant and varying the ratio (2:1 vs 1:2 vs 1:4); an anaerobic dose–response in adults over 35; a power-drop or lactate field in the log that would let "incomplete rest" become a read.
-
-#### Source comment
-```
-// rx.anaerobic_capacity — anaerobic capacity (maximal accumulated O2 deficit) is separately trainable: 6 wk of
-// sprint work +10 % (Medbø & Burgers 1990), 7–8 × 20 s at 170 % VO2max / 10 s +28 % where moderate continuous
-// work moved nothing (Tabata 1996); 8 × 20 s / 10 s raised it where 4 × 4 min did not (Hov 2023, Helgerud 2023).
-// All-out is the SIT definition (MacInnis & Gibala 2017; Weston 2014). 20 s–2 min: 20, 30 and 90 s efforts all
-// raised an anaerobic outcome (Tabata; Gibala 2006; Ziemann 2011) and the anaerobic share is ≥ half up to ≈ 75 s
-// (Gastin 2001). Rounds 4–8 and rest 1:1–1:4 are conventions inside the trials (4–10 rounds; 2:1 to 1:7) and
-// Galpin's 30/30 × 4+ and 20/30 × 6–8 (Huberman Lab guest series pt 3, 2023); NSCA's rows are 1:3–1:5 (15–30 s)
-// and 1:3–1:4 (1–3 min). Shorter rest builds the deficit (Tabata 1997), longer rest keeps power per rep (Hazell
-// 2010). Floors moved 3 → 4 rounds and 1:2 → 1:1 on 2026-09-03 (039 S7 forks 1–2, ledger D21–D22) — no trial or
-// practitioner used three rounds or less than 1:1. See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S7, 2026-09-03):** two numbers move, both floors. `rx.sets` goes
-from `3–8 rounds` to **`4–8 rounds`** (fork 1, ledger D21) and `rx.rest` from
-`Incomplete (1:2–1:4)` to **`Incomplete (1:1–1:4)`** (fork 2, ledger D22),
-each recorded before the constant was edited. Load, effort length, effort and
-cue stay as shipped; the band is labelled **supported** and the two moved
-fields **convention** in the source comment. Fork 3 is settled in
-[019](done/019-adaptation-model-simplification.md)'s favour by Hov 2023 and
-Helgerud 2023 and needs no change. `weeklySessionTarget = 1` (011, convention)
-and the Garmin classifier (005, rows 6.2–6.3) are not reopened. The cue names
-nobody, so acceptance box 3 owes nothing here.
-
----
-
-### S8 — ADAPTATIONS[vo2max].rx and the "classic 4×4" cue (what a VO₂max session is prescribed as)
-
-**Claim:** A VO₂max session is **3–8 min efforts** at **~90–100 % HRmax**, **4–6 sets**, **≈ 1:1** rest, at **maximal** effort, cued as "Classic 4×4 min at 90–95 % HRmax, 3 min easy between" (`rx`, row 3.8). Drives the prescription text the user reads before a VO₂max session; which logged session *counts* as VO₂max (Garmin aerobic training effect and zone split, rows 6.2–6.4) is [005](005-hr-zone-intensity-classification.md)'s classifier and untouched here.
-**Searched:** 2026-09-03 · **Verdict:** supported — intensity, interval length and the ≈ 1:1 rest each sit inside a band a meta-analysis or a randomised trial gives; sets is **convention** inside the literature's real constraint, total hard work per session (≥ 15 min); "Maximal" is the wrong word for a 4-min interval — every trial prescribes the hardest *even* pace you can repeat, not a sprint — and is reworded; the cue is **Helgerud et al. 2007's protocol verbatim** and now carries that name (acceptance box 3).
-**Number to use:** field by field —
-- **load:** `~90–100% max HR` — Helgerud's 4 × 4 ran at 90–95 % HRmax; Seiler's effort-matched sessions landed at 94 % HRpeak (4 × 4), 90 % (4 × 8) and 88 % (4 × 16); ≥ 90 % VO₂max is the "red zone" interval training targets (Buchheit & Laursen 2013 I); the greatest VO₂max gains come at 90–100 % VO₂max (Wenger & Bell 1986); trained runners need 95–100 % (Midgley 2006). Unchanged.
-- **reps (effort length):** `3–8 min efforts` — 4-min intervals beat 15/15 s at matched work (7.2 vs 5.5 %, Helgerud 2007); 4 × 8 min beat 4 × 4 and 4 × 16 (Seiler 2013); intervals ≥ 2 min gave larger effects than ≤ 30 s and were the only format that beat continuous training (Wen 2019); longer intervals +0.8–0.9 L/min vs +0.51 overall (Bacon 2013); 4 × 4 beat 8 × 20 s and 10 × 30 s in well-trained men and women (Hov 2023, Helgerud 2023). Attia: "three to eight-minute intervals". Unchanged.
-- **sets:** `4–6` — Helgerud 4, Seiler 4, Attia 4–6, Galpin "4–8 bouts"; the literature's constraint is total hard work — ≥ 10 min per session (Bacon's inclusion rule), ≥ 15 min (Wen 2019), 32 min beat 16 min (Seiler 2013). Convention inside "≥ 16 min of work". Unchanged.
-- **rest:** `≈1:1` — Helgerud 4 : 3 active at 70 % HRmax; Attia 4 : 4; Bacon's inclusion rule ≥ 1:1; Yang 2025's best-fit ratio 0.85 in athletes; Milanović 2015 found the work:rest effect "unclear". Unchanged.
-- **effort:** `Maximal` → **`Max you can hold evenly across reps`** — Seiler's sessions were "prescribed at the maximal tolerable intensity" *for four repeats* and came out at 88–94 % HRpeak; Helgerud prescribes 90–95 %, not all-out; Attia "highest intensity, sustained" and "high, but sustainable for at least three minutes". A single all-out effort is a different session (Galpin's 5–15-min time trial). Wording change, fork 2, ledger D24.
-- **cue:** → **`Helgerud’s 4×4: 4 min at 90–95% HRmax, 3 min easy between.`** — the protocol is Helgerud et al. 2007 (NTNU, Trondheim) to the letter: 4 × 4 min at 90–95 % HRmax, 3 min active recovery at 70 %, 3 d/wk for 8 wk, VO₂max +7.2 %. Attributed, fork 3, ledger D23.
-
-#### Evidence
-
-*(a) Intensity — how hard is "VO₂max work"?*
-
-- `[literature]` 40 moderately trained men, four protocols matched for total work, 3 d/wk for 8 wk: long slow distance (70 % HRmax), lactate threshold (85 %), 15 s / 15 s at 90–95 %, and **4 × 4 min at 90–95 % HRmax with 3 min active rest at 70 %**. Only the two interval groups raised VO₂max (P < 0.01): **15/15 +5.5 %, 4 × 4 +7.2 %**; stroke volume +≈ 10 % after intervals. RCT — [Helgerud et al. 2007, Med Sci Sports Exerc](https://pubmed.ncbi.nlm.nih.gov/17414804/) (PMID verified via eutils)
-- `[literature]` Pooled across populations, "the greatest improvements in aerobic power occur when … intensity is from **90 to 100 % of VO₂max**"; at least 3 sessions/wk once VO₂max exceeds 50 mL·kg⁻¹·min⁻¹. Review — [Wenger & Bell 1986, Sports Med](https://pubmed.ncbi.nlm.nih.gov/3529283/) (PMID verified via eutils)
-- `[literature]` The optimal interval stimulus is "one where athletes spend at least several minutes per session in their 'red zone,' which generally means reaching at least **90 % of their maximal oxygen uptake**"; prescription manipulates up to nine variables. Review — [Buchheit & Laursen 2013 (Part I), Sports Med](https://pubmed.ncbi.nlm.nih.gov/23539308/) (PMID verified via eutils)
-- `[literature]` For well-trained distance runners "training at or near VO₂max may be the most effective intensity" — protocols eliciting **95–100 % VO₂max** raise a plateaued VO₂max; lower intensities suffice for the moderately trained. Review — [Midgley, McNaughton & Wilkinson 2006, Sports Med](https://pubmed.ncbi.nlm.nih.gov/16464121/) (PMID verified via eutils)
-
-*(b) Interval length and session volume*
-
-- `[literature]` Trained recreational cyclists (29 M / 6 F, VO₂peak 52), 2 interval sessions/wk for 7 wk at "the maximal tolerable intensity": **4 × 8 min (at 90 % HRpeak) gained more** VO₂peak, power at VO₂peak and power at 4 mM lactate (11.4 %) than 4 × 4 min at 94 % (5.5 %) or 4 × 16 min at 88 % (5.6 %); "accumulating 32 min of work at 90 % HRmax induces greater adaptive gains than accumulating 16 min of work at ∼95 % HRmax despite lower RPE". RCT — [Seiler, Jøranson, Olesen & Hetlelid 2013, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/21812820/) (PMID verified via eutils)
-- `[literature]` 53 RCTs: short intervals (≤ 30 s), low volume (≤ 5 min) and short programmes (≤ 4 wk) all raised VO₂max vs control (SMD 0.79–1.65), but **long intervals (≥ 2 min), high volume (≥ 15 min) and ≥ 4–12 wk gave larger effects** (SMD 0.50–2.48) and were the **only formats that beat moderate continuous training** (SMD 0.65–1.07). Meta-analysis — [Wen et al. 2019, J Sci Med Sport](https://pubmed.ncbi.nlm.nih.gov/30733142/) (PMID verified via eutils)
-- `[literature]` 37 studies (334 subjects, < 45 y, ≥ 3 d/wk, ≥ 10 min hard work, ≥ 1:1 work:rest, 6–13 wk): VO₂max +0.51 L·min⁻¹ (95 % CI 0.43–0.60); the nine studies with **longer intervals gained ≈ 0.8–0.9 L·min⁻¹ "with evidence of a marked response in all subjects"**. Meta-analysis — [Bacon, Carter, Ogle & Joyner 2013, PLoS One](https://pubmed.ncbi.nlm.nih.gov/24066036/) (PMID verified via eutils)
-- `[literature]` 28 controlled trials, healthy adults 18–45 (mean 25 y): HIT +5.5 and endurance training +4.9 mL·kg⁻¹·min⁻¹ vs control, HIT a "possibly small" +1.2 over endurance training, with small extra gains for **longer HIT repetitions**, older subjects and longer programmes; the modifying effect of **work:rest ratio was unclear**. Meta-analysis — [Milanović, Sporiš & Weston 2015, Sports Med](https://pubmed.ncbi.nlm.nih.gov/26243014/) (PMID verified via eutils)
-- `[literature]` 51 studies in athletes (n = 1,261): HIIT, sprint and repeated-sprint training all raised VO₂max with no significant difference between them; meta-regression found an inverted-U for HIIT peaking at **140 s work and a work:recovery ratio of 0.85**. Network meta-analysis, athletes only — [Yang, Wang & Guan 2025, BMC Sports Sci Med Rehabil](https://pubmed.ncbi.nlm.nih.gov/40605061/) (PMID verified via eutils)
-
-*(c) Long intervals versus sprints — the mechanism behind the card*
-
-- `[literature]` Well-trained men, 8 wk: **4 × 4 min raised VO₂max 6.5 % vs 3.3 % for 8 × 20 s and no change for 10 × 30 s**, with a larger stroke-volume (O₂-pulse) gain after 4 × 4; MAOD rose only after 8 × 20 s — "HIIT should typically be the chosen interval format" — [Hov et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/36314990/) (PMID verified via eutils)
-- `[literature]` Well-trained women, same design: **only 4 × 4 raised VO₂max (7.3 %)**; both sprint arms raised MAOD; 10 × 30 s produced eight injuries — [Helgerud et al. 2023, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/37608507/) (PMID verified via eutils)
-- `[literature]` 32 studies: **only HIIT raised maximal stroke volume (+14.1 %) and cardiac output (+12.6 %)**; both HIIT and SIT raised citrate synthase activity; capillary density rose only with SIT. Meta-analysis — [Rosenblat, Granata & Thomas 2022, Sports Med](https://pubmed.ncbi.nlm.nih.gov/35041180/) (PMID verified via eutils)
-- `[literature]` "VO₂max is generally increased more by HIIT than MICT for a given training volume, whereas SIT and MICT similarly improve VO₂max despite differences in training volume". Review — [MacInnis & Gibala 2017, J Physiol](https://pubmed.ncbi.nlm.nih.gov/27748956/) (PMID verified via eutils)
-- `[literature]` Sprints still work, just less: SIT +≈ 8 % VO₂max, equal to endurance training (Cohen's d 0.04 vs ET) — [Gist et al. 2014, Sports Med](https://pubmed.ncbi.nlm.nih.gov/24129784/); SIT +4.2–13.4 % across 13 studies, driven by peripheral adaptations with "limited and equivocal" central evidence — [Sloth et al. 2013, Scand J Med Sci Sports](https://pubmed.ncbi.nlm.nih.gov/23889316/); low-volume HIT +6.2 % in active non-athletic men — [Weston et al. 2014, Sports Med](https://pubmed.ncbi.nlm.nih.gov/24743927/) (all PMIDs verified via eutils)
-- `[literature]` In 273 patients with lifestyle-induced cardiometabolic disease the 4 × 4-shaped HIIT raised VO₂peak 9.1 % more than moderate continuous training — the protocol is tolerated by people far less fit than this user. Meta-analysis — [Weston, Wisløff & Coombes 2014, Br J Sports Med](https://pubmed.ncbi.nlm.nih.gov/24144531/) (PMID verified via eutils)
-
-*(d) The practitioners, and the cue's provenance*
-
-- `[single-practitioner position]` "4 minutes of the highest intensity, sustained exercise followed by 4 minutes of recovery", repeated 4–6 times, one dedicated session a week (or shorter intervals at the end of zone-2 rides 2–3 days/wk); on the bike 4 min at 125 % of FTP / 4 min; VO₂max work is "three to eight-minute intervals" at "high, but sustainable for at least three minutes"; cardio split 80 % zone 2 / 20 % VO₂max. Attia only; he calls it the 4×4 and names no source — [peterattiamd.com, ep. #201](https://peterattiamd.com/high-intensity-training-zone-5-to-increase-vo2-max/), [AMA #21](https://peterattiamd.com/peter-attia-on-zone-5-anaerobic-training-protocols/), [The Drive #261 (notes)](https://podcastnotes.org/the-drive-with-dr-peter-attia/training-for-the-centenarian-decathlon-zone-2-vo2-max-stability-and-strength-the-drive-with-peter-attia-261/)
-- `[single-practitioner position]` Maximum aerobic output: "time frame 5–15 minutes at maximum intensity", "1–2× per week is sufficient", "run 10 minutes as fast and as far as you can once per week", "don't need repeats"; earlier: "do something once a week that gets you to max heart rate … × 4–8 bouts", "sustain hard work for 4–12 minutes". **Galpin does not prescribe the 4 × 4** — [guest series pt 3 (notes)](https://podcastnotes.org/huberman-lab/guest-series-dr-andy-galpin-how-to-build-physical-endurance-lose-fat-huberman-lab/), [episode 65 (notes)](https://podcastnotes.org/huberman-lab/episode-65-dr-andy-galpin-how-to-build-strength-muscle-size-endurance-huberman-lab/)
-- `[practitioner consensus]` VO₂max work is several minutes at a time near maximal heart rate, once or twice a week, kept small next to easy volume. Held by Attia and Galpin; they differ on shape (repeats vs one long effort) and the literature sides with repeats of 4–8 min (Helgerud, Seiler, Wen, Bacon).
-
-#### Where they split
-
-**1. Four minutes or eight.** Helgerud's 4 × 4 is the attributed protocol and the most replicated; Seiler shows 4 × 8 at a slightly lower heart rate beats it in trained cyclists, and Wen and Bacon both reward longer intervals and more total work. The card's `3–8 min` already spans both, and the cue names the 4 × 4 because it is the one with a name and a source. Keep both; the comment says 4 × 8 is the next step once 4 × 4 is routine.
-
-**2. "Maximal" on a 4-minute rep.** The word invites a sprint on the first interval; the trials prescribe the hardest pace that survives all four (Seiler's isoeffort design, Helgerud's 90–95 %, Attia's "sustainable for at least three minutes"). Galpin's single 5–15-min all-out effort is the only place "maximal" is literally meant, and it is a different session. Reword the effort field; no number changes.
-
-**3. Whose 4 × 4.** The protocol is Helgerud et al. 2007 from NTNU, Trondheim — the same group whose clinical 4 × 4 the patient meta-analysis pools (Weston, Wisløff & Coombes 2014), popularly "the Norwegian 4×4". Attia prescribes it without a source; Galpin does not prescribe it at all, so the reference card's line "Based on the Huberman Lab × Dr. Andy Galpin guest series" is **false for this cue**. Name Helgerud in the cue text, as "Galpin's 3–5 rule" already names Galpin (S5), so the attribution travels with the string wherever it is rendered; S10 settles the card-level line.
-
-**4. Sprints instead.** Hov 2023, Helgerud 2023, Rosenblat 2022: sprints raise VO₂max less and do not raise stroke volume; long intervals do. That is the same fork S7 resolves from the other side, and it is why the two cards prescribe different sessions.
-
-#### Caveats
-
-- Population mismatch: Milanović pools 18–45-year-olds with a mean age of 25; Bacon excludes anyone over 45; Helgerud 2007 is moderately trained men, Seiler trained recreational cyclists, Hov and Helgerud 2023 well-trained 22–23-year-olds; Weston 2014's "active non-athletic males" (+6.2 %) is the closest slice. **No located trial is in 40-year-old recreational lifters.** The patient meta-analysis (Weston, Wisløff & Coombes 2014) shows the protocol is tolerated well below this user's fitness, which bounds the risk rather than the gain.
-- "% HRmax" is only as good as the HRmax it is measured against; an estimated maximum makes the 90–100 % band soft by several beats. The card is a heaviness cue, not a number the app checks.
-- The classifier decides what counts (005, rows 6.2–6.4): a session Garmin types VO₂max from zones may never have reached this band. The card's fields shape no read.
-- Yang 2025's 140-s optimum comes from athletes with sprint and repeated-sprint formats pooled in; it is noted as the outlier, not used.
-- Frequency: Helgerud and Hov ran 3×/wk, Seiler 2×/wk, Attia and Galpin say 1–2×/wk; `weeklySessionTarget = 1` (011, grounded as a floor) is not reopened.
-- What would move this number: an RCT of 4 × 4 vs 4 × 8 in adults over 35; a measured HRmax in the profile (would make the band checkable); a work:rest trial at fixed interval length.
-
-#### Source comment
-```
-// rx.vo2max — long hard intervals raise VO2max more than anything else at matched work: 4 × 4 min at 90–95 %
-// HRmax / 3 min active +7.2 % vs 15/15 +5.5 % and no change for threshold or LSD (Helgerud 2007, the cue's
-// protocol); 4 × 8 min at 90 % beat 4 × 4 at 94 % and 4 × 16 at 88 % — total work × intensity interact (Seiler
-// 2013); intervals ≥ 2 min and ≥ 15 min/session are the only formats that beat continuous training (Wen 2019,
-// 53 RCTs; Bacon 2013). 90–100 % HRmax: the "red zone" is ≥ 90 % VO2max (Buchheit & Laursen 2013; Wenger &
-// Bell 1986). Sprints raise VO2max less and not stroke volume (Hov 2023; Helgerud 2023; Rosenblat 2022) — that
-// is S7's card. Sets 4–6 and rest ≈1:1 are conventions inside "≥ 16 min of work" (Helgerud 4:3; Attia 4:4;
-// Bacon ≥ 1:1). Effort is the hardest even pace that survives all reps (Seiler's isoeffort design), not a
-// sprint — reworded 2026-09-03 (039 S8 fork 2, ledger D24). Cue attributed to Helgerud et al. 2007 the same
-// day (fork 3, D23): Galpin does not prescribe the 4 × 4, Attia does without naming it.
-// See docs/roadmap/039-adaptations-read-grounding.md#grounding
-```
-
-**Decision (S8, 2026-09-03):** no number moves; two strings change, both
-recorded in the ledger before the constant was edited. The cue becomes
-**"Helgerud’s 4×4: 4 min at 90–95% HRmax, 3 min easy between."** (fork 3,
-ledger D23), which closes row 3.8's half of acceptance box 3 — with S5's half
-(D18) the box is done. The effort field becomes **"Max you can hold evenly
-across reps"** (fork 2, ledger D24). Load, effort length, sets and rest stay
-as shipped, with sets and rest labelled **convention** inside the total-work
-constraint. Fork 1 is settled by the band already on the card. The reference
-card's Huberman/Galpin attribution line is now false for one cue and true for
-another; it is S10's to settle, noted for that run.
-`weeklySessionTarget = 1` (011) and the classifier (005) are not reopened.
+The blocks live in
+**[grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)**
+— one `###` per scout run, pasted verbatim on receipt after the citation check
+(`eutils esummary`; Crossref for the papers outside PubMed), each closing with
+the **Decision** paragraph the ledger rows cite. Landed: S1, S2, S3, S12, S4,
+S5, S6, S7, S8. In flight: S9, S10. To run: S11. Moved out of this file on
+2026-09-03 so a session picking the brief up reads the plan, not 800 lines of
+evidence; the source comments in `src/` and the inventory link to the new file.
 
 ---
 
@@ -958,7 +204,9 @@ another; it is S10's to settle, noted for that run.
 - [x] §1's accounting decision is made, written here with its reason, and the
       losing dialect(s) deleted from the code. (2026-09-02, v1.13.0 — §6.1
       option (a); `muscleCoverage` and its card are gone.)
-- [ ] A `## Grounding` section exists here carrying verdicts for rows 7.1, 7.5,
+- [ ] A `## Grounding` section exists here (its blocks in
+      [grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding))
+      carrying verdicts for rows 7.1, 7.5,
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
 - [x] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
       or no longer ship it. (2026-09-03 — S5 keeps "Galpin's 3–5 rule",
@@ -1118,22 +366,16 @@ brief's scope. 031 §3c cuts the recovery axis from the page anyway.
 
 All `subagent_type: science-scout`, each given the claim, the constant, the
 current value, this brief's path, and the date. Verify every citation through
-NCBI eutils before pasting (acceptance box 5).
+NCBI eutils before pasting (acceptance box 5). S1–S8 and S12 have landed —
+their claims are the **Claim** line of their blocks in the grounding file, and
+the progress log says when. The rows kept below are the ones still in flight
+or still to dispatch, so a dead run can be re-issued from here:
 
 | # | Row | Claim to hand the scout | Constant · value |
 |---|---|---|---|
-| S1 | 7.1 | A set on an exercise where the muscle is a level-2 (secondary) mover counts as half a set of stimulus for that muscle, level-3 a quarter — the fractional-set convention every map is denominated in | `LEVEL_WEIGHT` [utils.ts:490](../../src/lib/utils.ts#L490) · `{1: 1, 2: 0.5, 3: 0.25}`. Pelland 2026's best-fit model counts indirect sets at 0.5 (already cited in [010 §Grounding](done/010-home-fused-reads.md#grounding)) — the scout's job is the 0.25 tier and whether 0.5 is "indirect" in the same sense |
-| S2 | 7.5 | Stimulus below the weekly floor is graded (each set buys some adaptation), so a continuous fill is honest and a three-step on-track / needs-work / untouched cut is a coarsening; is anything below the floor worth *zero*? | `statusFor` [lib/adaptations.ts:146](../../src/lib/adaptations.ts#L146) + `GAP_CUTOFF = 0.70` [GapMap.tsx:16](../../src/components/tabs/home/GapMap.tsx#L16) |
-| S3 | new row | 10 level-weighted sets/muscle/week **counted across every rep range** (strength, hypertrophy, endurance and power sets all pooled) is a defensible adequacy floor for *total* muscle stimulus — i.e. the hypertrophy floor is the right adaptation-agnostic denominator because it is the most volume-hungry of the four | `WEEKLY_SET_FLOOR` (new) · `10`, and `CYCLE_SET_TARGET` [app.ts:90](../../src/constants/app.ts#L90) · `60`. The *value* is grounded (010 D10); the *pooling* is the claim |
-| S4 | 3.3, 2.6 | Power prescription: 30–70% 1RM, 1–5 reps, 3–5 sets, 2–5 min rest, never to fatigue; and the keyword rule that jumps, throws, Olympic lifts, swings, sleds and sprints are power work regardless of rep count (row 2.6) | `ADAPTATIONS[power].rx` [adaptations.ts:78](../../src/constants/adaptations.ts#L78) |
-| S5 | 3.4 | Strength prescription: 85–100% 1RM, 3–5 reps, 3–5 sets, 2–5 min rest, 1–2 RIR; and the cue "Galpin's 3–5 rule" (3–5 reps × sets × min rest × sessions/wk) — attribute or remove | `ADAPTATIONS[strength].rx` [adaptations.ts:109](../../src/constants/adaptations.ts#L109) |
-| S6 | 3.6 | Muscular-endurance prescription: <50% 1RM, 15–40+ reps, 2–4 sets, <60 s rest, to/near failure | `ADAPTATIONS[muscular_endurance].rx` [adaptations.ts:163](../../src/constants/adaptations.ts#L163) |
-| S7 | 3.7 | Anaerobic-capacity prescription: all-out 20 s–2 min efforts, 3–8 rounds, 1:2–1:4 work:rest | `ADAPTATIONS[anaerobic_capacity].rx` [adaptations.ts:189](../../src/constants/adaptations.ts#L189) |
-| S8 | 3.8 | VO₂max prescription: 90–100% HRmax, 3–8 min efforts, 4–6 sets, ≈1:1 rest; and the cue "classic 4×4 min at 90–95% HRmax, 3 min easy" — expected source Helgerud 2007 (verify) — attribute or remove | `ADAPTATIONS[vo2max].rx` [adaptations.ts:220](../../src/constants/adaptations.ts#L220) |
 | S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../src/constants/adaptations.ts#L251) |
 | S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../src/constants/adaptations.ts#L268) |
 | S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:94](../../src/constants/adaptations.ts#L94), [:125](../../src/constants/adaptations.ts#L125), [:153](../../src/constants/adaptations.ts#L153) |
-| S12 | new row | A muscle's stimulus is judged over a **rolling 14-day window** against twice the weekly floor (20 hard sets), shown as "10/wk" (§6.6): long enough that a muscle trained once a week does not read as untouched on the morning of its session, short enough that a muscle silent for the whole window has genuinely missed its dose. Return the honest band for the window length and the default — expected literature: per-muscle training-frequency meta-analyses (Schoenfeld 2016, 2019), detraining time-courses (Bosquet 2013, Ogasawara 2013), how long one session's muscle-protein-synthesis response lasts | `MUSCLE_WINDOW_DAYS` (new, in app.ts beside `QUALITY_STALENESS_DAYS`) · `14`, replacing `CYCLE_WINDOW_DAYS = CYCLE × 7` [fusedRead.ts:25](../../src/lib/fusedRead.ts#L25) · `42`; target `WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7` · `20`, replacing `CYCLE_SET_TARGET` · `60` |
 
 Hypertrophy's `rx` (row 3.5) is **out**: grounded in 011 and locked to the
 target (D3). Do not re-run it.
@@ -1147,12 +389,16 @@ carries no attribution at all today.
 
 ### 6.4 Landing the blocks — the four `/ground` destinations
 
-1. **This brief:** paste all twelve blocks verbatim under a `## Grounding` section
-   placed before `## Acceptance` (i.e. between §4 and §5), one `###` per run.
+1. **The grounding file**
+   ([grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)):
+   paste every block verbatim under its `## Grounding`, one `###` per run,
+   and end each with a **Decision** paragraph; this brief's own `## Grounding`
+   is a pointer. The file stays where it is when the brief retires, so nothing
+   below needs repointing. (Moved out of the brief 2026-09-03 — the nine landed
+   blocks were 790 of its 1,426 lines.)
 2. **The constants:** source comments on `LEVEL_WEIGHT`, `WEEKLY_SET_FLOOR`,
    `MUSCLE_WINDOW_DAYS`, each `rx` block and `ADAPTATION_PRINCIPLE`, every one
-   pointing at `docs/roadmap/039-adaptations-read-grounding.md#grounding`
-   (repoint to `done/` when the brief moves — `grep -rn 039- src/`).
+   pointing at `docs/grounding/039-adaptations-read.md#grounding`.
 3. **The inventory** ([grounding-inventory.md](../grounding-inventory.md)):
    rows 2.1–2.3, 2.6, 3.3, 3.4, 3.6–3.10, 7.1, 7.5 → carrier `039`, verdict updated, and the
    `Where` line numbers refreshed (7.1 says `utils.ts:479`, now 490; 7.5 says
@@ -1184,28 +430,16 @@ Each unit build-passes on its own; commit and push after each.
    attempt (2026-09-02) dispatched all eleven in parallel; ten died on the
    5-hour session limit and only S2 came back. One scout costs roughly an hour
    of interactive work, so a batch of eleven is most of a window. Run them in
-   pairs (S1+S3 done; then S12+S4, S5+S6, S7+S8, S9+S10, S11 alone — reordered
-   2026-09-03 so the window lands before the `rx` blocks), eutils-check each
-   block as it lands, paste it under `## Grounding`, and commit after each pair so a dead
-   session loses at most two runs. Then land per §6.4, including any `rx`
-   text the verdicts change (record a changed value as a decision *before*
-   editing the constant — `/ground` hard rule). Patch bump per pair.
-   **Done so far:** S2 (v1.13.1) — block in `## Grounding`, source comments on
-   `statusFor` and `GAP_CUTOFF`. S1 + S3 (v1.13.2) — blocks; `LEVEL_WEIGHT`
-   comment carried the convention label until
-   [done/042](done/042-level-3-link-audit.md) zeroed the tier (v1.14.0,
-   2026-09-03); `WEEKLY_SET_FLOOR` created and
-   `CYCLE_SET_TARGET` derived from it, power sets out of `total`, sheet
-   PLACEHOLDERs replaced. S12 + S4 (blocks v1.14.1; units v1.16.0 and
-   v1.16.1) — inventory rows 2.6, 3.3, 7.5, 7.7, 7.8 and ledger D14–D17
-   landed with them. S5 + S6 (v1.16.3, run inline — §6.9) — blocks; source
-   comments on both `rx` blocks; endurance load `<50%` → `40–60% 1RM` (D19);
-   rows 3.4 and 3.6, ledger D18–D20 — S7 + S8 (v1.16.4, inline — §6.10) — blocks; source comments
-   on both `rx` blocks; anaerobic floors 3 → 4 rounds and 1:2 → 1:1 (D21–D22);
-   VO₂max cue attributed to Helgerud 2007 and its effort reworded (D23–D24);
-   rows 3.7 and 3.8 — so the final pass owes only the S9–S11 rows.
-3. **Close:** tick §5, move this file to `done/`, repoint the source comments,
-   move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
+   pairs, eutils-check each block as it lands, paste it into the grounding
+   file, and commit after each pair so a dead session loses at most two runs.
+   Then land per §6.4, including any `rx` text the verdicts change (record a
+   changed value as a decision *before* editing the constant — `/ground` hard
+   rule). Patch bump per pair. **Landed:** S1–S8 and S12 (progress log).
+   **Remaining:** S9 + S10 (in flight), then S11 alone — its band edges are
+   the last value this brief moves, and the final inventory pass owes only
+   rows 2.1–2.3, 3.9 and 3.10.
+3. **Close:** tick §5, move this file to `done/` (the grounding file and the source
+   comments stay put), move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
    the inventory), and set [031](031-adaptations-drill-down-read.md) to
    `planned` (019, 026, 039 all landed). Patch bump.
@@ -1286,141 +520,33 @@ keeps meaning "70 % of the target"); S1's weights; `RECOVER_DAYS` and
 6. Browser-verify Home: expect more muscles to read as gaps — a 14-day window
    is stricter on anything trained once a fortnight, which is the honest read.
 
-### 6.7 Handoff 2026-09-03 — S12 + S4 blocks landed, code units next
+### 6.7 How a run lands — the recipe the S5–S8 sessions settled on
 
-Both blocks sit under `## Grounding`, every citation checked through eutils
-or Crossref (v1.14.1). Neither verdict moved a value, so the code is a
-label-and-rename job in two units, in this order.
+Scouts or inline, the receiving steps are the same. **Verify first:** every
+PMID through `eutils esummary` — a 30-line `cite-check.mjs` in the session
+scratchpad lists what NCBI and Crossref say each linked PMID / DOI is;
+serialise the calls, NCBI throttles at 3/s. Six of the first 24 PMIDs
+recalled from memory in S7 + S8 were wrong, so a block is not read until its
+citations resolve. Practitioner positions come from the podcast-notes pages
+and Huberman Lab's own summaries via WebFetch (URLs in the S4 / S6 / S8
+blocks). **Then land:** paste the block into the grounding file as
+`### S<n> — …` with heading levels shifted one down and HTML entities
+decoded; write its **Decision** paragraph; then the code unit — source
+comment on the constant, any text the verdict changes (ledger row *before*
+the constant is edited), inventory row + ledger rows, tests, build, browser
+check, patch bump. Inline (no subagents) costs the same as a scout pair —
+one pair fills a session either way. A subagent's block is the last
+assistant text in its JSONL transcript; a 40-line extractor saves retyping
+it.
 
-**Unit S12 — the window — shipped 2026-09-03 (v1.16.0).** §6.6's six steps
-as written below; inventory rows 7.7 and 7.8 and ledger D14 landed with it,
-so the S4 inventory pass owes only rows 2.6, 3.3, 7.5 and D15–D17. The
-plan, kept for the record: exactly §6.6's six steps, with the S12 source
-comment on `MUSCLE_WINDOW_DAYS`.
-Consumer map (2026-09-03): `CYCLE_WINDOW_DAYS` is read by `cycleWindow`,
-`muscleStates` (fill ÷ `CYCLE_SET_TARGET`, [fusedRead.ts:112](../../src/lib/fusedRead.ts#L112)),
-`powerSetCount` (:192), `muscleWeeklySets` (:229–236 — keep six bars through a
-local `HISTORY_WEEKS = 6`: history, not a claim) and `muscleSources` (:271);
-[HomeTab.tsx](../../src/components/tabs/home/HomeTab.tsx) :6/:83 and
-[MuscleSheet.tsx](../../src/components/tabs/home/MuscleSheet.tsx)
-:6/:8/:99/:103/:153/:159 read the two constants; `fusedRead.test.ts` imports
-`CYCLE_WINDOW_DAYS` at :4 and uses it at :66, :69, :134, :152–153, :184, :208
-(rename; the `muscleWeeklySets` expectation `[3,0,0,0,2,5]` assumes a 6-week
-history — keep it via the display constant). Copy: MuscleSheet "this cycle"
-(:84, :159, :180, :206, :224) → "in the last 14 days", bars captioned
-"last 6 weeks"; HomeTab :79/:82 likewise. Inventory: new row 7.8
-(`MUSCLE_WINDOW_DAYS` 14 — convention inside a grounded 8–21 d band) and
-ledger D14 (the window leaves the program cycle; the fill is frequency-blind
-by design, recency stays in `daysSince`).
+**Debt carried:** the reference card ("How to train each adaptation",
+collapsed on Home) has not been screenshot since S6 — its S6, S7 and S8
+strings (`40–60% 1RM`; `4–8 rounds`, `1:1–1:4`; the Helgerud cue and the
+even-pace effort) are unverified in the browser. Check it with the S9 + S10
+unit.
 
-**Unit S4 — power `rx` + keyword matcher — shipped 2026-09-03 (v1.16.1).**
-As shipped: `hop` / `jump` match whole words (plural-tolerant RegExp entries
-in `KEYWORD_ADAPTATION`), plus a one-entry `NOT_POWER` exclusion for "jump
-rope", which a word boundary cannot catch; `clapping` added; tests for both
-directions. The plan, kept for the record: (1)
-`ADAPTATIONS[power].rx` gets the three text values in the S4 decision and the
-S4 source comment above the block. (2) `KEYWORD_ADAPTATION` gets its comment
-and the collision fix: the DB check (2026-09-03, `exercises` matching
-`hop|jump|agility|sled|swing`) found Box Jump, Jump Back Squat, Pogo Hops and
-Skater Hop correctly power, Leg Swings and Tennis Warm-Up Swings correctly
-untouched (only `kettlebell swing` / `kb swing` match), and **Cable Woodchop
-wrongly power via `hop`**. Match `hop` and `jump` on a word boundary rather
-than adding exclusions; add a test that "Cable Woodchop" and "Jump Rope" are
-not power while "Skater Hop" and "Jump Back Squat" are. (3)
-`AdaptationGuide.tsx:32`'s attribution line stays until S10. (4) Inventory
-rows 2.6 and 3.3 → carrier 039, `grounded` (with `sled` / `agility` marked
-convention); ledger D15 (one load band kept, split in words), D16 (keyword
-rule stays exclusive; RIR field is the upgrade path), D17 (strength sets never
-feed the power map; the sheet's "heavy strength also builds power in the
-not-yet-strong" line goes to [031](031-adaptations-drill-down-read.md)'s
-scope — add it there in the same pass). (5) [043](done/043-scout-named-exercises-catalogue.md)
-added **Clapping Push-up** (Galpin's list) and none of the 20 keywords match
-it, so its sets classify by reps — decide whether `clapping` joins the list
-in the same edit. Rows 7.5 (S2) and the new 7.7
-(`WEEKLY_SET_FLOOR`, S3) land in the same inventory pass.
-
-Then S5–S8, dispatched 2026-09-03 as one batch of four (Peter's call for that
-session — the weekly limit was about to reset), then S9–S11.
-
-### 6.8 Handoff 2026-09-03 (evening) — S5–S8 dispatched, lost to API overload
-
-Unit S4 shipped (v1.16.1) and S5–S8 were dispatched in parallel in the same
-session. All four scouts died on server-side `529 Overloaded` errors — each
-was resumed twice with `SendMessage` and died again within minutes, before
-finishing its opening reads — so **no block landed and nothing in this brief
-is owed to them**. The session then hit the context wrap-up limit.
-
-**Next session:** re-run S5–S8 from the §6.3 table. Each prompt hands the
-scout the claim, the constant with its line numbers, the current value, this
-brief's path and the date, names what is out of scope (011 targets, S11's
-band edges, 005's classifier), lists the expected literature to verify, and
-asks for S4's structure — number-to-use field by field, evidence grouped by
-field, the forks Tekiō must choose on, caveats with the population mismatch,
-and a multi-line source comment. Two at a time unless Peter says otherwise.
-When a block lands: run the eutils/Crossref check (a 30-line
-`cite-check.mjs` — PMIDs via `esummary`, DOIs via
-`api.crossref.org/works/<DOI>`), decode HTML entities, paste it under
-`## Grounding` as `### S<n> — …` with heading levels shifted one down, write
-the **Decision** paragraph, then the code unit: source comment on the `rx`
-block, any text the verdict changes (recorded as a decision *before* editing
-the constant), inventory row + ledger rows, tests, build, browser check,
-patch bump. S5 and S8 each carry a named protocol ("Galpin's 3–5 rule",
-"4×4") whose attribution or removal is acceptance box 3.
-
-**A cheaper way to receive a block:** a subagent's transcript is a JSONL
-file the task notification names, and the block is its last assistant text.
-A 40-line extractor (last assistant message containing `**Claim:**`,
-HTML-unescaped, code fence stripped) writes it straight to a file, so the
-block never has to be retyped into the brief by hand. Worth recreating in the
-session scratchpad before dispatching.
-
-### 6.9 Handoff 2026-09-03 (night) — S5 + S6 landed inline, S7 + S8 next
-
-Peter asked for no subagents this run, so S5 and S6 were done **in the main
-session**: PMIDs verified with a 30-line `cite-check.mjs` (esummary /
-efetch abstracts / Crossref for DOIs), practitioner statements pulled with
-WebFetch from the podcast-notes pages and Huberman Lab's own summaries, and
-the blocks written straight into `## Grounding` (v1.16.3). Cost: the pair
-filled one session to the context limit — the same budget a scout pair
-costs, with none of the 529 deaths. **Not browser-verified:** the only visible
-change is the endurance card's load string (`40–60% 1RM`) in the collapsed
-"How to train each adaptation" reference; the session hit the wrap-up limit
-before a screenshot — check it when S7 + S8 land.
-
-**Next session — S7 + S8 (anaerobic capacity, VO₂max), inline, the same
-way:** for each, esummary-verify the expected literature first (S8: Helgerud
-2007 for the 4×4 attribution; S7: SIT / repeated-sprint meta-analyses),
-efetch the abstracts, fetch Galpin's and Attia's positions (guest series pt 3
-and The Drive #261 — URLs in S4/S6), write the block in S5/S6's shape
-(number-to-use field by field, evidence grouped by field, forks, caveats,
-source comment, Decision), then the code unit: source comment on the `rx`
-block, any text a verdict changes (decision in the ledger *before* the
-constant), inventory rows 3.7 / 3.8 + ledger rows, test, build, browser check,
-patch bump. S8's "classic 4×4" is acceptance box 3's other half. Then
-S9 + S10, S11 (§6.5 step 2), then §6.5 step 3 closes the brief.
-
-### 6.10 Handoff 2026-09-03 (late) — S7 + S8 landed inline, S9 + S10 next
-
-S7 and S8 were run inline the same way as §6.9 (no subagents): 30 PMIDs
-verified through esummary — **six of the first 24 recalled from memory were
-wrong or missing** and were re-found by title before any abstract was read —
-abstracts through efetch (serialised: NCBI throttles parallel calls at
-3/second), the NSCA work:rest table and the Galpin / Attia positions through
-WebFetch. Both blocks landed under `## Grounding` with Decision paragraphs;
-two anaerobic floors moved (D21–D22), the VO₂max cue is attributed and its
-effort reworded (D23–D24); acceptance box 3 is closed. Cost: the pair filled
-the session to the context limit again. **Not browser-verified**, same as
-§6.9: the visible changes are four strings in the collapsed "How to train
-each adaptation" reference card (S6's `40–60% 1RM`, S7's `4–8 rounds` and
-`1:1–1:4`, S8's cue and effort) — screenshot that card when S9 + S10 land.
-
-**Next session — S9 + S10 (endurance, the principle), inline:** S9 verifies
-the Zone 2 band and the cue's two mechanistic claims ("nasal-breathing pace",
-"builds mitochondria & fat oxidation" — expected: San-Millán & Brooks 2018,
-Seiler's polarised-training reviews, the lactate-threshold literature);
-S10 grounds `ADAPTATION_PRINCIPLE` (velocity-loss and proximity-to-failure
-meta-analyses already cited in S5 — Robinson 2024, Grgic 2022, Vieira 2021
-for the power side) **and settles the reference card's attribution line**,
-which D23 has made false for one cue (Helgerud's 4×4) and true for another
-(Galpin's 3–5 rule): per-cue provenance or a rewritten line. Then S11
-(§6.5 step 2), then §6.5 step 3 closes the brief.
+**Next:** S9 + S10 blocks (running as two scouts) — S9 settles the Zone 2
+band, the 30-min bout floor and the cue's two mechanistic claims; S10 grounds
+`ADAPTATION_PRINCIPLE` and settles the reference card's attribution line
+(true for "Galpin's 3–5 rule", false for Helgerud's 4×4 — per-cue provenance
+or a rewritten line). Then S11 alone, then §6.5 step 3 closes the brief.

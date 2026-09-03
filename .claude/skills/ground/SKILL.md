@@ -174,7 +174,11 @@ order:
 **1. The brief** — paste the scout's block verbatim as `## Grounding`,
 immediately before `## Acceptance`. Verbatim: don't summarise away the
 provenance tags or the "Where they split" section, which is the part that
-records a real design fork.
+records a real design fork. A brief that collects many runs keeps them in
+`docs/grounding/<NNN>-<slug>.md` under its own `## Grounding` heading and
+leaves a pointer in the brief's section (039 is the precedent — nine blocks
+were 790 of its 1,426 lines). That file stays put when the brief retires, so
+its source comments never need repointing.
 
 **2. The constant** — one line above it, from the scout's `### Source comment`:
 

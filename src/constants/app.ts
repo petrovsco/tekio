@@ -90,7 +90,7 @@ export const QUALITY_STALENESS_DAYS = {
  * (Pareja-Blanco 2017, Jukic 2023). Says nothing about strength's load, endurance's rep range or
  * power's velocity — the per-quality maps do. Value grounded in
  * docs/roadmap/done/010-home-fused-reads.md#grounding (D10); the pooling in
- * docs/roadmap/039-adaptations-read-grounding.md#grounding (S3). */
+ * docs/grounding/039-adaptations-read.md#grounding (S3). */
 export const WEEKLY_SET_FLOOR = 10
 
 // 14 — MUSCLE_WINDOW_DAYS: rolling window for the per-muscle hard-set fill (target = WEEKLY_SET_FLOOR × 14 / 7 = 20).
@@ -100,7 +100,7 @@ export const WEEKLY_SET_FLOOR = 10
 // earliest measured tissue loss in trained lifters is at 14 d (Hortobágyi 1993, type II fibre area −6.4 %). 14 is a
 // convention inside that band — whole weeks, one missed weekly dose = half fill, one rhythm with QUALITY_STALENESS_DAYS.
 // Not an MPS window: the per-session signal ends in 28–48 h (Tang 2008, Phillips 1997). The sum is frequency-blind by
-// design; recency lives in daysSince / RECOVER_DAYS. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+// design; recency lives in daysSince / RECOVER_DAYS. See docs/grounding/039-adaptations-read.md#grounding
 export const MUSCLE_WINDOW_DAYS = 14
 
 /** 20 — WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7: the hard-set target the muscle map fills against. Rate

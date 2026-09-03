@@ -58,12 +58,12 @@ The roster is not flat. Weight it by what the person actually does.
 |---|---|---|
 | Hypertrophy: volume, frequency, deloads | Israetel, Galpin | Israetel is the roster's closest researcher-practitioner here; his landmarks are a *model*, not a measurement |
 | Strength, power, muscle physiology | Galpin | Strongest researcher in the roster for training physiology |
-| Cardio, VO₂max, zone 2, longevity | Attia, Galpin | Their zone-2 split is the standing example of a real design fork |
+| Cardio, VO₂max, zone 2, longevity | Attia, Galpin, Patrick | Their zone-2 split is the standing example of a real design fork. Patrick relays papers rather than running trials — the "Norwegian 4×4" she popularised is Helgerud 2007 — so read the paper she cites and cite that, never her, for a number |
 | Sleep, circadian, motor consolidation | Huberman | Apply the confidence discount: read the cited paper before repeating the framing |
 | Movement quality, cueing, exercise selection | Cavaliere, Conor Harris | **Coaches, not researchers.** They may inform *what to do*; they never ground a *number*. |
 
-Full names, so searches resolve: Andrew Huberman, Andy Galpin, Peter Attia, Mike
-Israetel, Jeff Cavaliere (Athlean-X), Conor Harris (`@conorharris` — biomechanics
+Full names, so searches resolve: Andrew Huberman, Andy Galpin, Peter Attia, Rhonda
+Patrick (FoundMyFitness), Mike Israetel, Jeff Cavaliere (Athlean-X), Conor Harris (`@conorharris` — biomechanics
 and movement, PRI-influenced hip/pelvis, rib cage and breathing mechanics; most
 relevant to Tekīō's Mobility surface).
 

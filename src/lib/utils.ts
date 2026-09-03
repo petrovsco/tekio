@@ -498,7 +498,7 @@ export function habitProgress(
  *  reads as an explicit 0; every consumer skips zero-weight links, so such a
  *  link adds no sets, no recency and no source. Every muscle read is
  *  denominated in this (inventory row 7.1, decision D13).
- *  See docs/roadmap/039-adaptations-read-grounding.md#grounding and
+ *  See docs/grounding/039-adaptations-read.md#grounding and
  *  docs/roadmap/done/042-level-3-link-audit.md */
 export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0 }
 

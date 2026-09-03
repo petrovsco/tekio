@@ -16,7 +16,7 @@ const NO_DATA = '#eeeeec'
  * Display convention, not a physiological line: no study places a cutoff at
  * any fraction of the floor; 0.70 sits just above the maintenance zone
  * (Bickel 2011: 1/9–1/3 of a full dose keeps muscle in young adults; Israetel
- * MV ≈ 0.6 × floor). See docs/roadmap/039-adaptations-read-grounding.md#grounding */
+ * MV ≈ 0.6 × floor). See docs/grounding/039-adaptations-read.md#grounding */
 export const GAP_CUTOFF = 0.70
 
 function rampStep(fraction: number): number {
