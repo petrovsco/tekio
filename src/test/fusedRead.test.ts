@@ -93,6 +93,19 @@ describe('muscleStates', () => {
     expect(states.find(m => m.name === 'Chest')?.daysSince).toBeNull()
   })
 
+  it('gives a level-3 link no sets and no recency (zero-weight tier, roadmap 042)', () => {
+    const states = muscleStates(
+      [weight(ago(1), 'Pull-ups', 4)],
+      [link('Pull-ups', 'Biceps', 2), link('Pull-ups', 'Triceps', 3)],
+      GROUPS, TODAY,
+    )
+    expect(states.find(m => m.name === 'Biceps')?.sets).toBe(2)
+    const triceps = states.find(m => m.name === 'Triceps')
+    expect(triceps?.sets).toBe(0)
+    expect(triceps?.daysSince).toBeNull()
+    expect(triceps?.recovering).toBe(false)
+  })
+
   it('marks childless top-level groups as leaves, parents not', () => {
     const states = muscleStates([], [], GROUPS, TODAY)
     expect(states.find(m => m.name === 'Chest')?.leaf).toBe(true)
@@ -176,6 +189,13 @@ describe('muscleSources', () => {
 
   it('returns empty for a never-fed muscle', () => {
     expect(muscleSources([weight(ago(1), 'Curls')], links, 'Chest', TODAY)).toEqual([])
+  })
+
+  it('lists no source and no weekly sets for a level-3 link (roadmap 042)', () => {
+    const weights = [weight(ago(1), 'Pull-ups', 4)]
+    const withStabiliser = [...links, link('Pull-ups', 'Biceps', 3)]
+    expect(muscleSources(weights, withStabiliser, 'Biceps', TODAY)).toEqual([])
+    expect(muscleWeeklySets(weights, withStabiliser, 'Biceps', TODAY).reduce((s, n) => s + n, 0)).toBe(0)
   })
 })
 

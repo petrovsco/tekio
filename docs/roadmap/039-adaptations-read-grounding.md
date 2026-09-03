@@ -2,9 +2,10 @@
 
 **Label:** feature
 **Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
-landed (v1.13.1), S1 + S3 landed (v1.13.2); S4–S12 still to run, two at a
-time (§6.5 step 2), S12 + S4 next — S12 is the muscle window, cut loose from
-the program cycle on 2026-09-03 (§6.6). Gates
+landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
+[done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S4–S12 still
+to run, two at a time (§6.5 step 2), S12 + S4 next — S12 is the muscle window,
+cut loose from the program cycle on 2026-09-03 (§6.6). Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -224,10 +225,13 @@ found 24 stimulus links at level 3, and roughly ten of them are real synergists
 (adductors in squats, upper back in rows, face pulls and reverse flys) that
 must move to level 2 before the tier can be zeroed, or the edit deletes real
 stimulus. The relabel is Peter's call on his own anatomy tags —
-[042](042-level-3-link-audit.md) carries the list and the proposed level per
+[042](done/042-level-3-link-audit.md) carries the list and the proposed level per
 link, and zeroing the tier lands there. The bookkeeping fork is settled by
 construction: one floor for every muscle means the discount sits on the *set*
 (Pelland), not on the *target* (Israetel's written landmarks).
+**Landed 2026-09-03 (042, v1.14.0):** Peter ticked every row — 12 links to
+level 2, the rest left at 3 — and `LEVEL_WEIGHT[3]` is now **0, grounded**;
+inventory row 7.1 and ledger decision D13 record it.
 
 ### S2 — statusFor / GAP_CUTOFF (the on-track cut and the ramp)
 
@@ -608,8 +612,9 @@ Each unit build-passes on its own; commit and push after each.
    editing the constant — `/ground` hard rule). Patch bump per pair.
    **Done so far:** S2 (v1.13.1) — block in `## Grounding`, source comments on
    `statusFor` and `GAP_CUTOFF`. S1 + S3 (v1.13.2) — blocks; `LEVEL_WEIGHT`
-   comment carries the convention label (level 3 zeroing waits on
-   [042](042-level-3-link-audit.md)); `WEEKLY_SET_FLOOR` created and
+   comment carried the convention label until
+   [done/042](done/042-level-3-link-audit.md) zeroed the tier (v1.14.0,
+   2026-09-03); `WEEKLY_SET_FLOOR` created and
    `CYCLE_SET_TARGET` derived from it, power sets out of `total`, sheet
    PLACEHOLDERs replaced. Inventory/ledger rows for all three land with the
    rest in one pass at the end.

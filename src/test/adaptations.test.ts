@@ -238,6 +238,18 @@ describe('adaptationCoverage', () => {
     expect(stim.total['Front Delt']).toBeUndefined()
   })
 
+  it('gives a level-3 link nothing: no total, no quality bucket, no key (roadmap 042)', () => {
+    const stabiliser: ExerciseMuscleLink = { exercise: 'Bench Press', group: 'Medial Delt', region: 'upper', level: 3, contribution: 'stimulus' }
+    const stim = muscleStimulus(
+      [w('a', '2025-01-02', 'Bench Press', 10, 3)],
+      [...links, stabiliser], { from: '2025-01-01', to: '2025-01-07' },
+    )
+    expect(stim.total.Chest).toBe(3)
+    expect(stim.byQuality.hypertrophy.Chest).toBe(3)
+    expect('Medial Delt' in stim.total).toBe(false)
+    expect('Medial Delt' in stim.byQuality.hypertrophy).toBe(false)
+  })
+
   it('leaves power sets out of the hard-set total (039 S3)', () => {
     const stim = muscleStimulus(
       [w('a', '2025-01-02', 'Bench Press', 10, 3), w('b', '2025-01-03', 'Bench Press', 5, 4)],

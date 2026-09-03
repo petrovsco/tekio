@@ -80,9 +80,11 @@ export function muscleStates(
   const { total } = muscleStimulus(weights, exerciseMuscles, cycleWindow(date))
 
   // Recency scans all history — a muscle idle for months still has a last date.
+  // A zero-weight link (level 3, roadmap 042) is no stimulus, so it sets no
+  // last date either; otherwise a muscle reads "2 d ago" beside 0 sets.
   const groupsByExercise = new Map<string, string[]>()
   for (const l of exerciseMuscles) {
-    if (l.contribution !== 'stimulus') continue
+    if (l.contribution !== 'stimulus' || !(LEVEL_WEIGHT[l.level] ?? 0)) continue
     const k = l.exercise.toLowerCase()
     groupsByExercise.set(k, [...(groupsByExercise.get(k) ?? []), l.group])
   }
@@ -205,8 +207,10 @@ function stimulusWeightsFor(
   const map = new Map<string, number>()
   for (const l of exerciseMuscles) {
     if (l.contribution !== 'stimulus' || l.group.toLowerCase() !== target) continue
+    const lw = LEVEL_WEIGHT[l.level] ?? 0
+    if (!lw) continue // zero-weight tier never lists as a source (roadmap 042)
     const k = l.exercise.toLowerCase()
-    map.set(k, (map.get(k) ?? 0) + (LEVEL_WEIGHT[l.level] ?? 0))
+    map.set(k, (map.get(k) ?? 0) + lw)
   }
   return map
 }

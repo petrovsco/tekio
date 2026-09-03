@@ -489,11 +489,15 @@ export function habitProgress(
 /** Impact weight per link level (1 = most direct). Level 2 (synergist) = 0.5:
  *  the best-fit "fractional" set counting in the largest dose-response model
  *  (Pelland 2026) and synergist growth of ~0.4–1.0 × direct in trials
- *  (Mannarino 2021, Gentil 2015, Brandão 2020). Level 3 = 0.25 is a
- *  convention (grounded band 0–0.25): no study measures a quarter-set stimulus
- *  and the measured minor contributors did not grow (hamstrings in squats —
- *  Kubo 2019, Plotkin 2023; medial deltoid in bench — Lanza 2024). It stays
- *  0.25 until the link table is audited, because some level-3 links are real
- *  synergists (roadmap 042). Every muscle read is denominated in this
- *  (inventory row 7.1). See docs/roadmap/039-adaptations-read-grounding.md#grounding */
-export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0.25 }
+ *  (Mannarino 2021, Gentil 2015, Brandão 2020). Level 3 = 0 — grounded, not a
+ *  convention: no study measures a quarter-set stimulus and the measured minor
+ *  contributors did not grow (hamstrings in squats — Kubo 2019, Plotkin 2023;
+ *  medial deltoid in bench — Lanza 2024). Zeroed 2026-09-03 after the link
+ *  audit in roadmap 042 moved every real synergist to level 2, so level 3 now
+ *  holds stabilisers and bystanders only. The key stays so an unknown level
+ *  reads as an explicit 0; every consumer skips zero-weight links, so such a
+ *  link adds no sets, no recency and no source. Every muscle read is
+ *  denominated in this (inventory row 7.1, decision D13).
+ *  See docs/roadmap/039-adaptations-read-grounding.md#grounding and
+ *  docs/roadmap/done/042-level-3-link-audit.md */
+export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0 }

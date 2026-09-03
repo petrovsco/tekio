@@ -36,6 +36,10 @@ a share of a total, so removing two adaptations changed no surviving value.
 staleness windows, push threshold, donation suppression) are grounded —
 blocks in [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding).
 
+**Updated 2026-09-03 by the 042 link audit**: row 7.1 is `grounded` — level 2
+stays 0.5 (supported, 039 S1), level 3 is 0 after the real synergists were
+relabelled; decision D13.
+
 Rows marked **†** are ones I would *not* spend a scout run on — see
 [§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
@@ -91,6 +95,7 @@ briefs). `/ground` Step 3 adds a row here whenever a run's block lands.
 | D10 | A full map bar means **adequate, not maximized**: anchor at 10 fractional sets/muscle/week (floor of the 10–20 band); sets are counted fractionally; the honest cycle target is 50–60 because week 6 deloads (2026-08-30) | [Schoenfeld 2017](https://pubmed.ncbi.nlm.nih.gov/27433992/); [Pelland 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/); [Androulakis-Korakakis 2020](https://pubmed.ncbi.nlm.nih.gov/31797219/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | D11 | Donation suppression is **two-stage and aerobic-only**: 48 h acute (gates a Hold) + 21 d note on VO₂max/endurance only — it never dims strength or anaerobic reads; plasma gets no multi-week note at all (2026-08-30) | [Hill 2013](https://pubmed.ncbi.nlm.nih.gov/23668764/); [Ziegler 2015](https://pubmed.ncbi.nlm.nih.gov/25512178/); [Meurrens 2016](https://pmc.ncbi.nlm.nih.gov/articles/PMC5118378/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | D12 | Eligibility 56/14 is a **calendar chip only, never a readiness input** (P5): a per-service legal rule, not physiology — 21 d of suppression inside a 56 d gap means the countdown is never the binding constraint (2026-08-30) | [21 CFR 630.15](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-F/part-630/subpart-B/section-630.15); [INTERVAL trial](https://pubmed.ncbi.nlm.nih.gov/28941948/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| D13 | Level 3 = **0**, level 2 stays **0.5** — the quarter-set tier is retired, not averaged away: no trial measures it and the measured minor contributors did not grow. The precondition was met first: 12 real synergists (upper back on every row, face pull, reverse fly, pull-up and overhead press; adductors in three squats; front delt in lateral raises) were relabelled to level 2 by Peter's own tick, so what remains at 3 is stabilisers and bystanders only (2026-09-03) | [Pelland 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/) (fractional counting); Kubo 2019, Plotkin 2023 (hamstrings in squats did not grow); Lanza 2024 (medial deltoid in bench) | [039 §Grounding S1](roadmap/039-adaptations-read-grounding.md#grounding) · [done/042 §2](roadmap/done/042-level-3-link-audit.md) |
 
 ## 1. Adaptation targets — what Home calls "missing"
 
@@ -207,7 +212,7 @@ created to carry it.
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 7.1 | `{1: 1, 2: 0.5, 3: 0.25}` | [utils.ts:479](../src/lib/utils.ts#L479) | A level-2 muscle receives half a set's stimulus, level-3 a quarter. **Every muscle-coverage number and the whole BodyMap is denominated in this** | unnamed | unknown | home-fused-reads **(due)** |
+| 7.1 | `{1: 1, 2: 0.5, 3: 0}` | [utils.ts:503](../src/lib/utils.ts#L503) | A level-2 muscle receives half a set's stimulus; level 3 receives none — after the 042 audit it holds stabilisers and bystanders only. **Every muscle-coverage number and the whole BodyMap is denominated in this** | unnamed | grounded (level 2 supported; level 3 grounded at 0, 2026-09-03) | [039 S1](roadmap/039-adaptations-read-grounding.md#grounding) + [done/042](roadmap/done/042-level-3-link-audit.md) |
 | 7.2 | `level === 1 → primary` | [db/muscles.ts:77](../src/lib/db/muscles.ts#L77) | Level 1 is a primary mover; 2 and 3 are both "secondary" — collapses 7.1's three tiers into two on write | unnamed | unknown † | home-fused-reads |
 | 7.3 | `1` per bout | [utils.ts:489-492](../src/lib/utils.ts#L489) | One manual habit completion = one set of stimulus | unnamed | unknown | home-fused-reads **(being deleted)** |
 | 7.4 | `5` | [utils.ts:338](../src/lib/utils.ts#L338) | 5 mobility min per muscle group per week is the target | unnamed | unknown | home-fused-reads **(due)** |

@@ -176,6 +176,7 @@ export function muscleStimulus(
       for (const q of qualities) sets[q] += 1
       for (const l of links) {
         const lw = LEVEL_WEIGHT[l.level] ?? 0
+        if (!lw) continue // zero-weight tier (level 3, roadmap 042): no sets, no key
         if (hard) total[l.group] = (total[l.group] ?? 0) + lw
         for (const q of qualities) byQuality[q][l.group] = (byQuality[q][l.group] ?? 0) + lw
       }
