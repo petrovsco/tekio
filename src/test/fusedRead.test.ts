@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
   daysBetween, muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, powerSetCount, CYCLE_WINDOW_DAYS,
+  donationStatus, waterStatus, fusedVerdict, powerSetCount, HISTORY_WEEKS,
   muscleWeeklySets, muscleSources, muscleQualityMix,
 } from '../lib/fusedRead'
-import { PUSH_THRESHOLD, RECOVER_DAYS } from '../constants/app'
+import { PUSH_THRESHOLD, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
 import type {
   WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry, WaterEntry,
   ExerciseMuscleLink, MuscleGroup,
@@ -63,10 +63,20 @@ describe('muscleStates', () => {
   })
 
   it('excludes sets outside the window but keeps them for recency', () => {
-    const states = muscleStates([weight(ago(CYCLE_WINDOW_DAYS + 5), 'Curls')], links, GROUPS, TODAY)
+    const states = muscleStates([weight(ago(MUSCLE_WINDOW_DAYS + 5), 'Curls')], links, GROUPS, TODAY)
     const biceps = states.find(m => m.name === 'Biceps')
     expect(biceps?.sets).toBe(0)
-    expect(biceps?.daysSince).toBe(CYCLE_WINDOW_DAYS + 5)
+    expect(biceps?.daysSince).toBe(MUSCLE_WINDOW_DAYS + 5)
+  })
+
+  it('judges the fill over MUSCLE_WINDOW_DAYS, not the program cycle (039 S12)', () => {
+    const states = muscleStates([
+      weight(ago(MUSCLE_WINDOW_DAYS - 1), 'Curls', 3), // last day inside the window
+      weight(ago(MUSCLE_WINDOW_DAYS), 'Curls', 5),     // first day outside it
+    ], links, GROUPS, TODAY)
+    const biceps = states.find(m => m.name === 'Biceps')
+    expect(biceps?.sets).toBe(3)
+    expect(biceps?.fillFraction).toBe(+(3 / MUSCLE_SET_TARGET).toFixed(3))
   })
 
   it('marks a never-trained muscle with null recency', () => {
@@ -131,7 +141,7 @@ describe('powerSetCount', () => {
     const weights = [
       weight(ago(3), 'Box Jump', 4),                  // keyword default → power
       weight(ago(3), 'Curls', 5),                     // 10 reps → not power
-      weight(ago(CYCLE_WINDOW_DAYS + 1), 'Box Jump'), // outside the window
+      weight(ago(MUSCLE_WINDOW_DAYS + 1), 'Box Jump'), // outside the window
     ]
     expect(powerSetCount(weights, undefined, TODAY)).toBe(4)
     expect(powerSetCount(weights, { curls: 'power' }, TODAY)).toBe(9)
@@ -143,16 +153,23 @@ describe('powerSetCount', () => {
 // ---------------------------------------------------------------------------
 
 describe('muscleWeeklySets', () => {
-  it('buckets level-weighted sets into cycle weeks, most recent last', () => {
+  it('buckets level-weighted sets into history weeks, most recent last', () => {
     const links = [link('Curls', 'Biceps'), link('Rows', 'Biceps', 2)]
     const weights = [
       weight(TODAY, 'Curls', 3),                    // last week
       weight(ago(6), 'Rows', 4),                    // last week, ×0.5 → 2
       weight(ago(7), 'Curls', 2),                   // week 5
-      weight(ago(CYCLE_WINDOW_DAYS - 1), 'Curls'),  // first week of the window
-      weight(ago(CYCLE_WINDOW_DAYS), 'Curls', 8),   // outside
+      weight(ago(HISTORY_WEEKS * 7 - 1), 'Curls'),  // first week of the history
+      weight(ago(HISTORY_WEEKS * 7), 'Curls', 8),   // outside
     ]
     expect(muscleWeeklySets(weights, links, 'Biceps', TODAY)).toEqual([3, 0, 0, 0, 2, 5])
+  })
+
+  it('draws history past the fill window — the bars are not the claim (039 §6.6)', () => {
+    const links = [link('Curls', 'Biceps')]
+    const weights = [weight(ago(MUSCLE_WINDOW_DAYS + 1), 'Curls', 4)]
+    expect(muscleWeeklySets(weights, links, 'Biceps', TODAY).reduce((s, n) => s + n, 0)).toBe(4)
+    expect(muscleStates(weights, links, GROUPS, TODAY).find(m => m.name === 'Biceps')?.sets).toBe(0)
   })
 
   it('ignores exercises that do not feed the muscle', () => {
@@ -181,7 +198,7 @@ describe('muscleSources', () => {
   })
 
   it('keeps an out-of-window exercise as a repeatable scheme with zero window volume', () => {
-    const src = muscleSources([weight(ago(CYCLE_WINDOW_DAYS + 10), 'Curls', 3)], links, 'Biceps', TODAY)
+    const src = muscleSources([weight(ago(MUSCLE_WINDOW_DAYS + 10), 'Curls', 3)], links, 'Biceps', TODAY)
     expect(src).toHaveLength(1)
     expect(src[0].windowSets).toBe(0)
     expect(src[0].lastSets).toHaveLength(3)
@@ -205,7 +222,7 @@ describe('muscleQualityMix', () => {
     const weights: WeightEntry[] = [
       { id: 'a', date: ago(1), exercise: 'Curls', sets: [{ weight: 50, reps: 3 }, { weight: 40, reps: 12 }] },
       { id: 'b', date: ago(2), exercise: 'Rows', sets: [{ weight: 60, reps: 20 }, { weight: 60, reps: 20 }] },
-      { id: 'c', date: ago(CYCLE_WINDOW_DAYS), exercise: 'Curls', sets: [{ weight: 50, reps: 3 }] }, // outside
+      { id: 'c', date: ago(MUSCLE_WINDOW_DAYS), exercise: 'Curls', sets: [{ weight: 50, reps: 3 }] }, // outside
     ]
     expect(muscleQualityMix(weights, links, 'Biceps', undefined, TODAY)).toEqual({
       strength: 1, hypertrophy: 1, muscular_endurance: 1, power: 0,

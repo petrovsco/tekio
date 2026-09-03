@@ -93,10 +93,20 @@ export const QUALITY_STALENESS_DAYS = {
  * docs/roadmap/039-adaptations-read-grounding.md#grounding (S3). */
 export const WEEKLY_SET_FLOOR = 10
 
-/** 60 — WEEKLY_SET_FLOOR × CYCLE, hard sets pooled across rep ranges, power sets excluded; with a
- * half-volume deload the honest cycle band is 50–60 (010). Value grounded in 010 D10, pooling in
- * 039 S3. See docs/roadmap/039-adaptations-read-grounding.md#grounding */
-export const CYCLE_SET_TARGET = WEEKLY_SET_FLOOR * CYCLE
+// 14 — MUSCLE_WINDOW_DAYS: rolling window for the per-muscle hard-set fill (target = WEEKLY_SET_FLOOR × 14 / 7 = 20).
+// Honest band 8–21 d. Lower edge: volume-equated, 1×/wk per muscle matches 2–5×/wk in trained men (Schoenfeld 2019,
+// Grgic 2018, Brigatto 2019, Gomes 2019), so a muscle 7 d silent is not under-dosed and the window must exceed one
+// weekly rhythm. Upper edge: strength holds ~3–4 wk without training (McMaster 2013, Mujika 2001, Hwang 2017) and the
+// earliest measured tissue loss in trained lifters is at 14 d (Hortobágyi 1993, type II fibre area −6.4 %). 14 is a
+// convention inside that band — whole weeks, one missed weekly dose = half fill, one rhythm with QUALITY_STALENESS_DAYS.
+// Not an MPS window: the per-session signal ends in 28–48 h (Tang 2008, Phillips 1997). The sum is frequency-blind by
+// design; recency lives in daysSince / RECOVER_DAYS. See docs/roadmap/039-adaptations-read-grounding.md#grounding
+export const MUSCLE_WINDOW_DAYS = 14
+
+/** 20 — WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7: the hard-set target the muscle map fills against. Rate
+ * grounded in 010 D10, pooling in 039 S3, window in 039 S12. The program's CYCLE plays no part — Home and the
+ * Adaptations reads never hang on the program (039 §6.6). */
+export const MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR * MUSCLE_WINDOW_DAYS / 7
 
 /** 48 h acute, 21 d aerobic tail (range 14–28 d) — whole blood only, aerobic
  * qualities only; plasma = 0 d. Endpoint contested (Ziegler 14 d / Judd 21 d /

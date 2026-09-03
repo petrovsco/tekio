@@ -3,8 +3,8 @@ import type {
   SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet,
 } from '../types'
 import {
-  CYCLE, RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS,
-  CYCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
+  RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
+  MUSCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
 } from '../constants/app'
 import { LEVEL_WEIGHT, today } from './utils'
 import {
@@ -21,8 +21,10 @@ export type { MuscleQuality }
 // verdict. Everything takes plain arrays + an explicit date, so it is
 // unit-testable without the store.
 
-/** The local (per-muscle) read's window: one full cycle, in days. */
-export const CYCLE_WINDOW_DAYS = CYCLE * 7
+/** Weekly bars the muscle sheet draws: history, not a claim. The fill itself
+ *  is judged over MUSCLE_WINDOW_DAYS (roadmap 039 §6.6) and owes nothing to
+ *  the program's CYCLE. */
+export const HISTORY_WEEKS = 6
 
 const DAY_MS = 86400000
 
@@ -38,8 +40,8 @@ function shiftDate(date: string, n: number): string {
   return d.toISOString().slice(0, 10)
 }
 
-/** The inclusive cycle window ending on `date`: the last CYCLE_WINDOW_DAYS days. */
-const cycleWindow = (date: string) => ({ from: shiftDate(date, 1 - CYCLE_WINDOW_DAYS), to: date })
+/** The inclusive muscle window ending on `date`: the last MUSCLE_WINDOW_DAYS days (039 S12). */
+const muscleWindow = (date: string) => ({ from: shiftDate(date, 1 - MUSCLE_WINDOW_DAYS), to: date })
 
 const avg = (vals: number[]): number => vals.reduce((s, v) => s + v, 0) / vals.length
 
@@ -53,20 +55,20 @@ export interface MuscleState {
   parentId: string | null
   /** No other group names this one as parent (Chest is top-level AND a leaf). */
   leaf: boolean
-  /** Fractional (level-weighted) hard sets within the cycle window; power
+  /** Fractional (level-weighted) hard sets within the last MUSCLE_WINDOW_DAYS; power
    *  sets count on the power map only (039 S3). */
   sets: number
   /** Days since the last stimulus over all history; null = never trained. */
   daysSince: number | null
   /** Inside the post-session recovery window right now. */
   recovering: boolean
-  /** sets / CYCLE_SET_TARGET, uncapped — drives the map's stimulus ramp. */
+  /** sets / MUSCLE_SET_TARGET, uncapped — drives the map's stimulus ramp. */
   fillFraction: number
 }
 
 /**
  * Per-muscle fused state: level-weighted set volume over the last
- * {@link CYCLE_WINDOW_DAYS} days plus recency. Volume comes from
+ * {@link MUSCLE_WINDOW_DAYS} days plus recency. Volume comes from
  * {@link muscleStimulus} — one accounting with the Adaptations tab (roadmap
  * 039 §6), each hard set counted once and power sets left out (039 S3).
  * Values are *direct* per group; parents are not rolled up here.
@@ -77,7 +79,7 @@ export function muscleStates(
   muscleGroups: MuscleGroup[],
   date: string = today(),
 ): MuscleState[] {
-  const { total } = muscleStimulus(weights, exerciseMuscles, cycleWindow(date))
+  const { total } = muscleStimulus(weights, exerciseMuscles, muscleWindow(date))
 
   // Recency scans all history — a muscle idle for months still has a last date.
   // A zero-weight link (level 3, roadmap 042) is no stimulus, so it sets no
@@ -109,7 +111,7 @@ export function muscleStates(
       sets: s,
       daysSince,
       recovering: daysSince !== null && daysSince < RECOVER_DAYS,
-      fillFraction: +(s / CYCLE_SET_TARGET).toFixed(3),
+      fillFraction: +(s / MUSCLE_SET_TARGET).toFixed(3),
     }
   })
 }
@@ -177,7 +179,7 @@ export function qualityStates(
 }
 
 /**
- * Working sets classified as power within the cycle window, across all muscles.
+ * Working sets classified as power within the muscle window, across all muscles.
  * Power is muscle-linked (doctrine P2) and reads per muscle in the drill-in;
  * the T1 line only reports whether any power work exists at all. Uses the same
  * override-aware set classification as the Adaptations dashboard.
@@ -189,7 +191,7 @@ export function powerSetCount(
 ): number {
   let n = 0
   for (const w of weights) {
-    if (w.date > date || daysBetween(w.date, date) >= CYCLE_WINDOW_DAYS) continue
+    if (w.date > date || daysBetween(w.date, date) >= MUSCLE_WINDOW_DAYS) continue
     const override = resolveExerciseAdaptation(w.exercise, overrides)
     for (const s of w.sets) if (classifyWeightSet(s.reps, override).includes('power')) n++
   }
@@ -216,8 +218,9 @@ function stimulusWeightsFor(
 }
 
 /**
- * Level-weighted sets attributed to one muscle per week of the cycle window,
- * oldest week first — index {@link CYCLE} − 1 is the last 7 days.
+ * Level-weighted sets attributed to one muscle per week of the last
+ * {@link HISTORY_WEEKS} weeks, oldest week first — the last index is the last
+ * 7 days. History for the sheet's bars; the fill's window is shorter.
  */
 export function muscleWeeklySets(
   weights: WeightEntry[],
@@ -226,14 +229,14 @@ export function muscleWeeklySets(
   date: string = today(),
 ): number[] {
   const linkWeight = stimulusWeightsFor(exerciseMuscles, muscle)
-  const weeks: number[] = new Array(CYCLE).fill(0)
+  const weeks: number[] = new Array(HISTORY_WEEKS).fill(0)
   for (const w of weights) {
     if (w.date > date) continue
     const daysAgo = daysBetween(w.date, date)
-    if (daysAgo >= CYCLE_WINDOW_DAYS) continue
+    if (daysAgo >= HISTORY_WEEKS * 7) continue
     const lw = linkWeight.get(w.exercise.toLowerCase())
     if (!lw) continue
-    weeks[CYCLE - 1 - Math.floor(daysAgo / 7)] += w.sets.length * lw
+    weeks[HISTORY_WEEKS - 1 - Math.floor(daysAgo / 7)] += w.sets.length * lw
   }
   return weeks.map(n => +n.toFixed(2))
 }
@@ -253,7 +256,7 @@ export interface MuscleSource {
  * Every logged exercise that feeds `muscle`, most recent first: the drill-in's
  * "what fed it" list and the repeat-last-scheme ranking of its log flow. All
  * history is scanned (a muscle idle for months still has a scheme to repeat);
- * `windowSets` counts the cycle window only.
+ * `windowSets` counts the last MUSCLE_WINDOW_DAYS only.
  */
 export function muscleSources(
   weights: WeightEntry[],
@@ -268,7 +271,7 @@ export function muscleSources(
     const key = w.exercise.toLowerCase()
     const lw = linkWeight.get(key)
     if (!lw) continue
-    const windowSets = daysBetween(w.date, date) < CYCLE_WINDOW_DAYS ? w.sets.length * lw : 0
+    const windowSets = daysBetween(w.date, date) < MUSCLE_WINDOW_DAYS ? w.sets.length * lw : 0
     const cur = byExercise.get(key)
     if (!cur) {
       byExercise.set(key, { exercise: w.exercise, windowSets, lastDate: w.date, lastSets: w.sets })
@@ -290,7 +293,7 @@ export function muscleSources(
 }
 
 /**
- * One muscle's quality mix over the cycle window: level-weighted sets per
+ * One muscle's quality mix over the muscle window: level-weighted sets per
  * muscle-linked quality from {@link muscleStimulus}. A set counts toward every
  * quality whose rep band covers it, so the four can add up to more than the
  * muscle's windowed total (roadmap 039 §6.0).
@@ -302,7 +305,7 @@ export function muscleQualityMix(
   overrides?: Record<string, Adaptation>,
   date: string = today(),
 ): Record<MuscleQuality, number> {
-  const { byQuality } = muscleStimulus(weights, exerciseMuscles, cycleWindow(date), overrides)
+  const { byQuality } = muscleStimulus(weights, exerciseMuscles, muscleWindow(date), overrides)
   return Object.fromEntries(
     MUSCLE_QUALITIES.map(q => [q, byQuality[q][muscle] ?? 0]),
   ) as Record<MuscleQuality, number>

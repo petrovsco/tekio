@@ -7,7 +7,7 @@ import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './B
 // recovering, and the ranked gap callouts drawn onto the map — the callouts ARE
 // the missing list, worst first.
 
-/** Stimulus ramp by share of the cycle target — ink accumulates like work. */
+/** Stimulus ramp by share of the window target — ink accumulates like work. */
 const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
 /** Everything sits here on a day with no data at all. */
 const NO_DATA = '#eeeeec'

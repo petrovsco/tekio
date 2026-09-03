@@ -40,6 +40,11 @@ blocks in [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding).
 stays 0.5 (supported, 039 S1), level 3 is 0 after the real synergists were
 relabelled; decision D13.
 
+**Updated 2026-09-03 by the 039 S12 unit** (v1.16.0): the per-muscle fill left
+the program cycle — new rows 7.7 (`WEEKLY_SET_FLOOR` as the pooled rate, S3)
+and 7.8 (`MUSCLE_WINDOW_DAYS`, S12); `CYCLE_SET_TARGET` and the 42-day
+window are deleted; decision D14.
+
 Rows marked **†** are ones I would *not* spend a scout run on — see
 [§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
@@ -59,7 +64,7 @@ number, and how cleanly:
 this is where #7(b) starts. **(no brief)** = nothing in `roadmap/` would carry
 it; one has to be created before a scout run has anywhere to land.
 
-Counts: **75 rows** — 55 fire the trigger (34 `named`, 21 `unnamed`), 8 are
+Counts: **77 rows** — 57 fire the trigger (36 `named`, 21 `unnamed`), 8 are
 ambiguous, 3 do not fire, and 9 are struck through (fixed or retired, with
 nothing left to ground). **21 of the 55 firing rows are `unnamed`** — see
 [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
@@ -96,6 +101,7 @@ briefs). `/ground` Step 3 adds a row here whenever a run's block lands.
 | D11 | Donation suppression is **two-stage and aerobic-only**: 48 h acute (gates a Hold) + 21 d note on VO₂max/endurance only — it never dims strength or anaerobic reads; plasma gets no multi-week note at all (2026-08-30) | [Hill 2013](https://pubmed.ncbi.nlm.nih.gov/23668764/); [Ziegler 2015](https://pubmed.ncbi.nlm.nih.gov/25512178/); [Meurrens 2016](https://pmc.ncbi.nlm.nih.gov/articles/PMC5118378/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | D12 | Eligibility 56/14 is a **calendar chip only, never a readiness input** (P5): a per-service legal rule, not physiology — 21 d of suppression inside a 56 d gap means the countdown is never the binding constraint (2026-08-30) | [21 CFR 630.15](https://www.ecfr.gov/current/title-21/chapter-I/subchapter-F/part-630/subpart-B/section-630.15); [INTERVAL trial](https://pubmed.ncbi.nlm.nih.gov/28941948/) | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | D13 | Level 3 = **0**, level 2 stays **0.5** — the quarter-set tier is retired, not averaged away: no trial measures it and the measured minor contributors did not grow. The precondition was met first: 12 real synergists (upper back on every row, face pull, reverse fly, pull-up and overhead press; adductors in three squats; front delt in lateral raises) were relabelled to level 2 by Peter's own tick, so what remains at 3 is stabilisers and bystanders only (2026-09-03) | [Pelland 2026](https://pubmed.ncbi.nlm.nih.gov/41343037/) (fractional counting); Kubo 2019, Plotkin 2023 (hamstrings in squats did not grow); Lanza 2024 (medial deltoid in bench) | [039 §Grounding S1](roadmap/039-adaptations-read-grounding.md#grounding) · [done/042 §2](roadmap/done/042-level-3-link-audit.md) |
+| D14 | The muscle read's window **leaves the program cycle**: `MUSCLE_WINDOW_DAYS = 14`, a convention inside the grounded 8–21 d band, target `20 = WEEKLY_SET_FLOOR × 2`; the 42-day window and `CYCLE_SET_TARGET = 60` are deleted because no muscle evidence speaks for six weeks (supersedes D10's 50–60 cycle clause). Lower edge: volume-equated, 1×/wk per muscle matches 2–5×/wk, so the window must exceed one weekly rhythm; upper edge: earliest measured tissue loss in trained lifters at 14 d, strength holds 3–4 wk. The fill is frequency-blind by design, recency stays in `daysSince` / `RECOVER_DAYS`, and it is a schedule tolerance, not a muscle-protein-synthesis window (2026-09-03) | [Schoenfeld, Grgic & Krieger 2019](https://pubmed.ncbi.nlm.nih.gov/30558493/); [Grgic 2018](https://pubmed.ncbi.nlm.nih.gov/29470825/); [Hortobágyi 1993](https://pubmed.ncbi.nlm.nih.gov/8371654/); [McMaster 2013](https://pubmed.ncbi.nlm.nih.gov/23529287/); [Tang 2008](https://pubmed.ncbi.nlm.nih.gov/18032468/) | [039 §Grounding S12](roadmap/039-adaptations-read-grounding.md#grounding) · [039 §6.6](roadmap/039-adaptations-read-grounding.md#66-amendment-2026-09-03--the-muscle-window-leaves-the-program-cycle) |
 
 ## 1. Adaptation targets — what Home calls "missing"
 
@@ -218,6 +224,8 @@ created to carry it.
 | 7.4 | `5` | [utils.ts:338](../src/lib/utils.ts#L338) | 5 mobility min per muscle group per week is the target | unnamed | unknown | home-fused-reads **(due)** |
 | 7.5 | `aggSets >= target` | [lib/adaptations.ts:135-139](../src/lib/adaptations.ts#L135) | "On track" is binary at the target; anything >0 below it is "needs work"; 0 is "untouched" — the three colours of the BodyMap | unnamed | unknown † | home-fused-reads **(due)** |
 | 7.6 | 179 rows, level 1–3 | `exercise_muscle_groups` (DB) | 179 individual "this exercise hits this muscle at this level" claims, editable in-app | ? | unknown | **(no brief)** |
+| 7.7 | `WEEKLY_SET_FLOOR = 10` | [app.ts:94](../src/constants/app.ts#L94) | 10 level-weighted hard sets per muscle per week, **pooled across every rep range** at full value, is the adequacy floor for total stimulus — the hypertrophy floor is the adaptation-agnostic denominator because it is the volume-hungriest of the four; power-tagged sets are not hard sets and count on the power map only | named | grounded (value 010 D10; the pooling 039 S3, 2026-09-03) | [039 S3](roadmap/039-adaptations-read-grounding.md#grounding) |
+| 7.8 | `MUSCLE_WINDOW_DAYS = 14` | [app.ts:104](../src/constants/app.ts#L104) | A muscle's fill is judged over a rolling 14-day window against `MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR × 2 = 20` hard sets; the sum is frequency-blind by design and recency lives in 4.x `RECOVER_DAYS`. Replaced the 42-day `CYCLE_WINDOW_DAYS` / `CYCLE_SET_TARGET = 60` pair, which hung on the program's cycle | named | convention inside a grounded 8–21 d band (2026-09-03) | [039 S12](roadmap/039-adaptations-read-grounding.md#grounding) |
 
 ## 8. Estimated 1RM
 

@@ -3,9 +3,9 @@ import type { LiftSet } from '../../../types'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWeeklySets, muscleSources, muscleQualityMix,
-  CYCLE_WINDOW_DAYS, MUSCLE_QUALITIES, type MuscleSource,
+  HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource,
 } from '../../../lib/fusedRead'
-import { RECOVER_DAYS, CYCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
+import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
 import { today } from '../../../lib/utils'
 import { BottomSheet, SheetClose } from './BottomSheet'
 import { GAP_CUTOFF } from './GapMap'
@@ -81,7 +81,7 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
   const verdict = daysSince === null
     ? {
         text: 'Never trained.', invert: true, icon: 'M12 5v14M5 12h14',
-        sub: 'Zero sets this cycle and no logged history — the biggest kind of gap.',
+        sub: `Zero sets in the last ${MUSCLE_WINDOW_DAYS} days and no logged history — the biggest kind of gap.`,
       }
     : recovering
       ? {
@@ -91,16 +91,16 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
       : fill >= 1
         ? {
             text: 'Recovered — but back off.', invert: false, icon: 'M5 12h14',
-            sub: `At ${Math.round(fill * 100)}% of the cycle target with ${fmtSets(sets)} sets. It is available; it is just not what is missing.`,
+            sub: `At ${Math.round(fill * 100)}% of the ${MUSCLE_WINDOW_DAYS}-day target with ${fmtSets(sets)} sets. It is available; it is just not what is missing.`,
           }
         : fill < GAP_CUTOFF
           ? {
               text: 'Train it.', invert: true, icon: 'M12 5v14M5 12h14',
-              sub: `Fully recovered and under target: ${fmtSets(sets)} sets in ${CYCLE_WINDOW_DAYS} days, last stimulus ${daysSince} d ago.`,
+              sub: `Fully recovered and under target: ${fmtSets(sets)} sets in ${MUSCLE_WINDOW_DAYS} days, last stimulus ${daysSince} d ago.`,
             }
           : {
               text: 'Recovered, close to target.', invert: false, icon: 'M5 12l5 5L19 7',
-              sub: `${fmtSets(sets)} sets in ${CYCLE_WINDOW_DAYS} days — ${Math.round(fill * 100)}% of the target and recovered.`,
+              sub: `${fmtSets(sets)} sets in ${MUSCLE_WINDOW_DAYS} days — ${Math.round(fill * 100)}% of the target and recovered.`,
             }
 
   const recPct = daysSince === null
@@ -150,13 +150,13 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
           <div className="text-[8px] font-bold tracking-[0.12em] text-ink-3">STIMULUS</div>
           <div className="flex items-baseline gap-1 mt-0.5">
             <span className="text-[25px] font-bold tracking-[-0.03em]">{fmtSets(sets)}</span>
-            <span className="text-[11px] text-ink-2">/ {CYCLE_SET_TARGET} hard sets</span>
+            <span className="text-[11px] text-ink-2">/ {MUSCLE_SET_TARGET} hard sets</span>
           </div>
           <div className="h-[5px] bg-line rounded-[2px] mt-[5px]">
             <div className="h-[5px] bg-ink rounded-[2px]" style={{ width: `${Math.min(100, Math.round(fill * 100))}%` }} />
           </div>
           <div className="text-[9px] text-ink-3 mt-1">
-            {CYCLE_WINDOW_DAYS}-day cycle · target {CYCLE_SET_TARGET} hard sets · power sets count on their own map
+            {MUSCLE_WINDOW_DAYS}-day window · {WEEKLY_SET_FLOOR}/wk · power sets count on their own map
           </div>
         </div>
         <div className="border border-line rounded-[3px] px-2.5 pt-2 pb-[9px]">
@@ -174,10 +174,10 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
         </div>
       </div>
 
-      {/* recent volume, per week of the cycle */}
+      {/* recent volume, per week — history, not the fill's window */}
       <div className="mt-2.5 border border-line rounded-[3px] px-2.5 pt-2 pb-[9px]">
         <div className="flex items-baseline gap-1.5">
-          <span className="text-[8px] font-bold tracking-[0.12em] text-ink-3">SETS PER WEEK, THIS CYCLE</span>
+          <span className="text-[8px] font-bold tracking-[0.12em] text-ink-3">SETS PER WEEK, LAST {HISTORY_WEEKS} WEEKS</span>
           <span className="grow" />
           <span className="text-[9px] text-ink-3">target {WEEKLY_SET_FLOOR}/wk</span>
         </div>
@@ -199,11 +199,11 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
         <div className="h-px bg-line mt-0.5" />
       </div>
 
-      {/* which exercises fed it, this cycle */}
+      {/* which exercises fed it, in the window */}
       <div className="mt-2.5">
         <div className="text-[8px] font-bold tracking-[0.12em] text-ink-3 mb-[5px]">WHAT FED IT</div>
         {fedBy.length === 0 ? (
-          <div className="text-[11px] text-ink-2">— nothing this cycle</div>
+          <div className="text-[11px] text-ink-2">— nothing in the last {MUSCLE_WINDOW_DAYS} days</div>
         ) : (
           <div className="flex flex-col gap-1">
             {fedBy.map(s => (
@@ -221,7 +221,7 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
           Hidden while the log flow is open: capture takes the room. */}
       {!logOpen && (
         <div className="mt-2.5">
-          <div className="text-[8px] font-bold tracking-[0.12em] text-ink-3 mb-[5px]">QUALITY MIX, THIS CYCLE</div>
+          <div className="text-[8px] font-bold tracking-[0.12em] text-ink-3 mb-[5px]">QUALITY MIX, LAST {MUSCLE_WINDOW_DAYS} DAYS</div>
           <div className="flex gap-1.5">
             {MUSCLE_QUALITIES.map(q => (
               <div key={q} className="grow border border-line rounded-[2px] px-1.5 pt-1 pb-[5px] text-center">

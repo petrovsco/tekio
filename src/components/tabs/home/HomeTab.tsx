@@ -3,11 +3,10 @@ import { useAppStore } from '../../../store/app'
 import {
   muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, waterStatus, fusedVerdict, powerSetCount, daysBetween,
-  CYCLE_WINDOW_DAYS,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
 import { cycleInfo, today } from '../../../lib/utils'
-import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION } from '../../../constants/app'
+import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, GAP_CUTOFF } from './GapMap'
 import type { FoldKind } from './FoldSheet'
 
@@ -76,11 +75,11 @@ function verdictCopy(args: {
 
   const text = list
     ? `Push. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
-    : 'Push. No gap this cycle.'
+    : `Push. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
   const facts = gaps.slice(0, 2).map(m =>
     m.daysSince === null
-      ? `${cap(shortLower(m.name))}: never trained this cycle.`
-      : `${cap(shortLower(m.name))}: ${fmtSets(m.sets)} sets in ${CYCLE_WINDOW_DAYS} days.`)
+      ? `${cap(shortLower(m.name))}: never trained.`
+      : `${cap(shortLower(m.name))}: ${fmtSets(m.sets)} sets in ${MUSCLE_WINDOW_DAYS} days.`)
   if (recoveringShorts.length > 0) {
     const who = recoveringShorts.length > 3 ? `${recoveringShorts.length} muscles` : joinNames(recoveringShorts)
     facts.push(`${cap(who)} still recovering (PLACEHOLDER: ${RECOVER_DAYS} days).`)

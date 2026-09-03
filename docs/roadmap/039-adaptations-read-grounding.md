@@ -4,7 +4,8 @@
 **Status:** in progress — unit 1 shipped 2026-09-02 (v1.13.0). Scout runs: S2
 landed (v1.13.1), S1 + S3 landed (v1.13.2), S1's level-3 zeroing shipped via
 [done/042](done/042-level-3-link-audit.md) (v1.14.0, 2026-09-03); S12 + S4 blocks
-landed 2026-09-03 (v1.14.1) — **next: their code units, §6.7**; S5–S11
+landed 2026-09-03 (v1.14.1); unit S12 shipped 2026-09-03 (v1.16.0) —
+**next: unit S4, §6.7**; S5–S11
 still to run, two at a time (§6.5 step 2). The exercises the scouts name are
 now in the catalogue with links ([043](done/043-scout-named-exercises-catalogue.md),
 2026-09-03). Gates
@@ -592,9 +593,11 @@ closes, when all seven blocks have provenance.
 - [ ] Rep bands overlap (§6.0): `classifyWeightSet` returns every quality whose
       band covers the set; rows 2.1–2.3 and 2.6 carry verdicts here; the
       per-quality sums may exceed a muscle's total and the tab says so on screen.
-- [ ] The muscle read's window is its own grounded constant (§6.6, S12), not
+- [x] The muscle read's window is its own grounded constant (§6.6, S12), not
       the program's `CYCLE`; `CYCLE_WINDOW_DAYS` and `CYCLE_SET_TARGET` are
       gone and Home names the window and the weekly rate on screen.
+      (2026-09-03, v1.16.0 — `MUSCLE_WINDOW_DAYS` / `MUSCLE_SET_TARGET` in
+      app.ts, `HISTORY_WEEKS = 6` keeps the sheet's bars as history.)
 - [ ] Every covered inventory row names this brief as its carrier and shows a
       current verdict; `WEEKLY_SET_FLOOR` and `MUSCLE_WINDOW_DAYS` have rows.
 - [ ] Citations verified through NCBI eutils before being pasted, not from a
@@ -910,8 +913,11 @@ Both blocks sit under `## Grounding`, every citation checked through eutils
 or Crossref (v1.14.1). Neither verdict moved a value, so the code is a
 label-and-rename job in two units, in this order.
 
-**Unit S12 — the window (minor bump; Home's map visibly changes).** Exactly
-§6.6's six steps, with the S12 source comment on `MUSCLE_WINDOW_DAYS`.
+**Unit S12 — the window — shipped 2026-09-03 (v1.16.0).** §6.6's six steps
+as written below; inventory rows 7.7 and 7.8 and ledger D14 landed with it,
+so the S4 inventory pass owes only rows 2.6, 3.3, 7.5 and D15–D17. The
+plan, kept for the record: exactly §6.6's six steps, with the S12 source
+comment on `MUSCLE_WINDOW_DAYS`.
 Consumer map (2026-09-03): `CYCLE_WINDOW_DAYS` is read by `cycleWindow`,
 `muscleStates` (fill ÷ `CYCLE_SET_TARGET`, [fusedRead.ts:112](../../src/lib/fusedRead.ts#L112)),
 `powerSetCount` (:192), `muscleWeeklySets` (:229–236 — keep six bars through a
