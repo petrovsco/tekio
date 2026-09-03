@@ -317,13 +317,24 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * See docs/roadmap/done/011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 2,
+    // rx.endurance — Zone 2 is the band immediately below LT1/VT1 (Sitko 2025 expert panel; Jamnick 2020); the talk
+    // test is the validated field proxy (≈ VT1 across modes and after VT shifts — Persinger 2004, Foster 2008, Reed &
+    // Pipe 2014). No %HRmax is printed on purpose: VT1 ≈ 81 % and Fatmax ≈ 72 % HRmax with 6–29 % CV (Meixner 2025,
+    // n = 50) vs ACSM's 64–76 % — a fixed % is the weakest anchor. "30 min" is ACSM 2011's daily dose (≥30 min·d⁻¹)
+    // used as a per-bout floor — a CONVENTION: no human per-bout threshold exists (Murphy 2019, Jakicic 2019), the
+    // floor lengthens as intensity drops in rats (Dudley 1982), Galpin says 20–30, Attia/San-Millán ≥45. The cue was
+    // reworded 2026-09-03 (039 S9, ledger D27–D28): "nasal-breathing pace" was Huberman's proxy — nasal-only breathing
+    // is a ventilation ceiling that moves with practice (Mapelli 2025; Dallam 2018), never tested against LT1;
+    // "builds mitochondria & fat oxidation" is true but not distinctive — work-matched intervals do both at least as
+    // well (MacInnis 2017; Granata 2016; Talanian 2007; Yin 2023 meta-analysis; Storoschuk 2025 review), volume
+    // drives content (Granata 2018). See docs/grounding/039-adaptations-read.md#grounding
     rx: {
       load: 'Zone 2 (conversational)',
       reps: '30 min–hours',
       sets: '1 continuous',
       rest: '—',
       effort: 'Easy, sustainable',
-      cue: 'Nasal-breathing pace; builds mitochondria & fat oxidation.',
+      cue: 'Talk-test pace: full sentences, a little strained. Minutes are the dose; hard intervals build mitochondria too.',
     },
   },
 ]

@@ -1,10 +1,10 @@
 # Roadmap: Adaptations read — ground what the page shows
 
 **Label:** feature
-**Status:** in progress — S1–S8 and S12 blocks and code units shipped
-(v1.16.4); S10's block and unit shipped and S9's block landed with its unit
-pending (v1.16.6, 2026-09-03) — **next: the S9 unit** (§6.7), then S11, then
-§6.5 step 3 closes the brief. Gates
+**Status:** in progress — S1–S10 and S12 blocks and code units shipped
+(v1.16.7, 2026-09-03); S11 (the rep-band edges) was dispatched and lost to the
+session limit — **next: re-run S11** (§6.3 claim, §6.7 recipe), then §6.5
+step 3 closes the brief. Gates
 [031](031-adaptations-drill-down-read.md); retires
 [001](001-cross-adaptation-rep-ranges.md).
 **Depends:** 019
@@ -48,6 +48,13 @@ row at all (`CYCLE_SET_TARGET`, replaced by `MUSCLE_WINDOW_DAYS` under §6.6).
   copied columns corrected; the reference card browser-checked (all S6–S10
   strings render, one pre-existing 404 in the console). S9's block landed
   verified with its decision pending — the unit is the next session's.
+- **2026-09-03 (S9 unit)** — S9's Decision written (D27–D29): the endurance
+  cue moves from nasal breathing to the talk test, the mitochondria claim is
+  reworded to volume, the 30-min floor stays as a convention; source comment
+  on `rx.endurance`, row 3.9 grounded, acceptance box 2 closed (v1.16.7). S11
+  dispatched alone — the round's one scout — and lost when the session hit its
+  limit before the block came back; the S9 unit was committed by the next
+  session, which re-issues S11.
 
 ---
 
@@ -200,8 +207,8 @@ The blocks live in
 **[grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding)**
 — one `###` per scout run, pasted verbatim on receipt after the citation check
 (`eutils esummary`; Crossref for the papers outside PubMed), each closing with
-the **Decision** paragraph the ledger rows cite. Landed: S1, S2, S3, S12, S4,
-S5, S6, S7, S8, S10, and S9 as a block only (its unit is next). To run: S11. Moved out of this file on
+the **Decision** paragraph the ledger rows cite. Landed: S1–S10 and S12, each with its unit. To run: S11 (its
+2026-09-03 scout was lost to the session limit; re-issue from §6.3). Moved out of this file on
 2026-09-03 so a session picking the brief up reads the plan, not 800 lines of
 evidence; the source comments in `src/` and the inventory link to the new file.
 
@@ -212,10 +219,12 @@ evidence; the source comments in `src/` and the inventory link to the new file.
 - [x] §1's accounting decision is made, written here with its reason, and the
       losing dialect(s) deleted from the code. (2026-09-02, v1.13.0 — §6.1
       option (a); `muscleCoverage` and its card are gone.)
-- [ ] A `## Grounding` section exists here (its blocks in
+- [x] A `## Grounding` section exists here (its blocks in
       [grounding/039-adaptations-read.md](../grounding/039-adaptations-read.md#grounding))
       carrying verdicts for rows 7.1, 7.5,
       `CYCLE_SET_TARGET`-as-total, and the seven `rx` blocks (3.3, 3.4, 3.6–3.10).
+      (2026-09-03, v1.16.7 — S1–S10 and S12 landed with decisions; S11's rep
+      bands are box 4.)
 - [x] Rows 3.4 and 3.8 either carry attribution for the named protocol they ship,
       or no longer ship it. (2026-09-03 — S5 keeps "Galpin's 3–5 rule",
       attributed, D18; S8 renames "Classic 4×4" to "Helgerud’s 4×4", D23.)
@@ -383,7 +392,7 @@ or still to dispatch, so a dead run can be re-issued from here:
 |---|---|---|---|
 | S9 | 3.9 | Endurance prescription: Zone 2 / conversational, 30 min–hours continuous; the cue's mechanistic claims "nasal-breathing pace" and "builds mitochondria & fat oxidation" | `ADAPTATIONS[endurance].rx` [adaptations.ts:251](../../src/constants/adaptations.ts#L251) |
 | S10 | 3.10 | Power and strength are quality-driven (never to fatigue, full rest); hypertrophy through endurance are volume/fatigue-driven (accumulate work, push effort) — expected literature: velocity-loss and proximity-to-failure meta-analyses | `ADAPTATION_PRINCIPLE` [adaptations.ts:268](../../src/constants/adaptations.ts#L268) |
-| S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:94](../../src/constants/adaptations.ts#L94), [:125](../../src/constants/adaptations.ts#L125), [:153](../../src/constants/adaptations.ts#L153) |
+| S11 | 2.1–2.3 | **Rep bands per muscle-linked quality overlap** (§6.0): which rep range, taken near failure, trains strength, which hypertrophy, which local muscular endurance, and where the bands overlap so that one set counts in full toward each — return the three `[lo, hi]` edges. Today's disjoint cut `[1,5] / [6,15] / [16,999]` is the value being replaced | `repRange` on strength / hypertrophy / muscular_endurance [adaptations.ts:108](../../src/constants/adaptations.ts#L108), [:158](../../src/constants/adaptations.ts#L158), [:186](../../src/constants/adaptations.ts#L186) |
 
 Hypertrophy's `rx` (row 3.5) is **out**: grounded in 011 and locked to the
 target (D3). Do not re-run it.
@@ -553,20 +562,15 @@ Adaptations tab renders every S6–S10 string (`40–60% 1RM`; `4–8 rounds`,
 the taxonomy credit) — text check plus screenshot; the only console error is
 a pre-existing 404. The S6–S8 debt is cleared.
 
-**Next — the S9 unit** (block already in the grounding file, decision
-pending; scout's verdict: partially supported). Steps: (1) write the
-**Decision** paragraph — load, reps, sets, rest and effort unchanged, `reps`
-(`30 min–hours`) labelled convention (ACSM's daily dose used as a per-bout
-floor, fork 2); cue → *"Talk-test pace: full sentences, a little strained.
-Minutes are the dose; hard intervals build mitochondria too."* (forks 3–4:
-nasal breathing is a ventilation ceiling that moves with practice and was
-never tested against LT1; mitochondria and fat oxidation are not distinctive
-to Zone 2); no %HRmax printed on purpose (fork 1, [005](005-hr-zone-intensity-classification.md)'s
-question). (2) Ledger rows D27 (cue claim 1 replaced by the talk test), D28
-(cue claim 2 reworded to volume), D29 (30-min floor kept as convention) —
-*before* the constant is edited. (3) `rx.endurance` in `adaptations.ts`:
-the block's source comment (path → `docs/grounding/039-adaptations-read.md#grounding`)
-plus the cue string. (4) Inventory row 3.9 → carrier 039 S9, `grounded
-(partially supported — cue moved)`, an "Updated … S9 unit" note.
-(5) Tests, build, screenshot the endurance row of the reference card, patch
-bump, commit. Then S11 alone, then §6.5 step 3 closes the brief.
+**S9 unit landed 2026-09-03 (v1.16.7)** by that recipe: Decision paragraph
+(forks 1–4 as the scout proposed), ledger rows D27–D29 before the constant
+moved, the source comment and the talk-test cue on `rx.endurance`, row 3.9 →
+carrier 039 S9, the endurance row of the reference card screenshotted.
+
+**Next — S11** (the 2026-09-03 scout was lost to the session limit before its
+block landed; re-issue from §6.3's claim): verify every PMID, paste the block as
+`### S11 — …`, write its **Decision**, then the unit — the three `repRange`
+edges move (ledger row *first*), `classifyWeightSet`'s tests and the
+invariant test move with them, rows 2.1–2.3 → carrier 039 S11, and the tab's
+per-quality maps are browser-checked (expect the hypertrophy map to fill
+from the 16–20-rep sets). Then §6.5 step 3 closes the brief.

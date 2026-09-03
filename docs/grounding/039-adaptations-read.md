@@ -980,8 +980,23 @@ lineage, not evidence.
 // (Granata 2018). See docs/grounding/039-adaptations-read.md#grounding
 ```
 
-**Decision (S9): pending.** The block is verified (26 PMIDs + 1 DOI resolved
-through eutils / Crossref on 2026-09-03) and landed; its unit — the cue reword
-to the talk-test line, the source comment above `rx.endurance`, the 30-min
-floor labelled convention, inventory row 3.9 and its ledger rows — is the next
-session's first step (brief §6.7).
+**Decision (S9, 2026-09-03):** no number moves; one string changes, recorded
+in the ledger before the constant was edited. The cue becomes **"Talk-test
+pace: full sentences, a little strained. Minutes are the dose; hard intervals
+build mitochondria too."** Its first claim is replaced (fork 3, ledger D27):
+nasal-only breathing is a ventilation ceiling that moves with practice
+(Mapelli 2025; Dallam 2018) and was never tested against LT1, while the talk
+test is the one field proxy on the card with validation behind it (Persinger
+2004; Foster 2008). Its second claim is reworded to volume (fork 4, D28): Zone
+2 builds mitochondria and fat oxidation, but not distinctively — work-matched
+intervals do both at least as well (MacInnis 2017; Granata 2016; Talanian
+2007; Yin 2023) — so the card stops implying exclusivity and points at the
+VO₂max card instead. Load, sets, rest and effort stay as shipped; `reps`
+(`30 min–hours`) stays and is labelled **convention** (fork 2, D29): the 30 is
+ACSM 2011's daily dose used as a per-bout floor, no human trial finds a
+per-bout threshold (Murphy 2019; Jakicic 2019), and raising it to Attia's 45
+would print San-Millán's mechanism as a finding. No %HRmax is printed on
+purpose (fork 1) — that is [005](../roadmap/005-hr-zone-intensity-classification.md)'s
+classifier question. The block's 26 PMIDs + 1 DOI resolved through eutils /
+Crossref on receipt. `weeklySessionTarget = 2` (011) and the ≥ 25-min
+classifier (005) are not reopened.
