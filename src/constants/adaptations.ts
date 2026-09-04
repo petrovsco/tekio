@@ -18,10 +18,9 @@ export interface AdaptationRx {
 export interface AdaptationMeta {
   key: Adaptation
   label: string
-  icon: string
-  /** Hex colour used for bars, chips and accents. */
-  color: string
-  /** One-line essence, shown under the label. */
+  /** One-line essence, shown under the sheet title. No icon and no colour per
+   *  adaptation: colour carries one meaning in this app (design-system §1) and
+   *  the chrome has no emoji (§7) — both fields went with roadmap 031 unit 4. */
   summary: string
   rx: AdaptationRx
   modality: AdaptationModality
@@ -52,15 +51,13 @@ export interface AdaptationMeta {
  * then three whole-body cardio qualities (read per session). Speed and skill
  * were dropped 2026-08-29 — see
  * docs/roadmap/done/019-adaptation-model-simplification.md.
- * This array is the single source of truth for the dashboard, tooltips and
- * reference card.
+ * This array is the single source of truth for the Adaptations drill-down and
+ * its rx sheet.
  */
 export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'power',
     label: 'Power',
-    icon: '💥',
-    color: '#f97316',
     summary: 'Force × velocity — explosiveness',
     modality: 'resistance',
     repRange: null,
@@ -101,8 +98,6 @@ export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'strength',
     label: 'Strength',
-    icon: '🏋️',
-    color: '#ef4444',
     summary: 'Maximal force production',
     modality: 'resistance',
     // repRange [1, 5] — kept 2026-09-03 (039 S11, ledger D32), now OVERLAPPING hypertrophy at 5: a 5-rep set is one
@@ -157,8 +152,6 @@ export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'hypertrophy',
     label: 'Hypertrophy',
-    icon: '💪',
-    color: '#6366f1',
     summary: 'Muscle growth',
     modality: 'resistance',
     // repRange [6, 15] → [5, 30] on 2026-09-03 (039 S11, ledger D30). Growth per hard set is load-independent from ~30 %
@@ -191,8 +184,6 @@ export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'muscular_endurance',
     label: 'Muscular Endurance',
-    icon: '🔁',
-    color: '#14b8a6',
     summary: 'Resistance to local muscle fatigue',
     modality: 'resistance',
     // repRange [16, 999] → [15, 999] on 2026-09-03 (039 S11, ledger D31). ≥15 reps beat 7–13 for relative local endurance
@@ -238,8 +229,6 @@ export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'anaerobic_capacity',
     label: 'Anaerobic Capacity',
-    icon: '🔥',
-    color: '#eab308',
     summary: 'Glycolytic power / lactate tolerance',
     modality: 'cardio',
     repRange: null,
@@ -274,8 +263,6 @@ export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'vo2max',
     label: 'Max Aerobic (VO₂max)',
-    icon: '🫀',
-    color: '#ec4899',
     summary: 'Maximal oxygen uptake',
     modality: 'cardio',
     repRange: null,
@@ -316,8 +303,6 @@ export const ADAPTATIONS: AdaptationMeta[] = [
   {
     key: 'endurance',
     label: 'Long-Duration Endurance',
-    icon: '🏃',
-    color: '#10b981',
     summary: 'Aerobic base / steady state',
     modality: 'cardio',
     repRange: null,

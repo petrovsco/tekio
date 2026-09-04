@@ -1,8 +1,8 @@
 # Roadmap: Adaptations tab — the drill-down read
 
 **Label:** feature
-**Status:** in progress — 2026-09-04, second session: units 1–3 landed (the
-page is rebuilt, v1.16.13); unit 4 (deletions) is next, then unit 5 closes.
+**Status:** in progress — 2026-09-04, second session: units 1–4 landed (the
+page is rebuilt, the old parts deleted, v1.16.14); unit 5 verifies and closes.
 **Depends:** 019, 026, 039
 **Release:** 2.0.0
 
@@ -34,6 +34,11 @@ page is rebuilt, v1.16.13); unit 4 (deletions) is next, then unit 5 closes.
   `MuscleListSheet`, `labels`); `info` + `list` glyphs; `AdaptationRx` on the
   tokens; `GapMap` exports its ramp. Browser-verified at 390px. The old card,
   guide, list, tip and `BodyMap` component are now unreferenced — unit 4 deletes.
+- **2026-09-04** — unit 4 landed as v1.16.14: `AdaptationCard`,
+  `AdaptationGuide`, `MuscleStatusList` and `ui/InfoTip` deleted; `BodyMap.tsx`
+  is geometry only; `icon` and `color` dropped from `AdaptationMeta` and the
+  seven entries. No visible change (the page was already on unit 3's code), so
+  no separate browser pass — unit 5's final check covers it.
 
 ---
 
