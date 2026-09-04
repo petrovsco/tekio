@@ -73,7 +73,7 @@ What is old today, even on Home:
 ## Out of scope
 
 - Page-level sweeps — one brief per page, 027–032.
-- Deleting the old tokens — [033](../033-retire-old-design-language.md), once
+- Deleting the old tokens — [033](033-retire-old-design-language.md), once
   nothing consumes them.
 - Any IA change: no tab moves, no read changes, no capture-flow redesigns.
   This is a re-skin. (Product questions found during the survey are parked in

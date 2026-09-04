@@ -17,7 +17,7 @@ the Adaptations tab is a second Home on the rolling 14-day window. 033 unblocked
   preserved the thing that makes the page confusing. Grounding split out into
   [039](039-adaptations-read-grounding.md), which now gates this brief. The
   restyle is still in here — a rebuilt page is written in the SIGNAL language by
-  construction, so [033](../033-retire-old-design-language.md)'s dependency is
+  construction, so [033](033-retire-old-design-language.md)'s dependency is
   satisfied either way.
 - **2026-09-03** — picked up; the session hit its context limit after unit 1.
   `adaptationCoverage` now takes `from` + `windowDays` and scales the weekly
@@ -41,7 +41,7 @@ the Adaptations tab is a second Home on the rolling 14-day window. 033 unblocked
   no separate browser pass — unit 5's final check covers it.
 - **2026-09-04** — unit 5: final browser pass on the unit-4 code (console
   clean), §6 ticked, minor bump to v1.17.0 with tag, moved to `done/`;
-  [033](../033-retire-old-design-language.md) taken off `blocked`, and the
+  [033](033-retire-old-design-language.md) taken off `blocked`, and the
   links in `grounding-inventory.md`, `grounding/039`, 005 and 040 repointed.
 
 ---
@@ -282,5 +282,5 @@ already gone. Every colour on the page is an old token or a per-adaptation hue.
   `weekStartDay` leaves the tab.
 - **Unit 5 — verify and close.** Browser-verify against Home (headless
   chromium recipe in memory), screenshot, console clean; minor bump and tag;
-  tick §6; move to `done/`; then take [033](../033-retire-old-design-language.md)
+  tick §6; move to `done/`; then take [033](033-retire-old-design-language.md)
   off `blocked` if it lists 031.
