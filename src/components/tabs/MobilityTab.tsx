@@ -138,7 +138,7 @@ export function MobilityTab() {
               </div>
               <div className="mt-1.5">
                 {/* Opening the tag panel changes nothing on its own, so it is the
-                    quiet ghost tone, and the chevron replaces the 🏷 emoji (§7). */}
+                    quiet ghost tone, and the chevron replaces the v1 tag emoji (§7). */}
                 <button
                   onClick={() => setMuscleOpen(o => (o === i ? null : i))}
                   className="inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2 hover:text-ink cursor-pointer transition-colors"

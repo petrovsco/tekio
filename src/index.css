@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-@keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes shimmer {
   from { background-position: -200% 0; }
   to { background-position: 200% 0; }
@@ -17,16 +12,6 @@
   100% { opacity: 0; transform: translate(-50%, -4px); }
 }
 
-@keyframes pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.35s ease-out both;
-}
-
 .animate-shimmer {
   background-image: linear-gradient(90deg, var(--color-hairline) 25%, var(--color-paper) 50%, var(--color-hairline) 75%);
   background-size: 200% 100%;
@@ -37,13 +22,9 @@
   animation: toast-fade 3s ease-in-out both;
 }
 
-.animate-pop {
-  animation: pop 0.4s ease-out;
-}
-
 @theme {
-  /* SIGNAL — the Home design language (docs/design-system.md §§1–7).
-     The slate/indigo tokens below stay until the old tabs are restyled or retired. */
+  /* SIGNAL — the one design language (docs/design-system.md §§1–7).
+     The v1 slate/indigo tokens were retired in roadmap 033. */
   --color-paper: #faf9f7;      /* page ground */
   --color-ink: #1a1a1a;        /* primary text; inverted-card ground */
   --color-ink-2: #6b6b6b;      /* secondary text */
@@ -54,21 +35,4 @@
   --color-hairline: #eeeeec;   /* hairline inside a card */
   --color-chrome: #d6d6d4;     /* chrome hairline (nav border) */
   --color-invert-line: #4a4a4a; /* dividers and bar tracks on the inverted card */
-
-  --color-bg: #f1f5f9;
-  --color-surface: #ffffff;
-  --color-primary: #1e293b;
-  --color-accent: #6366f1;
-  --color-accent-l: #eef2ff;
-  --color-muted: #64748b;
-  --color-border: #e2e8f0;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
-  --color-ss: #7c3aed;
-  --color-ss-l: #f5f3ff;
-  --color-ss-b: #c4b5fd;
-  --color-dl-bg: #fffbeb;
-  --color-dl-bd: #fcd34d;
-  --color-dl-tx: #92400e;
 }

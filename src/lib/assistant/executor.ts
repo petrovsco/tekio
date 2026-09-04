@@ -122,18 +122,18 @@ export function describeToolCall(call: ToolCall): string {
     case 'create_habit': {
       const bits = [str(a, 'cadence') ?? 'daily', `target ${num(a, 'targetCount') ?? 1}${str(a, 'unit') ? ' ' + str(a, 'unit') : ''}`]
       const link = str(a, 'muscleGroup') ? ` → ${str(a, 'muscleGroup')}` : str(a, 'exercise') ? ` → ${str(a, 'exercise')}` : ''
-      return `➕ Habit "${q('name')}" ${str(a, 'icon') ?? ''} (${bits.join(', ')})${link}`.replace(/\s+/g, ' ').trim()
+      return `Add habit "${q('name')}" ${str(a, 'icon') ?? ''} (${bits.join(', ')})${link}`.replace(/\s+/g, ' ').trim()
     }
-    case 'update_habit': return `✏️ Update habit "${q('habit')}"`
-    case 'delete_habit': return `🗑️ Delete habit "${q('habit')}"`
-    case 'create_exercise': return `➕ Exercise "${q('name')}"`
+    case 'update_habit': return `Update habit "${q('habit')}"`
+    case 'delete_habit': return `Delete habit "${q('habit')}"`
+    case 'create_exercise': return `Add exercise "${q('name')}"`
     case 'map_exercise_to_muscle':
-      return `🔗 Map ${q('exercise')} → ${q('muscleGroup')} (L${num(a, 'level') ?? 1}, ${str(a, 'contribution') ?? 'stimulus'})`
-    case 'unmap_exercise_from_muscle': return `✂️ Unmap ${q('exercise')} ✕ ${q('muscleGroup')}`
-    case 'create_muscle_group': return `➕ Muscle group "${q('name')}" (${q('bodyRegion')}${str(a, 'parent') ? `, under ${str(a, 'parent')}` : ''})`
-    case 'add_program_exercise': return `➕ ${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: + ${q('exercise')}`
-    case 'replace_program_exercise': return `🔁 ${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: ${q('oldExercise')} → ${q('newExercise')}`
-    case 'remove_program_exercise': return `➖ ${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: − ${q('exercise')}`
+      return `Map ${q('exercise')} → ${q('muscleGroup')} (L${num(a, 'level') ?? 1}, ${str(a, 'contribution') ?? 'stimulus'})`
+    case 'unmap_exercise_from_muscle': return `Unmap ${q('exercise')} from ${q('muscleGroup')}`
+    case 'create_muscle_group': return `Add muscle group "${q('name')}" (${q('bodyRegion')}${str(a, 'parent') ? `, under ${str(a, 'parent')}` : ''})`
+    case 'add_program_exercise': return `${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: add ${q('exercise')}`
+    case 'replace_program_exercise': return `${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: replace ${q('oldExercise')} with ${q('newExercise')}`
+    case 'remove_program_exercise': return `${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: remove ${q('exercise')}`
     default: return `${call.name}`
   }
 }
@@ -260,7 +260,7 @@ export async function executeToolCall(call: ToolCall): Promise<ToolResult> {
         if (!exerciseId || !muscleGroupId) return fail(call.name, 'Exercise or muscle group not found.')
         await deleteExerciseMuscle(exerciseId, muscleGroupId)
         await store.reloadMuscleData()
-        return ok(call.name, `Unmapped ${ex} ✕ ${mg}.`)
+        return ok(call.name, `Unmapped ${ex} from ${mg}.`)
       }
 
       case 'create_muscle_group': {

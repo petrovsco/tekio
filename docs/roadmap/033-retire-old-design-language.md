@@ -1,7 +1,7 @@
 # Roadmap: Retire the v1 design language
 
 **Label:** infra
-**Status:** planned — unblocked 2026-09-04: 031 landed (v1.17.0), the last of the six restyles, so every page is now written in the SIGNAL tokens and the old ones have no page-level consumer left to wait for.
+**Status:** in progress — unit 1 landed 2026-09-04 (v1.17.2): the token block, its palette mirror (`constants/colors.ts`), the chrome emoji and two dead animations are gone; bundle 551 kB against the 554 kB baseline. Left: the conformance walk (scope 3) with screenshots, then close.
 **Depends:** 027, 028, 029, 030, 031, 032
 **Release:** 2.0.0
 
@@ -33,10 +33,27 @@ palettes to accidentally pick from.
 
 Tooling/cleanup; no surface, no number, no grounding.
 
+## Findings — 2026-09-04, unit 1
+
+- The build is not the guard. Tailwind v4 generates nothing for an unknown
+  utility and does not fail, so a missed `bg-bg` would have shipped as an
+  unstyled element. The grep is the real check; it found 25 consumers
+  (23 in `HabitsTab`, one each in `HabitForm` and `EditModal`), all
+  remapped, and now returns nothing including the tests.
+- Two orphans the sweep exposed and removed: `src/constants/colors.ts`
+  (a JS mirror of the old palette, no importer) and `DONATION_ICONS`
+  (two emoji, no consumer). `fade-in-up` and `pop` were unused too.
+- Emoji audit: the assistant's action labels (`executor.ts`) were the only
+  chrome emoji outside Habits; they read as plain verbs now. The one hit
+  left under `src/` is the placeholder of the Habits icon field — user
+  data, stays. Habits itself is on the R2 shelf and goes with 035.
+- Bundle: index chunk **551.22 kB** (gzip 161.06 kB) vs the 018 unit-5
+  baseline of 554 kB.
+
 ## Acceptance
 
-- [ ] The old token block is gone from `index.css` and the build passes.
-- [ ] `grep -rn` for the old token class names across `src/` returns nothing.
+- [x] The old token block is gone from `index.css` and the build passes.
+- [x] `grep -rn` for the old token class names across `src/` returns nothing.
 - [ ] No emoji in chrome anywhere; the walk's screenshots are taken and the
       verdict recorded here.
-- [ ] T1 bundle size recorded and not worse than the 018 unit-5 baseline.
+- [x] T1 bundle size recorded and not worse than the 018 unit-5 baseline.

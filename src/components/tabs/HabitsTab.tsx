@@ -32,21 +32,20 @@ function HabitRow({ habit, ctx, weekStart }: { habit: Habit; ctx: HabitProgressC
   }
 
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-bg last:border-0">
-      <span className="text-xl w-7 text-center shrink-0">{habit.icon || '✅'}</span>
+    <div className="flex items-center gap-3 py-2.5 border-b border-hairline last:border-0">
+      <span className="text-xl w-7 text-center shrink-0">{habit.icon || '·'}</span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <p className="text-sm font-semibold text-primary truncate">{habit.name}</p>
-          {p.done && <span className="text-xs">🎉</span>}
+          <p className="text-sm font-semibold text-ink truncate">{habit.name}</p>
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <div className="flex-1 h-1.5 bg-bg rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-hairline rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-[width] duration-500 ${p.done ? 'bg-success' : 'bg-accent'}`}
+              className={`h-full rounded-full transition-[width] duration-500 ${p.done ? 'bg-ink' : 'bg-ink-3'}`}
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className="text-[11px] text-muted font-medium shrink-0 tabular-nums">
+          <span className="text-[11px] text-ink-2 font-medium shrink-0 tabular-nums">
             {isCheck
               ? (habit.targetCount > 1 ? `${fmt(habit.targetCount)}${habit.unit ? ` ${habit.unit}` : ''}` : '')
               : `${fmt(p.current)}/${fmt(p.target)}${habit.unit ? ` ${habit.unit}` : ''}`}
@@ -58,14 +57,14 @@ function HabitRow({ habit, ctx, weekStart }: { habit: Habit; ctx: HabitProgressC
           <button
             onClick={onComplete}
             className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors ${
-              p.done ? 'border-success bg-success/10 text-success' : 'border-accent bg-accent-l text-accent active:scale-95'
+              p.done ? 'border-line bg-hairline text-ink-2' : 'border-signal text-signal active:scale-95'
             }`}
           >
-            {isCheck ? (p.done ? '✓ Done' : 'Mark done') : '+1'}
+            {isCheck ? (p.done ? 'Done' : 'Mark done') : '+1'}
           </button>
         ) : (
-          <span className={`px-2 py-1 rounded-lg text-[10px] font-semibold ${p.done ? 'bg-success/10 text-success' : 'bg-bg text-muted'}`}>
-            {p.done ? '✓ auto' : 'auto'}
+          <span className={`px-2 py-1 rounded-lg text-[10px] font-semibold ${p.done ? 'bg-hairline text-ink-2' : 'bg-hairline text-ink-3'}`}>
+            auto
           </span>
         )}
         <EditBtn onClick={() => openEditModal({ type: 'habit', record: habit })} />
@@ -100,7 +99,7 @@ export function HabitsTab() {
           </Btn>
         </div>
         {showForm && (
-          <div className="mt-3 pt-3 border-t border-bg">
+          <div className="mt-3 pt-3 border-t border-hairline">
             <HabitForm onDone={() => setShowForm(false)} />
           </div>
         )}
@@ -119,7 +118,7 @@ export function HabitsTab() {
                   key={c}
                   onClick={() => setCadence(c)}
                   className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-                    active ? 'border-accent bg-accent-l text-accent' : 'border-border bg-surface text-muted'
+                    active ? 'border-ink bg-ink text-white' : 'border-line text-ink-2'
                   }`}
                 >
                   {CADENCE_LABEL[c]}

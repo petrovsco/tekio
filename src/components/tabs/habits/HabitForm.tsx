@@ -145,7 +145,7 @@ export function HabitForm({ record, onDone, saveRef }: HabitFormProps) {
       )}
       {linkType === 'exercise' && (
         <div className="flex flex-col gap-1 min-w-0">
-          <label className="text-xs text-muted font-medium">Exercise</label>
+          <label className="text-xs text-ink-2 font-medium">Exercise</label>
           <SmartInput
             value={exerciseName}
             onChange={setExerciseName}

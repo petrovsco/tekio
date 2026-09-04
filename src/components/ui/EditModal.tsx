@@ -323,7 +323,7 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
       <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
 
       {exercises.map((ex, i) => (
-        <div key={i} className="flex flex-col gap-1.5 pb-3 border-b border-bg last:border-0 last:pb-0">
+        <div key={i} className="flex flex-col gap-1.5 pb-3 border-b border-hairline last:border-0 last:pb-0">
           {/* Row 1: name + delete */}
           <div className="flex items-center gap-2">
             <SmartInput
