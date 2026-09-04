@@ -2,11 +2,12 @@ import { describe, it, expect } from 'vitest'
 import {
   daysBetween, muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, waterStatus, fusedVerdict, powerSetCount, HISTORY_WEEKS,
-  muscleWeeklySets, muscleSources, muscleQualityMix,
+  muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
+  type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
 import { PUSH_THRESHOLD, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
 import type {
-  WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry, WaterEntry,
+  Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry, WaterEntry,
   ExerciseMuscleLink, MuscleGroup,
 } from '../types'
 
@@ -232,6 +233,73 @@ describe('muscleQualityMix', () => {
     expect(muscleQualityMix(weights, links, 'Biceps', { curls: 'power' }, TODAY)).toEqual({
       strength: 0, hypertrophy: 1, muscular_endurance: 1, power: 2,
     })
+  })
+})
+
+// ---------------------------------------------------------------------------
+// muscleQualityStates — the drill-down's per-quality map (roadmap 031)
+// ---------------------------------------------------------------------------
+
+describe('muscleQualityStates', () => {
+  const links = [link('Curls', 'Biceps'), link('Curls', 'Triceps', 2)]
+  const entry = (date: string, exercise: string, reps: number[]): WeightEntry =>
+    ({ id: `${date}-${exercise}-${reps.join()}`, date, exercise, sets: reps.map(r => ({ weight: 50, reps: r })) })
+  const biceps = (states: MuscleState[]) => states.find(m => m.name === 'Biceps')!
+  const on = (weights: WeightEntry[], q: MuscleQuality, weekly = 6, overrides?: Record<string, Adaptation>) =>
+    biceps(muscleQualityStates(weights, links, GROUPS, q, weekly, overrides, TODAY))
+
+  it('exports the same window Home fills against', () => {
+    expect(muscleWindow(TODAY)).toEqual({ from: ago(MUSCLE_WINDOW_DAYS - 1), to: TODAY })
+  })
+
+  it('lands a 10-rep set on the hypertrophy map, not the strength map', () => {
+    const weights = [entry(ago(1), 'Curls', [10, 10, 10])]
+    expect(on(weights, 'hypertrophy', 10).sets).toBe(3)
+    expect(on(weights, 'strength').sets).toBe(0)
+  })
+
+  it('scales the weekly target to the window and weights sets by link level', () => {
+    const weights = [entry(ago(1), 'Curls', [10, 10, 10])]
+    const states = muscleQualityStates(weights, links, GROUPS, 'hypertrophy', 10, undefined, TODAY)
+    expect(biceps(states).fillFraction).toBe(+(3 / (10 * MUSCLE_WINDOW_DAYS / 7)).toFixed(3))
+    expect(states.find(m => m.name === 'Triceps')?.sets).toBe(1.5)
+  })
+
+  it('tracks recency per quality while recovering stays muscle-level', () => {
+    const weights = [
+      entry(ago(10), 'Curls', [3, 3]),  // strength only
+      entry(ago(1), 'Curls', [12, 12]), // hypertrophy only
+    ]
+    const strength = on(weights, 'strength')
+    expect(strength.daysSince).toBe(10)
+    expect(strength.sets).toBe(2)
+    expect(strength.recovering).toBe(true) // the any-set recency is 1 day
+    expect(on(weights, 'hypertrophy', 10).daysSince).toBe(1)
+    expect(biceps(muscleStates(weights, links, GROUPS, TODAY)).daysSince).toBe(1)
+  })
+
+  it('reads never-trained in a quality even when the muscle has other history', () => {
+    const s = on([entry(ago(1), 'Curls', [10])], 'strength')
+    expect(s.sets).toBe(0)
+    expect(s.daysSince).toBeNull()
+    expect(s.recovering).toBe(true)
+  })
+
+  it('counts a power set on the power map only', () => {
+    const weights = [entry(ago(1), 'Curls', [10, 10, 10, 10])]
+    const asPower = { curls: 'power' as Adaptation }
+    expect(on(weights, 'power', 6, asPower).sets).toBe(4)
+    expect(on(weights, 'power', 6, asPower).daysSince).toBe(1)
+    expect(on(weights, 'hypertrophy', 10, asPower).sets).toBe(0)
+    expect(on(weights, 'hypertrophy', 10, asPower).daysSince).toBeNull()
+    expect(on(weights, 'power').sets).toBe(0)
+  })
+
+  it('counts window sets only but keeps the older last date', () => {
+    const s = on([entry(ago(MUSCLE_WINDOW_DAYS + 3), 'Curls', [3, 3])], 'strength')
+    expect(s.sets).toBe(0)
+    expect(s.daysSince).toBe(MUSCLE_WINDOW_DAYS + 3)
+    expect(s.recovering).toBe(false)
   })
 })
 

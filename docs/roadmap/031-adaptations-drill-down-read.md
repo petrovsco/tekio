@@ -1,8 +1,8 @@
 # Roadmap: Adaptations tab — the drill-down read
 
 **Label:** feature
-**Status:** planned — unit 1 (the window argument) landed 2026-09-03 as
-v1.16.10; the page rebuild itself is not started. §7 is the kickoff.
+**Status:** in progress — picked up again 2026-09-04; the 14-day window
+(§7 decision 1) is confirmed by Peter. Units 1–2 landed; unit 3 (the page) is next.
 **Depends:** 019, 026, 039
 **Release:** 2.0.0
 
@@ -23,6 +23,10 @@ v1.16.10; the page rebuild itself is not started. §7 is the kickoff.
   `adaptationCoverage` now takes `from` + `windowDays` and scales the weekly
   targets to the window (v1.16.10, no visible change). The build decisions
   and the remaining units are in §7.
+- **2026-09-04** — Peter confirmed the 14-day window (§7 decision 1). Unit 2
+  landed as v1.16.12: `muscleQualityStates` + exported `muscleWindow` in
+  `fusedRead.ts`, the last-date scan shared with `muscleStates`; 7 tests. No
+  visible change yet — nothing calls it until unit 3.
 
 ---
 
@@ -223,8 +227,9 @@ already gone. Every colour on the page is an old token or a per-adaptation hue.
 
 ### Remaining units, in order
 
-- **Unit 2 — `muscleQualityStates` in `src/lib/fusedRead.ts`** (beside
-  `muscleStates`, which already imports `muscleStimulus`):
+- **Unit 2 — landed 2026-09-04 (v1.16.12).** `muscleQualityStates` in
+  `src/lib/fusedRead.ts` (beside `muscleStates`, which already imports
+  `muscleStimulus`):
   `(weights, exerciseMuscles, muscleGroups, quality, weeklyTarget, overrides?, date?)
   → MuscleState[]`. `sets` = `byQuality[quality]` over `muscleWindow(date)`;
   `fillFraction` = sets ÷ (weeklyTarget × MUSCLE_WINDOW_DAYS / 7);
