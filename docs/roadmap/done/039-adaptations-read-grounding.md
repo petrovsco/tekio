@@ -4,7 +4,7 @@
 **Status:** done — closed 2026-09-03 (v1.16.9): the twelve scout blocks live in
 [grounding/039-adaptations-read.md](../../grounding/039-adaptations-read.md#grounding),
 the code units shipped v1.13.0–v1.16.8, [001](001-cross-adaptation-rep-ranges.md)
-retired inside this brief and [031](../031-adaptations-drill-down-read.md) set
+retired inside this brief and [031](031-adaptations-drill-down-read.md) set
 to `planned`.
 **Depends:** 019
 **Release:** 2.0.0
@@ -72,7 +72,7 @@ Home's five-second answer. A read is only worth building if its numbers mean
 something. Right now the page shows three different answers to the same
 question and about thirty-five prescription numbers that nobody has checked.
 
-**This brief settles the meanings. [031](../031-adaptations-drill-down-read.md)
+**This brief settles the meanings. [031](031-adaptations-drill-down-read.md)
 then draws them.** In that order, for the same reason 031 already waited for
 019: repainting a number that is about to change its denominator is throwaway
 work.
@@ -184,7 +184,7 @@ keeps that text — behind an icon, but still on the page.
   2026-09-02** (§6.0): 001's question is decided by this brief.
 - **Cardio classifier thresholds** (rows 6.1–6.5, the ≥25/≥8 min heuristic, the
   TE cutoff) — [005](../005-hr-zone-intensity-classification.md).
-- **Any pixel of the redesign** — [031](../031-adaptations-drill-down-read.md).
+- **Any pixel of the redesign** — [031](031-adaptations-drill-down-read.md).
 
 The split to hold in mind: **039 grounds what the page *displays* and how a
 resistance set *classifies*; 005 grounds how cardio *classifies*.**
@@ -467,7 +467,7 @@ Each unit build-passes on its own; commit and push after each.
 3. **Close:** tick §5, move this file to `done/` (the grounding file and the source
    comments stay put), move [001](001-cross-adaptation-rep-ranges.md) to `done/` as
    `done — decided and shipped inside 039`, repoint its links (031 §4, 034,
-   the inventory), and set [031](../031-adaptations-drill-down-read.md) to
+   the inventory), and set [031](031-adaptations-drill-down-read.md) to
    `planned` (019, 026, 039 all landed). Patch bump.
 
 ### 6.6 Amendment 2026-09-03 — the muscle window leaves the program cycle
