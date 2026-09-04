@@ -1098,7 +1098,7 @@ purpose — a week of 6–8-rep work reads as a strength gap, and those sets kee
 their hypertrophy credit. Fork 3 (does a local-endurance adaptation exist at
 all): not settled and not needed — the endurance map is a specificity read
 ("trained at ≥ 15 reps"), which is how
-[031](../roadmap/031-adaptations-drill-down-read.md)'s drill-down should word
+[031](../roadmap/done/031-adaptations-drill-down-read.md)'s drill-down should word
 it, never "endurance improved". The hypertrophy lower edge (5) is the softest
 number in the block: a set-counting compromise between volume-matched parity
 at 3 RM and per-set under-delivery at 2–4 RM; singles and doubles count as

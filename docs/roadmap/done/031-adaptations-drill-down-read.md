@@ -1,23 +1,23 @@
 # Roadmap: Adaptations tab — the drill-down read
 
 **Label:** feature
-**Status:** in progress — 2026-09-04, second session: units 1–4 landed (the
-page is rebuilt, the old parts deleted, v1.16.14); unit 5 verifies and closes.
+**Status:** done — shipped 2026-09-04 as v1.17.0 (units 1–5, v1.16.10 → v1.17.0):
+the Adaptations tab is a second Home on the rolling 14-day window. 033 unblocked.
 **Depends:** 019, 026, 039
 **Release:** 2.0.0
 
 ## Progress log
 
 - **2026-09-01** — written as "Adaptations tab — SIGNAL restyle", deliberately
-  sequenced after [019](done/019-adaptation-model-simplification.md) so nine rows
+  sequenced after [019](019-adaptation-model-simplification.md) so nine rows
   would not be restyled and then two deleted.
-- **2026-09-01** — unblocked: 019 and [026](done/026-signal-chrome-and-primitives.md)
+- **2026-09-01** — unblocked: 019 and [026](026-signal-chrome-and-primitives.md)
   both landed.
 - **2026-09-02** — rescoped. Restyling the current composition would have
   preserved the thing that makes the page confusing. Grounding split out into
-  [039](done/039-adaptations-read-grounding.md), which now gates this brief. The
+  [039](039-adaptations-read-grounding.md), which now gates this brief. The
   restyle is still in here — a rebuilt page is written in the SIGNAL language by
-  construction, so [033](033-retire-old-design-language.md)'s dependency is
+  construction, so [033](../033-retire-old-design-language.md)'s dependency is
   satisfied either way.
 - **2026-09-03** — picked up; the session hit its context limit after unit 1.
   `adaptationCoverage` now takes `from` + `windowDays` and scales the weekly
@@ -39,6 +39,10 @@ page is rebuilt, the old parts deleted, v1.16.14); unit 5 verifies and closes.
   is geometry only; `icon` and `color` dropped from `AdaptationMeta` and the
   seven entries. No visible change (the page was already on unit 3's code), so
   no separate browser pass — unit 5's final check covers it.
+- **2026-09-04** — unit 5: final browser pass on the unit-4 code (console
+  clean), §6 ticked, minor bump to v1.17.0 with tag, moved to `done/`;
+  [033](../033-retire-old-design-language.md) taken off `blocked`, and the
+  links in `grounding-inventory.md`, `grounding/039`, 005 and 040 repointed.
 
 ---
 
@@ -68,7 +72,7 @@ help interrogate an adaptation is not part of the read.
    behind a disclosure, so comparing two adaptations means opening one, closing
    it, opening another. The spatial thing is buried inside the non-spatial thing.
 2. **MUSCLE COVERAGE · THIS WEEK earns nothing.** It restates Home's map in a
-   third dialect (see [039 §1](done/039-adaptations-read-grounding.md)) with no
+   third dialect (see [039 §1](039-adaptations-read-grounding.md)) with no
    target behind its bars, and it is the *only* consumer of
    `MuscleCoverageCard.tsx` — so cutting it from the page deletes the component.
 3. **Per-adaptation rainbow hues** break design-system §1 (colour carries one
@@ -88,7 +92,7 @@ two adaptations becomes one tap, which is the whole point of a drill-down.
 
 Reuses the existing `GapMap` / `BodyMap` geometry and the SIGNAL ink ramp, so
 the picture rhymes with Home instead of arguing with it. **What the ramp is
-denominated in is [039](done/039-adaptations-read-grounding.md)'s decision** — that is
+denominated in is [039](039-adaptations-read-grounding.md)'s decision** — that is
 why this brief waits.
 
 Two affordances live on the selected adaptation, not on seven separate cards:
@@ -136,7 +140,7 @@ it.
 session, the three qualities as regions). It is the better picture and it needs
 an intensity per session that the app mostly does not have — of 3 logged cardio
 sessions, 1 carries Training Effect and HR zones. Revisit after
-[005](005-hr-zone-intensity-classification.md); do not build it on a duration
+[005](../005-hr-zone-intensity-classification.md); do not build it on a duration
 proxy dressed as intensity.
 
 ### 3c. What leaves the page
@@ -152,13 +156,13 @@ Whether it survives as a hero or shrinks to a header line is a build decision.
 
 ## 4. Out of scope
 
-- **The numbers' meaning** — [039](done/039-adaptations-read-grounding.md). This brief
+- **The numbers' meaning** — [039](039-adaptations-read-grounding.md). This brief
   draws what that one decides.
-- **Target values and shapes** — [012](012-adaptation-target-shapes.md). If 012
+- **Target values and shapes** — [012](../012-adaptation-target-shapes.md). If 012
   lands first the units shown here follow it; neither blocks the other's kickoff.
-- **User-set adaptation goals** — [040](040-adaptation-goals.md), backlog.
-- **Classifier changes** — [001](done/001-cross-adaptation-rep-ranges.md)
-  (retired — decided inside 039), [005](005-hr-zone-intensity-classification.md).
+- **User-set adaptation goals** — [040](../040-adaptation-goals.md), backlog.
+- **Classifier changes** — [001](001-cross-adaptation-rep-ranges.md)
+  (retired — decided inside 039), [005](../005-hr-zone-intensity-classification.md).
 
 ## 5. Doctrine check (§4)
 
@@ -178,18 +182,24 @@ Whether it survives as a hero or shrinks to a header line is a build decision.
 ## 6. Acceptance
 
 - [x] 039 is in `done/` before implementation starts.
-- [ ] One body map with a four-way adaptation toggle; switching does not reflow
-      the page.
-- [ ] The selected adaptation's `rx` and its per-muscle detail are each one tap
-      away, on the map, not in a stack of cards.
-- [ ] The whole-body three have their own read, and the shape chosen is recorded
-      in §3b with its reason.
+- [x] One body map with a four-way adaptation toggle; switching does not reflow
+      the page (the SVG keeps its viewBox; only the fills and callouts change).
+- [x] The selected adaptation's `rx` and its per-muscle detail are each one tap
+      away, on the map, not in a stack of cards (two ghost buttons → two sheets;
+      a zone or callout tap → Home's `MuscleSheet`).
+- [x] The whole-body three have their own read, and the shape chosen is recorded
+      in §3b with its reason (the effort spectrum; §7 decision 4 has the drawing).
 - [x] `MuscleCoverageCard.tsx` is deleted and nothing imports it (already gone
       when 031 was picked up — 039 §6.1 took it).
-- [ ] No old-token classes, per-adaptation hues, or emoji remain in
-      `AdaptationsTab` and its children.
-- [ ] Browser-verified with a screenshot next to Home for comparison; console
-      clean.
+- [x] No old-token classes, per-adaptation hues, or emoji remain in
+      `AdaptationsTab` and its children (grep-checked 2026-09-04; `icon` and
+      `color` are gone from the metadata itself).
+- [x] Browser-verified with a screenshot next to Home for comparison; console
+      clean (2026-09-04, 390px headless Chromium: the hypertrophy map matches
+      Home's map fill for fill; toggles, both sheets, a band tap and a
+      list-row tap into the muscle sheet all exercised). The one console error
+      is the `/favicon.ico` 404 on Home load, which predates this brief and is
+      [038](../038-favicon-and-app-icon.md)'s.
 
 ## 7. Where it left off — 2026-09-03
 
@@ -272,5 +282,5 @@ already gone. Every colour on the page is an old token or a per-adaptation hue.
   `weekStartDay` leaves the tab.
 - **Unit 5 — verify and close.** Browser-verify against Home (headless
   chromium recipe in memory), screenshot, console clean; minor bump and tag;
-  tick §6; move to `done/`; then take [033](033-retire-old-design-language.md)
+  tick §6; move to `done/`; then take [033](../033-retire-old-design-language.md)
   off `blocked` if it lists 031.
