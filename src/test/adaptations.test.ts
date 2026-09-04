@@ -9,9 +9,12 @@ import {
   muscleStimulus,
   weightSetsIn,
   MUSCLE_QUALITIES,
+  GAP_CUTOFF,
 } from '../lib/adaptations'
+import { muscleQualityStates, muscleWindow, rankMuscleGaps } from '../lib/fusedRead'
 import type { CardioEntry, ExerciseMuscleLink, MuscleGroup, WeightEntry } from '../types'
-import { ADAPTATIONS } from '../constants/adaptations'
+import { ADAPTATIONS, ADAPTATION_MAP } from '../constants/adaptations'
+import { MUSCLE_WINDOW_DAYS } from '../constants/app'
 
 // ── rx blocks (grounded values, roadmap 039 S5–S8) ──────────────────────────
 
@@ -164,9 +167,9 @@ describe('buildMuscleStatusTree', () => {
     const tree = buildMuscleStatusTree({ Chest: 12, 'Front Delt': 4 }, groups, 10)
     const chest = tree.find(r => r.id === 'chest')!
     const shoulders = tree.find(r => r.id === 'shoulders')!
-    expect(chest.status).toBe('on_track') // 12 >= 10
+    expect(chest.status).toBe('on_track') // 12/10 = 1.2 ≥ GAP_CUTOFF
     expect(shoulders.aggSets).toBe(4)      // rolled up from child
-    expect(shoulders.status).toBe('needs_work')
+    expect(shoulders.status).toBe('needs_work') // 0.4 < GAP_CUTOFF
     expect(shoulders.children[0].name).toBe('Front Delt')
   })
 
@@ -335,5 +338,61 @@ describe('adaptationCoverage', () => {
   it('weightSetsIn counts sets once inside the window', () => {
     const ws = [w('a', '2025-01-02', 'Bench Press', 10, 2), w('z', '2024-12-01', 'Bench Press', 4, 9)]
     expect(weightSetsIn(ws, '2025-01-01', '2025-01-07')).toBe(2)
+  })
+})
+
+// ── one threshold: the counter reads the map's GAP_CUTOFF (roadmap 045) ──────
+
+describe('on target — counter, "Short:" line and map callouts read one line', () => {
+  // The drill-down's window: MUSCLE_WINDOW_DAYS ending on `date`, weekly rate
+  // scaled to it — the same construction AdaptationsTab feeds both reads.
+  const date = '2025-01-14'
+  const { from } = muscleWindow(date)
+  const weekly = ADAPTATION_MAP.hypertrophy.weeklyMuscleTarget
+  const target = weekly * MUSCLE_WINDOW_DAYS / 7
+  const chestOnly = groups.filter(g => g.id === 'chest')
+
+  // Both surfaces at once: `met` drives the header count and the "Short:"
+  // line; the callouts are the leaves under GAP_CUTOFF on the quality map.
+  function read(weights: WeightEntry[], muscleGroups: MuscleGroup[], exerciseMuscles = links, tracked?: string[]) {
+    const cov = adaptationCoverage({
+      weights, cardio: [], sports: [], exerciseMuscles, muscleGroups,
+      from, date, windowDays: MUSCLE_WINDOW_DAYS, trackedMuscleIds: tracked,
+    })
+    const states = muscleQualityStates(weights, exerciseMuscles, muscleGroups, 'hypertrophy', weekly, undefined, date)
+    const callouts = rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF).map(m => m.name)
+    return { met: cov.hypertrophy.met, callouts, muscles: cov.hypertrophy.muscles }
+  }
+
+  it('a muscle at 0.85 of target is on target and draws no callout', () => {
+    const r = read([w('a', '2025-01-10', 'Bench Press', 10, Math.round(target * 0.85))], chestOnly)
+    const fill = r.muscles.find(m => m.id === 'chest')!.fillFraction
+    expect(fill).toBeGreaterThanOrEqual(GAP_CUTOFF)
+    expect(fill).toBeLessThan(1) // short of the 100 % floor — the old bar would have said "Short:"
+    expect(r.met).toBe(true)
+    expect(r.callouts).toEqual([])
+  })
+
+  it('a muscle at 0.50 of target is short and is the callout', () => {
+    const r = read([w('a', '2025-01-10', 'Bench Press', 10, target * 0.5)], chestOnly)
+    expect(r.met).toBe(false)
+    expect(r.callouts).toEqual(['Chest'])
+  })
+
+  it('judges the leaves the map draws, not the rolled-up parent', () => {
+    // Front Delt full fills Shoulders' roll-up too, but the map draws leaves and
+    // Rear Delt is untouched — so the counter must read "short" with it.
+    const shoulders: MuscleGroup[] = [
+      { id: 'shoulders', name: 'Shoulders', bodyRegion: 'upper', parentId: null },
+      { id: 'front-delt', name: 'Front Delt', bodyRegion: 'upper', parentId: 'shoulders' },
+      { id: 'rear-delt', name: 'Rear Delt', bodyRegion: 'upper', parentId: 'shoulders' },
+    ]
+    const press: ExerciseMuscleLink[] = [
+      { exercise: 'Overhead Press', group: 'Front Delt', region: 'upper', level: 1, contribution: 'stimulus' },
+    ]
+    const r = read([w('a', '2025-01-10', 'Overhead Press', 10, target)], shoulders, press, ['shoulders'])
+    expect(r.muscles.find(m => m.id === 'shoulders')!.fillFraction).toBe(1)
+    expect(r.met).toBe(false)
+    expect(r.callouts).toEqual(['Rear Delt'])
   })
 })

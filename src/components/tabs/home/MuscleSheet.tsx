@@ -8,7 +8,7 @@ import {
 import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
 import { today } from '../../../lib/utils'
 import { BottomSheet, SheetClose } from './BottomSheet'
-import { GAP_CUTOFF } from './GapMap'
+import { GAP_CUTOFF } from '../../../lib/adaptations'
 
 // The muscle drill-in (T2, roadmap 018 unit 3): what a tap on the map reveals.
 // Logging goes through an exercise on purpose — sets classify into adaptations

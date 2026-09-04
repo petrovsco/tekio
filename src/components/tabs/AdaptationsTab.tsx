@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { today } from '../../lib/utils'
-import { adaptationCoverage, weightSetsIn } from '../../lib/adaptations'
+import { adaptationCoverage, weightSetsIn, GAP_CUTOFF } from '../../lib/adaptations'
 import {
   muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps,
   type MuscleQuality, type WholeBodyQuality,
@@ -12,7 +12,7 @@ import { MUSCLE_WINDOW_DAYS } from '../../constants/app'
 import type { Adaptation } from '../../types'
 import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'
-import { GapMap, GAP_CUTOFF } from './home/GapMap'
+import { GapMap } from './home/GapMap'
 import { EffortSpectrum, type SpectrumBand } from './adaptations/EffortSpectrum'
 import { MAP_QUALITIES, QUALITY_PROSE, QUALITY_SHORT, SPECTRUM_QUALITIES } from './adaptations/labels'
 

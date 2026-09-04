@@ -7,7 +7,8 @@ import {
 } from '../../../lib/fusedRead'
 import { cycleInfo, today } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
-import { GapMap, muscleShort, GAP_CUTOFF } from './GapMap'
+import { GapMap, muscleShort } from './GapMap'
+import { GAP_CUTOFF } from '../../../lib/adaptations'
 import type { FoldKind } from './FoldSheet'
 
 // The fused Home read (roadmap 010/018, design-system.md, language SIGNAL).

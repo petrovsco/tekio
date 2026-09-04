@@ -223,27 +223,39 @@ export interface AdaptationSummary {
   unit: 'sets' | 'sessions'
   /** Top-level muscle rows with rolled-up children (resistance adaptations only). */
   muscles: MuscleStatusRow[]
-  /** On-track / worked / total counts over the *tracked* muscle subset (resistance only). */
+  /** On-track / worked / total counts over the *judged* leaves (resistance only) — see `met`. */
   onTrack: number
   worked: number
   totalMuscles: number
   /** Session target for the cardio adaptations over the window (0 for resistance). */
   sessionTarget: number
   /**
-   * Whether the adaptation's target is fully met over the window — every
-   * tracked muscle on track (resistance), or the session target reached
-   * (cardio). Drives the "adaptations on target" counter.
+   * Whether the adaptation is on target over the window — no judged muscle
+   * below GAP_CUTOFF of its target (resistance), or the session target reached
+   * (cardio). The judged muscles are the leaves the gap map draws callouts for,
+   * inside the tracked top-level groups, so the "N of 7 on target" counter, its
+   * "Short:" line and the map's callouts read one threshold (roadmap 045).
    */
   met: boolean
 }
 
+/** 0.70 — the ramp's top band. Below it a muscle still reads as a visible gap
+ * on the map; at or above it the muscle counts toward "on target" — one line
+ * for the callouts and the counter (roadmap 045). Display convention, not a
+ * physiological line: no study places a cutoff at any fraction of the floor;
+ * 0.70 sits just above the maintenance zone (Bickel 2011: 1/9–1/3 of a full
+ * dose keeps muscle in young adults; Israetel MV ≈ 0.6 × floor).
+ * See docs/grounding/039-adaptations-read.md#grounding */
+export const GAP_CUTOFF = 0.70
+
 // statusFor — three states are a label of a continuous fill (sets ÷ floor), not three physiological
 // bands: stimulus is graded from the first set (Schoenfeld 2017, Pelland 2026, Krieger 2010; trained
-// men at ~3 sets/wk still grow, Schoenfeld 2019). Only 0 (untouched) and ≥ floor carry meaning.
+// men at ~3 sets/wk still grow, Schoenfeld 2019). Only 0 (untouched) and the floor carry meaning;
+// the on_track line sits at GAP_CUTOFF so it is the line the map's callouts stop at (roadmap 045).
 // See docs/grounding/039-adaptations-read.md#grounding
-function statusFor(aggSets: number, target: number): MuscleStatus {
-  if (aggSets <= 0) return 'untouched'
-  if (aggSets >= target) return 'on_track'
+function statusFor(sets: number, fillFraction: number): MuscleStatus {
+  if (sets <= 0) return 'untouched'
+  if (fillFraction >= GAP_CUTOFF) return 'on_track'
   return 'needs_work'
 }
 
@@ -324,8 +336,13 @@ export function adaptationCoverage(
     const muscles = isResistance && isMuscleQuality(meta.key)
       ? buildMuscleStatusTree(stimulus.byQuality[meta.key], muscleGroups, muscleTarget)
       : []
-    // Judge completion against the tracked subset (or all muscles if none set).
-    const relevant = trackedSet ? muscles.filter(m => trackedSet.has(m.id)) : muscles
+    // Judge the leaves the gap map draws callouts for (a childless top-level
+    // group is its own leaf), inside the tracked subset — or every group if
+    // none is set. Rolled-up parents are not judged: "Shoulders on target"
+    // above a REAR DELT callout is the contradiction 045 removes.
+    const relevant = muscles
+      .filter(m => !trackedSet || trackedSet.has(m.id))
+      .flatMap(m => (m.children.length > 0 ? m.children : [m]))
     const onTrack = relevant.filter(m => m.status === 'on_track').length
     const met = isResistance
       ? relevant.length > 0 && onTrack === relevant.length
@@ -364,19 +381,21 @@ export function buildMuscleStatusTree(
         .filter(g => g.parentId === top.id)
         .map<MuscleStatusRow>(c => {
           const sets = direct(c.name)
+          const fillFraction = fill(sets)
           return {
             id: c.id, name: c.name, parentId: c.parentId ?? null,
             sets, aggSets: sets, target,
-            status: statusFor(sets, target), fillFraction: fill(sets), children: [],
+            status: statusFor(sets, fillFraction), fillFraction, children: [],
           }
         })
       const selfSets = direct(top.name)
       const aggSets = +(selfSets + children.reduce((s, c) => s + c.sets, 0)).toFixed(2)
+      const fillFraction = fill(aggSets)
       return {
         id: top.id, name: top.name, parentId: null,
         sets: selfSets, aggSets, target,
-        status: statusFor(aggSets, target),
-        fillFraction: fill(aggSets),
+        status: statusFor(aggSets, fillFraction),
+        fillFraction,
         children: children.sort((a, b) => b.sets - a.sets || a.name.localeCompare(b.name)),
       }
     })
