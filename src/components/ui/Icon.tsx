@@ -11,6 +11,7 @@ export type IconName =
   | 'habits' | 'adaptations' | 'profile' | 'admin' | 'assistant'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
   | 'warmup' | 'sport' | 'recovery' | 'drag' | 'export' | 'import'
+  | 'info' | 'list'
 
 /** Path geometry only — the wrapper below carries every shared stroke rule. */
 const PATHS: Record<IconName, string> = {
@@ -52,6 +53,10 @@ const PATHS: Record<IconName, string> = {
   // Out of the tray, and into it — the two halves of the clipboard round-trip.
   export: 'M12 15V3.5M8.5 7 12 3.5 15.5 7M4.5 14v5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-5',
   import: 'M12 3.5V15M8.5 11.5 12 15l3.5-3.5M4.5 14v5a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-5',
+  // A ring with an i — "how to train it", the prescription behind a read.
+  info: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17M12 11v5M12 7.6h.01',
+  // Three ruled rows with a leading dot each — the ranked list.
+  list: 'M8.5 7h11.5M8.5 12H20M8.5 17H20M4.5 7h.01M4.5 12h.01M4.5 17h.01',
 }
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

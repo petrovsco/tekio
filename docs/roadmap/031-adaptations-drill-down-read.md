@@ -1,8 +1,8 @@
 # Roadmap: Adaptations tab — the drill-down read
 
 **Label:** feature
-**Status:** in progress — picked up again 2026-09-04; the 14-day window
-(§7 decision 1) is confirmed by Peter. Units 1–2 landed; unit 3 (the page) is next.
+**Status:** in progress — 2026-09-04, second session: units 1–3 landed (the
+page is rebuilt, v1.16.13); unit 4 (deletions) is next, then unit 5 closes.
 **Depends:** 019, 026, 039
 **Release:** 2.0.0
 
@@ -27,6 +27,13 @@
   landed as v1.16.12: `muscleQualityStates` + exported `muscleWindow` in
   `fusedRead.ts`, the last-date scan shared with `muscleStates`; 7 tests. No
   visible change yet — nothing calls it until unit 3.
+- **2026-09-04** — unit 3 landed as v1.16.13: the page is rebuilt on the 14-day
+  window — header line, one `GapMap` with the four-way toggle, the effort
+  spectrum, and three lazy sheets (rx, ranked muscle list, Home's `MuscleSheet`).
+  New `src/components/tabs/adaptations/` (`EffortSpectrum`, `RxSheet`,
+  `MuscleListSheet`, `labels`); `info` + `list` glyphs; `AdaptationRx` on the
+  tokens; `GapMap` exports its ramp. Browser-verified at 390px. The old card,
+  guide, list, tip and `BodyMap` component are now unreferenced — unit 4 deletes.
 
 ---
 

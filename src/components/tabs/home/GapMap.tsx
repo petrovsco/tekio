@@ -7,10 +7,12 @@ import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './B
 // recovering, and the ranked gap callouts drawn onto the map — the callouts ARE
 // the missing list, worst first.
 
-/** Stimulus ramp by share of the window target — ink accumulates like work. */
-const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
+/** Stimulus ramp by share of the window target — ink accumulates like work.
+ *  Shared with the Adaptations drill-down's effort spectrum (roadmap 031) so a
+ *  session band and a muscle fill are read on one scale. */
+export const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
 /** Everything sits here on a day with no data at all. */
-const NO_DATA = '#eeeeec'
+export const NO_DATA = '#eeeeec'
 
 /** 0.70 — the ramp's top band; below it a muscle still reads as a visible gap.
  * Display convention, not a physiological line: no study places a cutoff at
@@ -19,7 +21,7 @@ const NO_DATA = '#eeeeec'
  * MV ≈ 0.6 × floor). See docs/grounding/039-adaptations-read.md#grounding */
 export const GAP_CUTOFF = 0.70
 
-function rampStep(fraction: number): number {
+export function rampStep(fraction: number): number {
   if (fraction < 0.10) return 0
   if (fraction < 0.35) return 1
   if (fraction < GAP_CUTOFF) return 2
