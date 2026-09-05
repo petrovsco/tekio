@@ -87,6 +87,10 @@ Moving a file into `done/` changes its depth, so:
    `NNN-x.md` becomes `../NNN-x.md`).
 2. Repoint everything that linked **to** it — including source comments:
    `grep -rn "<brief-filename>" docs src .claude`.
+3. Run `npm run check:docs` before committing the move. It prints every
+   relative link under `docs/` that now points at nothing, and every line
+   anchor in the grounding inventory that no longer lands on its row's
+   identifier (roadmap 047). The build does not run it, so nothing else will.
 
 `done/` is the archive, not a trophy cabinet. A brief we decide **not** to do
 retires exactly the same way, but says so: `**Status:** discarded — <why, in

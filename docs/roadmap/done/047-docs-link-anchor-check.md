@@ -1,9 +1,32 @@
 # Roadmap: Docs link and anchor check — put the 036 checker in `scripts/`
 
 **Label:** infra
-**Status:** planned — kickoff-ready; nothing built. Filed 2026-09-05 straight
-after [036](done/036-grounding-inventory-stale-refs.md) closed, because its
-acceptance check lived in a session scratchpad and is already gone.
+**Status:** done — 2026-09-05, v1.18.3: `scripts/check-docs-links.mjs`,
+`npm run check:docs` and the README line shipped the same day the brief was
+filed, straight after [036](036-grounding-inventory-stale-refs.md) closed,
+because its acceptance check lived in a session scratchpad and was already gone.
+
+## Log
+
+- **2026-09-05 — shipped.** First run on the clean tree: 57 files, 0 dead
+  links (`docs/` plus the four root-level READMEs); 74 anchors, 59 passed,
+  10 failed, 5 unchecked. None of the 10 was drift — 036 had left every anchor
+  right. Seven were the checker's own matching: a whole-token regex that
+  rejected `DONATION_SUPPRESSION.acuteHours` because a dot followed the name,
+  `1RM` read as the identifier `RM`, and rows with several anchors where each
+  anchor indexes a different backticked span (`80` °C / `10` °C). Three were
+  rows that did not name what sits on their line, reworded in the same commit
+  so the check can read them: 1.11 now names `targets?.[meta.key]`, 9.4 names
+  `r05`, and section 11's disclosure row names `revealedEx` next to `revealed`.
+- **The rule is a little wider than "first backticked identifier".** Every
+  backticked span on the row is one claim: a span with identifiers passes when
+  any of them is on the anchored lines; a span of bare numbers when all of them
+  are. The inventory's column is `Value`, not `Constant` — half its rows are
+  numbers like `6`, and a first-identifier rule would have left them all
+  unchecked. The five still unchecked are section 3's prescription rows, which
+  have no backticks at all; they print, they do not fail.
+- Link text such as `utils.ts:164-190` widens the anchored range the same way
+  `#L164-L190` would, because that is how the inventory writes ranges.
 
 ## Goal
 
@@ -11,7 +34,7 @@ One command that answers two questions the docs cannot answer about themselves:
 
 1. Does every relative link under `docs/` point at a file that exists?
 2. Does every `path#L<n>` anchor in
-   [docs/grounding-inventory.md](../grounding-inventory.md) still land on the
+   [docs/grounding-inventory.md](../../grounding-inventory.md) still land on the
    line its row describes?
 
 Today both checks exist only as a throwaway node script rebuilt during 036.
@@ -24,7 +47,7 @@ rebuild it again, or skip it. Skipping it is how 036 found **25 dead links and
 None — this is tooling, not a surface. Doctrine §4.5 does not apply: no number
 claiming physiological meaning is written, so no `## Grounding` block is
 needed. It is deliberately **not** folded into
-[023](023-mechanical-code-quality-tooling.md): 023 is about code (ESLint,
+[023](../023-mechanical-code-quality-tooling.md): 023 is about code (ESLint,
 dead code, a perf budget) and is already four items long; this is about docs,
 is one afternoon of work, and can close on its own.
 
@@ -73,7 +96,7 @@ So the anchor mode has to open the target file and read the line.
    the build is what Vercel runs, and a stale doc anchor must not block a
    deploy. It is the step you run before closing a brief.
 
-3. **One line in [docs/roadmap/README.md](README.md)**: run `npm run check:docs`
+3. **One line in [docs/roadmap/README.md](../README.md)**: run `npm run check:docs`
    before a brief moves into `done/`, because the move changes every relative
    path in it (that is where 14 of 036's 25 dead links came from).
 
@@ -182,10 +205,10 @@ Two things learned while using it, worth keeping:
 
 ## Acceptance
 
-- [ ] `npm run check:docs` exists, reports zero dead relative targets on a clean
+- [x] `npm run check:docs` exists, reports zero dead relative targets on a clean
       tree, and exits non-zero when a link to a missing file is introduced.
-- [ ] The anchor mode walks every `#L<n>` anchor in the inventory, passes the
+- [x] The anchor mode walks every `#L<n>` anchor in the inventory, passes the
       rows whose identifier is on the target line, prints the rest, and exits
       non-zero when an identifier is missing from its target.
-- [ ] `docs/roadmap/README.md` names the check as the step before a brief
+- [x] `docs/roadmap/README.md` names the check as the step before a brief
       moves into `done/`.

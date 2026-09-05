@@ -182,7 +182,7 @@ weights").
 | 1.8 | `1` | [adaptations.ts:282](../src/constants/adaptations.ts#L282) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
 | 1.9 | `2` | [adaptations.ts:322](../src/constants/adaptations.ts#L322) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
 | 1.10 | `0` ×7 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:335](../src/lib/adaptations.ts#L335) | ? | unknown † | — |
-| 1.11 | all 14, duplicated | `adaptation_targets` (DB), 9 rows — 7 live, plus dead `speed` / `skill` rows nothing reads since 2026-09-01 | Identical values to 1.2–1.5 and 1.7–1.9, and **they win** — [lib/adaptations.ts:333-334](../src/lib/adaptations.ts#L333) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
+| 1.11 | all 14, duplicated | `adaptation_targets` (DB), 9 rows — 7 live, plus dead `speed` / `skill` rows nothing reads since 2026-09-01 | Identical values to 1.2–1.5 and 1.7–1.9, and **they win** — [lib/adaptations.ts:333-334](../src/lib/adaptations.ts#L333) prefers the DB row (`targets?.[meta.key]`) over the constant | named | **grounded** | adaptation-weekly-targets |
 | 1.12 | `14` / `14` / `28` d | [app.ts:76-80](../src/constants/app.ts#L76) | `QUALITY_STALENESS_DAYS` — a cardio quality untouched for longer than this is flagged stale: VO₂max 14 d, endurance 14 d, anaerobic 28 d. The flag means "you are now losing it" (detraining onset), not "you missed the weekly cadence" (D9). Sat in §12 as not-yet-built until 2026-09-05; it shipped with the fused Home (018 unit 4) | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
@@ -309,7 +309,7 @@ created to carry it.
 | 9.1 | `7.5` | [ExPlan.tsx:28](../src/components/tabs/weights/ExPlan.tsx#L28) | Default weekly volume increase is +7.5% | unnamed | unknown | **(no brief)** |
 | 9.2 | `min 5 / max 10` | [ExPlan.tsx:79](../src/components/tabs/weights/ExPlan.tsx#L79) | The defensible weekly-progression band is 5–10% | unnamed | unknown | **(no brief)** |
 | 9.3 | `0 / +2.5 / +5 kg` | [VolumeRow.tsx:14-18](../src/components/tabs/weights/VolumeRow.tsx#L14) | The three load-jump options offered | unnamed | unknown † | — |
-| 9.4 | round to `0.5` | [utils.ts:32](../src/lib/utils.ts#L32) | Plate granularity | no | unknown † | — |
+| 9.4 | `r05` — round to `0.5` | [utils.ts:32](../src/lib/utils.ts#L32) | Plate granularity | no | unknown † | — |
 
 ## 10. Hydration & blood donation
 
@@ -331,7 +331,7 @@ Listed so the boundary is visible, not because they need anything.
 | Value | Where | Why not |
 |---|---|---|
 | `PREVIEW = 3`, `FILTER_AT = 30` | [HistoryList.tsx:7-9](../src/components/ui/HistoryList.tsx#L7) | List pagination |
-| `revealed < 8` | [SupersetLogger.tsx:124](../src/components/tabs/weights/SupersetLogger.tsx#L124), [MobilityTab.tsx:167](../src/components/tabs/MobilityTab.tsx#L167) | Progressive disclosure |
+| `revealed < 8` / `revealedEx < 8` | [SupersetLogger.tsx:124](../src/components/tabs/weights/SupersetLogger.tsx#L124), [MobilityTab.tsx:167](../src/components/tabs/MobilityTab.tsx#L167) | Progressive disclosure |
 | quality `1–5` stars | Sleep, sport and mobility forms | A subjective rating scale, not a dose |
 | `SYNC_DAYS` 7 / 3 | [sync_activities.py](../scripts/garmin-sync/sync_activities.py), [sync_sleep.py](../scripts/garmin-sync/sync_sleep.py) | Backfill window |
 | `/60`, `/1000`, `/3600` | garmin-sync, [utils.ts:164-190](../src/lib/utils.ts#L164) | Unit conversion |

@@ -1,0 +1,170 @@
+#!/usr/bin/env node
+// Two checks the docs cannot run on themselves (roadmap 047).
+//
+//   node scripts/check-docs-links.mjs [root ...]
+//     Dead relative links. Walks every .md under each root (a root that is a
+//     file is checked as-is; default root: docs). Every markdown link target
+//     that is not a URL or an in-page #fragment is resolved relative to the
+//     file that holds it, and the ones that point at nothing are printed as
+//     `file:line -> target`. Exit 1 when any are dead.
+//
+//   node scripts/check-docs-links.mjs --anchors <file.md>
+//     Line anchors. For every link in <file.md> whose fragment is L<n> or
+//     L<n>-L<m> (a link text ending `:<n>-<m>` widens the range the same way),
+//     the target file is opened and the anchored line(s) are checked against
+//     the row that holds the link: the row passes when one of its backticked
+//     spans is on those lines (see `claims` below for what "on" means), is
+//     unchecked when it has no backticked span, and fails otherwise.
+//     Passing rows are silent. Failing and unchecked rows are printed with the
+//     target line's text so a person can judge them. Exit 1 when any fail.
+//
+// Node built-ins only. `npm run check:docs` runs both; docs/roadmap/README.md
+// says when.
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// Deliberately strict: it also matches prose that quotes the link syntax, and
+// the fix for that is to reword the prose, not to loosen this (047).
+const LINK_RE = /\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g;
+const SKIP_DIRS = new Set(['node_modules', '.git']);
+
+const rel = (p) => path.relative(REPO, p).split(path.sep).join('/');
+const lineOf = (txt, index) => txt.slice(0, index).split('\n').length;
+const readLines = (p) => fs.readFileSync(p, 'utf8').split(/\r?\n/);
+
+function walk(root, out = []) {
+  const st = fs.statSync(root);
+  if (st.isFile()) {
+    out.push(root);
+    return out;
+  }
+  for (const e of fs.readdirSync(root, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(e.name)) continue;
+    const p = path.join(root, e.name);
+    if (e.isDirectory()) walk(p, out);
+    else if (p.endsWith('.md')) out.push(p);
+  }
+  return out;
+}
+
+function deadLinks(roots) {
+  const files = roots.flatMap((r) => walk(path.resolve(REPO, r)));
+  let dead = 0;
+  for (const f of files) {
+    const txt = fs.readFileSync(f, 'utf8');
+    for (const m of txt.matchAll(LINK_RE)) {
+      const target = m[1];
+      if (/^[a-z][a-z0-9+.-]*:/i.test(target) || target.startsWith('#')) continue;
+      const p = target.split('#')[0];
+      if (!p) continue;
+      const abs = path.resolve(path.dirname(f), decodeURIComponent(p));
+      if (!fs.existsSync(abs)) {
+        dead++;
+        console.log(`${rel(f)}:${lineOf(txt, m.index)} -> ${target}`);
+      }
+    }
+  }
+  console.log(`${files.length} files, ${dead} dead`);
+  return dead === 0;
+}
+
+const IDENT_RE = /(?<![A-Za-z0-9_])[A-Za-z_][A-Za-z0-9_]+/g; // `1RM` is not `RM`
+const NUMBER_RE = /\d+(?:\.\d+)?/g;
+
+// Each backticked span on the row is one claim about the anchored lines. A span
+// with identifiers (`PUSH_THRESHOLD = 33`, `cycle_length_weeks: CYCLE`) is found
+// when any of them is there as a whole word; a span of bare numbers (`6`,
+// `[1, 5]`) when all of them are there as whole tokens. One found span passes
+// the anchor — a row like `80` °C / `10` °C anchors each value separately.
+function claims(row) {
+  return [...row.matchAll(/`([^`]+)`/g)].flatMap(([, span]) => {
+    const idents = [...new Set(span.match(IDENT_RE) ?? [])];
+    if (idents.length) return [{ span, needles: idents, all: false, token: wholeWord }];
+    const numbers = [...new Set(span.match(NUMBER_RE) ?? [])];
+    if (numbers.length) return [{ span, needles: numbers, all: true, token: wholeNumber }];
+    return [];
+  });
+}
+
+const wholeWord = (w) => new RegExp(`(?<![A-Za-z0-9_])${w}(?![A-Za-z0-9_])`);
+// `6` is not `16`, `0.6` or `x6`, but it is `6h` and `1RM` is `1` with a unit.
+const wholeNumber = (n) => new RegExp(`(?<![A-Za-z0-9_.])${n.replace('.', '\\.')}(?![0-9.])`);
+const found = (haystack, c) => {
+  const hits = c.needles.map((n) => c.token(n).test(haystack));
+  return c.all ? hits.every(Boolean) : hits.some(Boolean);
+};
+
+function anchors(file) {
+  const abs = path.resolve(REPO, file);
+  const txt = fs.readFileSync(abs, 'utf8');
+  const lines = txt.split('\n');
+  const tally = { anchors: 0, passed: 0, failed: 0, unchecked: 0 };
+
+  const report = (verdict, rowNo, target, note, targetLines) => {
+    const row = lines[rowNo - 1].trim().slice(0, 100);
+    console.log(`\n${verdict} @${rowNo} ${row}\n  -> ${target}   ${note}`);
+    for (const l of targetLines) console.log(`     ${l}`);
+  };
+
+  for (const m of txt.matchAll(LINK_RE)) {
+    const target = m[1];
+    const hash = target.indexOf('#');
+    if (hash < 0) continue;
+    const p = target.slice(0, hash);
+    const am = /^L(\d+)(?:-L(\d+))?$/.exec(target.slice(hash + 1));
+    if (!am || !p) continue;
+    tally.anchors++;
+
+    const rowNo = lineOf(txt, m.index);
+    const from = Number(am[1]);
+    let to = am[2] ? Number(am[2]) : from;
+    // `[utils.ts:164-190](../src/lib/utils.ts#L164)` — the text carries the range.
+    const text = /\[([^[\]]*)$/.exec(txt.slice(txt.lastIndexOf('\n', m.index) + 1, m.index));
+    const tr = text && /:(\d+)-(\d+)$/.exec(text[1]);
+    if (tr && Number(tr[1]) === from) to = Math.max(to, Number(tr[2]));
+
+    const targetAbs = path.resolve(path.dirname(abs), decodeURIComponent(p));
+    if (!fs.existsSync(targetAbs)) {
+      tally.failed++;
+      report('FAIL', rowNo, target, 'missing file', []);
+      continue;
+    }
+    const src = readLines(targetAbs);
+    const range = src.slice(from - 1, to);
+    const shown = range.slice(0, 3).map((l, i) => `${from + i}: ${l.trim().slice(0, 110)}`);
+    if (from > src.length) shown.push(`${from}: <<EOF>>`);
+    const haystack = range.join('\n');
+
+    const rowClaims = claims(lines[rowNo - 1]);
+    if (!rowClaims.length) {
+      tally.unchecked++;
+      report('UNCHECKED', rowNo, target, 'row names no identifier or value', shown.slice(0, 1));
+    } else if (rowClaims.some((c) => found(haystack, c))) {
+      tally.passed++;
+    } else {
+      tally.failed++;
+      const looked = rowClaims.map((c) => `\`${c.span}\``).join(', ');
+      report('FAIL', rowNo, target, `none of ${looked} on line`, shown);
+    }
+  }
+
+  const { anchors: n, passed, failed, unchecked } = tally;
+  console.log(`\n${n} anchors, ${passed} passed, ${failed} failed, ${unchecked} unchecked`);
+  return failed === 0;
+}
+
+const [mode, ...rest] = process.argv.slice(2);
+let ok;
+if (mode === '--anchors') {
+  if (!rest[0]) {
+    console.error('usage: check-docs-links.mjs --anchors <file.md>');
+    process.exit(2);
+  }
+  ok = anchors(rest[0]);
+} else {
+  ok = deadLinks(mode ? [mode, ...rest] : ['docs']);
+}
+process.exit(ok ? 0 : 1);
