@@ -7,14 +7,26 @@ the release name**, spelled exactly as briefs reference it in their
 is `planned` (default) or `released <date>`. File order is display order on
 the board.
 
-## 2.0.0
+## 2.1.0
 
 **Target:** TBC
 **Status:** planned
 
-The next `develop` → `master` release onto production, and its objective is
-**one app, one language**: the unified SIGNAL feel everywhere (defined
-2026-09-01). Two halves:
+The first release after 2.0.0. Scope is being planned (kicked off 2026-09-05,
+the day 2.0.0 shipped). Two briefs carried over from 2.0.0 because they had no
+code when it went out: [012](012-adaptation-target-shapes.md) (target shapes)
+and [024](024-staging-shared-database-safety.md) (the migration policy and the
+cleanup ritual). Since 2.0.0 the minor digit is Peter's call: everything lands
+on `develop` as patches, and 2.1.0 is named when he releases it.
+
+## 2.0.0
+
+**Target:** TBC
+**Status:** released 2026-09-05
+
+Released 2026-09-05: `develop` fast-forwarded onto `master`, tag `v2.0.0`.
+Its objective was **one app, one language**: the unified SIGNAL feel
+everywhere (defined 2026-09-01). Two halves:
 
 - **The model** — the simplified seven-adaptation model (019), its follow-on
   target shapes (012), and the doctrine-ledger close-out (014).
@@ -28,6 +40,9 @@ The next `develop` → `master` release onto production, and its objective is
   its paint, is the problem, so it became a rebuild gated on 039 (grounding
   the numbers that read shows). The tail of the train is now 039 → 031 → 033.
 
-Releasing it unblocks the schema drops queued in
+**At release:** the model half and the restyle train shipped in full (014,
+019, 026–033, 037, 039, 042, 043). 012 and 024 did not and moved to 2.1.0.
+
+Releasing it unblocked the schema drops queued in
 [025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md) —
-that brief runs *after* this ships, so it is deliberately not tagged 2.0.0.
+that brief runs *after* this shipped, so it was deliberately not tagged 2.0.0.

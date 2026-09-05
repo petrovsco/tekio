@@ -4,10 +4,12 @@
 **Status:** planned — Part 1 split out to [037](done/037-row-origin-tagging.md) on
 2026-09-01; what remains is the migration/destructive-write policy (Part 2) and
 the release cleanup ritual (Part 3). The staging deployment itself (domain,
-gate, env vars) is not part of this brief — that is already done.
+gate, env vars) is not part of this brief — that is already done. Carried over
+from 2.0.0 to 2.1.0 when 2.0.0 shipped on 2026-09-05; the first sweep was
+previewed that day (7 staging-tagged rows, 0 dev), not run.
 **Depends:** 037
-**Release:** 2.0.0 — the cleanup ritual is what makes a major release safe on a
-shared database.
+**Release:** 2.1.0 — carried over: the cleanup ritual is what makes a major
+release safe on a shared database, and 2.0.0 went out with only the preview.
 **Origin:** Peter's answer when asked whether staging should get its own Supabase
 project: *"Same database, but then we need to make sure we don't break the
 production. Also we want to plan database cleanups on major releases so we don't

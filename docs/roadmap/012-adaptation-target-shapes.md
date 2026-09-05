@@ -1,9 +1,9 @@
 # Roadmap: Adaptation target shapes — one gap, not three follow-ups
 
 **Label:** feature
-**Status:** planned — kickoff-ready, no code. Unblocked 2026-09-01: 019 landed, so the seven qualities it reshapes are final.
+**Status:** planned — kickoff-ready, no code. Unblocked 2026-09-01: 019 landed, so the seven qualities it reshapes are final. Carried over from 2.0.0 to 2.1.0 when 2.0.0 shipped on 2026-09-05.
 **Depends:** 019
-**Release:** 2.0.0
+**Release:** 2.1.0
 **Origin:** follow-ups #1, #2 and #3 of
 [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md), promoted out of
 that brief's table so they do not get lost.

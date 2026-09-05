@@ -16,22 +16,24 @@ ledger for every surface. It is imported below so it is always in context.
 
 **Push to `develop`.** `master` holds the last released state and is not pushed
 to directly any more. Everything — code, docs, roadmap briefs — lands on
-`develop`, which is where 2.0.0 is being assembled. `master` moves again only
-when a version is released onto it.
+`develop`, which is where the next release is assembled. `master` moves again
+only when a version is released onto it (2.0.0 went out on 2026-09-05).
 
 **Every push bumps `version` in `package.json`**, in the same commit as the
 change it ships. If it is worth pushing, it is worth a version.
 
 | Bump | For |
 |---|---|
-| **patch** (1.1.0 → 1.1.1) | bug fixes, small changes, roadmap and other documentation edits |
-| **minor** (1.1.1 → 1.2.0) | new features, page redesigns |
-| **major** (1.x.y → 2.0.0) | only when Peter says in a message that a whole concept is validated |
+| **patch** (2.0.0 → 2.0.1) | the automatic bump — every push, whatever it carries: fixes, features, redesigns, roadmap and other documentation edits |
+| **minor** (2.0.1 → 2.1.0) | only when Peter names the release in a message; until then its features ride in as patches |
+| **major** (2.x.y → 3.0.0) | only when Peter says in a message that a whole concept is validated |
 
-The major digit is his call, never a judgement call made here — a big-feeling
-change is still a minor bump until he confirms the concept.
+The minor and major digits are his call, never a judgement call made here — a
+big-feeling change is still a patch bump until he names the release. (Until
+2.0.0 shipped, features bumped the minor digit automatically; since 2026-09-05
+only the patch digit moves on its own.)
 
-**Tags:** minor and major bumps get an annotated tag (`v1.2.0`, `v2.0.0`) pushed
+**Tags:** minor and major bumps get an annotated tag (`v2.1.0`, `v2.0.0`) pushed
 with the commit. Patch bumps are not tagged.
 
 **Where each branch deploys** (one Vercel project, `bubolazi-projects/tekio`):
