@@ -101,7 +101,7 @@ Programs run in 6-week cycles. Week 6 is the deload week. All cycle math lives i
 
 - `cycleInfo(program)` — returns `{ week, isDeload, isComplete }` based on days elapsed since `startDate`.
 - `isDeloadDate(startDate, date)` — checks if a specific date falls in a deload week (used for chart dot styling).
-- The constant `CYCLE = 6` is defined in both `src/lib/utils.ts` and `src/constants/app.ts` (the one in utils.ts is local and takes precedence there).
+- The constant `CYCLE = 6` lives in `src/constants/app.ts`; `src/lib/utils.ts` imports it from there.
 
 When all of today's exercises are logged, `WeightsTab` auto-advances the program to the next day.
 
