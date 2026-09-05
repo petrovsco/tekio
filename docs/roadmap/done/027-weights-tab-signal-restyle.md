@@ -15,7 +15,7 @@ is what 028 (Cardio) and 029 (Mobility) copy.
   "+ Add set" indigo link.
 - **Exercise chip cloud** — 30+ white pill chips in the old geometry. Re-skin
   per §8 only; whether the cloud is the right capture control at all is a
-  product question, parked in [034](034-v2-1-candidates-tbc.md).
+  product question, parked in [034](../034-v2-1-candidates-tbc.md).
 - **PROGRESS card** — Recharts line in indigo with dashed grid, indigo
   1RM/Volume toggle; deload dots need the `signal` treatment from the chart
   spec.
@@ -52,7 +52,7 @@ doctrine §1).
       the line's draw animation finishes, so an early screenshot shows none.
 - [x] Both program states browser-verified with screenshots; console clean apart
       from the browser's automatic `/favicon.ico` 404, which predates this work
-      ([038](038-favicon-and-app-icon.md)).
+      ([038](../038-favicon-and-app-icon.md)).
 - [x] Logging one exercise end-to-end still works (capture → recent → edit) —
       logged, read back, opened in EditModal, then deleted, and the orphan
       `exercises` row it created was removed too. Nothing was left in the
@@ -88,4 +88,4 @@ doctrine §1).
   the six block types. 028–032 should reuse them rather than add near-duplicates.
 - **The exercise chip cloud was only re-skinned.** Whether a 30-chip cloud is
   the right capture control at all stays parked in
-  [034](034-v2-1-candidates-tbc.md).
+  [034](../034-v2-1-candidates-tbc.md).

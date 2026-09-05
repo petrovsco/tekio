@@ -19,7 +19,7 @@
 ## Scope
 
 **Inherited from [027](027-weights-tab-signal-restyle.md):** `BLOCK_META`
-in [src/constants/program.ts](../../src/constants/program.ts) now carries a
+in [src/constants/program.ts](../../../src/constants/program.ts) now carries a
 SIGNAL `iconName` beside its old emoji `icon`. ProgramTab is the last consumer
 of the emoji field — switch it to `iconName` and delete `icon` here. The shared
 icon set also gained `warmup`, `sport` and `recovery`; reuse them rather than
@@ -58,7 +58,7 @@ R1 untouched.
       status columns, and both cycles were confirmed `PAUSED` again afterwards.
 - [x] Drag-and-drop reordering still works — vacuously: **ProgramTab has no
       dnd-kit**. The survey line was wrong; `@dnd-kit` is imported only by
-      `ProfileTab`, so the check belongs to [032](../032-profile-admin-signal-restyle.md).
+      `ProfileTab`, so the check belongs to [032](032-profile-admin-signal-restyle.md).
       Editor reordering is by add/remove, and add, remove, pair and unpair were
       all exercised.
 - [x] The deload banner uses the treatment recorded in design-system.md — the

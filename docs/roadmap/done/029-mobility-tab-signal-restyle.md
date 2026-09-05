@@ -31,7 +31,7 @@ new number, no grounding, R1 untouched.
 - [x] No old-token classes remain in `MobilityTab`.
 - [x] Log → history → edit path browser-verified with a screenshot; console
       clean apart from the browser's automatic `/favicon.ico` 404, which
-      predates this work ([038](038-favicon-and-app-icon.md)). The test
+      predates this work ([038](../038-favicon-and-app-icon.md)). The test
       session was logged against an existing exercise name with no muscle
       tags — so no `exercises` row and no canonical muscle link was written —
       then deleted. Nothing was left in the shared database.

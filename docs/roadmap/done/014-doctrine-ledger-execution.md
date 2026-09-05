@@ -118,7 +118,8 @@ Both are called out in the ledger; repeated here because they are easy to miss
 while deleting a directory.
 
 1. **`ExerciseMuscleEditor.tsx` moves to Admin, it is not deleted.** It lives at
-   [src/components/tabs/habits/ExerciseMuscleEditor.tsx](../../../src/components/tabs/habits/ExerciseMuscleEditor.tsx)
+   `src/components/tabs/habits/ExerciseMuscleEditor.tsx` (since 035:
+   [tabs/admin/ExerciseMuscleEditor.tsx](../../../src/components/tabs/admin/ExerciseMuscleEditor.tsx))
    but edits exercise→muscle mappings, which power the body map and muscle
    coverage — Core infrastructure that happens to sit nearby. Its natural home is
    next to [MuscleGroupEditor.tsx](../../../src/components/tabs/admin/MuscleGroupEditor.tsx),
@@ -156,7 +157,7 @@ sets only, which is the more honest answer anyway. That touches
 `habitCompletionSets` in [utils.ts:500](../../../src/lib/utils.ts#L500) and its
 three call sites ([adaptations.ts:262](../../../src/lib/adaptations.ts#L262),
 [utils.ts:607](../../../src/lib/utils.ts#L607), [utils.ts:651](../../../src/lib/utils.ts#L651)),
-plus [src/test/habits.test.ts](../../../src/test/habits.test.ts).
+plus `src/test/habits.test.ts` (deleted with the section, 035).
 
 ## Scope
 

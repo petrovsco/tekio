@@ -80,6 +80,14 @@ every quality whose band covers it; decisions D30–D32. The three `rx` rows
 (3.4, 3.6) are untouched — the prescription says what to do, the band says
 what counts. Row 3.9's and 3.10's line links shifted with the new comments.
 
+**Updated 2026-09-05 by the 036 sweep** ([done/036](roadmap/done/036-grounding-inventory-stale-refs.md)):
+§4 re-indexed against what computes today (`src/lib/fusedRead.ts`) — rows
+4.1–4.10 and 4.13 are struck as **retired** (`RECOVERY_TARGETS` and
+`RECOVERY_WEIGHTS` were deleted with RecoveryCard on 2026-08-31, 014), 7.3 with
+the Habits section (035), and 10.4 is fixed by the same fold; rows 1.12 and
+4.15–4.17 index the readiness numbers that had sat in §12 as "not in the app
+yet"; every `#L<n>` anchor was re-read against its target line.
+
 Rows marked **†** are ones I would *not* spend a scout run on — see
 [§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
@@ -99,12 +107,13 @@ number, and how cleanly:
 this is where #7(b) starts. **(no brief)** = nothing in `roadmap/` would carry
 it; one has to be created before a scout run has anywhere to land.
 
-Counts: **77 rows** — 57 fire the trigger (36 `named`, 21 `unnamed`), 8 are
-ambiguous, 3 do not fire, and 9 are struck through (fixed or retired, with
-nothing left to ground). **21 of the 55 firing rows are `unnamed`** — see
+Counts: **81 rows** — 50 fire the trigger (32 `named`, 18 `unnamed`), 6 are
+ambiguous, 3 do not fire, and 22 are struck through (fixed or retired, with
+nothing left to ground). **18 of the 50 firing rows are `unnamed`** — see
 [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
-Recounted 2026-09-01; the previous figures (64 / 8 / 3) predated the 2026-08
-de-duplication strikes as well as the 019 retirements.
+Recounted 2026-09-05 after the 036 sweep; the 2026-09-01 figures
+(77 / 57 / 8 / 3 / 9) predated the readiness retirements and the four rows
+moved in from §12.
 
 **Struck-through rows are fixed or retired**, not grounded. 2026-08-26 removed
 six duplicate/contradictory copies (§2, §5); every surviving claim is still
@@ -164,16 +173,17 @@ weights").
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
 | 1.1 | ~~`6`~~ | — | **Retired 2026-09-01.** Speed was dropped from the model (nine → seven, [done/019](roadmap/done/019-adaptation-model-simplification.md)). The constant is deleted, so the claim no longer ships. Its `convention` verdict stands as history in [011 §Grounding](roadmap/done/011-adaptation-weekly-targets.md#grounding); the reasoning behind the value survives inside row 1.2 | — | — | — |
-| 1.2 | `6` | [adaptations.ts:76](../src/constants/adaptations.ts#L76) | Power needs 6 sets/muscle/week (was 4; raised to match the now-retired speed entry, which is why it is 6) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
-| 1.3 | `6` | [adaptations.ts:107](../src/constants/adaptations.ts#L107) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
-| 1.4 | `10` | [adaptations.ts:154](../src/constants/adaptations.ts#L154) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
-| 1.5 | `6` | [adaptations.ts:180](../src/constants/adaptations.ts#L180) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
+| 1.2 | `6` | [adaptations.ts:74](../src/constants/adaptations.ts#L74) | Power needs 6 sets/muscle/week (was 4; raised to match the now-retired speed entry, which is why it is 6) | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) |
+| 1.3 | `6` | [adaptations.ts:122](../src/constants/adaptations.ts#L122) | Strength needs 6 sets/muscle/week (was 8) | named | **grounded** | adaptation-weekly-targets |
+| 1.4 | `10` | [adaptations.ts:173](../src/constants/adaptations.ts#L173) | Hypertrophy needs 10 sets/muscle/week | named | **grounded** | adaptation-weekly-targets |
+| 1.5 | `6` | [adaptations.ts:203](../src/constants/adaptations.ts#L203) | Muscular endurance needs 6 sets/muscle/week | named | **convention** | adaptation-weekly-targets |
 | 1.6 | ~~`3`~~ | — | **Retired 2026-09-01.** Skill was dropped from the model ([done/019](roadmap/done/019-adaptation-model-simplification.md)); its data source had already gone when sports were rerouted to cardio ([done/006](roadmap/done/006-skill-adaptation-data-source.md)). Never grounded, and now never shipped | — | — | — |
-| 1.7 | `1` | [adaptations.ts:222](../src/constants/adaptations.ts#L222) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
-| 1.8 | `1` | [adaptations.ts:253](../src/constants/adaptations.ts#L253) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
-| 1.9 | `2` | [adaptations.ts:284](../src/constants/adaptations.ts#L284) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
-| 1.10 | `0` ×7 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:308](../src/lib/adaptations.ts#L308) | ? | unknown † | — |
-| 1.11 | all 14, duplicated | `adaptation_targets` (DB), 9 rows — 7 live, plus dead `speed` / `skill` rows nothing reads since 2026-09-01 | Identical values to 1.2–1.5 and 1.7–1.9, and **they win** — [lib/adaptations.ts:306-307](../src/lib/adaptations.ts#L306) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
+| 1.7 | `1` | [adaptations.ts:243](../src/constants/adaptations.ts#L243) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
+| 1.8 | `1` | [adaptations.ts:282](../src/constants/adaptations.ts#L282) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
+| 1.9 | `2` | [adaptations.ts:322](../src/constants/adaptations.ts#L322) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
+| 1.10 | `0` ×7 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:335](../src/lib/adaptations.ts#L335) | ? | unknown † | — |
+| 1.11 | all 14, duplicated | `adaptation_targets` (DB), 9 rows — 7 live, plus dead `speed` / `skill` rows nothing reads since 2026-09-01 | Identical values to 1.2–1.5 and 1.7–1.9, and **they win** — [lib/adaptations.ts:333-334](../src/lib/adaptations.ts#L333) prefers the DB row over the constant | named | **grounded** | adaptation-weekly-targets |
+| 1.12 | `14` / `14` / `28` d | [app.ts:76-80](../src/constants/app.ts#L76) | `QUALITY_STALENESS_DAYS` — a cardio quality untouched for longer than this is flagged stale: VO₂max 14 d, endurance 14 d, anaerobic 28 d. The flag means "you are now losing it" (detraining onset), not "you missed the weekly cadence" (D9). Sat in §12 as not-yet-built until 2026-09-05; it shipped with the fused Home (018 unit 4) | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
 > the user sees. The DB rows shadow every default, are currently byte-identical,
@@ -184,15 +194,15 @@ weights").
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 2.1 | `[1, 5]` | [adaptations.ts:114](../src/constants/adaptations.ts#L114) | 1–5 reps trains strength; since 2026-09-03 the bands overlap and a 5-rep set is also a hypertrophy set. Hi edge 5 is a convention inside a 5–8 band (high-load bin ≤ 7–8 RM in every meta-analysis; zone statements end at 5–6) | named | grounded (kept, convention inside a grounded band — D32, 2026-09-03) | [039 S11](grounding/039-adaptations-read.md#grounding) |
-| 2.2 | `[5, 30]` | [adaptations.ts:170](../src/constants/adaptations.ts#L170) | 5–30 reps trains hypertrophy — growth per hard set is load-independent from ~30 % 1RM (≈ 30–35 reps) to ≥ 80 %; Galpin's and Israetel's band. Was `[6, 15]`, which paid a fifth of all logged sets (16–20 reps) nothing | named | grounded (partially supported — edges moved, D30, 2026-09-03) | [039 S11](grounding/039-adaptations-read.md#grounding) |
-| 2.3 | `[15, 999]` | [adaptations.ts:204](../src/constants/adaptations.ts#L204) | ≥ 15 reps trains local muscular endurance (Hackett 2022 meta-analysis; ACSM 2009 > 15); a 15–30-rep set is also a hypertrophy set. Was `[16, 999]`; 15 is the cut that was tested | named | grounded (partially supported — lo edge moved, D31, 2026-09-03) | [039 S11](grounding/039-adaptations-read.md#grounding) |
+| 2.1 | `[1, 5]` | [adaptations.ts:109](../src/constants/adaptations.ts#L109) | 1–5 reps trains strength; since 2026-09-03 the bands overlap and a 5-rep set is also a hypertrophy set. Hi edge 5 is a convention inside a 5–8 band (high-load bin ≤ 7–8 RM in every meta-analysis; zone statements end at 5–6) | named | grounded (kept, convention inside a grounded band — D32, 2026-09-03) | [039 S11](grounding/039-adaptations-read.md#grounding) |
+| 2.2 | `[5, 30]` | [adaptations.ts:163](../src/constants/adaptations.ts#L163) | 5–30 reps trains hypertrophy — growth per hard set is load-independent from ~30 % 1RM (≈ 30–35 reps) to ≥ 80 %; Galpin's and Israetel's band. Was `[6, 15]`, which paid a fifth of all logged sets (16–20 reps) nothing | named | grounded (partially supported — edges moved, D30, 2026-09-03) | [039 S11](grounding/039-adaptations-read.md#grounding) |
+| 2.3 | `[15, 999]` | [adaptations.ts:195](../src/constants/adaptations.ts#L195) | ≥ 15 reps trains local muscular endurance (Hackett 2022 meta-analysis; ACSM 2009 > 15); a 15–30-rep set is also a hypertrophy set. Was `[16, 999]`; 15 is the cut that was tested | named | grounded (partially supported — lo edge moved, D31, 2026-09-03) | [039 S11](grounding/039-adaptations-read.md#grounding) |
 | 2.4 | ~~`reps <= 5`~~ | — | **Fixed 2026-08-26.** `classifyWeightSet` now derives its boundaries from `repRange`, so 2.1–2.3 are the live values and there is one copy | — | — | — |
 | 2.5 | ~~`reps <= 15`~~ | — | **Fixed 2026-08-26**, same change | — | — | — |
-| 2.6 | 21 keyword rules | [adaptations.ts:338-366](../src/constants/adaptations.ts#L338) | "kettlebell swing is power", "pogo is power", etc. — a physiological classification carrying **no digit**. All point at power: the four sprint/reactive rules (`sprint`, `dash`, `agility`, `pogo`) tagged the retired `speed` adaptation until 2026-09-01 and were repointed with it ([done/019](roadmap/done/019-adaptation-model-simplification.md)). Since 2026-09-03 `hop` / `jump` match whole words only (a "Cable Woodchop" set was silently reading as power), `clapping` is on the list and "jump rope" is excluded | named | grounded (17 keywords supported; `sled` partially; `agility` convention; the rule's exclusivity is a decision — D16, 2026-09-03) | [039 S4](grounding/039-adaptations-read.md#grounding) |
+| 2.6 | 21 keyword rules | [adaptations.ts:387-415](../src/constants/adaptations.ts#L387) | "kettlebell swing is power", "pogo is power", etc. — a physiological classification carrying **no digit**. All point at power: the four sprint/reactive rules (`sprint`, `dash`, `agility`, `pogo`) tagged the retired `speed` adaptation until 2026-09-01 and were repointed with it ([done/019](roadmap/done/019-adaptation-model-simplification.md)). Since 2026-09-03 `hop` / `jump` match whole words only (a "Cable Woodchop" set was silently reading as power), `clapping` is on the list and "jump rope" is excluded | named | grounded (17 keywords supported; `sled` partially; `agility` convention; the rule's exclusivity is a decision — D16, 2026-09-03) | [039 S4](grounding/039-adaptations-read.md#grounding) |
 
 > **~~2.1–2.3 are dead code.~~ Fixed 2026-08-26** — `classifyWeightSet` now reads
-> `repRange` ([lib/adaptations.ts](../src/lib/adaptations.ts#L23)), so the gated
+> `repRange` ([lib/adaptations.ts:27-39](../src/lib/adaptations.ts#L27)), so the gated
 > constant is the live one. Behaviour is unchanged, so no claim moved
 > (exemption 2). The rows stay `unknown`: de-duplicating a number does not ground
 > it. The finding it produced stands — see
@@ -208,33 +218,36 @@ the sharpest debt in the app because they read as settled fact.
 |---|---|---|---|---|---|---|
 | 3.1 | ~~Skill: 3–5 reps~~ | — | **Retired 2026-09-01** with row 1.6 — the whole `skill` entry, `rx` block included, is deleted ([done/019](roadmap/done/019-adaptation-model-simplification.md)) | — | — | — |
 | 3.2 | ~~Speed: 0–30% 1RM, 1–5 reps, 3–5 sets, 2–5 min~~ | — | **Retired 2026-09-01** with row 1.1 — the whole `speed` entry, `rx` block included, is deleted. Velocity work now falls under power's band (row 3.3), which is 30–70% 1RM: a *narrower* load claim than the one it replaces, so nothing ungrounded was widened | — | — | — |
-| 3.3 | Power: 30–70% 1RM, 1–5 (lifts) · 3–8 (jumps, throws), 3–5, 2–5 min | [adaptations.ts:92-99](../src/constants/adaptations.ts#L92) | Load band for ballistic work — one pooled band (ACSM 2026) over three exercise-specific optima (jumps/throws ≤30 %, squat/bench 30–70 %, cleans ≥70 % — Soriano 2015/2017), split in words on the card since 2026-09-03; "never to fatigue" ≈ ≤20 % velocity loss | named | grounded (reps, sets, rest, effort supported; load partially — D15, 2026-09-03) | [039 S4](grounding/039-adaptations-read.md#grounding) |
-| 3.4 | Strength: 85–100% 1RM, 3–5, 3–5, 2–5 min, 1–2 RIR | [adaptations.ts:123-149](../src/constants/adaptations.ts#L123) | Load, sets, rest and effort each sit inside a position-stand or meta-analysis band (the literature's line is ≥80 % 1RM; 85 is what 3–5 reps at 1–2 RIR implies — D20); reps 3–5 is a practical sub-band of 1–6 RM. **Cue "Galpin's 3–5 rule" kept and attributed** — Huberman Lab guest series pt 2 (2023), ep. 65 (2022); its "×/week" is a whole-body session count (frequency acts through volume) — D18 | named | grounded (supported, 2026-09-03) | [039 S5](grounding/039-adaptations-read.md#grounding) |
-| 3.5 | Hypertrophy: 30–80% 1RM, 5–30 (≈8–15), 10–20 sets/muscle/wk, 30 s–2 min, 0–4 RIR | [adaptations.ts:156-163](../src/constants/adaptations.ts#L156) | ~~contradicts row 1.4~~ **Resolved 2026-08-26**: not a contradiction. The target is the minimum-effective floor; the `rx` is the productive range *whose floor is that same number*. Both unchanged, now locked together in the source comment — neither moves without the other | named | **grounded** | adaptation-weekly-targets |
-| 3.6 | Musc. endurance: 40–60% 1RM, 15–40+, 2–4, <60 s | [adaptations.ts:196-218](../src/constants/adaptations.ts#L196) | Load band moved `<50%` → `40–60% 1RM` (ACSM 2009) on 2026-09-03 so load, reps and effort describe one set (D19); high reps supported (≥15 beat 7–13 at post-training 1RM), sets and rest **convention** inside the stands' bands, "to/near failure" inherited from the trials' design | named | grounded (partially supported — load moved, D19, 2026-09-03) | [039 S6](grounding/039-adaptations-read.md#grounding) |
-| 3.7 | Anaerobic: all-out, 20 s–2 min, 4–8 rounds, 1:1–1:4 rest | [adaptations.ts:247-254](../src/constants/adaptations.ts#L247) | Effort band and "all-out" supported — anaerobic capacity (MAOD) rises after repeated 20–90 s efforts and not after moderate continuous work (Tabata 1996; Hov 2023), with equal anaerobic/aerobic share at ≈75 s (Gastin 2001); rounds and the rest ratio are conventions whose floors moved on 2026-09-03 to what every trial and both Galpin protocols used (D21, D22) | named | grounded (partially supported — floors moved, D21–D22, 2026-09-03) | [039 S7](grounding/039-adaptations-read.md#grounding) |
-| 3.8 | VO₂max: ~90–100% HRmax, 3–8 min, 4–6 sets, ≈1:1, even max effort | [adaptations.ts:289-296](../src/constants/adaptations.ts#L289) | Intensity, interval length and ≈1:1 rest each inside a meta-analysis or RCT band (Helgerud 2007; Seiler 2013; Wen 2019; Bacon 2013); sets a convention inside "≥ 16 min of work"; the cue is Helgerud et al. 2007's protocol and since 2026-09-03 says so (D23); "Maximal" reworded to an even pace (D24) | named | grounded (partially supported — strings moved, D23–D24, 2026-09-03) | [039 S8](grounding/039-adaptations-read.md#grounding) |
-| 3.9 | Endurance: Zone 2 (conversational), 30 min–hours, 1 continuous, easy | [adaptations.ts:349-356](../src/constants/adaptations.ts#L349) | Zone 2 is the band immediately below LT1/VT1 (Sitko 2025 panel; Jamnick 2020), found by the talk test (Persinger 2004; Foster 2008) — no %HRmax printed on purpose (Meixner 2025: VT1 ≈ 81 %, Fatmax ≈ 72 % HRmax, wide CV); the 30-min floor is ACSM's daily dose used per bout, a convention (Murphy 2019; D29); the cue's nasal-breathing proxy replaced by the talk test (D27) and its mitochondria claim reworded to volume (D28) | named | grounded (partially supported — cue moved, D27–D29, 2026-09-03) | [039 S9](grounding/039-adaptations-read.md#grounding) |
-| 3.10 | *(none)* | [adaptations.ts:379-382](../src/constants/adaptations.ts#L379) | `ADAPTATION_PRINCIPLE`, three camps since 2026-09-03: quality (power, strength — fatigue in the set costs power and RFD per % velocity loss, strength gains flat across RIR, rest > 2 min), effort (hypertrophy, muscular endurance, anaerobic — volume is the dose, proximity to failure a load-conditioned slope, anaerobic all-out) and pace (VO₂max even-max, endurance easy ~80 % of the time). The two-camp line overclaimed "never" for strength and put Zone 2 in a "push effort" camp; the framing is Galpin's on Zatsiorsky / NSCA lineage, the seven-quality line is Tekiō's (D25, D26) | named | grounded (partially supported — wording moved, D25–D26, 2026-09-03) | [039 S10](grounding/039-adaptations-read.md#grounding) |
+| 3.3 | Power: 30–70% 1RM, 1–5 (lifts) · 3–8 (jumps, throws), 3–5, 2–5 min | [adaptations.ts:89-96](../src/constants/adaptations.ts#L89) | Load band for ballistic work — one pooled band (ACSM 2026) over three exercise-specific optima (jumps/throws ≤30 %, squat/bench 30–70 %, cleans ≥70 % — Soriano 2015/2017), split in words on the card since 2026-09-03; "never to fatigue" ≈ ≤20 % velocity loss | named | grounded (reps, sets, rest, effort supported; load partially — D15, 2026-09-03) | [039 S4](grounding/039-adaptations-read.md#grounding) |
+| 3.4 | Strength: 85–100% 1RM, 3–5, 3–5, 2–5 min, 1–2 RIR | [adaptations.ts:143-150](../src/constants/adaptations.ts#L143) | Load, sets, rest and effort each sit inside a position-stand or meta-analysis band (the literature's line is ≥80 % 1RM; 85 is what 3–5 reps at 1–2 RIR implies — D20); reps 3–5 is a practical sub-band of 1–6 RM. **Cue "Galpin's 3–5 rule" kept and attributed** — Huberman Lab guest series pt 2 (2023), ep. 65 (2022); its "×/week" is a whole-body session count (frequency acts through volume) — D18 | named | grounded (supported, 2026-09-03) | [039 S5](grounding/039-adaptations-read.md#grounding) |
+| 3.5 | Hypertrophy: 30–80% 1RM, 5–30 (≈8–15), 10–20 sets/muscle/wk, 30 s–2 min, 0–4 RIR | [adaptations.ts:175-182](../src/constants/adaptations.ts#L175) | ~~contradicts row 1.4~~ **Resolved 2026-08-26**: not a contradiction. The target is the minimum-effective floor; the `rx` is the productive range *whose floor is that same number*. Both unchanged, now locked together in the source comment — neither moves without the other | named | **grounded** | adaptation-weekly-targets |
+| 3.6 | Musc. endurance: 40–60% 1RM, 15–40+, 2–4, <60 s | [adaptations.ts:220-227](../src/constants/adaptations.ts#L220) | Load band moved `<50%` → `40–60% 1RM` (ACSM 2009) on 2026-09-03 so load, reps and effort describe one set (D19); high reps supported (≥15 beat 7–13 at post-training 1RM), sets and rest **convention** inside the stands' bands, "to/near failure" inherited from the trials' design | named | grounded (partially supported — load moved, D19, 2026-09-03) | [039 S6](grounding/039-adaptations-read.md#grounding) |
+| 3.7 | Anaerobic: all-out, 20 s–2 min, 4–8 rounds, 1:1–1:4 rest | [adaptations.ts:254-261](../src/constants/adaptations.ts#L254) | Effort band and "all-out" supported — anaerobic capacity (MAOD) rises after repeated 20–90 s efforts and not after moderate continuous work (Tabata 1996; Hov 2023), with equal anaerobic/aerobic share at ≈75 s (Gastin 2001); rounds and the rest ratio are conventions whose floors moved on 2026-09-03 to what every trial and both Galpin protocols used (D21, D22) | named | grounded (partially supported — floors moved, D21–D22, 2026-09-03) | [039 S7](grounding/039-adaptations-read.md#grounding) |
+| 3.8 | VO₂max: ~90–100% HRmax, 3–8 min, 4–6 sets, ≈1:1, even max effort | [adaptations.ts:294-301](../src/constants/adaptations.ts#L294) | Intensity, interval length and ≈1:1 rest each inside a meta-analysis or RCT band (Helgerud 2007; Seiler 2013; Wen 2019; Bacon 2013); sets a convention inside "≥ 16 min of work"; the cue is Helgerud et al. 2007's protocol and since 2026-09-03 says so (D23); "Maximal" reworded to an even pace (D24) | named | grounded (partially supported — strings moved, D23–D24, 2026-09-03) | [039 S8](grounding/039-adaptations-read.md#grounding) |
+| 3.9 | Endurance: Zone 2 (conversational), 30 min–hours, 1 continuous, easy | [adaptations.ts:334-341](../src/constants/adaptations.ts#L334) | Zone 2 is the band immediately below LT1/VT1 (Sitko 2025 panel; Jamnick 2020), found by the talk test (Persinger 2004; Foster 2008) — no %HRmax printed on purpose (Meixner 2025: VT1 ≈ 81 %, Fatmax ≈ 72 % HRmax, wide CV); the 30-min floor is ACSM's daily dose used per bout, a convention (Murphy 2019; D29); the cue's nasal-breathing proxy replaced by the talk test (D27) and its mitochondria claim reworded to volume (D28) | named | grounded (partially supported — cue moved, D27–D29, 2026-09-03) | [039 S9](grounding/039-adaptations-read.md#grounding) |
+| 3.10 | *(none)* | [adaptations.ts:364-367](../src/constants/adaptations.ts#L364) | `ADAPTATION_PRINCIPLE`, three camps since 2026-09-03: quality (power, strength — fatigue in the set costs power and RFD per % velocity loss, strength gains flat across RIR, rest > 2 min), effort (hypertrophy, muscular endurance, anaerobic — volume is the dose, proximity to failure a load-conditioned slope, anaerobic all-out) and pace (VO₂max even-max, endurance easy ~80 % of the time). The two-camp line overclaimed "never" for strength and put Zone 2 in a "push effort" camp; the framing is Galpin's on Zatsiorsky / NSCA lineage, the seven-quality line is Tekiō's (D25, D26) | named | grounded (partially supported — wording moved, D25–D26, 2026-09-03) | [039 S10](grounding/039-adaptations-read.md#grounding) |
 
 ## 4. Recovery / readiness
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 4.1 | `8` | [app.ts:66](../src/constants/app.ts#L66) | Target 8 h sleep/night | named | unknown | home-fused-reads **(due)** |
-| 4.2 | `30` | [app.ts:68](../src/constants/app.ts#L68) | Target 30 mobility min/week | named | unknown | home-fused-reads **(due)** |
-| 4.3 | `2` | [app.ts:70](../src/constants/app.ts#L70) | Target 2 sauna sessions/week | named | unknown | home-fused-reads **(due)** |
-| 4.4 | `2` | [app.ts:72](../src/constants/app.ts#L72) | Target 2 cold sessions/week | named | unknown | home-fused-reads **(due)** |
-| 4.5 | `5` | [app.ts:74](../src/constants/app.ts#L74) | Target 5 recovery-habit bouts/week | named | unknown | home-fused-reads **(due — being deleted)** |
-| 4.6 | `0.45` | [app.ts:79](../src/constants/app.ts#L79) | Sleep is 45% of systemic readiness | named | unknown | home-fused-reads **(due)** |
-| 4.7 | `0.15` | [app.ts:80](../src/constants/app.ts#L80) | Mobility is 15% | named | unknown | home-fused-reads **(due)** |
-| 4.8 | `0.15` | [app.ts:81](../src/constants/app.ts#L81) | Sauna is 15% | named | unknown | home-fused-reads **(due)** |
-| 4.9 | `0.15` | [app.ts:82](../src/constants/app.ts#L82) | Cold is 15% | named | unknown | home-fused-reads **(due)** |
-| 4.10 | `0.10` | [app.ts:83](../src/constants/app.ts#L83) | Habits are 10% — **the input being dropped**; its removal is what renormalises 4.6–4.9 | named | unknown | home-fused-reads **(due)** |
-| 4.11 | `score / 100` | [RecoveryCard.tsx:65](../src/components/tabs/home/RecoveryCard.tsx#L65) | Garmin's 0–100 sleep score maps linearly onto the sub-score **and supersedes duration-vs-target when present** — two different sleep models, silently switched per night | unnamed | unknown | home-fused-reads **(due)** |
-| 4.12 | `80` / `50` | [RecoveryCard.tsx:20-21](../src/components/tabs/home/RecoveryCard.tsx#L20) | ≥80% readiness is green (push), 50–79 amber, <50 red. **This is the app's answer to "am I recovered enough to push today?"** | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — any fixed cutoff on a 0–100 composite is convention; grounded method is baseline-relative HRV |
-| 4.13 | `sub >= 1` | [RecoveryCard.tsx:239](../src/components/tabs/home/RecoveryCard.tsx#L239) | A modality is "on target" at exactly 100% of its weekly target — no credit above, no partial band | unnamed | unknown † | home-fused-reads |
-| 4.14 | `80` °C / `10` °C | [RecoveryCard.tsx:177](../src/components/tabs/home/RecoveryCard.tsx#L177), [:201](../src/components/tabs/home/RecoveryCard.tsx#L201) | Placeholder temperatures for a sauna / cold session. Stored, never scored | ? | unknown † | — |
+| 4.1 | ~~`8`~~ | — | **Retired 2026-08-31.** `RECOVERY_TARGETS` was deleted with RecoveryCard when the fused Home shipped (018 unit 4). Sleep now enters readiness as Garmin's 0–100 score (row 4.11), never as hours against a target. Never grounded ([014 §readiness comparison](roadmap/done/014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4)) | — | — | — |
+| 4.2 | ~~`30`~~ | — | **Retired 2026-08-31** with 4.1. Mobility carries no weekly-minutes target anywhere now; its per-muscle target is row 7.4 | — | — | — |
+| 4.3 | ~~`2`~~ | — | **Retired 2026-08-31** with 4.1. Sauna is logged (RecoverySheet), not scored — it moves no number | — | — | — |
+| 4.4 | ~~`2`~~ | — | **Retired 2026-08-31** with 4.1. Cold, same as sauna | — | — | — |
+| 4.5 | ~~`5`~~ | — | **Retired 2026-08-31** with 4.1; the section it counted was deleted 2026-09-05 ([done/035](roadmap/done/035-habits-expiry-deletion.md)). Never grounded | — | — | — |
+| 4.6 | ~~`0.45`~~ | — | **Retired 2026-08-31.** `RECOVERY_WEIGHTS` was retired, not reweighted: the number it produced scored adherence to a recovery routine, not recovery state, and three of its five inputs had never been logged, so it could not exceed 55 on a flawless night. Never grounded — the row does not clear, it retires ([014 §readiness comparison](roadmap/done/014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4)) | — | — | — |
+| 4.7 | ~~`0.15`~~ | — | **Retired 2026-08-31** with 4.6 | — | — | — |
+| 4.8 | ~~`0.15`~~ | — | **Retired 2026-08-31** with 4.6 | — | — | — |
+| 4.9 | ~~`0.15`~~ | — | **Retired 2026-08-31** with 4.6 | — | — | — |
+| 4.10 | ~~`0.10`~~ | — | **Retired 2026-08-31** with 4.6 — dropped with the whole constant rather than out of it, so nothing was renormalised and the §13.7 trap never fired. The section it weighed was deleted 2026-09-05 ([done/035](roadmap/done/035-habits-expiry-deletion.md)) | — | — | — |
+| 4.11 | `(sleep + hrv) / 2` | [fusedRead.ts:439](../src/lib/fusedRead.ts#L439) | Systemic readiness is last night's Garmin sleep score blended 50/50 with the HRV sub-score (row 4.17); it degrades to sleep-only or HRV-only when one side is missing and is `null` when both are — a missing input never scores zero. The 0–100 shape and the 50/50 blend are convention: no manufacturer composite is validated as a training-decision threshold. Replaced the old card's `score / 100` sub-score, which silently switched sleep models per night | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| 4.12 | `PUSH_THRESHOLD = 33` | [app.ts:71](../src/constants/app.ts#L71), applied at [fusedRead.ts:508](../src/lib/fusedRead.ts#L508) | Readiness below 33 flips the verdict to Hold (was the old card's 80 / 50 green–amber–red bands). **This is the app's answer to "am I recovered enough to push today?"** — and Hold means modify, not rest (D7) | named | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — any fixed cutoff on a 0–100 composite is convention; grounded method is baseline-relative HRV (D8) |
+| 4.13 | ~~`sub >= 1`~~ | — | **Retired 2026-08-31** with RecoveryCard: no modality is scored against a weekly target any more ([014 §readiness comparison](roadmap/done/014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4)) | — | — | — |
+| 4.14 | `80` °C / `10` °C | [RecoverySheet.tsx:42](../src/components/tabs/home/RecoverySheet.tsx#L42), [:50](../src/components/tabs/home/RecoverySheet.tsx#L50) (quick-log defaults); [EditModal.tsx:717](../src/components/ui/EditModal.tsx#L717), [:728](../src/components/ui/EditModal.tsx#L728) (placeholders) | Default temperatures for a sauna / cold session. Stored, never scored | ? | unknown † | — |
+| 4.15 | `RECOVER_DAYS = 2` | [app.ts:65](../src/constants/app.ts#L65) | 48 h since a muscle's last hard set is the local recovery flag — the floor of the 48–72 h band, dose-blind by design; dose modulation is the named upgrade path (D6). Sat in §12 as not-yet-built until 2026-09-05; it shipped with the fused Home (018 unit 4) | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| 4.16 | `48` h / `21` d | [app.ts:111](../src/constants/app.ts#L111), read at [fusedRead.ts:470-471](../src/lib/fusedRead.ts#L470) | `DONATION_SUPPRESSION`: a full-blood donation gates a Hold for 48 h and dims the two aerobic reads for 21 d; strength and anaerobic never dim; plasma gets nothing (D11). Shipped with the fused Home, indexed here since 2026-09-05 | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
+| 4.17 | `7` d rolling / `60` d baseline / `50 + 50 × z` | [fusedRead.ts:380-381](../src/lib/fusedRead.ts#L380), [:428](../src/lib/fusedRead.ts#L428) | The HRV sub-score is baseline-relative: the 7-day rolling mean of overnight HRV placed against a 60-day baseline in SD units — 50 at baseline, 0 one SD below, 100 one SD above. A rolling window against the individual's own baseline is the method every trial used (Vesterinen 2016; Buchheit 2014); the 60-day baseline and the SD-to-0–100 scale are conventions (practitioners say 21–30 d). `MIN_HRV_BASELINE_SAMPLES = 7` and `HRV_SD_FLOOR = 0.05` are guards, not claims | unnamed | method **grounded**, scale **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 
 ## 5. Cycle length & deload
 
@@ -248,55 +261,55 @@ created to carry it.
 |---|---|---|---|---|---|---|
 | 5.1 | `CYCLE = 6` | [app.ts:3](../src/constants/app.ts#L3) | A training block is 6 weeks | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.2 | ~~`CYCLE = 6`~~ | — | **Fixed 2026-08-26** — `utils.ts` imports `CYCLE` from `constants/app` | — | — | — |
-| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:9](../src/constants/app.ts#L9), used at [utils.ts:51](../src/lib/utils.ts#L51), [:61](../src/lib/utils.ts#L61) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
-| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:16](../src/constants/app.ts#L16), applied by `deloadSets` at [utils.ts:69](../src/lib/utils.ts#L69) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.3 | `DELOAD_WEEK = CYCLE` | [app.ts:9](../src/constants/app.ts#L9), used at [utils.ts:50](../src/lib/utils.ts#L50), [:60](../src/lib/utils.ts#L60) | **Week 6 is the deload week** — deload placement. Named as of 2026-08-26; still ungrounded | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:16](../src/constants/app.ts#L16), applied by `deloadSets` at [utils.ts:71](../src/lib/utils.ts#L71) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.5 | ~~`× 0.7`~~ ×2 | — | **Fixed 2026-08-26.** `VolumeRow` previewed a deload scaling *weight and reps* that the app could never apply — `ExPlan`'s button, `ExPlan`'s exported helper and `programs.deload_strategy` all say reps-only. The preview was the outlier and now calls `deloadSets` | — | — | — |
-| 5.6 | `"⚠️ Deload — 70% reps"` | [VolumeRow.tsx:24](../src/components/tabs/weights/VolumeRow.tsx#L24) | The label the user reads — now derived from 5.4 and says *what* is at 70% | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
-| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:259](../src/lib/db/program.ts#L259) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
-| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:260](../src/lib/db/program.ts#L260) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
-| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:261](../src/lib/db/program.ts#L261) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.6 | `Deload` badge + `70% reps` | [VolumeRow.tsx:32-33](../src/components/tabs/weights/VolumeRow.tsx#L32) | The label the user reads — the percentage is computed from 5.4 (`DELOAD_REP_FACTOR × 100`) and says *what* is at 70%; the ⚠️ went with the chrome emoji (033) | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:260](../src/lib/db/program.ts#L260) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:261](../src/lib/db/program.ts#L261) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:262](../src/lib/db/program.ts#L262) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.10 | ~~`4`~~ | — | **Fixed 2026-08-26** (migration `20260826144439`). The `program_phases.duration_weeks` default asserted a 4-week phase against `CYCLE = 6`; default dropped, so a missing value is now `NULL` — which the type already allowed. No number replaced it | — | — | — |
 
 ## 6. Cardio & sport classification
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 6.1 | `>= 25` min | [lib/adaptations.ts:38](../src/lib/adaptations.ts#L38) | A session ≥25 min is endurance | unnamed | unknown | hr-zone-intensity-classification |
-| 6.2 | `>= 8` min | [lib/adaptations.ts:39](../src/lib/adaptations.ts#L39) | 8–24 min is VO₂max; <8 min is anaerobic capacity | unnamed | unknown | hr-zone-intensity-classification |
-| 6.3 | `2.0` | [lib/adaptations.ts:44](../src/lib/adaptations.ts#L44) | Garmin Training Effect ≥2.0 is "a real stimulus" for that system | unnamed | unknown | garmin-recovery-load-axis |
-| 6.4 | `hard > easy` | [lib/adaptations.ts:52-62](../src/lib/adaptations.ts#L52) | Z4+Z5 time exceeding Z1+Z2 makes aerobic work VO₂max rather than base; unlabelled work defaults to base | unnamed | unknown | hr-zone-intensity-classification |
-| 6.5 | default `vo2max` | [lib/adaptations.ts:262](../src/lib/adaptations.ts#L262) | A sport session with no logged duration is VO₂max work ("the typical intermittent-sport stimulus") | unnamed | unknown | hr-zone-intensity-classification |
+| 6.1 | `>= 25` min | [lib/adaptations.ts:54](../src/lib/adaptations.ts#L54) | A session ≥25 min is endurance | unnamed | unknown | hr-zone-intensity-classification |
+| 6.2 | `>= 8` min | [lib/adaptations.ts:55](../src/lib/adaptations.ts#L55) | 8–24 min is VO₂max; <8 min is anaerobic capacity | unnamed | unknown | hr-zone-intensity-classification |
+| 6.3 | `2.0` | [lib/adaptations.ts:60](../src/lib/adaptations.ts#L60) | Garmin Training Effect ≥2.0 is "a real stimulus" for that system | unnamed | unknown | garmin-recovery-load-axis |
+| 6.4 | `hard > easy` | [lib/adaptations.ts:68-76](../src/lib/adaptations.ts#L68) | Z4+Z5 time exceeding Z1+Z2 makes aerobic work VO₂max rather than base; unlabelled work defaults to base | unnamed | unknown | hr-zone-intensity-classification |
+| 6.5 | default `vo2max` | [lib/adaptations.ts:327](../src/lib/adaptations.ts#L327) | A sport session with no logged duration is VO₂max work ("the typical intermittent-sport stimulus") | unnamed | unknown | hr-zone-intensity-classification |
 
 ## 7. Muscle & volume accounting
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 7.1 | `{1: 1, 2: 0.5, 3: 0}` | [utils.ts:503](../src/lib/utils.ts#L503) | A level-2 muscle receives half a set's stimulus; level 3 receives none — after the 042 audit it holds stabilisers and bystanders only. **Every muscle-coverage number and the whole BodyMap is denominated in this** | unnamed | grounded (level 2 supported; level 3 grounded at 0, 2026-09-03) | [039 S1](grounding/039-adaptations-read.md#grounding) + [done/042](roadmap/done/042-level-3-link-audit.md) |
-| 7.2 | `level === 1 → primary` | [db/muscles.ts:77](../src/lib/db/muscles.ts#L77) | Level 1 is a primary mover; 2 and 3 are both "secondary" — collapses 7.1's three tiers into two on write | unnamed | unknown † | home-fused-reads |
-| 7.3 | `1` per bout | [utils.ts:489-492](../src/lib/utils.ts#L489) | One manual habit completion = one set of stimulus | unnamed | unknown | home-fused-reads **(being deleted)** |
-| 7.4 | `5` | [utils.ts:338](../src/lib/utils.ts#L338) | 5 mobility min per muscle group per week is the target | unnamed | unknown | home-fused-reads **(due)** |
+| 7.1 | `{1: 1, 2: 0.5, 3: 0}` | [utils.ts:397](../src/lib/utils.ts#L397) | A level-2 muscle receives half a set's stimulus; level 3 receives none — after the 042 audit it holds stabilisers and bystanders only. **Every muscle-coverage number and the whole BodyMap is denominated in this** | unnamed | grounded (level 2 supported; level 3 grounded at 0, 2026-09-03) | [039 S1](grounding/039-adaptations-read.md#grounding) + [done/042](roadmap/done/042-level-3-link-audit.md) |
+| 7.2 | `level === 1 → primary` | [db/muscles.ts:78](../src/lib/db/muscles.ts#L78) | Level 1 is a primary mover; 2 and 3 are both "secondary" — collapses 7.1's three tiers into two on write | unnamed | unknown † | home-fused-reads |
+| 7.3 | ~~`1` per bout~~ | — | **Retired 2026-09-05.** `habitCompletionSets` was deleted with the Habits section ([done/035](roadmap/done/035-habits-expiry-deletion.md)); the muscle read counts logged sets only, which 014 called the more honest answer ([014 §Also resolved](roadmap/done/014-doctrine-ledger-execution.md#also-resolved-by-the-same-decision)). Never grounded | — | — | — |
+| 7.4 | `WEEKLY_STRETCH_TARGET_MIN = 5` | [utils.ts:348](../src/lib/utils.ts#L348), read on the Mobility tab at [MobilityTab.tsx:186](../src/components/tabs/MobilityTab.tsx#L186) | 5 mobility min per muscle group per week is the target | unnamed | unknown | home-fused-reads **(due)** |
 | 7.5 | `GAP_CUTOFF = 0.70` — `statusFor`'s on-track line, the map's callout line and the "on target" counter | [lib/adaptations.ts:249](../src/lib/adaptations.ts#L249) | One line for one question (045, 2026-09-04): a muscle at ≥ 0.70 of its window target is "on track", draws no callout and counts toward its quality being on target; anything > 0 below it is "needs work"; 0 is "untouched". Three labels over a continuous fill (sets ÷ floor): stimulus is graded from the first set, only 0 and the floor carry physiological meaning. The counter judges the leaves the map draws, inside the tracked groups. The 0.70 line is a display convention sitting just above the maintenance zone; the counter's old 100 %-of-every-muscle bar was an unnamed convention of the same kind and is gone | unnamed | grounded (the ramp supported; 0.70 convention — 2026-09-02; counter moved onto it — 2026-09-04) | [039 S2](grounding/039-adaptations-read.md#grounding), [045](roadmap/done/045-adaptations-on-target-threshold.md) |
 | 7.6 | 179 rows, level 1–3 | `exercise_muscle_groups` (DB) | 179 individual "this exercise hits this muscle at this level" claims, editable in-app | ? | unknown | **(no brief)** |
-| 7.7 | `WEEKLY_SET_FLOOR = 10` | [app.ts:94](../src/constants/app.ts#L94) | 10 level-weighted hard sets per muscle per week, **pooled across every rep range** at full value, is the adequacy floor for total stimulus — the hypertrophy floor is the adaptation-agnostic denominator because it is the volume-hungriest of the four; power-tagged sets are not hard sets and count on the power map only | named | grounded (value 010 D10; the pooling 039 S3, 2026-09-03) | [039 S3](grounding/039-adaptations-read.md#grounding) |
-| 7.8 | `MUSCLE_WINDOW_DAYS = 14` | [app.ts:104](../src/constants/app.ts#L104) | A muscle's fill is judged over a rolling 14-day window against `MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR × 2 = 20` hard sets; the sum is frequency-blind by design and recency lives in 4.x `RECOVER_DAYS`. Replaced the 42-day `CYCLE_WINDOW_DAYS` / `CYCLE_SET_TARGET = 60` pair, which hung on the program's cycle | named | convention inside a grounded 8–21 d band (2026-09-03) | [039 S12](grounding/039-adaptations-read.md#grounding) |
+| 7.7 | `WEEKLY_SET_FLOOR = 10` | [app.ts:90](../src/constants/app.ts#L90) | 10 level-weighted hard sets per muscle per week, **pooled across every rep range** at full value, is the adequacy floor for total stimulus — the hypertrophy floor is the adaptation-agnostic denominator because it is the volume-hungriest of the four; power-tagged sets are not hard sets and count on the power map only | named | grounded (value 010 D10; the pooling 039 S3, 2026-09-03) | [039 S3](grounding/039-adaptations-read.md#grounding) |
+| 7.8 | `MUSCLE_WINDOW_DAYS = 14` | [app.ts:100](../src/constants/app.ts#L100) | A muscle's fill is judged over a rolling 14-day window against `MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR × 2 = 20` hard sets; the sum is frequency-blind by design and recency lives in 4.x `RECOVER_DAYS`. Replaced the 42-day `CYCLE_WINDOW_DAYS` / `CYCLE_SET_TARGET = 60` pair, which hung on the program's cycle | named | convention inside a grounded 8–21 d band (2026-09-03) | [039 S12](grounding/039-adaptations-read.md#grounding) |
 
 ## 8. Estimated 1RM
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 8.1 | `1 + reps/30` | [utils.ts:123](../src/lib/utils.ts#L123) | Epley: published estimator | ? | unknown | **(no brief)** |
-| 8.2 | `36/(37 − reps)` | [utils.ts:128](../src/lib/utils.ts#L128) | Brzycki: published estimator | ? | unknown | **(no brief)** |
-| 8.3 | `reps >= 37 → 0` | [utils.ts:129](../src/lib/utils.ts#L129) | Guard at Brzycki's pole — mathematical, not physiological | no | unknown † | — |
-| 8.4 | `(e + b) / 2` | [utils.ts:143](../src/lib/utils.ts#L143) | **Tekiō's own estimator**: the unweighted mean of Epley and Brzycki. Not a published formula; the comment says only "they diverge at the extremes" | ? | unknown | **(no brief)** |
+| 8.1 | `1 + reps/30` | [utils.ts:133](../src/lib/utils.ts#L133) | Epley: published estimator | ? | unknown | **(no brief)** |
+| 8.2 | `36/(37 − reps)` | [utils.ts:138](../src/lib/utils.ts#L138) | Brzycki: published estimator | ? | unknown | **(no brief)** |
+| 8.3 | `reps >= 37 → 0` | [utils.ts:139](../src/lib/utils.ts#L139) | Guard at Brzycki's pole — mathematical, not physiological | no | unknown † | — |
+| 8.4 | `(e + b) / 2` | [utils.ts:153](../src/lib/utils.ts#L153) | **Tekiō's own estimator**: the unweighted mean of Epley and Brzycki. Not a published formula; the comment says only "they diverge at the extremes" | ? | unknown | **(no brief)** |
 
 ## 9. Progression
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 9.1 | `7.5` | [ExPlan.tsx:19](../src/components/tabs/weights/ExPlan.tsx#L19) | Default weekly volume increase is +7.5% | unnamed | unknown | **(no brief)** |
-| 9.2 | `min 5 / max 10` | [ExPlan.tsx:76](../src/components/tabs/weights/ExPlan.tsx#L76) | The defensible weekly-progression band is 5–10% | unnamed | unknown | **(no brief)** |
-| 9.3 | `0 / +2.5 / +5 kg` | [VolumeRow.tsx:8-10](../src/components/tabs/weights/VolumeRow.tsx#L8) | The three load-jump options offered | unnamed | unknown † | — |
-| 9.4 | round to `0.5` | [utils.ts:34](../src/lib/utils.ts#L34) | Plate granularity | no | unknown † | — |
+| 9.1 | `7.5` | [ExPlan.tsx:28](../src/components/tabs/weights/ExPlan.tsx#L28) | Default weekly volume increase is +7.5% | unnamed | unknown | **(no brief)** |
+| 9.2 | `min 5 / max 10` | [ExPlan.tsx:79](../src/components/tabs/weights/ExPlan.tsx#L79) | The defensible weekly-progression band is 5–10% | unnamed | unknown | **(no brief)** |
+| 9.3 | `0 / +2.5 / +5 kg` | [VolumeRow.tsx:14-18](../src/components/tabs/weights/VolumeRow.tsx#L14) | The three load-jump options offered | unnamed | unknown † | — |
+| 9.4 | round to `0.5` | [utils.ts:32](../src/lib/utils.ts#L32) | Plate granularity | no | unknown † | — |
 
 ## 10. Hydration & blood donation
 
@@ -305,11 +318,11 @@ fold.
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 10.1 | `2500` ml | [app.ts:5](../src/constants/app.ts#L5) | Daily hydration target | unnamed | unknown | home-fused-reads **(due — folding)** |
-| 10.2 | `56` days | [app.ts:45](../src/constants/app.ts#L45) | Full-blood donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
-| 10.3 | `14` days | [app.ts:46](../src/constants/app.ts#L46) | Plasma donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
-| 10.4 | `56 * 86400000` | [OverviewTab.tsx:151](../src/components/tabs/OverviewTab.tsx#L151) | Duplicate of 10.2 as a magic literal, bypassing the constant | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
-| 10.5 | `[100…500]` | [OverviewTab.tsx:59](../src/components/tabs/OverviewTab.tsx#L59) | Quick-add water increments — UI affordance | no | unknown † | — |
+| 10.1 | `2500` ml | [app.ts:18](../src/constants/app.ts#L18) | Daily hydration target | unnamed | unknown | home-fused-reads **(due — folding)** |
+| 10.2 | `56` days | [app.ts:52](../src/constants/app.ts#L52) | Full-blood donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.3 | `14` days | [app.ts:53](../src/constants/app.ts#L53) | Plasma donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
+| 10.4 | ~~`56 * 86400000`~~ | — | **Fixed 2026-08-31.** The literal went with OverviewTab when the fused Home shipped (018 unit 4); `donationStatus` reads `DONATION_ELIGIBILITY_DAYS` ([fusedRead.ts:464](../src/lib/fusedRead.ts#L464)), so 10.2 is the one copy | — | — | — |
+| 10.5 | `[100, 250, 500]` | [FoldSheet.tsx:47](../src/components/tabs/home/FoldSheet.tsx#L47) | Quick-add water increments — UI affordance | no | unknown † | — |
 
 ## 11. Correctly not gated
 
@@ -317,12 +330,12 @@ Listed so the boundary is visible, not because they need anything.
 
 | Value | Where | Why not |
 |---|---|---|
-| `PREVIEW = 3`, `FILTER_AT = 30` | [HistoryList.tsx:6-8](../src/components/ui/HistoryList.tsx#L6) | List pagination |
-| `revealed < 8` | [SupersetLogger.tsx:121](../src/components/tabs/weights/SupersetLogger.tsx#L121), [MobilityTab.tsx:150](../src/components/tabs/MobilityTab.tsx#L150) | Progressive disclosure |
+| `PREVIEW = 3`, `FILTER_AT = 30` | [HistoryList.tsx:7-9](../src/components/ui/HistoryList.tsx#L7) | List pagination |
+| `revealed < 8` | [SupersetLogger.tsx:124](../src/components/tabs/weights/SupersetLogger.tsx#L124), [MobilityTab.tsx:167](../src/components/tabs/MobilityTab.tsx#L167) | Progressive disclosure |
 | quality `1–5` stars | Sleep, sport and mobility forms | A subjective rating scale, not a dose |
 | `SYNC_DAYS` 7 / 3 | [sync_activities.py](../scripts/garmin-sync/sync_activities.py), [sync_sleep.py](../scripts/garmin-sync/sync_sleep.py) | Backfill window |
-| `/60`, `/1000`, `/3600` | garmin-sync, [utils.ts:154-179](../src/lib/utils.ts#L154) | Unit conversion |
-| every hex in [colors.ts](../src/constants/colors.ts), and each adaptation's `color` | | Chart colours |
+| `/60`, `/1000`, `/3600` | garmin-sync, [utils.ts:164-190](../src/lib/utils.ts#L164) | Unit conversion |
+| every hex in [ui/chart.ts](../src/components/ui/chart.ts) and every token in [index.css](../src/index.css) | | Chart and UI colours — `colors.ts` and each adaptation's `color` field were deleted by 033 |
 
 ## 12. Not in the app yet
 
@@ -334,19 +347,10 @@ they were missed.
   smoothing 0.5/0.3/0.2, alcohol ×0.85 …) live only in
   [roadmap/done/007-nutrition-food-recovery-score.md](roadmap/done/007-nutrition-food-recovery-score.md)
   and its bench artifact. State: `unknown`, all of them.
-- **Local recovery windows** — **grounded 2026-08-30**: 48–72 h band,
-  48 h default, dose-dependent
-  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
-- **Per-quality staleness windows** — **grounded 2026-08-30**: VO₂max 14 d,
-  endurance 14 d, anaerobic 28 d
-  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
-- **Push threshold (planned constant, 33)** — **convention 2026-08-30**: no
-  literature supports an absolute cutoff on a composite score; the grounded
-  method is baseline-relative HRV
-  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
-- **Donation suppression window** — **grounded 2026-08-30**: 48 h acute +
-  21 d aerobic-only tail, whole blood only; plasma none
-  ([010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding)).
+- **The four numbers listed here on 2026-08-30** — local recovery window,
+  per-quality staleness windows, push threshold, donation suppression — shipped
+  with the fused Home (018 unit 4) and are indexed as rows 4.15, 1.12, 4.12 and
+  4.16 since 2026-09-05.
 
 ---
 

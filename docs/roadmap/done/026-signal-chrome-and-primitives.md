@@ -129,7 +129,7 @@ page sweeps do not each re-answer them:
   icons) stayed put: they are page content, and each page brief 027–032 owns
   its own sweep. Only chrome and shared primitives were in scope here.
 - **ExportPane / ImportPane** live in `src/components/layout/` but are Profile
-  surfaces, so they went to [032](../032-profile-admin-signal-restyle.md) rather
+  surfaces, so they went to [032](032-profile-admin-signal-restyle.md) rather
   than being re-skinned as shell chrome.
 - **`src/components/ui/chart.ts`** is the shared palette the page briefs apply
   to their Recharts surfaces — `CHART`, `CHART_LINE`, `CHART_AXIS`,
