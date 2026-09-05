@@ -12,12 +12,57 @@ the board.
 **Target:** TBC
 **Status:** planned
 
-The first release after 2.0.0. Scope is being planned (kicked off 2026-09-05,
-the day 2.0.0 shipped). Two briefs carried over from 2.0.0 because they had no
-code when it went out: [012](012-adaptation-target-shapes.md) (target shapes)
-and [024](024-staging-shared-database-safety.md) (the migration policy and the
-cleanup ritual). Since 2.0.0 the minor digit is Peter's call: everything lands
-on `develop` as patches, and 2.1.0 is named when he releases it.
+The first release after 2.0.0, scoped by Peter on 2026-09-05, the day 2.0.0
+shipped. Theme: **finish the model, clean the house.** Doctrine §6 says no
+new sections until the five-second Home read is proven, so this release
+closes what 2.0.0 opened rather than adding surface. In running order:
+
+1. [051](051-exit-condition-walk.md) — the exit-condition walk. It runs
+   first because its verdict decides whether 2.1.0 may add anything.
+2. [025](025-release-blocked-schema-drops.md) and
+   [024](024-staging-shared-database-safety.md) — the post-release database
+   chores, then the migration policy.
+3. [012](012-adaptation-target-shapes.md) — target shapes, carried over
+   from 2.0.0 (no code when it shipped).
+4. [046](046-retire-tracked-muscle-groups.md) — retire the tracked-groups
+   setting.
+5. [041](041-garmin-sport-activity-sync.md) — Garmin sync for sport
+   activities.
+6. [044](044-exercise-name-aliases.md) — exercise aliases, the first step
+   toward other users.
+7. [049](049-app-version-display.md), [050](050-release-procedure.md),
+   [038](038-favicon-and-app-icon.md) — the version on screen, the written
+   release ritual, the icon.
+8. [023](023-mechanical-code-quality-tooling.md) — code quality tooling,
+   starting with the chart-bundle code split.
+9. [048](048-simplification-candidates.md) and
+   [015](015-ground-trigger-spec-fixes.md) — spare-time units.
+
+Left out on purpose: 013 (cycle grounding — a program property, grounded only
+if it ships as the default program), 021 (waits on Peter's inputs, no
+release), 034 (→ 2.2.0), 040 (→ 3.0.0). Since 2.0.0 the minor digit is
+Peter's call: everything lands on `develop` as patches, and 2.1.0 is named
+when he releases it.
+
+## 2.2.0
+
+**Target:** TBC
+**Status:** planned
+
+The product review Peter deferred out of 2.1.0 on 2026-09-05:
+[034](034-v2-1-candidates-tbc.md)'s five cut candidates (the in-app
+assistant, cardio's secondary reads, the Weights chip cloud, the program
+template picker, brief 003's name) need a deeper look before anything is
+cut. Keepers become briefs; cuts execute from 034.
+
+## 3.0.0
+
+**Target:** TBC
+**Status:** planned
+
+Named by Peter on 2026-09-05 as the home of adaptation goals
+([040](040-adaptation-goals.md)). A major bump is his concept-validation
+call; nothing else is tagged here yet.
 
 ## 2.0.0
 

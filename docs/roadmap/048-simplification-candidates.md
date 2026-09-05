@@ -3,7 +3,9 @@
 **Label:** infra
 **Status:** planned — the review is done (2026-09-05, v1.18.4, commit 00b90b7)
 and no code has changed. Each candidate below is one atomic unit a later session
-lands with `/simplify`; tick its box in Acceptance when it ships.
+lands with `/simplify`; tick its box in Acceptance when it ships. Committed to
+2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Release:** 2.1.0
 
 ## What this is
 

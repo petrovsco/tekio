@@ -1,7 +1,7 @@
 # Roadmap: Ground the 6-week cycle and the week-6 deload
 
-**Label:** feature
-**Status:** planned — kickoff-ready. No scout run yet — inventory section 5 is the last domain with no grounding block anywhere.
+**Label:** backlog
+**Status:** backlog — parked 2026-09-05 by Peter: the cycle and the deload are properties of a *program*, and users must be able to build programs that are not 100% grounded. Ground these numbers only if Tekiō ships them as its *default* program; until that decision there is no scout run, and inventory section 5 stays the one domain with no grounding block.
 
 The de-duplication is already done (three bugs fixed 2026-08-26). What is left is
 the claim itself, which no one has ever checked: **a training block is 6 weeks,

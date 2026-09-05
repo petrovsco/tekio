@@ -1,11 +1,9 @@
 # Roadmap: Adaptation goals — declaring what I am chasing this cycle
 
-**Label:** backlog
-**Status:** backlog — parked on purpose. The Adaptations read is now rebuilt
-([031](done/031-adaptations-drill-down-read.md), 2026-09-04) and grounded
-([039](done/039-adaptations-read-grounding.md)); revisit once the page has been lived
-with long enough to say whether a flat seven-way read feels wrong in practice.
+**Label:** feature
+**Status:** planned — committed by Peter to 3.0.0 on 2026-09-05; the shaping happens at kickoff. The Adaptations read is rebuilt ([031](done/031-adaptations-drill-down-read.md)) and grounded ([039](done/039-adaptations-read-grounding.md)), and 2.1.0 retires the tracked-muscle-groups setting ([046](046-retire-tracked-muscle-groups.md)) — Peter's note: the need behind that setting returns here as focus on *adaptations*, and Home and Adaptations must not punish a chosen focus.
 **Depends:** 031, 039
+**Release:** 3.0.0
 
 ## The idea
 

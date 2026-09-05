@@ -1,11 +1,12 @@
 # Roadmap: Release-blocked schema drops — what develop has stopped reading
 
 **Label:** infra
-**Status:** planned — unblocked 2026-09-05: 2.0.0 is on `master` and production
-serves it, so nothing reads the queued items any more. Four items queued: one
-column drop, two leftovers from the nine → seven adaptation simplification
-(019), and the two Habits tables (035). Each drop is a destructive change to
-the live database, so it runs only after Peter says go.
+**Status:** blocked — 2.0.0 is on `master` and production serves it
+(2026-09-05), and Peter said go the same day; the session's permission mode
+then refused the DDL through the Supabase MCP, so the queue runs the moment a
+Supabase write is allowed. Five items: one column drop, two leftovers from the
+nine → seven simplification (019), the two Habits tables (035) and their
+leftover config row.
 
 ## Why this brief exists
 
@@ -99,6 +100,17 @@ pointed at — so until the drop, a leftover habit row keeps blocking that delet
 drop table habit_completions;
 drop table habits;
 ```
+
+The `Habits` row in `user_section_config` (`show_in_menu` false) is the same
+leftover: 035 left it in place because the Drawer and Profile ignore rows
+their meta tables do not know. It goes in the same migration:
+
+```sql
+delete from user_section_config where section_key = 'Habits';
+```
+
+Confirmed 2026-09-05: nothing references `habits` except `habit_completions`
+(cascade), so the two drops need no other change.
 
 ## Acceptance
 

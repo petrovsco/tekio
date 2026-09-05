@@ -1,7 +1,8 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** planned — found during [027](done/027-weights-tab-signal-restyle.md); small, self-contained, no dependencies.
+**Status:** planned — found during [027](done/027-weights-tab-signal-restyle.md); small, self-contained, no dependencies. Committed to 2.1.0 by Peter on 2026-09-05.
+**Release:** 2.1.0
 
 [index.html](../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for

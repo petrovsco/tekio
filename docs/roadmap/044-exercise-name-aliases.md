@@ -1,10 +1,8 @@
 # Roadmap: Exercise name aliases — one movement, many spellings, one search
 
-**Label:** backlog
-**Status:** backlog — marked 2026-09-03 by Peter as post-2.0.0 work. Parked
-until the app is being readied for other people; for one user the catalogue
-([done/043](done/043-scout-named-exercises-catalogue.md)) plus canonical names
-is enough.
+**Label:** feature
+**Status:** planned — committed to 2.1.0 by Peter on 2026-09-05, the first step of readying the app for other people. Was parked 2026-09-03 as post-2.0.0 work; for one user the catalogue ([done/043](done/043-scout-named-exercises-catalogue.md)) plus canonical names was enough.
+**Release:** 2.1.0
 
 ---
 

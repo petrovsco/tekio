@@ -3,7 +3,10 @@
 **Label:** infra
 **Status:** planned — kickoff-ready. Nothing built. Spun out of
 [009-feature-grounding.md](done/009-feature-grounding.md) on 2026-08-30 so that brief
-holds only the grounding back-fill it still tracks.
+holds only the grounding back-fill it still tracks. Committed to 2.1.0 by Peter
+on 2026-09-05 with the chart-bundle code split (Scope item 0) as its first,
+measurable unit.
+**Release:** 2.1.0
 **Origin:** pushbacks #3 and #4 and deliverables 5 and 6 of
 [009-feature-grounding.md](done/009-feature-grounding.md), agreed 2026-08-26 and never
 started. The arguments below are carried in full — this brief is kickoff-ready on
@@ -43,6 +46,16 @@ are both over 800 lines. Mechanize first, judge second.
 
 ## Scope
 
+0. **Code-split the chart bundle — the first unit, and the perf budget's first
+   number.** Added 2026-09-05: the 2.0.0 build warns on every run — the main
+   chunk is 543 kB and the Recharts chunk 387 kB (minified), both loaded on
+   first paint whether or not a chart is on screen. Doctrine P1's performance
+   face says what isn't needed now isn't loaded now. Lazy-load the
+   chart-bearing components (`React.lazy` around the Recharts users, one
+   suspense fallback in the SIGNAL skeleton style) so Home and the capture
+   tabs open without the chart chunk. Record the before/after sizes here;
+   they become the baseline item 4 measures against. Verify in the browser
+   that Weights, Cardio and Mobility charts still render after the split.
 1. **ESLint.** Flat config, TypeScript + React rules, wired into `npm run lint`
    and into `npm run build` only if it does not slow the build meaningfully.
    Start permissive: the goal is a baseline that passes, not a week of cleanup.
@@ -69,6 +82,8 @@ are both over 800 lines. Mechanize first, judge second.
 
 ## Acceptance
 
+- [ ] The chart chunk no longer loads on first paint; the build's 500 kB
+      warning is gone, and the before/after sizes are written into this brief.
 - [ ] `npm run lint` exists, passes on a clean tree, and fails on a deliberate
       violation.
 - [ ] `npx knip` runs and its findings are triaged in a list — kept, deleted, or

@@ -3,7 +3,8 @@
 **Label:** feature
 **Status:** planned — kickoff-ready. Decided 2026-09-02 after a user question
 about a missing tennis session surfaced that Garmin sync only ever covered
-mono-structural cardio.
+mono-structural cardio. Committed to 2.1.0 by Peter on 2026-09-05.
+**Release:** 2.1.0
 
 ---
 

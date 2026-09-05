@@ -1,7 +1,8 @@
 # Roadmap: `/ground` Step 0 — eight trigger-spec fixes
 
 **Label:** infra
-**Status:** planned — eight findings, each with a proposed `SKILL.md` edit. None are applied. No research needed; this is spec surgery.
+**Status:** planned — eight findings, each with a proposed `SKILL.md` edit. None are applied. No research needed; this is spec surgery. Committed to 2.1.0 by Peter on 2026-09-05 as a spare-time unit.
+**Release:** 2.1.0
 
 Moved here 2026-08-26 from `docs/grounding-inventory.md` §13, under the
 `pending-work-in-roadmap` house rule: the inventory is an *index* of the 75

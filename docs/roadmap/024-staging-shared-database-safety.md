@@ -1,12 +1,11 @@
 # Roadmap: Staging on the production database — guardrails and release cleanup
 
 **Label:** infra
-**Status:** planned — Part 1 split out to [037](done/037-row-origin-tagging.md) on
-2026-09-01; what remains is the migration/destructive-write policy (Part 2) and
-the release cleanup ritual (Part 3). The staging deployment itself (domain,
-gate, env vars) is not part of this brief — that is already done. Carried over
-from 2.0.0 to 2.1.0 when 2.0.0 shipped on 2026-09-05; the first sweep was
-previewed that day (7 staging-tagged rows, 0 dev), not run.
+**Status:** blocked — Peter approved the first sweep on 2026-09-05 (7 staging
+rows, 0 dev; the query is in Part 3) but the session's permission mode refused
+the delete through the Supabase MCP, so it runs the moment a Supabase write is
+allowed. Part 2 (the policy) is unstarted; Part 1 split out to
+[037](done/037-row-origin-tagging.md). Carried over from 2.0.0 to 2.1.0.
 **Depends:** 037
 **Release:** 2.1.0 — carried over: the cleanup ritual is what makes a major
 release safe on a shared database, and 2.0.0 went out with only the preview.
@@ -76,6 +75,40 @@ Only meaningful once [037](done/037-row-origin-tagging.md) ships.
   single-user data with no sandbox; a cleanup that cannot be previewed is a
   worse problem than the pollution it fixes.
 - Record what was deleted, and when, so the record survives the session.
+- **Catalogue rows are never swept.** Peter, 2026-09-05: *"exercise rows are
+  version agnostic."* An exercise, sport type or program created on staging is
+  a real catalogue entry, not pollution — the sweep covers the *log* tables
+  only (training, sport, cardio, mobility, sauna, cold, water, bodyweight,
+  donations). The only reason staging tags exist in the database is this
+  cleanup.
+
+### The 2.0.0 run (2026-09-05)
+
+Preview: 7 staging rows, 0 dev rows — 2 `training_sessions` (2026-09-02 and
+09-03), 2 `sport_sessions` (09-01 and 09-04), 2 `water_logs` (09-03 and
+09-04), 1 `bodyweight_logs` (09-03). Children go with their parents by
+cascade (`session_exercises` → `session_sets`, `sport_session_drills`);
+`progression_adjustments.triggered_by_session_id` is set null. Peter approved
+the delete; it is pending the permission named in the status line. The query
+reports the counts it deleted:
+
+```sql
+with staging_ts as (select id from training_sessions where origin = 'staging'),
+     child_ex as (select count(*) as c from session_exercises where session_id in (select id from staging_ts)),
+     child_sets as (select count(*) as c from session_sets where session_exercise_id in
+       (select id from session_exercises where session_id in (select id from staging_ts))),
+     child_drills as (select count(*) as c from sport_session_drills where session_id in
+       (select id from sport_sessions where origin = 'staging')),
+     d_ts as (delete from training_sessions where origin = 'staging' returning id),
+     d_sp as (delete from sport_sessions where origin = 'staging' returning id),
+     d_w  as (delete from water_logs where origin = 'staging' returning id),
+     d_bw as (delete from bodyweight_logs where origin = 'staging' returning id)
+select 'training_sessions' as t, (select count(*) from d_ts) as deleted,
+       (select c from child_ex) as cascaded_exercises, (select c from child_sets) as cascaded_sets
+union all select 'sport_sessions', (select count(*) from d_sp), (select c from child_drills), 0
+union all select 'water_logs', (select count(*) from d_w), 0, 0
+union all select 'bodyweight_logs', (select count(*) from d_bw), 0, 0;
+```
 
 ## Questions to answer at kickoff
 

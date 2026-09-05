@@ -1,9 +1,8 @@
 # Roadmap: Retire the tracked-muscle-groups setting
 
-**Label:** backlog
-**Status:** backlog — marked 2026-09-05 by Peter as post-2.0.0 work ("tracked
-group settings must be [removed], but I see this as a post-v2 task"). Parked
-until 2.0.0 ships; then it is a small deletion.
+**Label:** feature
+**Status:** planned — 2.0.0 shipped 2026-09-05 and Peter committed the deletion to 2.1.0 the same day ("we can retire it for now"). The *need* behind it is expected back in [040](040-adaptation-goals.md): focus belongs at the adaptation level, and Home and Adaptations must not punish a chosen focus — that is 040's job, not this setting's.
+**Release:** 2.1.0
 
 ## The problem, in plain words
 

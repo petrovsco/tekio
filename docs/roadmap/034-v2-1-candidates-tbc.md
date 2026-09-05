@@ -1,7 +1,8 @@
 # Roadmap: v2.1 candidates — TBC discussion list
 
-**Label:** backlog
-**Status:** backlog — a parking list, not a commitment. Raised by the 2026-09-01 screen survey; discuss in a dedicated session, then graduate keepers into their own briefs (likely under a `2.1` release section in [releases.md](releases.md)).
+**Label:** feature
+**Status:** planned — committed to 2.2.0 by Peter on 2026-09-05: "we need to review more deeply before cut". The work is the review session itself; keepers graduate into their own briefs and cuts execute from this one. Raised by the 2026-09-01 screen survey.
+**Release:** 2.2.0
 
 The 2.0.0 restyle briefs (026–033) deliberately re-skin what exists and
 change no product decisions. These are the product questions the survey
