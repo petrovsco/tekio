@@ -1,9 +1,11 @@
 # Roadmap: Release-blocked schema drops — what develop has stopped reading
 
 **Label:** infra
-**Status:** blocked — committed, but it cannot run until 2.0.0 is released onto
-`master`. Four items queued: one column drop, two leftovers from the
-nine → seven adaptation simplification (019), and the two Habits tables (035).
+**Status:** planned — unblocked 2026-09-05: 2.0.0 is on `master` and production
+serves it, so nothing reads the queued items any more. Four items queued: one
+column drop, two leftovers from the nine → seven adaptation simplification
+(019), and the two Habits tables (035). Each drop is a destructive change to
+the live database, so it runs only after Peter says go.
 
 ## Why this brief exists
 
@@ -100,7 +102,8 @@ drop table habits;
 
 ## Acceptance
 
-- [ ] `master` is running the code that stopped reading these columns and rows.
+- [x] `master` is running the code that stopped reading these columns and rows
+      (2.0.0 released 2026-09-05, production deployment verified the same day).
 - [ ] Each queued drop is applied as a tracked migration (per
       [016-supabase-migration-baseline.md](016-supabase-migration-baseline.md)),
       and its row is ticked off above.
