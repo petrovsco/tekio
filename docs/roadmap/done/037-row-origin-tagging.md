@@ -74,7 +74,7 @@ Deliberately excluded, and why:
 
 - **`habits` / `habit_completions`** — shelved by the doctrine ledger and
   deleted from the app on 2026-09-05 ([035](035-habits-expiry-deletion.md)); the
-  table drops wait in [025](../025-release-blocked-schema-drops.md). Do not add a
+  table drops wait in [025](025-release-blocked-schema-drops.md). Do not add a
   column to a table that is being dropped.
 - **`muscle_groups`, `exercise_muscle_groups`, `movement_patterns`** —
   reference/admin data, not a training log. Pollution here is visible and

@@ -78,7 +78,7 @@ Confirmed against prod on 2026-09-01, and it holds: no exercise carries a
 `default_adaptation` of `speed` or `skill` (one row is set at all — Dead Hang →
 `muscular_endurance`). Two leftovers stay in the database on purpose, both
 inert and both queued in
-[025-release-blocked-schema-drops.md](../025-release-blocked-schema-drops.md):
+[025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md):
 
 - `adaptation_targets` still holds a `speed` and a `skill` row. Nothing reads
   them — the app only looks up keys that exist in `ADAPTATIONS` — but `master`

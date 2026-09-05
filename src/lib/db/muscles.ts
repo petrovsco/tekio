@@ -155,8 +155,8 @@ export async function updateMuscleGroup(
 }
 
 /** Delete a muscle group. Exercise links cascade; fails if it has child groups
- *  or — until the habit tables are dropped (roadmap 025) — if a leftover
- *  `habits` row still points at it (surfaced to the caller). */
+ *  (surfaced to the caller). The habit rows that could also block it went with
+ *  the habit tables on 2026-09-05 (roadmap 025). */
 export async function deleteMuscleGroup(id: string): Promise<void> {
   const { error } = await supabase.from('muscle_groups').delete().eq('id', id)
   if (error) throw error

@@ -5,7 +5,7 @@
 **Release:** 2.1.0
 **Origin:** 2.0.0 was released by hand on 2026-09-05 from three files
 (`CLAUDE.md`, [024](024-staging-shared-database-safety.md),
-[025](025-release-blocked-schema-drops.md)) and memory. Every step turned out
+[025](done/025-release-blocked-schema-drops.md)) and memory. Every step turned out
 right, but nothing said the order, and two of them — the staging sweep and
 the queued schema drops — were found only because those briefs happened to
 be open.

@@ -1,14 +1,14 @@
 # Roadmap: Staging on the production database — guardrails and release cleanup
 
 **Label:** infra
-**Status:** blocked — Peter approved the first sweep on 2026-09-05 (7 staging
-rows, 0 dev; the query is in Part 3) but the session's permission mode refused
-the delete through the Supabase MCP, so it runs the moment a Supabase write is
-allowed. Part 2 (the policy) is unstarted; Part 1 split out to
+**Status:** planned — the first sweep ran on 2026-09-05 (7 staging rows, 0
+dev; the run is recorded in Part 3), so the cleanup ritual exists and has been
+performed once. Part 2 (the policy) is unstarted; Part 1 split out to
 [037](done/037-row-origin-tagging.md). Carried over from 2.0.0 to 2.1.0.
 **Depends:** 037
 **Release:** 2.1.0 — carried over: the cleanup ritual is what makes a major
-release safe on a shared database, and 2.0.0 went out with only the preview.
+release safe on a shared database. 2.0.0's sweep ran the evening after the
+release rather than as part of it; the policy (Part 2) is what remains.
 **Origin:** Peter's answer when asked whether staging should get its own Supabase
 project: *"Same database, but then we need to make sure we don't break the
 production. Also we want to plan database cleanups on major releases so we don't
@@ -89,8 +89,11 @@ Preview: 7 staging rows, 0 dev rows — 2 `training_sessions` (2026-09-02 and
 09-04), 1 `bodyweight_logs` (09-03). Children go with their parents by
 cascade (`session_exercises` → `session_sets`, `sport_session_drills`);
 `progression_adjustments.triggered_by_session_id` is set null. Peter approved
-the delete; it is pending the permission named in the status line. The query
-reports the counts it deleted:
+the delete and it ran the same evening through the Supabase MCP. Deleted: 2
+`training_sessions` (cascading 9 `session_exercises` and 29 `session_sets`),
+2 `sport_sessions` (0 drills), 2 `water_logs`, 1 `bodyweight_logs` — the 7
+rows the preview named, and a recount afterwards found 0 tagged rows in any
+log table. The query, which reports the counts it deleted:
 
 ```sql
 with staging_ts as (select id from training_sessions where origin = 'staging'),
@@ -122,7 +125,8 @@ union all select 'bodyweight_logs', (select count(*) from d_bw), 0, 0;
 
 - [ ] A written rule says how migrations reach production and what staging may
       not do destructively.
-- [ ] A cleanup procedure exists that previews counts before deleting, and it
-      has been run once end to end on real staging rows.
+- [x] A cleanup procedure exists that previews counts before deleting, and it
+      has been run once end to end on real staging rows (2026-09-05, the
+      2.0.0 run above).
 - [ ] The versioning rules in `CLAUDE.md` point at the cleanup as part of a major
       release.

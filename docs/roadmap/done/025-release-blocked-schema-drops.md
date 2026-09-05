@@ -1,17 +1,16 @@
 # Roadmap: Release-blocked schema drops — what develop has stopped reading
 
 **Label:** infra
-**Status:** blocked — 2.0.0 is on `master` and production serves it
-(2026-09-05), and Peter said go the same day; the session's permission mode
-then refused the DDL through the Supabase MCP, so the queue runs the moment a
-Supabase write is allowed. Five items: one column drop, two leftovers from the
-nine → seven simplification (019), the two Habits tables (035) and their
-leftover config row.
+**Status:** done — all five items applied on 2026-09-05 as one tracked
+migration, `20260905190318_release_2_0_0_schema_drops`, the evening 2.0.0
+reached `master`: the column drop, the two leftovers from the nine → seven
+simplification (019), the two Habits tables (035) and their leftover config
+row. Verified against the live schema and the app's bootstrap the same day.
 
 ## Why this brief exists
 
 `develop` and `master` talk to **the same Supabase project** (see
-[024-staging-shared-database-safety.md](024-staging-shared-database-safety.md)).
+[024-staging-shared-database-safety.md](../024-staging-shared-database-safety.md)).
 That makes a whole class of cleanup impossible to finish inside the brief that
 creates it:
 
@@ -80,7 +79,7 @@ alter table exercises add constraint exercises_default_adaptation_check
 ### Also queued: the Habits tables (035)
 
 The Habits section was deleted from `develop` on 2026-09-05
-([done/035](done/035-habits-expiry-deletion.md)): nothing on `develop` selects,
+([035](035-habits-expiry-deletion.md)): nothing on `develop` selects,
 inserts or updates these two tables any more. `master` (1.x) still loads both
 in `bootstrap()`, so dropping them now would break production's Home exactly
 like the column drop above would.
@@ -112,14 +111,27 @@ delete from user_section_config where section_key = 'Habits';
 Confirmed 2026-09-05: nothing references `habits` except `habit_completions`
 (cascade), so the two drops need no other change.
 
+## Applied 2026-09-05
+
+One migration, `20260905190318_release_2_0_0_schema_drops`, ran every
+statement above in order through the Supabase MCP, a few hours after the
+2.0.0 production deployment was verified. Checked afterwards against the live
+schema: `show_in_home` is gone, `adaptation_targets` holds the seven rows,
+the check constraint names seven values, `habits` and `habit_completions` no
+longer exist, and `user_section_config` has no `Habits` row. `develop`
+bootstrapped cleanly against the new schema in the browser (Home, Weights,
+the drawer — no console, page or PostgREST errors). `master` runs the same
+code apart from two docs-only patches, so that check covers both branches.
+
 ## Acceptance
 
 - [x] `master` is running the code that stopped reading these columns and rows
       (2.0.0 released 2026-09-05, production deployment verified the same day).
-- [ ] Each queued drop is applied as a tracked migration (per
-      [016-supabase-migration-baseline.md](016-supabase-migration-baseline.md)),
-      and its row is ticked off above.
-- [ ] `select('*')` from the affected tables shows no leftover column, the
+- [x] Each queued drop is applied as a tracked migration (per
+      [016-supabase-migration-baseline.md](../016-supabase-migration-baseline.md)),
+      and its row is ticked off above — one migration covers all five, see
+      "Applied 2026-09-05".
+- [x] `select('*')` from the affected tables shows no leftover column, the
       `adaptation_targets` table holds seven rows, the check constraint names
       seven values, `habits` and `habit_completions` no longer exist, and the
       app still bootstraps on both branches.

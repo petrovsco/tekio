@@ -427,7 +427,7 @@ decision is the next step.
   424-438`, `TodaysPlan.tsx:48-50`, `normalizeDays`/`flatToBlock`):
   `lib/db/program.ts:148-153` still builds days from `block_id === null` rows and
   `defaultProgram()` (`lib/utils.ts:114-131`) ships no `blocks`. Removing them
-  needs a backfill migration — its own brief, near [025](025-release-blocked-schema-drops.md).
+  needs a backfill migration — its own brief, near [025](done/025-release-blocked-schema-drops.md).
 - **CLAUDE.md said `CYCLE` was defined twice.** It is not: `utils.ts:5` imports
   it from `constants/app.ts`. Corrected in the commit that filed this brief.
 

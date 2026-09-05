@@ -19,28 +19,34 @@ closes what 2.0.0 opened rather than adding surface. In running order:
 
 1. [051](051-exit-condition-walk.md) — the exit-condition walk. It runs
    first because its verdict decides whether 2.1.0 may add anything.
-2. [025](025-release-blocked-schema-drops.md) and
-   [024](024-staging-shared-database-safety.md) — the post-release database
-   chores, then the migration policy.
+2. [024](024-staging-shared-database-safety.md) — the migration policy
+   (Part 2). The post-release database chores are done: the staging sweep
+   ran and [025](done/025-release-blocked-schema-drops.md) closed on
+   2026-09-05.
 3. [012](012-adaptation-target-shapes.md) — target shapes, carried over
    from 2.0.0 (no code when it shipped).
 4. [046](046-retire-tracked-muscle-groups.md) — retire the tracked-groups
    setting.
 5. [041](041-garmin-sport-activity-sync.md) — Garmin sync for sport
    activities.
-6. [044](044-exercise-name-aliases.md) — exercise aliases, the first step
+6. [005](005-hr-zone-intensity-classification.md) — HR-based intensity
+   classification, a grounding candidate (inventory rows 6.1–6.5); after 041
+   because the sport sync widens the HR supply it needs.
+7. [044](044-exercise-name-aliases.md) — exercise aliases, the first step
    toward other users.
-7. [049](049-app-version-display.md), [050](050-release-procedure.md),
+8. [049](049-app-version-display.md), [050](050-release-procedure.md),
    [038](038-favicon-and-app-icon.md) — the version on screen, the written
    release ritual, the icon.
-8. [023](023-mechanical-code-quality-tooling.md) — code quality tooling,
+9. [023](023-mechanical-code-quality-tooling.md) — code quality tooling,
    starting with the chart-bundle code split.
-9. [048](048-simplification-candidates.md) and
-   [015](015-ground-trigger-spec-fixes.md) — spare-time units.
+10. [048](048-simplification-candidates.md) and
+    [015](015-ground-trigger-spec-fixes.md) — spare-time units.
 
-Left out on purpose: 013 (cycle grounding — a program property, grounded only
-if it ships as the default program), 021 (waits on Peter's inputs, no
-release), 034 (→ 2.2.0), 040 (→ 3.0.0). Since 2.0.0 the minor digit is
+Left out on purpose: 003, 020 and 022 (stay in backlog — Peter, 2026-09-05),
+013 (cycle grounding — a program property, grounded only if it ships as the
+default program), 021 (waits on Peter's inputs, no release), 034 (→ 2.2.0),
+040 (→ 3.0.0), 052 (undecided — Peter asked why; the case is in the brief).
+Since 2.0.0 the minor digit is
 Peter's call: everything lands on `develop` as patches, and 2.1.0 is named
 when he releases it.
 
@@ -89,5 +95,6 @@ everywhere (defined 2026-09-01). Two halves:
 019, 026–033, 037, 039, 042, 043). 012 and 024 did not and moved to 2.1.0.
 
 Releasing it unblocked the schema drops queued in
-[025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md) —
-that brief runs *after* this shipped, so it was deliberately not tagged 2.0.0.
+[025-release-blocked-schema-drops.md](done/025-release-blocked-schema-drops.md) —
+that brief ran *after* this shipped (the same evening), so it was deliberately
+not tagged 2.0.0.

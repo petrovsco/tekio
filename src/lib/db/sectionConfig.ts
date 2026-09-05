@@ -15,11 +15,10 @@ export interface SectionConfig {
 // ignored — App.tsx falls back to Home for any key it cannot render.
 //
 // `show_in_home` died with OverviewTab: the fused Home is not a list of section
-// cards, so nothing reads it. The app no longer writes or selects it (roadmap
-// 018 unit 6); the column itself is NOT NULL DEFAULT true, so it keeps filling
-// itself in until it is dropped. The DROP waits for 2.0.0 to reach master —
-// production still runs code that selects it, and both branches share one
-// database. It is queued in docs/roadmap/025-release-blocked-schema-drops.md.
+// cards, so nothing reads it. The app stopped writing and selecting it (roadmap
+// 018 unit 6), and the column itself was dropped on 2026-09-05, once 2.0.0
+// reached master — the drop had to wait because both branches share one
+// database (docs/roadmap/done/025-release-blocked-schema-drops.md).
 const DEFAULTS: SectionConfig[] = [
   { sectionKey: 'Weights',     showInMenu: true, sortOrder: 0 },
   { sectionKey: 'Cardio',      showInMenu: true, sortOrder: 2 },

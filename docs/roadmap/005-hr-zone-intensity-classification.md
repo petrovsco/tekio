@@ -1,7 +1,9 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** backlog — needs avg HR actually arriving in `cardio_sessions`; as of 2026-09-02 exactly 1 of 3 logged sessions carries HR zones and Training Effect. Waiting on data, not on a task: 008 was discarded 2026-09-01, so nothing here parks behind it. Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](done/039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](done/031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
+**Status:** planned — committed to 2.1.0 by Peter on 2026-09-05 as a grounding candidate: the kickoff is a `/ground` run on the classifier thresholds (inventory rows 6.1–6.5), then the HR-aware classifier. The data condition still holds — avg HR must actually arrive in `cardio_sessions` (as of 2026-09-02, 1 of 3 logged sessions carried HR zones and Training Effect), and 041's sport sync widens that supply.
+**Release:** 2.1.0
+**Note:** Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](done/039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](done/031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
 ## Goal
 

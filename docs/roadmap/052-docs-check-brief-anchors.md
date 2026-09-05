@@ -1,7 +1,30 @@
 # Roadmap: Extend the docs check to line anchors in briefs
 
 **Label:** infra
-**Status:** backlog — raised 2026-09-05 at the 2.1.0 planning; Peter asked what it is and has not decided. About thirty minutes of work once he does.
+**Status:** backlog — raised 2026-09-05 at the 2.1.0 planning; Peter asked why, the case is in "Why" below, and he has not decided. Under an hour of work either way.
+
+## Why — the case, for Peter's decision
+
+A brief is the first thing a fresh session reads, and a `#L<n>` anchor is a
+promise that the named line holds the thing the sentence is about. The
+inventory kept that promise badly — 63 of its 76 anchors were stale on
+2026-09-05 — and briefs drift the same way: the same day, 4 of the 12 source
+anchors in active briefs already pointed at a blank or comment line
+(`adaptations.ts#L26`, `#L218`, `#L261`, `#L272`). A session that follows a
+stale anchor either spends context re-finding the identifier or, worse, reads
+the wrong number as the one the brief meant.
+
+The case against: briefs are short-lived, and a session kicking one off reads
+the code anyway, so a stale anchor costs a grep, not a wrong answer. The
+inventory is different — it is a permanent index whose whole content is
+"where does this number live", so its anchors *are* the product.
+
+Recommended shape, if this goes ahead at all: rather than verify line anchors
+in briefs, **forbid them** — a brief links a file and names the symbol
+(`adaptations.ts`, `classifyCardioByDuration`), never a line. The check is
+then three lines (fail on `#L<n>` under `docs/roadmap/*.md`, not `done/`) and
+can never itself go stale. The 17 existing anchors are rewritten to symbols in
+the same change.
 
 ## The gap
 

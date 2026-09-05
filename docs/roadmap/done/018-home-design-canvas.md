@@ -8,7 +8,7 @@ three folds, the recovery sheet and R1's cap met; v1.4.1 the T3 split, T1 halved
 to 554 kB / 161 kB gzip; v1.4.2 the regression pass and `show_in_home`). One
 piece of it is deliberately parked, not dropped: the `show_in_home` **column**
 cannot go until 2.0.0 reaches master, and waits in
-[025-release-blocked-schema-drops.md](../025-release-blocked-schema-drops.md).
+[025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md).
 **Canvas URL:** https://claude.ai/code/artifact/a1534123-0c92-49dc-8fa1-3879279d16ee
 Rounds 2
 and 3 **update that same canvas** — they never invoke `/design` for a fresh one,
@@ -193,7 +193,7 @@ stands; read this for how it got there.
   runs code that selects it and both branches share one database, so dropping it
   would break prod's `bootstrap()` until 2.0.0 lands on master. It is
   `NOT NULL DEFAULT true`, so it fills itself in while it waits, and the drop is
-  queued in [025](../025-release-blocked-schema-drops.md) — Peter's call,
+  queued in [025](025-release-blocked-schema-drops.md) — Peter's call,
   2026-08-31, taken rather than left in a code comment.
   **Regression pass** (browser, 390×844, live data, no console errors beyond the
   pre-existing `/favicon.ico` 404): Home paints requesting no tab module; the
@@ -366,7 +366,7 @@ against the boards and the shipped code — build from this, don't re-derive:
 - ~~Write the readiness before/after comparison into 014.~~ **Done in unit 4.**
 - ~~Drop `show_in_home`~~ — the app side is done. The **column** is release-
   blocked and queued in
-  [025-release-blocked-schema-drops.md](../025-release-blocked-schema-drops.md).
+  [025-release-blocked-schema-drops.md](025-release-blocked-schema-drops.md).
 - ~~Tick acceptance across 018 / 010 / 014; move finished briefs to `done/`.~~
   010 and 018 are closed and moved. 014 keeps one open box on purpose —
   `ExerciseMuscleEditor` moves with the Habits deletion at expiry

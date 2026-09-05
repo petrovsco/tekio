@@ -1,7 +1,7 @@
 # Roadmap: Companion service — live session sync/notifications
 
 **Label:** backlog
-**Status:** backlog — raised 2026-08-30 elsewhere. Parked until it is scoped against doctrine section 4 — the product has not committed to it yet.
+**Status:** backlog — raised 2026-08-30 elsewhere. Parked until it is scoped against doctrine section 4 — the product has not committed to it yet. Left in backlog at the 2.1.0 planning (Peter, 2026-09-05).
 
 ## The idea
 

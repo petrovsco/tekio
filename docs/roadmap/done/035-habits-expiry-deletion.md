@@ -62,7 +62,7 @@ What the brief listed, and what the sweep found on top of it:
 The `habits` and `habit_completions` tables can **not** be dropped while
 `master` runs 1.x — production still loads both on bootstrap (the same
 shared-database rule as
-[025](../025-release-blocked-schema-drops.md)). The drops are queued in 025's
+[025](025-release-blocked-schema-drops.md)). The drops are queued in 025's
 table with the order and the foreign keys that matter; they run once `master`
 runs 2.0.0 or later. Until then a leftover habit row can still block deleting
 the muscle group it points at — the Admin editor's toast now says "something

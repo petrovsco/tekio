@@ -39,8 +39,9 @@ Delete it. The honest read is "every muscle the map draws".
   set becomes every leaf. Update the 045 test that passes `['shoulders']`.
 - The `tracked_muscle_group_ids` column stays until the release cleanup —
   a column drop is release-blocked because staging and production share the
-  database. Add it to [025](025-release-blocked-schema-drops.md) when this
-  brief is picked up.
+  database. [025](done/025-release-blocked-schema-drops.md) closed with the
+  2.0.0 drops, so when this brief is picked up, queue the column in a new
+  brief that follows 025's pattern (or reopen the queue in 024).
 
 ## Doctrine check (§4)
 
