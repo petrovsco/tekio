@@ -47,11 +47,14 @@ Both sit behind the same cookie gate in [middleware.ts](middleware.ts) —
 `BASIC_AUTH_ENABLED` is one environment variable covering Preview *and*
 Production, so a change to it changes both. Vercel Authentication is off; that
 gate is the only door. Staging talks to the **same Supabase project as
-production** — the risks that creates, and the work that pays them, are
+production**, on purpose: the user runs the staging build daily, so a
+row tagged `origin = 'staging'` is real training data, not a test row, and is
+never deleted by its tag. The risks the shared database creates, and the work
+that pays them, are
 [roadmap/037-row-origin-tagging.md](docs/roadmap/done/037-row-origin-tagging.md)
-(marking which environment wrote a row) and
+(marking which build wrote a row) and
 [roadmap/024-staging-shared-database-safety.md](docs/roadmap/024-staging-shared-database-safety.md)
-(the migration policy and the release cleanup).
+(the migration policy).
 
 ## Commands
 

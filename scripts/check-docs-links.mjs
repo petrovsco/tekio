@@ -18,8 +18,16 @@
 //     Passing rows are silent. Failing and unchecked rows are printed with the
 //     target line's text so a person can judge them. Exit 1 when any fail.
 //
-// Node built-ins only. `npm run check:docs` runs both; docs/roadmap/README.md
-// says when.
+//   node scripts/check-docs-links.mjs --no-line-anchors <dir>
+//     No line anchors in active briefs (roadmap 052). A brief links a file
+//     and names the symbol, never a line: a line moves with every edit and
+//     nothing re-checks it. Every .md directly under <dir> (not its
+//     subdirectories — done/ is history) is scanned, and each link whose
+//     fragment is L<n> is printed as `file:line -> target`. Exit 1 when any
+//     are found.
+//
+// Node built-ins only. `npm run check:docs` runs all three;
+// docs/roadmap/README.md says when.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -169,6 +177,25 @@ function anchors(file) {
   return tally.failed === 0;
 }
 
+function noLineAnchors(dir) {
+  const abs = path.resolve(REPO, dir);
+  const files = fs
+    .readdirSync(abs)
+    .filter((n) => n.endsWith('.md'))
+    .map((n) => path.join(abs, n));
+  let found = 0;
+  for (const f of files) {
+    const txt = fs.readFileSync(f, 'utf8');
+    for (const m of txt.matchAll(LINK_RE)) {
+      if (!/#L\d+/.test(m[2])) continue;
+      found++;
+      console.log(`${rel(f)}:${lineOf(txt, m.index)} -> ${m[2]}`);
+    }
+  }
+  console.log(`${files.length} briefs, ${found} line anchors (name the symbol instead)`);
+  return found === 0;
+}
+
 const [mode, ...rest] = process.argv.slice(2);
 let ok;
 if (mode === '--anchors') {
@@ -177,6 +204,12 @@ if (mode === '--anchors') {
     process.exit(2);
   }
   ok = anchors(rest[0]);
+} else if (mode === '--no-line-anchors') {
+  if (!rest[0]) {
+    console.error('usage: check-docs-links.mjs --no-line-anchors <dir>');
+    process.exit(2);
+  }
+  ok = noLineAnchors(rest[0]);
 } else {
   ok = deadLinks(mode ? [mode, ...rest] : ['docs']);
 }

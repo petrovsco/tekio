@@ -39,9 +39,9 @@ one unchecked number is doing two jobs in two documents.
 
 | Inventory row | Constant | Value | The claim to test |
 |---|---|---|---|
-| 5.1 | `CYCLE` — [app.ts:3](../../src/constants/app.ts#L3) | `6` | A training block runs 6 weeks before it resets |
-| 5.3 | `DELOAD_WEEK` — [app.ts:9](../../src/constants/app.ts#L9) | `= CYCLE` (6) | The deload is the *last* week of the block, not a mid-block week |
-| 5.4 | `DELOAD_REP_FACTOR` — [app.ts:16](../../src/constants/app.ts#L16) | `0.7` | A deload cuts reps to 70% and leaves load unchanged |
+| 5.1 | `CYCLE` — [app.ts](../../src/constants/app.ts) | `6` | A training block runs 6 weeks before it resets |
+| 5.3 | `DELOAD_WEEK` — [app.ts](../../src/constants/app.ts) | `= CYCLE` (6) | The deload is the *last* week of the block, not a mid-block week |
+| 5.4 | `DELOAD_REP_FACTOR` — [app.ts](../../src/constants/app.ts) | `0.7` | A deload cuts reps to 70% and leaves load unchanged |
 
 Three separable questions, and the scout should be allowed to answer them
 differently. Deload *frequency* (5.1), deload *placement* (5.3) and deload

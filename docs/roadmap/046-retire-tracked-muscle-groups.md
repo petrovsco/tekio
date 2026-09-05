@@ -10,7 +10,7 @@ Profile has a card called "Adaptation tracking". It lets me pick which
 top-level muscle groups must reach their target before a lifting quality
 counts as "on target" on the Adaptations page. Pick none and every group
 counts. The choice is stored per user (`tracked_muscle_group_ids` in
-[src/lib/db/user.ts](../../src/lib/db/user.ts#L37)), held in the prefs store
+[src/lib/db/user.ts](../../src/lib/db/user.ts)), held in the prefs store
 as `trackedMuscleGroupIds`, and read by `adaptationCoverage` through its
 `trackedMuscleIds` argument.
 

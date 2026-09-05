@@ -21,8 +21,8 @@ Tekiō until typed in by hand via Cardio tab → Sport mode
 This is not the "Sports → Cardio DB merge" referenced (but never written up)
 in [doctrine.md](../doctrine.md)'s ledger and in
 [014](done/014-doctrine-ledger-execution.md),
-[009](done/009-feature-grounding.md), [018](done/018-home-design-canvas.md#L736),
-[028](done/028-cardio-tab-signal-restyle.md#L36) — that item is about unifying
+[009](done/009-feature-grounding.md), [018](done/018-home-design-canvas.md#out-of-scope),
+[028](done/028-cardio-tab-signal-restyle.md#out-of-scope) — that item is about unifying
 `sport_sessions` and `cardio_sessions` into one table. This brief keeps them
 separate and just teaches the *sync* to also write into `sport_sessions`.
 Whoever eventually does the DB merge should read both.

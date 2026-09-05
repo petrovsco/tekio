@@ -1,18 +1,19 @@
-# Roadmap: Staging on the production database — guardrails and release cleanup
+# Roadmap: Staging on the production database — guardrails
 
 **Label:** infra
-**Status:** planned — the first sweep ran on 2026-09-05 (7 staging rows, 0
-dev; the run is recorded in Part 3), so the cleanup ritual exists and has been
-performed once. Part 2 (the policy) is unstarted; Part 1 split out to
-[037](done/037-row-origin-tagging.md). Carried over from 2.0.0 to 2.1.0.
+**Status:** planned — Part 2 (the policy) is unstarted; Part 1 split out to
+[037](done/037-row-origin-tagging.md). Part 3, the release sweep, was
+withdrawn on 2026-09-05 after its one run deleted real training data
+(recovery: [053](053-recover-swept-staging-rows.md)). Carried over from
+2.0.0 to 2.1.0.
 **Depends:** 037
-**Release:** 2.1.0 — carried over: the cleanup ritual is what makes a major
-release safe on a shared database. 2.0.0's sweep ran the evening after the
-release rather than as part of it; the policy (Part 2) is what remains.
+**Release:** 2.1.0 — carried over: the policy is what makes a release safe on
+a shared database.
 **Origin:** Peter's answer when asked whether staging should get its own Supabase
 project: *"Same database, but then we need to make sure we don't break the
 production. Also we want to plan database cleanups on major releases so we don't
-have polluted database."* This brief carries both halves of that sentence.
+have polluted database."* This brief carried both halves of that sentence until
+2026-09-05; the cleanup half is withdrawn (Part 3 says why).
 
 ## The decision this brief protects
 
@@ -23,25 +24,22 @@ data. A second Supabase project would mean replaying every migration twice and
 keeping two schemas in step, for a database whose value is precisely that it is
 the real one.
 
-The cost of that choice is two risks, and this brief is the work that pays them:
+**Staging is the user's daily app.** He logs on `develop`'s build to test the app
+in live conditions — Peter, 2026-09-05: *"they were real sessions, that's why
+we used prod DB in staging — because I wanted to test the app in live
+conditions."* So a row tagged `origin = 'staging'` is a real row that happens
+to have been written by the staging build. The tag says which build wrote it,
+which is useful when a bug is found, and says nothing about whether the row
+may be deleted.
 
-1. **Staging can break production.** They are the same rows. A bad migration, a
-   destructive query, or a half-finished feature that writes garbage does not
-   stay on staging — there is no staging copy to stay in.
-2. **Staging pollutes production.** Every test entry logged while trying a
-   feature on `develop` is a real row in the real training log. Left alone, the
-   charts, the cycle maths and the muscle read all slowly drift away from what
-   Peter actually did.
+The cost of the shared database is one risk, and this brief is the work that
+pays it: **staging can break production.** They are the same rows. A bad
+migration, a destructive query, or a half-finished feature that writes garbage
+does not stay on staging — there is no staging copy to stay in.
 
-## The load-bearing problem: you cannot clean up what you cannot identify
-
-The obvious plan — "sweep the test rows at each major release" — does not work
-today, because **nothing distinguishes a row created on staging from a row Peter
-logged for real.** Both are inserts by `USER_ID` into the same tables. A cleanup
-would either be done by hand from memory, or would delete real training data.
-
-So the ordering is forced: **tagging comes before cleanup.** Any cleanup ritual
-written before rows are identifiable is a ritual that cannot be performed.
+Pollution — a throwaway entry logged to try a feature — is rare, small, and
+handled by hand: delete it in the app right after the test. It never justifies
+a bulk delete.
 
 ## What to build
 
@@ -50,7 +48,7 @@ written before rows are identifiable is a ritual that cannot be performed.
 Split out on 2026-09-01 and moved in full: the nullable `origin` column, the
 write-once trigger, the environment resolver, and the on-screen marker. It left
 because it was the only part blocking anything — [026](done/026-signal-chrome-and-primitives.md)
-waits on it — and because Part 3 below cannot be written until it ships.
+waited on it.
 
 ### Part 2 — Stop staging from breaking production
 
@@ -62,62 +60,30 @@ waits on it — and because Part 3 below cannot be written until it ships.
   updates from staging hit real rows. Either the app blocks them when
   `VITE_ENV=staging`, or the risk is accepted in writing. Do not leave it
   unexamined.
+- **`origin`-tagged rows are real data.** Write down that no query deletes
+  rows by their `origin` tag, on any release. Before any bulk delete on this
+  database, the rows are listed *with their content* and Peter confirms them
+  one by one — a preview of counts and dates is not a preview of what the
+  rows are.
 
-### Part 3 — The cleanup ritual at major releases
+### Part 3 — The release sweep (withdrawn 2026-09-05)
 
-Only meaningful once [037](done/037-row-origin-tagging.md) ships.
-
-- On every **major** version bump (the ones Peter confirms — see the branching
-  and versioning rules in `CLAUDE.md`), sweep rows whose `origin` is not null
-  — 037 tags both `'staging'` and `'dev'`, and null means production.
-- Write the sweep as a reviewable query per table, not one blanket delete, and
-  **report a count before deleting anything**. The database holds live
-  single-user data with no sandbox; a cleanup that cannot be previewed is a
-  worse problem than the pollution it fixes.
-- Record what was deleted, and when, so the record survives the session.
-- **Catalogue rows are never swept.** Peter, 2026-09-05: *"exercise rows are
-  version agnostic."* An exercise, sport type or program created on staging is
-  a real catalogue entry, not pollution — the sweep covers the *log* tables
-  only (training, sport, cardio, mobility, sauna, cold, water, bodyweight,
-  donations). The only reason staging tags exist in the database is this
-  cleanup.
-
-### The 2.0.0 run (2026-09-05)
-
-Preview: 7 staging rows, 0 dev rows — 2 `training_sessions` (2026-09-02 and
-09-03), 2 `sport_sessions` (09-01 and 09-04), 2 `water_logs` (09-03 and
-09-04), 1 `bodyweight_logs` (09-03). Children go with their parents by
-cascade (`session_exercises` → `session_sets`, `sport_session_drills`);
-`progression_adjustments.triggered_by_session_id` is set null. Peter approved
-the delete and it ran the same evening through the Supabase MCP. Deleted: 2
-`training_sessions` (cascading 9 `session_exercises` and 29 `session_sets`),
-2 `sport_sessions` (0 drills), 2 `water_logs`, 1 `bodyweight_logs` — the 7
-rows the preview named, and a recount afterwards found 0 tagged rows in any
-log table. The query, which reports the counts it deleted:
-
-```sql
-with staging_ts as (select id from training_sessions where origin = 'staging'),
-     child_ex as (select count(*) as c from session_exercises where session_id in (select id from staging_ts)),
-     child_sets as (select count(*) as c from session_sets where session_exercise_id in
-       (select id from session_exercises where session_id in (select id from staging_ts))),
-     child_drills as (select count(*) as c from sport_session_drills where session_id in
-       (select id from sport_sessions where origin = 'staging')),
-     d_ts as (delete from training_sessions where origin = 'staging' returning id),
-     d_sp as (delete from sport_sessions where origin = 'staging' returning id),
-     d_w  as (delete from water_logs where origin = 'staging' returning id),
-     d_bw as (delete from bodyweight_logs where origin = 'staging' returning id)
-select 'training_sessions' as t, (select count(*) from d_ts) as deleted,
-       (select c from child_ex) as cascaded_exercises, (select c from child_sets) as cascaded_sets
-union all select 'sport_sessions', (select count(*) from d_sp), (select c from child_drills), 0
-union all select 'water_logs', (select count(*) from d_w), 0, 0
-union all select 'bodyweight_logs', (select count(*) from d_bw), 0, 0;
-```
+The first version of this brief planned a sweep of `origin`-tagged log rows at
+every major release, on the assumption that a staging row was a test row. It
+ran once, the evening 2.0.0 shipped, after a preview that listed seven rows by
+count and date (2026-09-01 to 09-04); Peter's "ok" was read as approval. The
+assumption was wrong: those were his real sessions from that week, logged on
+staging on purpose. The run deleted 2 `training_sessions` (with 9
+`session_exercises` and 29 `session_sets`), 2 `sport_sessions`, 2 `water_logs`
+and 1 `bodyweight_logs`. Getting them back is
+[053](053-recover-swept-staging-rows.md). This part is withdrawn, and the
+release procedure ([050](050-release-procedure.md)) no longer carries the step.
 
 ## Questions to answer at kickoff
 
 1. Does staging get a *blanket* block on deletes and bulk updates, or is the
    risk accepted in writing? The app has one user, so a block is cheap — but it
-   also makes staging unable to exercise the delete paths that 026 restyles.
+   also makes staging unable to exercise the delete paths that 026 restyled.
 2. Where does the migration policy live so it is actually read — `CLAUDE.md`,
    `supabase/README.md`, or both?
 
@@ -125,8 +91,7 @@ union all select 'bodyweight_logs', (select count(*) from d_bw), 0, 0;
 
 - [ ] A written rule says how migrations reach production and what staging may
       not do destructively.
-- [x] A cleanup procedure exists that previews counts before deleting, and it
-      has been run once end to end on real staging rows (2026-09-05, the
-      2.0.0 run above).
-- [ ] The versioning rules in `CLAUDE.md` point at the cleanup as part of a major
-      release.
+- [ ] The same rule says that `origin`-tagged rows are real data and are never
+      deleted by tag; a test entry is deleted in the app right after the test.
+- [ ] The versioning rules in `CLAUDE.md` point at the migration policy as part
+      of a major release.

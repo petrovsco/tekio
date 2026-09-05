@@ -37,7 +37,7 @@ Apply in any order — they touch different parts of the skill and do not confli
 
 - [ ] All seven wording edits are in `SKILL.md`, and 13.7's option is chosen and applied.
 - [ ] A reader who knows only `SKILL.md` would gate `reps <= 5` at
-  [lib/adaptations.ts:26](../../src/lib/adaptations.ts#L26), the Epley/Brzycki
+  `classifyWeightSet` ([lib/adaptations.ts](../../src/lib/adaptations.ts)), the Epley/Brzycki
   blend, and `ADAPTATION_PRINCIPLE` — the three classes the current spec misses.
 - [ ] The inventory's `†` rows can be marked `n/a — definitional` without inventing a
   fifth scout verdict.
@@ -69,7 +69,7 @@ are not named.
 
 The sharpest case is rows 2.1–2.5. `repRange` is gated by name and is **dead
 code** — declared, never read. The live rep-range boundaries are `reps <= 5` /
-`reps <= 15` at [lib/adaptations.ts:26-27](../../src/lib/adaptations.ts#L26), which
+`reps <= 15` at `classifyWeightSet` ([lib/adaptations.ts](../../src/lib/adaptations.ts)), which
 the table does not name. Someone changing hypertrophy's rep range by editing the
 gated constant would ship nothing, pass the gate, and believe they had grounded
 the app's classifier.
@@ -118,7 +118,7 @@ in §5 that most needs a run. `r05` is definitional: plates come in 2.5 kg pairs
 Step 0 says the gate fires on *"the default — the constant, the seed row, the
 migration"* and never on a runtime edit. `adaptation_targets` breaks this
 cleanly: its 9 rows are byte-identical to the `adaptations.ts` defaults, they
-**override** them at [lib/adaptations.ts:261](../../src/lib/adaptations.ts#L261),
+**override** them at the `targets` argument of `adaptationCoverage` ([lib/adaptations.ts](../../src/lib/adaptations.ts)),
 and no column records whether a row is still seeded or has been edited. So "is
 this a default or a runtime edit?" has no answer, and the carve-out cannot be
 applied. Row 7.6 (179 exercise→muscle links) is the same shape at scale.

@@ -15,14 +15,21 @@ the board.
 The first release after 2.0.0, scoped by Peter on 2026-09-05, the day 2.0.0
 shipped. Theme: **finish the model, clean the house.** Doctrine §6 says no
 new sections until the five-second Home read is proven, so this release
-closes what 2.0.0 opened rather than adding surface. In running order:
+closes what 2.0.0 opened rather than adding surface.
+
+**Before anything in it:** [053](053-recover-swept-staging-rows.md) — recover
+the seven rows the withdrawn release sweep deleted on 2026-09-05. Not a 2.1.0
+item; it goes first because it is the user's training data and the bytes are
+only on disk until a vacuum runs.
+
+In running order:
 
 1. [051](051-exit-condition-walk.md) — the exit-condition walk. It runs
    first because its verdict decides whether 2.1.0 may add anything.
 2. [024](024-staging-shared-database-safety.md) — the migration policy
-   (Part 2). The post-release database chores are done: the staging sweep
-   ran and [025](done/025-release-blocked-schema-drops.md) closed on
-   2026-09-05.
+   (Part 2). [025](done/025-release-blocked-schema-drops.md) closed on
+   2026-09-05; the release sweep 024 once carried is withdrawn, because
+   its one run deleted real data (053).
 3. [012](012-adaptation-target-shapes.md) — target shapes, carried over
    from 2.0.0 (no code when it shipped).
 4. [046](046-retire-tracked-muscle-groups.md) — retire the tracked-groups
@@ -45,7 +52,8 @@ closes what 2.0.0 opened rather than adding surface. In running order:
 Left out on purpose: 003, 020 and 022 (stay in backlog — Peter, 2026-09-05),
 013 (cycle grounding — a program property, grounded only if it ships as the
 default program), 021 (waits on Peter's inputs, no release), 034 (→ 2.2.0),
-040 (→ 3.0.0), 052 (undecided — Peter asked why; the case is in the brief).
+040 (→ 3.0.0), 052 (shipped as a patch on 2026-09-05: line anchors are
+forbidden in briefs).
 Since 2.0.0 the minor digit is
 Peter's call: everything lands on `develop` as patches, and 2.1.0 is named
 when he releases it.

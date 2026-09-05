@@ -54,10 +54,10 @@ The trap is in how they are counted and labelled
 ([src/lib/adaptations.ts](../../src/lib/adaptations.ts)):
 
 - **Lifting work is counted one set at a time.** `volume[a] += 1` runs once per
-  logged set ([adaptations.ts:218](../../src/lib/adaptations.ts#L218)).
+  logged set (`adaptationCoverage` in [adaptations.ts](../../src/lib/adaptations.ts)).
 - **The label is not chosen by the target, it is chosen by the modality.**
   `unit` is `'sets'` whenever `modality === 'resistance'`, and `'sessions'`
-  otherwise ([adaptations.ts:288](../../src/lib/adaptations.ts#L288)).
+  otherwise (`adaptationCoverage` in [adaptations.ts](../../src/lib/adaptations.ts)).
 
 So for a lifting adaptation, `volume` is always a **set count** — whatever
 target you compare it against.
@@ -65,7 +65,7 @@ target you compare it against.
 ### The half-open door, and why walking through it makes things worse
 
 There *is* already a switch that looks like it does the job
-([adaptations.ts:274](../../src/lib/adaptations.ts#L274)):
+(`adaptationCoverage` in [adaptations.ts](../../src/lib/adaptations.ts)):
 
 ```ts
 const isResistance = meta.modality === 'resistance' && muscleTarget > 0
@@ -73,7 +73,7 @@ const isResistance = meta.modality === 'resistance' && muscleTarget > 0
 
 Set `weeklyMuscleTarget: 0` on speed and it stops using the per-muscle path and
 starts using the session path instead
-([adaptations.ts:282-284](../../src/lib/adaptations.ts#L282)):
+(`adaptationCoverage` in [adaptations.ts](../../src/lib/adaptations.ts)):
 
 ```ts
 const met = isResistance
@@ -99,7 +99,7 @@ shape entirely for minutes.
 `weekly_session_target`
 ([src/lib/db/adaptationTargets.ts](../../src/lib/db/adaptationTargets.ts)), and
 those rows **win** over the constants
-([adaptations.ts:272-273](../../src/lib/adaptations.ts#L272)). A minutes target
+(the `targets` argument of `adaptationCoverage` in [adaptations.ts](../../src/lib/adaptations.ts)). A minutes target
 is therefore a migration too, not just a TypeScript change. Whatever shape is
 chosen has to land in both places in the same commit — the rule
 [011-adaptation-weekly-targets.md](done/011-adaptation-weekly-targets.md) already set.
@@ -138,7 +138,7 @@ says the same thing honestly.
 
 The app asks for 2 endurance sessions per week, and classifies any session of
 **≥25 minutes** as endurance
-([adaptations.ts:49](../../src/lib/adaptations.ts#L49)).
+(`classifyCardioByDuration` in [adaptations.ts](../../src/lib/adaptations.ts)).
 
 Put those two together and the app is certifying **about 50 minutes a week** as
 enough. Every published position is far above that — WHO says 150–300 minutes of
@@ -254,7 +254,7 @@ because it is part of the cost of choosing Attia.
 ### One neighbouring number this brief does not touch
 
 The **≥25 min endurance classification threshold**
-([adaptations.ts:49](../../src/lib/adaptations.ts#L49), inventory row 6.1, state
+(`classifyCardioByDuration` in [adaptations.ts](../../src/lib/adaptations.ts), inventory row 6.1, state
 *unknown*) belongs to
 [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md) and is
 **out of scope here**. But moving to minutes changes what it does, so it should
@@ -318,7 +318,7 @@ before implementation.
 - **Real session counting** for lifting adaptations, so `weeklySessionTarget`
   means sessions when a lifting adaptation uses it.
 - `unit` derived from **which target is in use**, not from `modality`
-  ([adaptations.ts:288](../../src/lib/adaptations.ts#L288)).
+  (`adaptationCoverage` in [adaptations.ts](../../src/lib/adaptations.ts)).
 - Moving speed and power onto session targets, and endurance onto minutes, in
   both the constants and the DB rows, in one commit.
 - Picking a side in the Attia/Galpin fork and writing down why.

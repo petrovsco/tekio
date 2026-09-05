@@ -6,9 +6,10 @@
 **Origin:** 2.0.0 was released by hand on 2026-09-05 from three files
 (`CLAUDE.md`, [024](024-staging-shared-database-safety.md),
 [025](done/025-release-blocked-schema-drops.md)) and memory. Every step turned out
-right, but nothing said the order, and two of them — the staging sweep and
-the queued schema drops — were found only because those briefs happened to
-be open.
+right, but nothing said the order, and two of them — the queued schema drops
+and the staging sweep (since withdrawn: its one run deleted real data,
+[053](053-recover-swept-staging-rows.md)) — were found only because those
+briefs happened to be open.
 
 ## The plain summary
 
@@ -35,10 +36,10 @@ without rediscovering anything.
    Once [049](049-app-version-display.md) ships: open the site and read the
    version — the only check a person can do without Vercel.
 6. **Post-release:** unblock what depended on the release (025's pattern:
-   `blocked` → `planned`, first acceptance box ticked); on a **major**, run
-   024's sweep of `origin`-tagged log rows (preview counts first); run the
-   025 queue as tracked migrations; move finished briefs to `done/` and
-   repoint their links.
+   `blocked` → `planned`, first acceptance box ticked); run the 025 queue
+   as tracked migrations — and never a sweep of `origin`-tagged rows, which
+   are real data (024, Part 3); move finished briefs to `done/` and repoint
+   their links.
 7. **Open the next release** section in `releases.md`.
 
 ## Where it lives
@@ -46,7 +47,7 @@ without rediscovering anything.
 `CLAUDE.md`'s "Branching and versioning" is the file every session reads,
 so the short checklist goes there, linking 024 and 025 for the two database
 steps. That also ticks 024's third acceptance box ("the versioning rules in
-`CLAUDE.md` point at the cleanup as part of a major release"). A separate
+`CLAUDE.md` point at the migration policy as part of a major release"). A separate
 `docs/release.md` would be one more reference doc nobody opens.
 
 ## Acceptance

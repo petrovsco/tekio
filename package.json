@@ -1,7 +1,7 @@
 {
   "name": "tekio",
   "private": true,
-  "version": "2.0.3",
+  "version": "2.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check:docs": "node scripts/check-docs-links.mjs docs CLAUDE.md README.md supabase/README.md scripts/garmin-sync/README.md && node scripts/check-docs-links.mjs --anchors docs/grounding-inventory.md"
+    "check:docs": "node scripts/check-docs-links.mjs docs CLAUDE.md README.md supabase/README.md scripts/garmin-sync/README.md && node scripts/check-docs-links.mjs --anchors docs/grounding-inventory.md && node scripts/check-docs-links.mjs --no-line-anchors docs/roadmap"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
