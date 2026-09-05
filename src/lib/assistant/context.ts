@@ -1,9 +1,9 @@
 // Builds a compact snapshot of the user's current data so the model can resolve
-// names (muscle groups, exercises, habits, program days) without extra round-trips.
+// names (muscle groups, exercises, program days) without extra round-trips.
 // Small by design — a single user's catalogue is tiny.
 import type { AppState } from '../../types'
 
-type ContextInput = Pick<AppState, 'muscleGroups' | 'exerciseMuscles' | 'habits' | 'programs'> & {
+type ContextInput = Pick<AppState, 'muscleGroups' | 'exerciseMuscles' | 'programs'> & {
   exerciseNames: Record<string, string>
 }
 
@@ -23,20 +23,6 @@ export function buildContext(s: ContextInput): string {
   // Exercises.
   const exercises = Object.values(s.exerciseNames).sort()
   if (exercises.length) parts.push(`## Exercises\n${exercises.join(', ')}`)
-
-  // Habits.
-  if (s.habits.length) {
-    const habits = s.habits.map(h => {
-      const link = h.muscleGroupId
-        ? ` [muscle: ${nameById.get(h.muscleGroupId) ?? '?'}]`
-        : h.exerciseId
-          ? ` [exercise: ${s.exerciseNames[h.exerciseId] ?? '?'}]`
-          : ''
-      const unit = h.unit ? ` ${h.unit}` : ''
-      return `${h.name} (${h.cadence}, target ${h.targetCount}${unit})${link}`
-    })
-    parts.push(`## Habits\n${habits.join('\n')}`)
-  }
 
   // Active programs and their days.
   if (s.programs.length) {

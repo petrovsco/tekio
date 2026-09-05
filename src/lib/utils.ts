@@ -1,7 +1,6 @@
 import type {
   WeightEntry, Program, ProgramDay, ProgramWeekOverride, MobilityEntry, DayOfWeek,
-  Habit, HabitCompletion, HabitCadence, HabitProgress, ExerciseMuscleLink, MuscleGroup,
-  WaterEntry, CardioEntry, LiftSet,
+  ExerciseMuscleLink, LiftSet,
 } from '../types'
 import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../constants/app'
 
@@ -377,111 +376,6 @@ export function isDayDoneInWeek(
   return day.exercises.every(ex =>
     weights.some(w => w.exercise === ex && w.date >= weekStartDate && w.date <= date),
   )
-}
-
-// ── Habits / Milestones ───────────────────────────────────────────────────────
-
-/** Start (YYYY-MM-DD) of the period a date belongs to, given a habit's cadence. */
-export function habitPeriodStart(
-  cadence: HabitCadence,
-  date: string = today(),
-  weekStart: WeekStartDay = 'monday',
-): string {
-  if (cadence === 'weekly') return startOfWeek(date, weekStart)
-  if (cadence === 'monthly') return `${date.slice(0, 7)}-01`
-  return date
-}
-
-/** Self + immediate children muscle-group names (lowercased) for a linked group id. */
-function groupAndDescendantNames(muscleGroupId: string, groups: MuscleGroup[]): Set<string> {
-  const out = new Set<string>()
-  const root = groups.find(g => g.id === muscleGroupId)
-  if (!root) return out
-  out.add(root.name.toLowerCase())
-  for (const g of groups) if (g.parentId === muscleGroupId) out.add(g.name.toLowerCase())
-  return out
-}
-
-/** Exercise names whose sets count toward a weight_sets habit. */
-function targetExerciseNames(habit: Habit, ctx: HabitProgressContext): Set<string> {
-  const names = new Set<string>()
-  if (habit.exerciseId && ctx.exerciseNames?.[habit.exerciseId]) {
-    names.add(ctx.exerciseNames[habit.exerciseId].toLowerCase())
-    return names
-  }
-  if (habit.muscleGroupId) {
-    const groupNames = groupAndDescendantNames(habit.muscleGroupId, ctx.muscleGroups)
-    for (const l of ctx.exerciseMuscles) {
-      if (l.contribution !== 'stimulus' || l.level > habit.countLevel) continue
-      if (groupNames.has(l.group.toLowerCase())) names.add(l.exercise.toLowerCase())
-    }
-  }
-  return names
-}
-
-export interface HabitProgressContext {
-  weights: WeightEntry[]
-  mobility: MobilityEntry[]
-  water: WaterEntry[]
-  cardio: CardioEntry[]
-  habitCompletions: HabitCompletion[]
-  exerciseMuscles: ExerciseMuscleLink[]
-  muscleGroups: MuscleGroup[]
-  /** exercise id → name, for exercise-linked auto habits. */
-  exerciseNames?: Record<string, string>
-}
-
-/** Live progress of a habit toward its target for the current period. */
-export function habitProgress(
-  habit: Habit,
-  ctx: HabitProgressContext,
-  date: string = today(),
-  weekStart: WeekStartDay = 'monday',
-): HabitProgress {
-  const periodStart = habitPeriodStart(habit.cadence, date, weekStart)
-  const inPeriod = (d: string) => d >= periodStart && d <= date
-  let current = 0
-
-  switch (habit.autoSource) {
-    case 'water':
-      current = ctx.water.filter(w => inPeriod(w.date)).reduce((s, w) => s + w.amountMl, 0)
-      break
-    case 'weight_sets': {
-      const names = targetExerciseNames(habit, ctx)
-      current = ctx.weights
-        .filter(w => inPeriod(w.date) && names.has(w.exercise.toLowerCase()))
-        .reduce((s, w) => s + w.sets.length, 0)
-      break
-    }
-    case 'mobility_minutes': {
-      const groupNames = habit.muscleGroupId
-        ? groupAndDescendantNames(habit.muscleGroupId, ctx.muscleGroups)
-        : null
-      const exName = habit.exerciseId ? ctx.exerciseNames?.[habit.exerciseId]?.toLowerCase() : null
-      for (const m of ctx.mobility) {
-        if (!inPeriod(m.date)) continue
-        for (const e of m.exercises) {
-          const matchesEx = exName != null && e.name.toLowerCase() === exName
-          const matchesGroup =
-            groupNames != null && (e.muscleGroups ?? []).some(g => groupNames.has(g.toLowerCase()))
-          if (matchesEx || matchesGroup || (groupNames == null && exName == null)) current += e.duration
-        }
-      }
-      break
-    }
-    case 'cardio_sessions':
-      current = ctx.cardio.filter(c => inPeriod(c.date)).length
-      break
-    case 'none':
-    default:
-      current = ctx.habitCompletions
-        .filter(c => c.habitId === habit.id && c.periodStart === periodStart)
-        .reduce((s, c) => s + c.count, 0)
-      break
-  }
-
-  const target = habit.targetCount || 1
-  return { current, target, done: current >= target, periodStart }
 }
 
 // ── Muscle stimulus accounting ────────────────────────────────────────────────

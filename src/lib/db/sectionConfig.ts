@@ -10,7 +10,8 @@ export interface SectionConfig {
 // Three menu sections, one slot of headroom — doctrine R1's cap of four, met
 // for the first time (roadmap 014). Body Weight, Donations, Water and Recovery
 // are gone from this list because they are no longer destinations: they read
-// and capture on Home. Their live rows survive in the DB and are simply
+// and capture on Home. Habits is gone because it was deleted (doctrine R2,
+// roadmap 035, 2026-09-05). Their live rows survive in the DB and are simply
 // ignored — App.tsx falls back to Home for any key it cannot render.
 //
 // `show_in_home` died with OverviewTab: the fused Home is not a list of section
@@ -23,9 +24,6 @@ const DEFAULTS: SectionConfig[] = [
   { sectionKey: 'Weights',     showInMenu: true, sortOrder: 0 },
   { sectionKey: 'Cardio',      showInMenu: true, sortOrder: 2 },
   { sectionKey: 'Mobility',    showInMenu: true, sortOrder: 3 },
-  // Habits is shelved (doctrine R2, decided 2026-08-26; delete by 2026-10-07).
-  // Shelved, not folded — the row keeps a Profile toggle that brings it back.
-  { sectionKey: 'Habits',      showInMenu: false, sortOrder: 7 },
 ]
 
 export async function loadSectionConfig(): Promise<SectionConfig[]> {

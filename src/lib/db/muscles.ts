@@ -17,7 +17,7 @@ export async function loadMuscleGroups(): Promise<MuscleGroup[]> {
   }))
 }
 
-/** All exercises the user can link a habit to (id + name + optional adaptation tag). */
+/** The whole exercise catalogue (id + name + optional adaptation tag). */
 export async function loadExercises(): Promise<{ id: string; name: string; adaptation: Adaptation | null }[]> {
   const { data, error } = await supabase
     .from('exercises')
@@ -155,7 +155,8 @@ export async function updateMuscleGroup(
 }
 
 /** Delete a muscle group. Exercise links cascade; fails if it has child groups
- *  or is referenced by a habit (surfaced to the caller). */
+ *  or — until the habit tables are dropped (roadmap 025) — if a leftover
+ *  `habits` row still points at it (surfaced to the caller). */
 export async function deleteMuscleGroup(id: string): Promise<void> {
   const { error } = await supabase.from('muscle_groups').delete().eq('id', id)
   if (error) throw error

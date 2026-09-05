@@ -34,7 +34,6 @@ const SYSTEM_PROMPT = `You are the in-app assistant for Tekio, a personal fitnes
 You help the user manage their training data by proposing changes that the app will show them for confirmation before applying. Never claim a change is done - you only propose it; the app applies it after the user confirms.
 
 Domain model:
-- Habits: recurring goals (daily/weekly/monthly) with a target count and unit. A habit may be linked to a muscle group OR an exercise to auto-count progress from logged training.
 - Exercises: named movements. Canonical names use hyphenation like Push-ups, Pull-ups, Pogo Hops.
 - Muscle groups: a hierarchy (a group may have a parent, e.g. Lateral Deltoid under Shoulders). Each belongs to a body region: upper, lower, core, or full_body.
 - Exercise-to-muscle mapping: each link has a level 1-3 (1 = most direct/primary, 2-3 = secondary) and a contribution of stimulus (default) or recovery.
@@ -42,65 +41,14 @@ Domain model:
 
 Rules:
 - Use the Current app data snapshot below to resolve names to what already exists. Prefer existing exercises and muscle groups; only create a new one when nothing suitable exists.
-- To add a habit mapped to muscles: if the exercise does not exist, call create_exercise; map it to each relevant muscle group with map_exercise_to_muscle (pick sensible levels); then create_habit linked to the exercise or a muscle group.
-- Emit all the function calls needed to fulfil the request in one turn, in dependency order (create/mappings before the habit that references them). Keep proposals minimal - do not invent extra changes.
+- To add an exercise mapped to muscles: if the exercise does not exist, call create_exercise; then map it to each relevant muscle group with map_exercise_to_muscle (pick sensible levels).
+- Emit all the function calls needed to fulfil the request in one turn, in dependency order (create an exercise before the mappings that reference it). Keep proposals minimal - do not invent extra changes.
 - When a request is ambiguous (which program, which day, which muscles), ask a brief clarifying question in text instead of guessing.
 - Be concise and friendly.`
 
 // Tool declarations sent to the model. The client has a matching executor keyed
 // by these exact tool names + arg names - keep the two in sync.
 const FUNCTION_DECLARATIONS = [
-  {
-    name: 'create_habit',
-    description: 'Create a new habit/goal.',
-    parameters: {
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-        icon: { type: 'string', description: 'A single emoji for the habit.' },
-        cadence: { type: 'string', enum: ['daily', 'weekly', 'monthly'] },
-        targetCount: { type: 'number', description: 'Goal for the period. Use 1 for a simple check-off.' },
-        unit: { type: 'string', description: 'e.g. sets, minutes, ml, sessions.' },
-        muscleGroup: { type: 'string', description: 'Name of a linked muscle group (optional).' },
-        exercise: { type: 'string', description: 'Name of a linked exercise (optional).' },
-        autoSource: { type: 'string', enum: ['none', 'weight_sets', 'mobility_minutes', 'water', 'cardio_sessions'] },
-        countLevel: { type: 'integer', description: 'For muscle auto-count: include links with level <= this (1-3).' },
-        contribution: { type: 'string', enum: ['stimulus', 'recovery'] },
-        singleTick: { type: 'boolean', description: 'Manual habits: true = one-tap done, false = +1 counter.' },
-        notes: { type: 'string' },
-      },
-      required: ['name'],
-    },
-  },
-  {
-    name: 'update_habit',
-    description: 'Update an existing habit, matched by its current name. Only include fields to change.',
-    parameters: {
-      type: 'object',
-      properties: {
-        habit: { type: 'string', description: 'Current name of the habit to update.' },
-        name: { type: 'string', description: 'New name (optional).' },
-        icon: { type: 'string' },
-        cadence: { type: 'string', enum: ['daily', 'weekly', 'monthly'] },
-        targetCount: { type: 'number' },
-        unit: { type: 'string' },
-        muscleGroup: { type: 'string' },
-        exercise: { type: 'string' },
-        autoSource: { type: 'string', enum: ['none', 'weight_sets', 'mobility_minutes', 'water', 'cardio_sessions'] },
-        countLevel: { type: 'integer' },
-        contribution: { type: 'string', enum: ['stimulus', 'recovery'] },
-        singleTick: { type: 'boolean' },
-        notes: { type: 'string' },
-        active: { type: 'boolean' },
-      },
-      required: ['habit'],
-    },
-  },
-  {
-    name: 'delete_habit',
-    description: 'Delete a habit by name.',
-    parameters: { type: 'object', properties: { habit: { type: 'string' } }, required: ['habit'] },
-  },
   {
     name: 'create_exercise',
     description: 'Create a new exercise by name.',

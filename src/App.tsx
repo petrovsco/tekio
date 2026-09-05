@@ -13,15 +13,15 @@ const AdaptationsTab = lazy(() => import('./components/tabs/AdaptationsTab').the
 const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').then(m => ({ default: m.WeightsTab })))
 const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(m => ({ default: m.CardioTab })))
 const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(m => ({ default: m.MobilityTab })))
-const HabitsTab = lazy(() => import('./components/tabs/HabitsTab').then(m => ({ default: m.HabitsTab })))
 const ProgramTab = lazy(() => import('./components/tabs/ProgramTab').then(m => ({ default: m.ProgramTab })))
 const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(m => ({ default: m.ProfileTab })))
 const AdminTab = lazy(() => import('./components/tabs/AdminTab').then(m => ({ default: m.AdminTab })))
 
 // Body Weight, Donations and Water folded onto Home 2026-08-31 (doctrine §5,
 // roadmap 014): capture and correction moved into the T2 sheets, the
-// destinations went. Habits stays only because it is shelved, not folded.
-const DRAWER_TABS = ['Weights', 'Cardio', 'Mobility', 'Habits'] as const
+// destinations went. Habits, shelved by the same ledger, was deleted 2026-09-05
+// (roadmap 035) — three sections, one slot of R1 headroom.
+const DRAWER_TABS = ['Weights', 'Cardio', 'Mobility'] as const
 type DrawerTab = typeof DRAWER_TABS[number]
 type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
 
@@ -33,12 +33,12 @@ function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) 
     case 'Weights': return <WeightsTab />
     case 'Cardio': return <CardioTab />
     case 'Mobility': return <MobilityTab />
-    case 'Habits': return <HabitsTab />
     case 'Profile': return <ProfileTab />
     case 'Admin': return <AdminTab />
     // Recovery, Water, Donations and Body Weight have no tab — they are reads
-    // and captures on Home. Fall back to Home so a stray section-config row
-    // left over in the DB can never render a blank screen.
+    // and captures on Home — and Habits has none because it is deleted. Fall
+    // back to Home so a stray section-config row left over in the DB can never
+    // render a blank screen.
     default: return <HomeTab setTab={setTab} />
   }
 }

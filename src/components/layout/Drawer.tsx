@@ -2,13 +2,13 @@ import { usePrefs } from '../../store/prefs'
 import { Icon, type IconName } from '../ui/Icon'
 
 // Only sections that still have a destination. Body Weight, Donations, Water
-// and Recovery folded onto Home (doctrine §5) — a leftover config row for one
-// of them must not put its entry back in the menu.
+// and Recovery folded onto Home (doctrine §5) and Habits was deleted (roadmap
+// 035) — a leftover config row for one of them must not put its entry back in
+// the menu.
 const NAV_META: Record<string, { icon: IconName; label: string }> = {
   Weights:      { icon: 'weights', label: 'Weights' },
   Cardio:       { icon: 'cardio', label: 'Cardio' },
   Mobility:     { icon: 'mobility', label: 'Mobility' },
-  Habits:       { icon: 'habits', label: 'Habits' },
 }
 
 interface DrawerProps {

@@ -2,8 +2,8 @@
 
 **Label:** infra
 **Status:** blocked — committed, but it cannot run until 2.0.0 is released onto
-`master`. Three items queued: one column drop, plus two leftovers from the
-nine → seven adaptation simplification (019).
+`master`. Four items queued: one column drop, two leftovers from the
+nine → seven adaptation simplification (019), and the two Habits tables (035).
 
 ## Why this brief exists
 
@@ -74,6 +74,30 @@ alter table exercises add constraint exercises_default_adaptation_check
   ]));
 ```
 
+### Also queued: the Habits tables (035)
+
+The Habits section was deleted from `develop` on 2026-09-05
+([done/035](done/035-habits-expiry-deletion.md)): nothing on `develop` selects,
+inserts or updates these two tables any more. `master` (1.x) still loads both
+in `bootstrap()`, so dropping them now would break production's Home exactly
+like the column drop above would.
+
+| Item | Stopped being read | Still read by | Safe to drop once |
+|---|---|---|---|
+| `habits`, `habit_completions` (whole tables) | v1.18.0 (roadmap 035) — `src/lib/db/habits.ts` is deleted and nothing imports the types | `master`'s `bootstrap()`, which loads both on every start | `master` runs 2.0.0 or later |
+
+Two things to know before running it (foreign keys confirmed against the live
+schema on 2026-09-05). `habit_completions.habit_id` references `habits`, so the
+order below matters. And `habits` references both `muscle_groups` and
+`exercises` — the reason the Admin editor could never delete a group a habit
+pointed at — so until the drop, a leftover habit row keeps blocking that delete
+(the editor now words it as "something still references it").
+
+```sql
+drop table habit_completions;
+drop table habits;
+```
+
 ## Acceptance
 
 - [ ] `master` is running the code that stopped reading these columns and rows.
@@ -82,4 +106,5 @@ alter table exercises add constraint exercises_default_adaptation_check
       and its row is ticked off above.
 - [ ] `select('*')` from the affected tables shows no leftover column, the
       `adaptation_targets` table holds seven rows, the check constraint names
-      seven values, and the app still bootstraps on both branches.
+      seven values, `habits` and `habit_completions` no longer exist, and the
+      app still bootstraps on both branches.

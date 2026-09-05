@@ -96,7 +96,7 @@ export function MuscleGroupEditor() {
       await deleteMuscleGroup(id)
       await reload(`${name} deleted.`)
     } catch {
-      setToast('Can’t delete — it’s used by a habit.')
+      setToast('Can’t delete — something still references it.')
     }
   }
 

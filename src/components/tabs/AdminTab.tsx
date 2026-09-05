@@ -1,7 +1,7 @@
 import { Card } from '../ui/Card'
 import { MuscleGroupEditor } from './admin/MuscleGroupEditor'
 import { AdaptationTargetsEditor } from './admin/AdaptationTargetsEditor'
-import { ExerciseMuscleEditor } from './habits/ExerciseMuscleEditor'
+import { ExerciseMuscleEditor } from './admin/ExerciseMuscleEditor'
 
 /**
  * Admin-only maintenance screen for the exercise/muscle taxonomy. Intended to be

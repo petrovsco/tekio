@@ -15,6 +15,11 @@ rows were never marked so.
 - Mark rows 4.6–4.9 retired (constant deleted, not grounded — cite 014's
   readiness comparison); repoint or retire the other RecoveryCard/OverviewTab
   rows against what actually computes today (`src/lib/fusedRead.ts`).
+- Rows 4.5, 4.10 and 7.3 are the Habits-side numbers — the adherence target,
+  the 0.10 weight, and `habitCompletionSets`' one-set-per-completion. All three
+  still say "being deleted"; the deletion ran on 2026-09-05
+  ([done/035](done/035-habits-expiry-deletion.md)), so they retire the same way
+  as 4.6–4.9, pointing at 014 and 035.
 - Re-run the link check over `docs/` (extract `](…)` targets, `test -e`) and
   fix any other dead target it finds. A first pass over `done/026–032`
   (2026-09-03, folded in here rather than filed on its own) found 14, all
@@ -25,7 +30,8 @@ rows were never marked so.
   - `028` → `005-hr-zone-intensity-classification.md`, `034-…` (need `../`)
   - `029` → `038-favicon-and-app-icon.md` (needs `../`)
   - `030` → `../032-…` (in `done/`), `../../src/constants/program.ts` (needs `../../../`)
-  - `032` → `033-…`, `034-…`, `035-…` (need `../`), `done/026-…` (same
+  - `032` → `033-…`, `034-…` (need `../`; its `035-…` link became correct when
+    035 moved into `done/` on 2026-09-05), `done/026-…` (same
     folder — drop `done/`), `../../src/components/layout/ExportPane.tsx` and
     `ImportPane.tsx` (need `../../../`)
 - **Repoint the drifted `#L<n>` anchors.** Found 2026-09-01 while reindexing §1–§3

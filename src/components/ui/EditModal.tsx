@@ -11,7 +11,6 @@ import { Icon } from './Icon'
 import { SSBadge } from './Badges'
 import { SmartInput } from './SmartInput'
 import { ChipListInput } from './ChipListInput'
-import { HabitForm } from '../tabs/habits/HabitForm'
 import { CARDIO_TYPES, DONATION_TYPES } from '../../constants/app'
 import type {
   WeightEntry,
@@ -746,7 +745,6 @@ const TITLES: Record<string, string> = {
   sleep: 'Edit Sleep',
   sauna: 'Edit Sauna Session',
   cold: 'Edit Cold Session',
-  habit: 'Edit Habit',
 }
 
 /**
@@ -798,9 +796,6 @@ export function EditModal() {
       )}
       {editModal?.type === 'cold' && (
         <ColdForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'habit' && (
-        <HabitForm record={editModal.record} onDone={closeEditModal} saveRef={saveRef} />
       )}
     </Modal>
   )

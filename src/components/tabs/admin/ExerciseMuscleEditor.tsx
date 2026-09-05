@@ -5,14 +5,13 @@ import { Btn, DelBtn } from '../../ui/Button'
 import { Inp, SelEl } from '../../ui/Input'
 import { Icon } from '../../ui/Icon'
 import { MicroLabel } from '../../ui/Badges'
-import { muscleOptions } from './habitFields'
 import {
   loadExerciseMuscleRows, upsertExerciseMuscle, deleteExerciseMuscle, createExercise,
   setExerciseAdaptation,
   type ExerciseMuscleRow,
 } from '../../../lib/db/muscles'
 import { ADAPTATIONS } from '../../../constants/adaptations'
-import type { Adaptation, MuscleContribution } from '../../../types'
+import type { Adaptation, MuscleContribution, MuscleGroup } from '../../../types'
 
 const LEVEL_OPTS = [
   { value: '1', label: 'L1 · primary' },
@@ -29,6 +28,20 @@ const ADAPTATION_OPTS = [
 ]
 
 const rowKey = (r: ExerciseMuscleRow) => `${r.exerciseId}:${r.muscleGroupId}`
+
+/** Option rows for a muscle select: each top-level group, then its "Parent › Child" rows. */
+function muscleOptions(groups: MuscleGroup[]): { value: string; label: string }[] {
+  const topLevel = groups.filter(g => !g.parentId).sort((a, b) => a.name.localeCompare(b.name))
+  const out: { value: string; label: string }[] = []
+  for (const top of topLevel) {
+    out.push({ value: top.id, label: top.name })
+    groups
+      .filter(g => g.parentId === top.id)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach(child => out.push({ value: child.id, label: `${top.name} › ${child.name}` }))
+  }
+  return out
+}
 
 export function ExerciseMuscleEditor() {
   const { exerciseNames, exerciseAdaptations, muscleGroups, reloadMuscleData, setToast } = useAppStore()

@@ -5,7 +5,7 @@ import { FIELD } from '../ui/Input'
 import { ProposalCard } from './ProposalCard'
 
 const SUGGESTIONS = [
-  'Add a daily "Farmer\'s Carry" habit for grip and forearms',
+  'Add Farmer\'s Carry as an exercise and map it to the grip and forearm muscles',
   'Add Face Pulls to my Push day',
   'Replace Back Squat with Front Squat on Leg day',
 ]
@@ -63,7 +63,7 @@ export function AssistantPanel() {
         {messages.length === 0 && (
           <div className="text-xs text-ink-2">
             <p className="mb-3">
-              I can add or change habits, exercise↔muscle mappings, and your program. I'll always show you
+              I can add or change exercise↔muscle mappings and your program. I'll always show you
               exactly what I'll do before anything is saved.
             </p>
             <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 mb-1.5">Try</p>

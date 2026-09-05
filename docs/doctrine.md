@@ -7,6 +7,8 @@ something I want.
 Established 2026-08-26. Amend it deliberately; don't drift past it.
 Amended 2026-08-29: nine adaptations → seven — Speed and Skill dropped,
 Power reclassified as muscle-linked (execution: roadmap 019).
+Amended 2026-09-05: Habits deleted a month before its R2 expiry — Peter's
+call, not the calendar's (execution: roadmap 035).
 
 ---
 
@@ -126,14 +128,14 @@ Pending work lives in `docs/roadmap/`, never in this file (house rule
 | Water | **Fold → Recovery** | Hydration is an FRS sub-score, not a destination. |
 | Donations | **Fold → Recovery** | Not training, but real: full-blood donation suppresses endurance performance for weeks, and eligibility windows are already tracked. A readiness input. |
 | Body Weight | **Fold → Home stat** | A trend, not a stimulus or readiness signal. Inline logging on Home; FRS needs the number anyway. |
-| Habits | **Shelf — delete by 2026-10-07** | Decided 2026-08-26. A checklist is an adherence tool; the app tells me what's missing, it does not make me do it. Sauna/cold/mobility/sleep are captured directly, so habits was a duplicate capture path. |
+| Habits | **Deleted 2026-09-05** | Shelved 2026-08-26; deleted a month before the R2 date on Peter's call (roadmap 035). A checklist is an adherence tool; the app tells me what's missing, it does not make me do it. Sauna/cold/mobility/sleep are captured directly, so habits was a duplicate capture path. The table drops wait for the release in roadmap 025. |
 | Profile / Admin / Assistant settings | **Exempt** | Infrastructure, not sections. Not counted against R1. |
 
-**Two conditions attach to the Habits shelf**, and they are conditions on the
-decision, not optional cleanup: `ExerciseMuscleEditor.tsx` moves to Admin rather
-than being deleted with the section, and `RECOVERY_WEIGHTS.habits` (0.10) is
-renormalised rather than dropped. Both are carried in full, with their sequencing
-and their grounding trap, by
+**Two conditions attached to the Habits shelf**, and both are met:
+`ExerciseMuscleEditor.tsx` moved to Admin rather than being deleted with the
+section (roadmap 035), and `RECOVERY_WEIGHTS.habits` (0.10) was retired with
+the whole constant rather than dropped from it — the readiness number it fed
+measured adherence, not recovery. The sequencing and the grounding trap are in
 [roadmap/done/014-doctrine-ledger-execution.md](roadmap/done/014-doctrine-ledger-execution.md).
 
 Resolved by the same decision: habit-derived *muscle* contributions go too. The

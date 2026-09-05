@@ -261,9 +261,8 @@ carry their own grounding in
 - [x] Water, Donations and Body Weight are reachable as inputs on Recovery / Home; no
   logging capability is lost, only destinations. **Capture and edit both moved.**
 - [x] `ExerciseMuscleEditor` is under Admin and the body map still renders.
-  **Moved to [035](../035-habits-expiry-deletion.md) (2026-09-01)** — it belongs
-  with the Habits deletion at expiry (2026-10-07), not with the folds, so it
-  closes there.
+  **Moved to [035](035-habits-expiry-deletion.md) (2026-09-01)** — it belonged
+  with the Habits deletion, not with the folds, and closed there on 2026-09-05.
 - [x] Readiness scores computed before and after the reweight are compared on real
   data, and the difference is explained rather than discovered. **See above —
   it was a retirement, not a reweight, and that is the finding.**

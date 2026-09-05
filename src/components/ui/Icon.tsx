@@ -8,7 +8,7 @@ import type { SVGProps } from 'react'
 
 export type IconName =
   | 'home' | 'weights' | 'cardio' | 'program' | 'menu' | 'mobility'
-  | 'habits' | 'adaptations' | 'profile' | 'admin' | 'assistant'
+  | 'adaptations' | 'profile' | 'admin' | 'assistant'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
   | 'warmup' | 'sport' | 'recovery' | 'drag' | 'export' | 'import'
   | 'info' | 'list'
@@ -26,8 +26,6 @@ const PATHS: Record<IconName, string> = {
   menu: 'M4 7h16M4 12h16M4 17h16',
   // A figure held in a lunge — one leg extended, one bent, arms reaching.
   mobility: 'M13.9 5.2a1.9 1.9 0 1 1-3.8 0 1.9 1.9 0 0 1 3.8 0M12 7.1v5.4M7.6 10.6 12 9.1l4.4 1.5M12 12.5 8 20M12 12.5l4 4.2-1 3.3',
-  // A checklist: two ticked rows.
-  habits: 'M4 8.2 6 10.2 9.5 6.2M4 17.2 6 19.2 9.5 15.2M12.5 8h7.5M12.5 17H20',
   // Overlapping rings — the qualities read together, not alone.
   adaptations: 'M9.5 8.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM14.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z',
   profile: 'M12 3.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4.5 20.5c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6',

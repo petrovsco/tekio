@@ -32,7 +32,6 @@ const SECTION_META: Record<string, { icon: IconName; label: string }> = {
   Weights:      { icon: 'weights',  label: 'Weights' },
   Cardio:       { icon: 'cardio',   label: 'Cardio' },
   Mobility:     { icon: 'mobility', label: 'Mobility' },
-  Habits:       { icon: 'habits',   label: 'Habits' },
 }
 
 const WEEK_START_OPTS = [
