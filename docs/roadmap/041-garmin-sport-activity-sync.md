@@ -15,7 +15,8 @@ then this moves to `done/`.
   variant — "Tennis Doubles" for Garmin's tennis) before it inserts, and an
   activity already in the table is skipped outright. Workflow gained
   `days` / `kinds` / `dry_run` dispatch inputs. Garmin badge on `SportRow`.
-- **2026-09-06** — Ten-year dry run (277 activities since 2016-09-09): the
+- **2026-09-06** — Ten-year dry run (277 activities; the window opened
+  2016-09-09 but the user's Garmin log starts 2023-05-13, see 054): the
   tennis key is **`tennis_v2`**, not `tennis`; no volleyball activities at all
   (Peter's 12 volleyball rows were never on the watch); unmapped: `hiit` ×63
   (2023-06..2026-01), `strength_training` ×43 (2024-09..2026-02), `walking`
