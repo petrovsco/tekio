@@ -70,9 +70,9 @@ CARDIO_TYPE_KEYS = {
 
 # Garmin activityType.typeKey -> sport_types.name. Only keys seen on a real
 # activity go in here (run with DRY_RUN=true to see what is being skipped).
-# Anything in neither map (strength_training, walking, …) is skipped.
+# Anything in neither map (strength_training, hiit, walking, …) is skipped.
 SPORT_TYPE_KEYS = {
-    "tennis": "Tennis",
+    "tennis_v2": "Tennis",  # Garmin's key for tennis since its 2023 rework (10-year dry run, 2026-09-06)
 }
 
 
@@ -316,6 +316,33 @@ def apply_sport_plan(user_id: str, plan: dict, types: dict[str, str]) -> None:
         _check(resp, "sport_sessions insert")
 
 
+def print_unmapped_inventory(unmapped: dict[str, list[dict]], existing: list[dict]) -> None:
+    """Dry-run help for growing the maps: per unmapped typeKey, the date range
+    and which hand-logged sports fall on the same days (is `hiit` really the
+    volleyball training?). Keys with a handful of activities are listed one by
+    one so a stray `skating_ws` can be recognised."""
+    manual_by_date: dict[str, list[str]] = {}
+    for r in existing:
+        name = (r.get("sport_types") or {}).get("name")
+        if name:
+            manual_by_date.setdefault(r["session_date"], []).append(name)
+
+    print("Unmapped activity types, against the hand-logged sport rows:")
+    for key, acts in sorted(unmapped.items(), key=lambda kv: -len(kv[1])):
+        dated = [(b[1], b[2], a.get("activityName") or "") for a in acts if (b := _basics(a))]
+        dated.sort()
+        if not dated:
+            continue
+        overlap: Counter[str] = Counter()
+        for d, _, _ in dated:
+            overlap.update(manual_by_date.get(d, []))
+        same_day = (", same day as manual " + ", ".join(f"{n} ×{c}" for n, c in overlap.most_common())) if overlap else ""
+        print(f"  {key} ×{len(dated)}: {dated[0][0]}..{dated[-1][0]}{same_day}")
+        if len(dated) <= 5:
+            for d, mins, name in dated:
+                print(f"    {d} {mins}min {name}".rstrip())
+
+
 # ── main ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -340,7 +367,7 @@ def main() -> None:
 
     cardio_rows: list[dict] = []
     sport_acts: list[dict] = []
-    unmapped: Counter[str] = Counter()
+    unmapped: dict[str, list[dict]] = {}
     for act in activities:
         key = _type_key(act)
         if key in CARDIO_TYPE_KEYS:
@@ -352,9 +379,10 @@ def main() -> None:
             if "sport" in kinds:
                 sport_acts.append(act)
         else:
-            unmapped[key or "(no typeKey)"] += 1
+            unmapped.setdefault(key or "(no typeKey)", []).append(act)
     if unmapped:
-        print("Skipped, no mapping: " + ", ".join(f"{k} ×{n}" for k, n in unmapped.most_common()))
+        counts = sorted(unmapped.items(), key=lambda kv: -len(kv[1]))
+        print("Skipped, no mapping: " + ", ".join(f"{k} ×{len(v)}" for k, v in counts))
 
     if "cardio" in kinds:
         for row in cardio_rows:
@@ -369,10 +397,12 @@ def main() -> None:
             print(f"Upserted {len(cardio_rows)} cardio activity(ies).")
 
     if "sport" in kinds:
+        types, existing = fetch_sport_state(user_id)
+        if dry_run and unmapped:
+            print_unmapped_inventory(unmapped, existing)
         if not sport_acts:
             print("No sport activities to sync.")
             return
-        types, existing = fetch_sport_state(user_id)
         plan = plan_sport(user_id, sport_acts, existing)
         for label in plan["skipped"]:
             print(f"  {label} — already synced")
