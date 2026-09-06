@@ -1,10 +1,33 @@
 # Roadmap: Garmin sync for sport activities (tennis, padel, …)
 
 **Label:** feature
-**Status:** in progress — picked up 2026-09-06; migration applied, sync +
-workflow + badge being built, then a full-history backfill of every sport
-activity Garmin holds (Peter's ask the same day).
+**Status:** in progress — shipped (v2.0.8–2.0.10) and backfilled on
+2026-09-06: three Garmin tennis rows, none colliding with a hand-logged one.
+One acceptance box is Peter's: rate one of the synced sessions in the app,
+then this moves to `done/`.
 **Release:** 2.1.0
+
+## Progress log
+
+- **2026-09-06** — Migration `20260906090152_sport_garmin_activity_fields`
+  applied. `sync_activities.py` now writes both tables; a sport activity
+  *claims* a hand-logged row on the same date for the same sport (or a
+  variant — "Tennis Doubles" for Garmin's tennis) before it inserts, and an
+  activity already in the table is skipped outright. Workflow gained
+  `days` / `kinds` / `dry_run` dispatch inputs. Garmin badge on `SportRow`.
+- **2026-09-06** — Ten-year dry run (277 activities since 2016-09-09): the
+  tennis key is **`tennis_v2`**, not `tennis`; no volleyball activities at all
+  (Peter's 12 volleyball rows were never on the watch); unmapped: `hiit` ×63
+  (2023-06..2026-01), `strength_training` ×43 (2024-09..2026-02), `walking`
+  ×9, `skating_ws` ×1, `hiking` ×1 — none on the same day as a manual sport
+  row, so nothing to claim. The 157 cardio-type activities in that history
+  are not in `cardio_sessions` either — that, and HIIT, are brief 054.
+- **2026-09-06** — Backfill run (`days=3650 kinds=sport`): 0 claimed, 3 new
+  rows (2025-10-05, 2026-09-01, 2026-09-04 — the last two are the "missing
+  tennis session" that triggered this brief), 0 already synced. A dry re-run
+  afterwards: 3 already synced, 0 new. Headless check on the Cardio tab:
+  three Garmin badges (two tennis, one running), the edit modal opens on a
+  synced row with 47:14 and 146 bpm filled, 0 console errors.
 
 ---
 
@@ -103,15 +126,20 @@ backfill/testing.
 
 ## Acceptance
 
-- [ ] `sport_sessions` has `source`, `garmin_activity_id`, and the unique
+- [x] `sport_sessions` has `source`, `garmin_activity_id`, and the unique
       upsert key, via a migration mirroring the cardio one.
-- [ ] The sync pulls sport-type Garmin activities (tennis confirmed first,
+- [x] The sync pulls sport-type Garmin activities (tennis confirmed first,
       others as their real `typeKey` values are confirmed) into
       `sport_sessions` with duration/avg HR/date/name filled and
-      quality/competitors/result left blank.
-- [ ] Re-running the sync never duplicates a row or overwrites a quality
-      rating the user already entered.
-- [ ] A Garmin-synced sport session shows the same `Garmin` badge as a synced
+      quality/competitors/result left blank. (`tennis_v2` is the only sport
+      key in ten years of the user's Garmin history — see the log.)
+- [x] Re-running the sync never duplicates a row or overwrites a quality
+      rating the user already entered. (Dry re-run after the backfill: 3
+      already synced, 0 new; `plan_sport` never writes `notes`, `quality`
+      or `result` on an existing row.)
+- [x] A Garmin-synced sport session shows the same `Garmin` badge as a synced
       cardio session and is editable through the existing form/`EditModal`.
 - [ ] `npm run build` passes; a real tennis session round-trips end to end
       (Garmin → sync → visible in Cardio tab → user fills in quality → saves).
+      Build and Garmin → sync → visible are done; **Peter rates one of the
+      three synced sessions** (2026-09-04 is the obvious one) and this ticks.
