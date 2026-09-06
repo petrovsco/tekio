@@ -12,7 +12,10 @@ data and upsert it into Supabase:
     Training Effect**. The app uses the Training Effect + zones to classify
     each ride into the correct cardio adaptation (`classifyCardioAdaptations`
     in `src/lib/adaptations.ts`) — a hard ride can count toward both VO₂max
-    and anaerobic capacity.
+    and anaerobic capacity. Garmin's **HIIT** profile is a format, not a
+    type: an activity named "… Rowing" lands as rowing, anything else (EMOM,
+    slam/jump circuits) as *Custom*, both with `format = 'intervals'` and the
+    Garmin name in `notes` (roadmap 054).
   - sport (tennis, …) → `sport_sessions`, with duration and avg HR only. The
     quality rating, competitors and result stay yours to fill in, so a synced
     session shows up in the Cardio tab as an entry still to be rated. Only
@@ -23,18 +26,19 @@ Both use the unofficial Garmin Connect API (via [`garminconnect`](https://github
 Fine for reading your own account on this single-user app; it can break if Garmin
 changes their internal API (bump the library version if so). Both share the same
 secrets and are **idempotent** (sleep upserts on `(user_id, log_date)`; activities
-on `(user_id, garmin_activity_id)`), so re-running is safe. Strength and walks
-are skipped — those stay manual.
+on `(user_id, garmin_activity_id)`), so re-running is safe. Strength, walks,
+hikes and skating stay out by decision (`SKIPPED_BY_DECISION` in the script):
+a dry run counts them as skipped without asking for the map to grow.
 
-**Sport sessions claim the row you logged by hand.** Before inserting, each
-sport activity looks for a hand-logged session on the same date for the same
-sport (or a variant — a Garmin *tennis* activity matches a *Tennis Doubles*
-row) and, if there is one, adds the Garmin id plus duration / avg HR to *that*
-row where they were empty. Your notes, rating and result are never touched.
-This is the everyday flow — log the match with its score in the evening, the
-5 AM run adds the watch data — and it is what lets a full-history backfill run
-on top of months of manual rows without doubling them. An activity already in
-the table is skipped, so a re-run writes nothing.
+**Activities claim the row you logged by hand.** Before inserting, each
+activity looks for a hand-logged session on the same date — the same sport
+(or a variant: a Garmin *tennis* activity matches a *Tennis Doubles* row), or
+the same cardio type — and, if there is one, adds the Garmin id plus every
+column that was empty on *that* row. A duration, distance, note, rating or
+result you typed is never touched. This is the everyday flow — log the session
+in the evening, the 5 AM run adds the watch data — and it is what lets a
+full-history backfill run on top of months of manual rows without doubling
+them. An activity already in the table is skipped, so a re-run writes nothing.
 
 ## How it works
 
@@ -122,8 +126,9 @@ gh run watch   # then read the log
 gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport
 ```
 
-A cardio backfill needs more care: a ride logged by hand *before* the sync
-existed has no Garmin id, so the sync would add a second row next to it.
+A cardio backfill is the same shape (`kinds=cardio`): a run logged by hand
+before the sync existed is claimed by the Garmin activity on that date, not
+doubled, and the dry run lists every claim with the columns it would fill.
 
 **Studying the history.** `dump=true` writes everything Garmin returned for
 the window — every activity type, every field — to `garmin-activities.json`

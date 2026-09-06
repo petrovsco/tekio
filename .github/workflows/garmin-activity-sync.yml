@@ -1,9 +1,11 @@
 name: Garmin activity sync
 
 # Pulls Garmin Connect activities into Supabase: cardio ones (cycling/running/
-# swimming/rowing) with Training Effect + HR zones into cardio_sessions, to
-# drive the cardio adaptation; sport ones (tennis, …) into sport_sessions with
-# duration + avg HR, the rating left for the user (roadmap 041). See
+# swimming/rowing, and HIIT mapped by the modality in its name — roadmap 054)
+# with Training Effect + HR zones into cardio_sessions, to drive the cardio
+# adaptation; sport ones (tennis, …) into sport_sessions with duration + avg
+# HR, the rating left for the user (roadmap 041). Both claim a hand-logged row
+# on the same date before inserting, so a backfill never doubles one. See
 # scripts/garmin-sync/README.md for the one-time secret setup (shares the same
 # secrets as the sleep sync).
 

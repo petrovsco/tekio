@@ -13,7 +13,14 @@ map, then the backfill run. Free to run before or after 005 — the misreads
   spans two); `cardio_sessions.format` and the `custom` activity type are
   live (migration `20260906113800_cardio_format_and_custom_type.sql`), the
   log form and the edit modal have the Format toggle, the row shows the
-  label. Next: the sync script (steps 3–4), then the backfill (step 5).
+  label.
+- 2026-09-06 — Steps 3 and 4 shipped (v2.0.16): cardio goes through the same
+  plan → claim → insert path as sport, `hiit` maps by the modality in its
+  name, the four decided skips are counted apart from unmapped types. An
+  offline run of the plan against the 2026-09-06 dump and the three live
+  rows gave exactly the acceptance line: 2 claimed, 217 new (130 running,
+  24 cycling, 43 rowing intervals, 20 custom intervals), 1 already synced,
+  nothing unmapped. Next: the backfill (step 5).
 
 ---
 
