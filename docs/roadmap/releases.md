@@ -34,7 +34,7 @@ In running order:
    from 2.0.0 (no code when it shipped).
 4. [046](046-retire-tracked-muscle-groups.md) — retire the tracked-groups
    setting.
-5. [041](041-garmin-sport-activity-sync.md) — Garmin sync for sport
+5. [041](done/041-garmin-sport-activity-sync.md) — Garmin sync for sport
    activities.
 6. [005](005-hr-zone-intensity-classification.md) — HR-based intensity
    classification, a grounding candidate (inventory rows 6.1–6.5); after 041

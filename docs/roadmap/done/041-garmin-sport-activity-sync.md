@@ -1,10 +1,9 @@
 # Roadmap: Garmin sync for sport activities (tennis, padel, …)
 
 **Label:** feature
-**Status:** in progress — shipped (v2.0.8–2.0.10) and backfilled on
-2026-09-06: three Garmin tennis rows, none colliding with a hand-logged one.
-One acceptance box is Peter's: rate one of the synced sessions in the app,
-then this moves to `done/`.
+**Status:** done — shipped (v2.0.8–2.0.10) and backfilled on 2026-09-06;
+Peter rated both 2026 matches the same day (quality 5 and 4, both wins) and
+the rows kept their Garmin source, which closes the round trip.
 **Release:** 2.1.0
 
 ## Progress log
@@ -29,6 +28,9 @@ then this moves to `done/`.
   afterwards: 3 already synced, 0 new. Headless check on the Cardio tab:
   three Garmin badges (two tennis, one running), the edit modal opens on a
   synced row with 47:14 and 146 bpm filled, 0 console errors.
+- **2026-09-06** — Peter rated the 2026-09-01 and 2026-09-04 matches in the
+  app (quality 5 and 4, result win); `sport_sessions` shows both with
+  `source = 'garmin'` and their Garmin ids intact. Last box ticked.
 
 ---
 
@@ -43,10 +45,10 @@ Tekiō until typed in by hand via Cardio tab → Sport mode
 (`SportLogForm.tsx` → `sport_sessions`).
 
 This is not the "Sports → Cardio DB merge" referenced (but never written up)
-in [doctrine.md](../doctrine.md)'s ledger and in
-[014](done/014-doctrine-ledger-execution.md),
-[009](done/009-feature-grounding.md), [018](done/018-home-design-canvas.md#out-of-scope),
-[028](done/028-cardio-tab-signal-restyle.md#out-of-scope) — that item is about unifying
+in [doctrine.md](../../doctrine.md)'s ledger and in
+[014](014-doctrine-ledger-execution.md),
+[009](009-feature-grounding.md), [018](018-home-design-canvas.md#out-of-scope),
+[028](028-cardio-tab-signal-restyle.md#out-of-scope) — that item is about unifying
 `sport_sessions` and `cardio_sessions` into one table. This brief keeps them
 separate and just teaches the *sync* to also write into `sport_sessions`.
 Whoever eventually does the DB merge should read both.
@@ -74,7 +76,7 @@ pattern:
 
 - `cardio_sessions.source` (`'manual' | 'garmin'`), `garmin_activity_id`, and a
   `UNIQUE (user_id, garmin_activity_id)` upsert key —
-  [`20260713193142_cardio_garmin_activity_fields.sql`](../../supabase/migrations/20260713193142_cardio_garmin_activity_fields.sql).
+  [`20260713193142_cardio_garmin_activity_fields.sql`](../../../supabase/migrations/20260713193142_cardio_garmin_activity_fields.sql).
 - `SessionList.tsx:61` renders a `Garmin` `MicroLabel` badge when
   `source === 'garmin'` — the "Running · GARMIN" chip already shipped.
 - `EditModal` already handles editing any entry type generically, so a
@@ -140,7 +142,7 @@ backfill/testing.
       or `result` on an existing row.)
 - [x] A Garmin-synced sport session shows the same `Garmin` badge as a synced
       cardio session and is editable through the existing form/`EditModal`.
-- [ ] `npm run build` passes; a real tennis session round-trips end to end
+- [x] `npm run build` passes; a real tennis session round-trips end to end
       (Garmin → sync → visible in Cardio tab → user fills in quality → saves).
-      Build and Garmin → sync → visible are done; **Peter rates one of the
-      three synced sessions** (2026-09-04 is the obvious one) and this ticks.
+      Peter rated the 2026-09-01 and 2026-09-04 sessions on 2026-09-06; the
+      ratings are in the table next to the Garmin ids.

@@ -60,8 +60,9 @@ table shows the current rules would call it a full endurance session).
   because Garmin's whole-session label says `AEROBIC_BASE`, and a session
   flagged *intervals* should never land there. The 20 non-rowing HIIT
   sessions ("HIIT - EMOM" ×15, "[4x60] Slam/Jump" ×4, one custom) are mixed
-  bodyweight conditioning with no modality among the four — skipped, like
-  strength on the watch, unless Peter names a type for them.
+  bodyweight conditioning with no modality among the four. Peter's call
+  (2026-09-06): a fifth type, **Custom**, format intervals, with the Garmin
+  name in `notes` saying what the session was.
 - **Two hand-logged runs would double.** `cardio_sessions` has two manual
   running rows (2026-06-08, 2026-07-05) with no Garmin id; a cardio backfill
   inserts a second row next to each unless the claim rule from 041 is
@@ -84,9 +85,11 @@ table shows the current rules would call it a full endurance session).
    on every re-sync" behaviour goes at the same time; sport already never
    touches an existing row's notes.
 4. **Map `hiit` by modality.** The activity name carries it: a name containing
-   "Rowing" → `rowing` with `format = 'intervals'`, the Garmin name kept in
-   `notes`. Names with no modality (EMOM, Slam/Jump, custom) are skipped and
-   the dry run says so, per key and name. Walking, hiking and skating stay
+   "Rowing" → `rowing` with `format = 'intervals'`; every other `hiit` name
+   (EMOM, Slam/Jump, custom) → `custom` with `format = 'intervals'`. The
+   Garmin name goes to `notes` either way, so "[N4x4] Indoor Rowing" and
+   "HIIT - EMOM" stay readable. `CARDIO_TYPES` gains **Custom** so the form,
+   the chart filter and the list know it. Walking, hiking and skating stay
    unmapped by decision — list them as skipped without the "grow the map"
    nudge.
 5. Run `gh workflow run garmin-activity-sync.yml -f days=3650 -f kinds=cardio
@@ -100,6 +103,7 @@ table shows the current rules would call it a full endurance session).
       session can be marked intervals.
 - [ ] A cardio backfill dry run shows the two manual running rows as
       *claimed*, not doubled; the 43 "[N4x4] Indoor Rowing" as rowing +
-      intervals; EMOM / Slam/Jump, walks, the hike and the skate as skipped.
+      intervals; the 20 EMOM / Slam/Jump / custom as Custom + intervals;
+      walks, the hike and the skate as skipped.
 - [ ] The backfill has run; `cardio_sessions` holds the Garmin history; a dry
       re-run reports everything as already synced.
