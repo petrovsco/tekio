@@ -8,6 +8,7 @@
 - **2026-09-05** — Brief written. Dead tuples confirmed on disk at 19:37 UTC (no vacuum has ever run on the six tables); both extensions available on the server, neither installed; no backup (free plan, PITR off). Scripts ready. Blocked on the `create extension` classifier refusal.
 - **2026-09-06** — Peter gave the go. Retried `create extension pageinspect` on `execute_sql` and `apply_migration`; both refused again (three refusals total). Re-checked: dead-tuple counts unchanged (bodyweight 2/6, session_exercises 212/14, session_sets 821/42, sport_sessions 3/2, training_sessions 10/3, water_logs 2/15; still no vacuum), so nothing has been pruned yet. Probed the pageinspect read path — it passes the classifier and only errors on the missing function, so once the extensions are on I can run the whole recovery. The install is the sole blocker.
 - **2026-09-06 (later)** — Peter ran the two `create extension` lines in the SQL editor himself: both failed with `42501: must be superuser to create this extension`, and the dashboard's Extensions list doesn't carry them. Confirmed via `pg_available_extension_versions` that `pageinspect`, `pg_surgery`, `pgstattuple`, `pg_visibility`, `pg_walinspect`, `pg_freespacemap`, `pg_buffercache` and `amcheck` are all `superuser = true, trusted = false` — none installable by the `postgres` role Supabase gives us. That rules out Plan A **and** Plan B (both need `pageinspect`). The bytes are still on disk but there is no in-project way to read them. Recovery narrows to Plan C.
+- **2026-09-06 (final)** — Peter confirms he does not remember the sets. The two weights sessions' exercises, reps and weights are therefore lost for good: unreadable from disk (above) and not in memory. WAL would not have helped either — a default `DELETE` logs only the primary key, not the old row's columns. What Plan C can still restore: the two sport sessions (Garmin), the two water logs, the body weight, and the fact that he trained on 09-02 and 09-03. No set values will be invented to fill the gap.
 
 ## What happened
 
@@ -200,10 +201,12 @@ What is known from the ids and dates above: weights sessions on Wednesday
 sport sessions on Tuesday 09-01 and Friday 09-04, water on 09-03 and 09-04,
 body weight on 09-03.
 
-- **Structure may be reconstructable.** If those two weights days followed
-  the user's active program, each day's `program_day` defines which exercises he
-  did and in what order, and progressive overload from the prior cycle gives
-  the working weights; only the actual reps and any deviations live in memory.
+- **Only the structure survives, not the loads.** Peter confirmed 2026-09-06
+  he does not remember the sets, and they can't be read back, so the reps and
+  weights are gone. If those days followed his active program the `program_day`
+  still shows which exercises and in what order, so the two sessions can be
+  re-entered as having happened — but no set values should be invented to fill
+  the gap (an honest blank beats a fabricated number).
 - **Garmin** may hold the two sport sessions' date, duration and heart rate —
   they are manual entries in the app, but if he tracked them on the watch the
   activity is in Garmin Connect.
@@ -221,7 +224,8 @@ the app. Peter's call whether it is worth doing for one week.
 - [x] The record of what happened is in 024 Part 3 and the sweep is out of
       the release procedure in 050 (done 2026-09-05, in the commit that
       created this brief).
-- [ ] Peter decides: re-log the week by hand (Plan C) or accept the loss.
-- [ ] If re-logging: the six counts are back (2 / 9 / 29 / 2 / 2 / 1) and the
-      two weights sessions show their sets, re-entered from memory / the
-      program / Garmin.
+- [x] The set data is confirmed unrecoverable: unreadable from disk and not in
+      Peter's memory (2026-09-06). The two weights sessions' loads are lost.
+- [ ] Peter decides what, if anything, to re-log by hand (Plan C): the sport
+      sessions (Garmin), water, body weight, and optionally the two training
+      days' structure — no invented set values.
