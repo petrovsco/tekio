@@ -509,3 +509,10 @@ export function rollupCardio(
   }
   return out
 }
+
+/** A pace bucket with no paced neighbour has no segment: Recharts joins
+ *  adjacent non-null points only, and the rollup keeps empty buckets as holes
+ *  on purpose (P2). Such a point is drawn as a dot or it is invisible — the
+ *  one exception to §9's "no resting dots" (roadmap 056). */
+export const hasLonePace = (buckets: CardioBucket[], i: number): boolean =>
+  buckets[i]?.pace != null && buckets[i - 1]?.pace == null && buckets[i + 1]?.pace == null

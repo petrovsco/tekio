@@ -4,7 +4,7 @@ import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { CARDIO_TYPES } from '../../constants/app'
 import {
-  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, type TimeFrame, type CardioBucket,
+  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePace, type TimeFrame, type CardioBucket,
 } from '../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Chip } from '../ui/Chip'
@@ -29,6 +29,14 @@ const MODES: { value: LogMode; label: string }[] = [
   { value: 'cardio', label: 'Cardio' },
   { value: 'sport', label: 'Sport' },
 ]
+
+/** Recharts clones the `dot` element once per point, null ones included, so
+ *  this draws only where the pace series has no segment to show the value —
+ *  §9's one exception to "no resting dots" (roadmap 056). */
+function LoneDot({ buckets, index, cx, cy }: { buckets: CardioBucket[]; index?: number; cx?: number; cy?: number }) {
+  if (index == null || cx == null || cy == null || !hasLonePace(buckets, index)) return null
+  return <circle cx={cx} cy={cy} r={2} fill={CHART.line2} stroke="none" />
+}
 
 export function CardioTab() {
   const [mode, setMode] = useState<LogMode>('cardio')
@@ -146,6 +154,9 @@ export function CardioTab() {
                   dataKey="pace"
                   stroke={CHART.line2}
                   name="Pace (min/km)"
+                  // Rolled up, a bucket with no paced neighbour has no line
+                  // to sit on; per session every point has one.
+                  dot={grain === 'session' ? false : <LoneDot buckets={chartData} />}
                   activeDot={{ r: 3, fill: CHART.line2, stroke: 'none' }}
                 />
               )}

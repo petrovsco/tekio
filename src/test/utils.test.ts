@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -92,6 +92,32 @@ describe('rollupCardio', () => {
 
   it('returns nothing for no sessions', () => {
     expect(rollupCardio([], 'month')).toEqual([])
+  })
+})
+
+describe('hasLonePace', () => {
+  const paced = (key: string) => ({ key, sessions: 1, duration: 30, distance: 5, pace: 6 })
+  const empty = (key: string) => ({ key, sessions: 0, duration: 0 })
+  const bare = (key: string) => ({ key, sessions: 1, duration: 30 })
+
+  it('is true for a paced bucket with a hole on both sides, at the edges too', () => {
+    const rows = [paced('2026-01'), empty('2026-02'), paced('2026-03'), empty('2026-04'), paced('2026-05')]
+    expect(rows.map((_, i) => hasLonePace(rows, i))).toEqual([true, false, true, false, true])
+  })
+
+  it('is false for a paced bucket joined to a neighbour', () => {
+    const rows = [paced('2026-01'), paced('2026-02'), empty('2026-03')]
+    expect(rows.map((_, i) => hasLonePace(rows, i))).toEqual([false, false, false])
+  })
+
+  it('treats a bucket of sessions without distance as a hole', () => {
+    const rows = [paced('2026-01'), bare('2026-02'), paced('2026-03')]
+    expect(rows.map((_, i) => hasLonePace(rows, i))).toEqual([true, false, true])
+  })
+
+  it('is lone for a single paced bucket, and false with no buckets at all', () => {
+    expect(hasLonePace([paced('2026-01')], 0)).toBe(true)
+    expect(hasLonePace([], 0)).toBe(false)
   })
 })
 

@@ -147,7 +147,10 @@ A chart is a read, so it obeys §1: the ink carries the data and the accent
 marks the one thing being pointed at. It never becomes a second palette.
 
 - **Line**: `#1a1a1a`, 1.5px, `monotone`, no resting dots. The active
-  (hover) dot is r3 ink.
+  (hover) dot is r3 ink. One exception: a point with no neighbour on either
+  side has no segment, so it is drawn as an r2 dot in its series' colour —
+  the one-point form of a line, not a second language (the rolled-up Cardio
+  Progress frames, pace series).
 - **Grid**: horizontal only, solid `#eeeeec` at 1px. No vertical grid, and
   no dashes — a dash means "not data" and is spent on reference lines.
 - **Axes**: 11px `#8a8a8a`, no axis line, no tick marks. Label the axis only
