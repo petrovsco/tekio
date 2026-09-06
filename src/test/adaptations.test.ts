@@ -3,6 +3,11 @@ import {
   classifyWeightSet,
   classifyCardio,
   classifyCardioAdaptations,
+  classifySportAdaptations,
+  ENDURANCE_FLOOR_MIN,
+  TE_STIMULUS_THRESHOLD,
+  VO2MAX_Z5_MIN,
+  SPORT_DEFAULT_ADAPTATION,
   resolveExerciseAdaptation,
   adaptationCoverage,
   buildMuscleStatusTree,
@@ -12,7 +17,7 @@ import {
   GAP_CUTOFF,
 } from '../lib/adaptations'
 import { muscleQualityStates, muscleWindow, rankMuscleGaps } from '../lib/fusedRead'
-import type { CardioEntry, ExerciseMuscleLink, MuscleGroup, WeightEntry } from '../types'
+import type { CardioEntry, CardioFormat, ExerciseMuscleLink, MuscleGroup, SportEntry, WeightEntry } from '../types'
 import { ADAPTATIONS, ADAPTATION_MAP } from '../constants/adaptations'
 import { MUSCLE_WINDOW_DAYS } from '../constants/app'
 
@@ -69,51 +74,88 @@ describe('classifyWeightSet', () => {
 
 // ── classifyCardio ────────────────────────────────────────────────────────────
 
-describe('classifyCardio', () => {
-  const c = (duration: number): CardioEntry => ({ id: 'x', date: '2025-01-01', type: 'Running', duration })
-  it('splits by duration proxy when no Training Effect data', () => {
+// The rules are docs/grounding/005-hr-zone-intensity-classification.md (2026-09-06).
+
+describe('classifyCardio — no intensity data (005 run B)', () => {
+  const c = (duration: number, format?: CardioFormat): CardioEntry => ({ id: 'x', date: '2025-01-01', type: 'Running', duration, format })
+  it('duration is an endurance-credit floor, never a VO₂max or anaerobic selector', () => {
     expect(classifyCardio(c(45))).toBe('endurance')
-    expect(classifyCardio(c(25))).toBe('endurance')
-    expect(classifyCardio(c(12))).toBe('vo2max')
-    expect(classifyCardio(c(4))).toBe('anaerobic_capacity')
+    expect(classifyCardio(c(ENDURANCE_FLOOR_MIN))).toBe('endurance')
+    expect(classifyCardio(c(12))).toBeNull()
+    expect(classifyCardio(c(4))).toBeNull()
+    expect(classifyCardio(c(15, 'steady'))).toBeNull()
+  })
+  it('an intervals row with no data is VO₂max — the app’s own 4×4 — whatever its length', () => {
+    expect(classifyCardio(c(36, 'intervals'))).toBe('vo2max')
+    expect(classifyCardio(c(10, 'intervals'))).toBe('vo2max')
   })
 })
 
-// ── classifyCardioAdaptations (Garmin-informed) ───────────────────────────────
+// ── classifyCardioAdaptations (Garmin-informed, 005 run A) ────────────────────
 
 describe('classifyCardioAdaptations', () => {
   const base = { id: 'x', date: '2025-01-01', type: 'Cycling' as const, duration: 60 }
 
-  it('falls back to the duration bucket without Training Effect', () => {
-    expect(classifyCardioAdaptations({ ...base, duration: 60 })).toEqual(['endurance'])
-    expect(classifyCardioAdaptations({ ...base, duration: 12 })).toEqual(['vo2max'])
+  it('credits one adaptation or none — never two for one session', () => {
+    for (const e of [
+      { ...base, aerobicTe: 3.5, anaerobicTe: 2.4, trainingEffectLabel: 'VO2MAX' },
+      { ...base, format: 'intervals' as const, aerobicTe: 3.2, anaerobicTe: 2.4, trainingEffectLabel: 'SPEED' },
+      { ...base, aerobicTe: 3.2, anaerobicTe: 0.4, trainingEffectLabel: 'AEROBIC_BASE' },
+    ]) expect(classifyCardioAdaptations(e).length).toBeLessThanOrEqual(1)
   })
 
-  it('maps an easy aerobic ride to endurance only', () => {
-    // Long zone-2 ride: strong aerobic TE, negligible anaerobic.
-    const out = classifyCardioAdaptations({ ...base, aerobicTe: 3.2, anaerobicTe: 0.4, trainingEffectLabel: 'BASE' })
+  it('maps an easy aerobic ride to endurance', () => {
+    const out = classifyCardioAdaptations({ ...base, aerobicTe: 3.2, anaerobicTe: 0.4, trainingEffectLabel: 'AEROBIC_BASE' })
     expect(out).toEqual(['endurance'])
   })
 
-  it('counts a hard interval ride as BOTH vo2max and anaerobic (each TE ≥ 2.0)', () => {
-    const out = classifyCardioAdaptations({ ...base, aerobicTe: 3.5, anaerobicTe: 2.4, trainingEffectLabel: 'VO2MAX' })
-    expect(out).toContain('vo2max')
-    expect(out).toContain('anaerobic_capacity')
-    expect(out).not.toContain('endurance')
+  it('credits nothing below the aerobic floor — a walk at TE 0.7 is not an endurance session', () => {
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 0.7, anaerobicTe: 0.0, trainingEffectLabel: 'RECOVERY' })).toEqual([])
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 1.4, anaerobicTe: 0.3, trainingEffectLabel: 'RECOVERY' })).toEqual([])
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: TE_STIMULUS_THRESHOLD, anaerobicTe: 0.1, trainingEffectLabel: 'AEROBIC_BASE' })).toEqual(['endurance'])
   })
 
-  it('still counts the dominant system when nothing clears the threshold', () => {
-    // Short easy spin: dominant aerobic but below the 2.0 stimulus threshold.
-    const out = classifyCardioAdaptations({ ...base, aerobicTe: 1.4, anaerobicTe: 0.3, trainingEffectLabel: 'RECOVERY' })
-    expect(out).toEqual(['endurance'])
+  it('a 4×4 flagged intervals is VO₂max, whatever Garmin’s whole-session label says', () => {
+    const n4x4 = { ...base, format: 'intervals' as const, duration: 36, aerobicTe: 3.0, anaerobicTe: 2.1 }
+    expect(classifyCardioAdaptations({ ...n4x4, trainingEffectLabel: 'AEROBIC_BASE' })).toEqual(['vo2max'])
+    expect(classifyCardioAdaptations({ ...n4x4, trainingEffectLabel: 'RECOVERY' })).toEqual(['vo2max'])
+    expect(classifyCardioAdaptations({ ...n4x4, trainingEffectLabel: 'SPEED', zoneDistribution: [130, 580, 480, 800, 40] })).toEqual(['vo2max'])
   })
 
-  it('uses HR zone distribution to split aerobic when unlabelled', () => {
-    // More time in Z4–Z5 than Z1–Z2 → the aerobic stimulus is VO₂max, not base.
-    const hard = classifyCardioAdaptations({ ...base, aerobicTe: 3.0, anaerobicTe: 0.5, zoneDistribution: [60, 120, 200, 600, 400] })
-    expect(hard).toEqual(['vo2max'])
+  it('anaerobic TE ≥ 2.0 never awards anaerobic capacity on its own; on an intervals row anaerobic > aerobic is the vendor tie-break', () => {
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.5, anaerobicTe: 2.4, trainingEffectLabel: 'AEROBIC_BASE' })).toEqual(['endurance'])
+    expect(classifyCardioAdaptations({ ...base, format: 'intervals', duration: 20, aerobicTe: 1.8, anaerobicTe: 2.6, trainingEffectLabel: 'ANAEROBIC_CAPACITY' }))
+      .toEqual(['anaerobic_capacity'])
+  })
+
+  it('≥ 8 min in Z5 makes a steady session VO₂max; Z4 time never decides', () => {
+    const z5Long = classifyCardioAdaptations({ ...base, aerobicTe: 3.0, anaerobicTe: 0.5, zoneDistribution: [60, 120, 200, 600, VO2MAX_Z5_MIN * 60] })
+    expect(z5Long).toEqual(['vo2max'])
+    // The old rule's "hard" fixture: Z4+Z5 > Z1+Z2 but only 6.7 min in Z5 → endurance.
+    const z4Heavy = classifyCardioAdaptations({ ...base, aerobicTe: 3.0, anaerobicTe: 0.5, zoneDistribution: [60, 120, 200, 600, 400] })
+    expect(z4Heavy).toEqual(['endurance'])
     const easy = classifyCardioAdaptations({ ...base, aerobicTe: 3.0, anaerobicTe: 0.5, zoneDistribution: [600, 900, 200, 60, 0] })
     expect(easy).toEqual(['endurance'])
+  })
+
+  it('Garmin’s VO₂max-family label is a fallback read only when zones are absent', () => {
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.4, anaerobicTe: 1.0, trainingEffectLabel: 'VO2MAX' })).toEqual(['vo2max'])
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.4, anaerobicTe: 1.0, trainingEffectLabel: 'VO2MAX', zoneDistribution: [300, 900, 900, 600, 200] }))
+      .toEqual(['endurance'])
+  })
+
+  it('tempo / lactate-threshold work credits nothing — neither Zone 2 nor VO₂max (fork 1a)', () => {
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.3, anaerobicTe: 0.8, trainingEffectLabel: 'TEMPO' })).toEqual([])
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.6, anaerobicTe: 1.2, trainingEffectLabel: 'LACTATE_THRESHOLD', zoneDistribution: [100, 400, 900, 1500, 100] })).toEqual([])
+  })
+})
+
+describe('classifySportAdaptations', () => {
+  const s = (duration?: number): SportEntry => ({ id: 's', date: '2025-01-01', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', duration })
+  it('a match is endurance, timed or not', () => {
+    expect(classifySportAdaptations(s(90))).toEqual([SPORT_DEFAULT_ADAPTATION])
+    expect(classifySportAdaptations(s(20))).toEqual(['endurance'])
+    expect(classifySportAdaptations(s())).toEqual(['endurance'])
   })
 })
 
@@ -199,7 +241,7 @@ describe('adaptationCoverage', () => {
         w('c', '2025-01-03', 'Box Jump', 5, 5),     // power ×5 (keyword), Front Delt → 5
       ],
       cardio: [{ id: 'r', date: '2025-01-04', type: 'Running', duration: 45 }],
-      // 20-min Tennis session → classified as cardio by duration (VO₂max).
+      // 20-min Tennis session → a match is endurance (005 run B), not a skill count.
       sports: [{ id: 's', date: '2025-01-04', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', duration: 20 }],
       exerciseMuscles: links,
       muscleGroups: groups,
@@ -210,8 +252,8 @@ describe('adaptationCoverage', () => {
     expect(cov.strength.volume).toBe(3)
     expect(cov.hypertrophy.volume).toBe(4)
     expect(cov.power.volume).toBe(5)
-    expect(cov.endurance.volume).toBe(1)      // Running 45 min
-    expect(cov.vo2max.volume).toBe(1)         // Tennis 20 min → cardio, not a skill count
+    expect(cov.endurance.volume).toBe(2)      // Running 45 min (≥ the 25-min floor) + the tennis match
+    expect(cov.vo2max.volume).toBe(0)
 
     const chestStrength = cov.strength.muscles.find(m => m.id === 'chest')!
     expect(chestStrength.aggSets).toBe(3)
@@ -222,10 +264,10 @@ describe('adaptationCoverage', () => {
     expect(shouldersPower.aggSets).toBe(5)
   })
 
-  it('counts a Garmin ride toward every stimulated adaptation', () => {
+  it('counts a Garmin ride toward one adaptation — anaerobic TE ≥ 2.0 no longer double-counts it (005)', () => {
     const cov = adaptationCoverage({
       weights: [],
-      // Hard interval ride: aerobic TE 3.5 (VO₂max) + anaerobic TE 2.4 → both count.
+      // Hard ride, no zones: the VO2MAX label is the fallback → VO₂max only.
       cardio: [{
         id: 'g', date: '2025-01-04', type: 'Cycling', duration: 55,
         aerobicTe: 3.5, anaerobicTe: 2.4, trainingEffectLabel: 'VO2MAX', source: 'garmin',
@@ -237,7 +279,7 @@ describe('adaptationCoverage', () => {
       date: '2025-01-07',
     })
     expect(cov.vo2max.volume).toBe(1)
-    expect(cov.anaerobic_capacity.volume).toBe(1)
+    expect(cov.anaerobic_capacity.volume).toBe(0)
     expect(cov.endurance.volume).toBe(0)
   })
 

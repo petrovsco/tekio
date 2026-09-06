@@ -337,19 +337,27 @@ describe('qualityStates', () => {
     expect(at(15)?.stale).toBe(true)
   })
 
-  it('feeds multiple qualities from one Training-Effect session', () => {
+  it('feeds one quality from a Training-Effect session — anaerobic TE alone feeds nothing (005)', () => {
     const hard = cardioAt(ago(2), {
       aerobicTe: 3.1, anaerobicTe: 2.5, trainingEffectLabel: 'VO2MAX',
     })
     const qs = qualityStates([hard], [], TODAY)
     expect(qs.find(q => q.key === 'vo2max')?.daysSince).toBe(2)
-    expect(qs.find(q => q.key === 'anaerobic_capacity')?.daysSince).toBe(2)
+    expect(qs.find(q => q.key === 'anaerobic_capacity')?.daysSince).toBeNull()
     expect(qs.find(q => q.key === 'endurance')?.daysSince).toBeNull()
   })
 
-  it('counts a sport session without duration as vo2max', () => {
-    const qs = qualityStates([], [sportAt(ago(4))], TODAY)
-    expect(qs.find(q => q.key === 'vo2max')?.daysSince).toBe(4)
+  it('feeds anaerobic capacity from an intervals row whose anaerobic TE leads (005 vendor tie-break)', () => {
+    const emom = cardioAt(ago(1), { format: 'intervals', duration: 20, aerobicTe: 1.9, anaerobicTe: 2.7 })
+    const qs = qualityStates([emom], [], TODAY)
+    expect(qs.find(q => q.key === 'anaerobic_capacity')?.daysSince).toBe(1)
+    expect(qs.find(q => q.key === 'vo2max')?.daysSince).toBeNull()
+  })
+
+  it('counts a sport session, timed or not, as endurance (005 run B)', () => {
+    const qs = qualityStates([], [sportAt(ago(4)), sportAt(ago(6), 60)], TODAY)
+    expect(qs.find(q => q.key === 'endurance')?.daysSince).toBe(4)
+    expect(qs.find(q => q.key === 'vo2max')?.daysSince).toBeNull()
   })
 })
 

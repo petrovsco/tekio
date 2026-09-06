@@ -8,7 +8,7 @@ import {
 } from '../constants/app'
 import { LEVEL_WEIGHT, today } from './utils'
 import {
-  classifyCardioAdaptations, classifyCardioByDuration,
+  classifyCardioAdaptations, classifySportAdaptations,
   classifyWeightSet, resolveExerciseAdaptation, muscleStimulus,
   MUSCLE_QUALITIES, type MuscleQuality,
 } from './adaptations'
@@ -226,7 +226,7 @@ export function qualityStates(
   }
   for (const s of sports) {
     if (s.date > date) continue
-    feed(s.duration ? classifyCardioByDuration(s.duration) : 'vo2max', s.date)
+    for (const a of classifySportAdaptations(s)) feed(a, s.date)
   }
   return (Object.keys(QUALITY_STALENESS_DAYS) as WholeBodyQuality[]).map(key => {
     const windowDays = QUALITY_STALENESS_DAYS[key]

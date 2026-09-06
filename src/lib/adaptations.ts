@@ -44,70 +44,86 @@ export function classifyWeightSet(reps: number, override?: Adaptation | null): A
   return [edge.key]
 }
 
-/**
- * Classify a session by duration. Without HR/intensity we use duration as a
- * proxy: long steady state = endurance; medium = VO₂max intervals; short =
- * anaerobic. Shared by cardio and sport sessions, and the fallback for Garmin
- * rides that lack Training-Effect data.
- */
-export function classifyCardioByDuration(minutes: number): Adaptation {
-  if (minutes >= 25) return 'endurance'
-  if (minutes >= 8) return 'vo2max'
-  return 'anaerobic_capacity'
-}
+// ── Cardio session → adaptation (roadmap 005, grounded 2026-09-06) ────────────
+// The rules and every number below are docs/grounding/005-hr-zone-intensity-classification.md.
 
-/** Training Effect at/above this counts as a real stimulus for that system. */
+/** 25 — endurance-credit floor for a steady/unstated row with no HR data; a convention inside 20–30 min (Tekiō's 30-min endurance definition, ACSM's ≥ 20-min vigorous bout) — duration never selects VO₂max or anaerobic (Gastin 2001; Buchheit & Laursen 2013), see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+export const ENDURANCE_FLOOR_MIN = 25
+
+/** 2.0 — Firstbeat's band edge ('maintaining'); vendor convention, aerobic floor only — never awards anaerobic capacity, no 'dominant counts' rescue, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const TE_STIMULUS_THRESHOLD = 2.0
 
-/**
- * Whether a session's *aerobic* work was high-intensity (VO₂max) rather than
- * base/endurance. Garmin reports a single aerobic Training Effect, so the
- * endurance-vs-VO₂max split comes from its primary-benefit label, then the HR
- * zone distribution; unlabelled aerobic work defaults to base/endurance.
- */
-function aerobicIsHighIntensity(entry: CardioEntry): boolean {
-  const label = entry.trainingEffectLabel?.toUpperCase() ?? ''
-  if (/RECOVERY|BASE/.test(label)) return false
-  if (/TEMPO|THRESHOLD|VO2|VO₂|ANAEROBIC|SPRINT|SPEED/.test(label)) return true
+/** 8 — minutes at ≥ 90 % HRmax (Garmin Z5; range 5–10) that make a session VO₂max work: the dose is minutes at ≥ 90 % (Buchheit & Laursen 2013; Seiler 2013: a 4×4 runs at ≈ 94 % HRpeak); Z4 straddles the threshold band and never decides, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+export const VO2MAX_Z5_MIN = 8
+
+/** Garmin primary-benefit labels that mark threshold work — between LT1 and LT2, neither Zone 2 nor VO₂max; the session credits nothing (005 fork 1a). Garmin benchmarks this label against the user's lactate-threshold HR, so it is the one threshold signal the summary carries. */
+const THRESHOLD_LABELS = /TEMPO|THRESHOLD/
+/** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. */
+const VO2MAX_LABELS = /VO2|VO₂|ANAEROBIC|SPRINT|SPEED/
+
+/** Minutes in Garmin's Z5 (≥ 90 % HRmax), or null when the row carries no zones. */
+function z5Minutes(entry: CardioEntry): number | null {
   const z = entry.zoneDistribution
-  if (z && z.length >= 5) {
-    const easy = (z[0] ?? 0) + (z[1] ?? 0) // Z1–Z2
-    const hard = (z[3] ?? 0) + (z[4] ?? 0) // Z4–Z5
-    return hard > easy
-  }
-  return false
+  return z && z.length >= 5 ? (z[4] ?? 0) / 60 : null
 }
 
 /**
- * The cardio adaptations a session counts toward.
+ * The cardio adaptations a session credits — one, or none. `[]` is a real
+ * answer: a walk, a threshold run and a 15-min unstated jog all train nothing
+ * the read counts. The order is the session-goal method the training-load
+ * literature uses (Seiler & Kjerland 2006; Sylta 2014): structure first, then
+ * the Z5 dose, then Garmin's label, then duration as a floor.
  *
- * With Garmin Training Effect present: award the dominant system, plus any
- * system whose TE ≥ {@link TE_STIMULUS_THRESHOLD} — so a hard ride counts as a
- * full session for *both* VO₂max and anaerobic capacity. The single aerobic TE
- * maps to endurance or VO₂max by intensity (label / HR zones). Without TE data,
- * falls back to the duration heuristic (a single adaptation).
+ * 1. `format = 'intervals'` is never endurance. Bout length is not on the row
+ *    yet, so the Z5 dose confirms VO₂max, Garmin's own primary rule (anaerobic
+ *    TE > aerobic TE) is the vendor tie-break for anaerobic capacity, and the
+ *    rest is VO₂max — the app's own 4×4 protocol.
+ * 2. A steady or unstated row is VO₂max on ≥ {@link VO2MAX_Z5_MIN} minutes in
+ *    Z5. Otherwise a threshold label credits nothing; a VO₂max-family label is
+ *    read only when zones are absent; else aerobic TE ≥
+ *    {@link TE_STIMULUS_THRESHOLD} is endurance.
+ * 3. With no intensity data, ≥ {@link ENDURANCE_FLOOR_MIN} min is endurance.
+ *
+ * Anaerobic TE alone never awards anaerobic capacity: Firstbeat's "anaerobic"
+ * is any work above VO₂max intensity, Tekiō's is 20 s–2 min all-out repeats.
  */
 export function classifyCardioAdaptations(entry: CardioEntry): Adaptation[] {
-  if (entry.aerobicTe == null && entry.anaerobicTe == null) {
-    return [classifyCardioByDuration(entry.duration)]
-  }
+  const hasTe = entry.aerobicTe != null || entry.anaerobicTe != null
   const aerobic = entry.aerobicTe ?? 0
   const anaerobic = entry.anaerobicTe ?? 0
-  const aerobicBucket: Adaptation = aerobicIsHighIntensity(entry) ? 'vo2max' : 'endurance'
+  const z5 = z5Minutes(entry)
+  const label = entry.trainingEffectLabel?.toUpperCase() ?? ''
 
-  const result = new Set<Adaptation>()
-  // A session always trains *something*: the dominant system counts even below
-  // threshold.
-  result.add(anaerobic > aerobic ? 'anaerobic_capacity' : aerobicBucket)
-  // Plus any system that cleared the stimulus threshold.
-  if (aerobic >= TE_STIMULUS_THRESHOLD) result.add(aerobicBucket)
-  if (anaerobic >= TE_STIMULUS_THRESHOLD) result.add('anaerobic_capacity')
-  return [...result]
+  if (entry.format === 'intervals') {
+    if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
+    if (hasTe && anaerobic > aerobic) return ['anaerobic_capacity']
+    return ['vo2max']
+  }
+  if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
+  if (hasTe) {
+    if (THRESHOLD_LABELS.test(label)) return []
+    if (z5 == null && VO2MAX_LABELS.test(label)) return ['vo2max']
+    return aerobic >= TE_STIMULUS_THRESHOLD ? ['endurance'] : []
+  }
+  return entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : []
 }
 
-/** Dominant single adaptation for a session (first of {@link classifyCardioAdaptations}). */
-export function classifyCardio(entry: CardioEntry): Adaptation {
-  return classifyCardioAdaptations(entry)[0]
+/** The single adaptation a session credits, or null when it credits none (first of {@link classifyCardioAdaptations}). */
+export function classifyCardio(entry: CardioEntry): Adaptation | null {
+  return classifyCardioAdaptations(entry)[0] ?? null
+}
+
+/** 'endurance' — a tennis match is ~70–75 % HRmax, ~52 % V̇O₂max, ~77 % of time below VT1 and ~3 % above VT2 with 5–10 s rallies (Baiget 2015; Ferrauti 2001; Fernandez 2006): aerobic-base work, not VO₂max or anaerobic; convention, singles and doubles alike, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+export const SPORT_DEFAULT_ADAPTATION: Adaptation = 'endurance'
+
+/**
+ * The cardio adaptations a sport session credits. Sport rows carry no Garmin
+ * Training Effect or zones yet (roadmap 005's next unit stores them), so every
+ * match — timed or not, singles or doubles — is {@link SPORT_DEFAULT_ADAPTATION}.
+ * The parameter is the seam that unit fills.
+ */
+export function classifySportAdaptations(_entry: SportEntry): Adaptation[] {
+  return [SPORT_DEFAULT_ADAPTATION]
 }
 
 // ── Muscle stimulus — the one accounting (roadmap 039 §6) ──────────────────────
@@ -319,13 +335,10 @@ export function adaptationCoverage(
     for (const a of classifyCardioAdaptations(c)) volume[a] += 1
   }
 
-  // Sport sessions count as cardio work, classified by duration like a cardio
-  // session. Sessions without a logged duration default to VO₂max — the typical
-  // intermittent-sport stimulus.
+  // Sport sessions count as cardio work — a match is endurance (roadmap 005).
   for (const s of sports) {
     if (!inRange(s.date, from, date)) continue
-    const a = s.duration ? classifyCardioByDuration(s.duration) : 'vo2max'
-    volume[a] += 1
+    for (const a of classifySportAdaptations(s)) volume[a] += 1
   }
 
   const out = {} as Record<Adaptation, AdaptationSummary>
