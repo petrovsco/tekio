@@ -1,7 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** planned — committed to 2.1.0 by Peter on 2026-09-05; the kickoff is a `/ground` run on the classifier's rules (inventory rows 6.1–6.5 plus the two unindexed ones in §Evidence), then the classifier itself. The data condition is met since 2026-09-06: the whole Garmin history (277 sessions, every one with Training Effect, 124 with HR zones) sits in the gitignored `scripts/garmin-sync/dumps/` and shows where the current rules misread.
+**Status:** planned — committed to 2.1.0 by Peter on 2026-09-05; the kickoff is a `/ground` run on the classifier's rules (inventory rows 6.1–6.5 plus the two unindexed ones in §Evidence), then the classifier itself. The data condition is met since 2026-09-06: the whole Garmin history (277 sessions, every one with Training Effect, 124 with HR zones) sits in the gitignored `scripts/garmin-sync/dumps/` and shows where the current rules misread — and since 054 (v2.0.17, the same day) the 220 cardio sessions are in `cardio_sessions` itself, `format = 'intervals'` on the 63 HIIT ones, so the new rules can be checked against live rows.
 **Release:** 2.1.0
 **Note:** Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](done/039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](done/031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
@@ -76,9 +76,9 @@ What Garmin's summary does give, on every session: `aerobicTrainingEffect`,
   the same way as a synced run.
 - Manual rows: keep a fallback for sessions with no Garmin data — avg HR as a
   fraction of an HRmax from the profile, or duration as today — and say which.
-- Read `cardio_sessions.format` (054 adds it: `'steady' | 'intervals'`,
-  Peter's 2026-09-06 decision that HIIT is a format of a modality, not a
-  type). A session flagged *intervals* is never endurance, whatever Garmin's
+- Read `cardio_sessions.format` (live since 054: `'steady' | 'intervals'`,
+  null = not stated; Peter's 2026-09-06 decision that HIIT is a format of a
+  modality, not a type). A session flagged *intervals* is never endurance, whatever Garmin's
   whole-session label says; whether it is VO₂max or anaerobic is the
   grounding's call, from TE and zones or from lap structure via the splits
   endpoint.
