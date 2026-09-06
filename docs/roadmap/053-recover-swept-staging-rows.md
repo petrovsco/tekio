@@ -1,12 +1,13 @@
 # Roadmap: Recover the seven rows the release sweep deleted
 
 **Label:** bug
-**Status:** blocked — Peter gave the go on 2026-09-06, but `create extension` is refused by the Claude Code permission classifier on both `execute_sql` and `apply_migration` (three tries that day), a hard block on that one statement, not the per-call flakiness that cleared last session. Everything else is ready and the pageinspect read path is confirmed to pass the classifier, so the only step I cannot run is installing the two extensions. **Unblock:** toggle `pageinspect` and `pg_surgery` on in the Supabase dashboard (Database → Extensions), or run the two `create extension` lines in the SQL editor; then I run steps 1–6.
+**Status:** planned — in-place recovery is impossible on this project, confirmed 2026-09-06: `pageinspect` and `pg_surgery` (and every heap-reading sibling) are superuser-only, Supabase grants the `postgres` role no superuser, and there is no backup (free plan, PITR off), so the on-disk bytes cannot be read. Plans A and B are ruled out; the only route left is **Plan C — re-log by hand**, which is Peter's call.
 
 ## Progress log
 
 - **2026-09-05** — Brief written. Dead tuples confirmed on disk at 19:37 UTC (no vacuum has ever run on the six tables); both extensions available on the server, neither installed; no backup (free plan, PITR off). Scripts ready. Blocked on the `create extension` classifier refusal.
 - **2026-09-06** — Peter gave the go. Retried `create extension pageinspect` on `execute_sql` and `apply_migration`; both refused again (three refusals total). Re-checked: dead-tuple counts unchanged (bodyweight 2/6, session_exercises 212/14, session_sets 821/42, sport_sessions 3/2, training_sessions 10/3, water_logs 2/15; still no vacuum), so nothing has been pruned yet. Probed the pageinspect read path — it passes the classifier and only errors on the missing function, so once the extensions are on I can run the whole recovery. The install is the sole blocker.
+- **2026-09-06 (later)** — Peter ran the two `create extension` lines in the SQL editor himself: both failed with `42501: must be superuser to create this extension`, and the dashboard's Extensions list doesn't carry them. Confirmed via `pg_available_extension_versions` that `pageinspect`, `pg_surgery`, `pgstattuple`, `pg_visibility`, `pg_walinspect`, `pg_freespacemap`, `pg_buffercache` and `amcheck` are all `superuser = true, trusted = false` — none installable by the `postgres` role Supabase gives us. That rules out Plan A **and** Plan B (both need `pageinspect`). The bytes are still on disk but there is no in-project way to read them. Recovery narrows to Plan C.
 
 ## What happened
 
@@ -33,34 +34,36 @@ were not captured anywhere before the delete. `sport_session_drills` had no
 rows for the two sport sessions, and no `progression_adjustments` row pointed
 at the two training sessions.
 
-## Why they are recoverable
+## Why the exact rows cannot be recovered here
 
-- **No backup exists.** The project is on Supabase's free plan: no daily
-  backups, point-in-time recovery off. The management API's
-  `/database/backups` answered `backups: []`, `pitr_enabled: false`.
-- **The bytes are still on disk.** Postgres does not remove a deleted row
-  until VACUUM runs; it only marks the row dead. At 19:37 UTC on 2026-09-05
-  `pg_stat_user_tables` showed dead tuples on all six tables and **no vacuum
-  ever run on any of them** (`last_vacuum` and `last_autovacuum` null).
-  Autovacuum starts on a table at 50 dead tuples plus 20% of its live rows;
-  the closest table is `session_sets` at 42 dead of 821 live (threshold 214).
-- **The tools are on the server.** `pg_available_extensions` lists
-  `pageinspect` (read raw pages, dead tuples included) and `pg_surgery`
-  (`heap_force_freeze`: mark a tuple alive again, in place). Neither is
-  installed yet.
+The bytes are still on disk — Postgres only marks a deleted row dead until
+VACUUM runs, and no vacuum has ever run on these six tables — but nothing we
+can run on this project can read them:
 
-## The risk of waiting
+- **No backup.** Free plan: no daily backups, PITR off (`/database/backups`
+  answered `backups: []`, `pitr_enabled: false`).
+- **No superuser.** Reading raw heap bytes needs `pageinspect`; putting a
+  dead tuple back needs `pg_surgery`. Both are `superuser = true,
+  trusted = false`, as are all their siblings (`pgstattuple`,
+  `pg_visibility`, `pg_walinspect`, `pg_freespacemap`, `pg_buffercache`,
+  `amcheck`). Supabase never grants the customer `postgres` role superuser
+  and does not carry these in its managed extension list, so `create
+  extension` fails with `42501: must be superuser` from the SQL editor and
+  the MCP alike (confirmed 2026-09-06).
+- **No support restore.** The only party who could run the surgery is
+  Supabase itself, as superuser; a free project has community support only,
+  and this is not worth a paid escalation for one week of rows.
 
-Two things destroy the bytes. A VACUUM: autovacuum will not trigger at these
-counts, but a manual one, or anything that rewrites the tables, would. And
-page pruning, which Postgres does on its own when it *reads* a page that is
-nearly full and holds dead tuples. The deleted rows were the newest, so they
-sit on the last page of each table, which is usually not full — but every app
-load reads those pages. So: soon. Until this brief is done, do not run
-`vacuum`, `pg_repack`, `cluster`, or any migration that rewrites these six
-tables.
+So the on-disk bytes are effectively unreachable. The tables may vacuum or
+prune whenever now — there is nothing left to protect, and the earlier
+"do not vacuum" caution no longer applies.
 
-## Plan A — bring the tuples back in place
+## Plan A — bring the tuples back in place (ruled out 2026-09-06)
+
+**Ruled out:** every step below needs `pageinspect` or `pg_surgery`, and
+neither can be installed on this project — both are superuser-only and
+Supabase grants no superuser (see above). The scripts are kept verbatim as
+the record of the approach that was designed and why it could not run.
 
 Read-only until step 3. Run in **one session** (the Supabase SQL editor, or
 the MCP `execute_sql` once it is allowed), because the temp table carries the
@@ -178,7 +181,10 @@ analyze training_sessions; analyze session_exercises; analyze session_sets;
 analyze sport_sessions; analyze water_logs; analyze bodyweight_logs;
 ```
 
-## Plan B — decode and re-insert
+## Plan B — decode and re-insert (ruled out 2026-09-06)
+
+**Ruled out:** this too needs `pageinspect` (`tuple_data_split`), which is
+superuser-only here. Kept as the record.
 
 If `heap_force_freeze` is refused but `pageinspect` works: `tuple_data_split`
 (step 2) returns every column's raw bytes. A small Node script decodes them —
@@ -187,18 +193,35 @@ RPE, duration) uses Postgres's base-10000 digit format — into INSERT
 statements with the original ids, children after parents. More work, same
 result. Column order per table is in `information_schema.columns`.
 
-## Plan C — re-log by hand
+## Plan C — re-log by hand (the only route left)
 
-What is known: weights sessions on Wednesday 09-02 and Thursday 09-03 (9
-exercises and 29 sets between them), sport sessions on Tuesday 09-01 and
-Friday 09-04, water on 09-03 and 09-04, body weight on 09-03. Garmin may
-hold the two sport sessions' durations. The sets exist only in Peter's memory.
+What is known from the ids and dates above: weights sessions on Wednesday
+2026-09-02 and Thursday 2026-09-03 (9 exercises and 29 sets between them),
+sport sessions on Tuesday 09-01 and Friday 09-04, water on 09-03 and 09-04,
+body weight on 09-03.
+
+- **Structure may be reconstructable.** If those two weights days followed
+  the user's active program, each day's `program_day` defines which exercises he
+  did and in what order, and progressive overload from the prior cycle gives
+  the working weights; only the actual reps and any deviations live in memory.
+- **Garmin** may hold the two sport sessions' date, duration and heart rate —
+  they are manual entries in the app, but if he tracked them on the watch the
+  activity is in Garmin Connect.
+- **Water and body weight** are single numbers to re-enter directly.
+
+Nothing here needs the database surgery; it is ordinary back-dated logging in
+the app. Peter's call whether it is worth doing for one week.
 
 ## Acceptance
 
-- [ ] The six counts are back (2 / 9 / 29 / 2 / 2 / 1) and the two weights
-      sessions show their sets in the app.
-- [ ] Both extensions are dropped again and the six tables analyzed.
-- [ ] The record of what happened is in 024 Part 3 and the sweep is out of
+- [x] Automated / in-place recovery investigated to a conclusion: impossible
+      on this project — `pageinspect` / `pg_surgery` are superuser-only,
+      Supabase grants no superuser, and no backup exists (confirmed
+      2026-09-06).
+- [x] The record of what happened is in 024 Part 3 and the sweep is out of
       the release procedure in 050 (done 2026-09-05, in the commit that
       created this brief).
+- [ ] Peter decides: re-log the week by hand (Plan C) or accept the loss.
+- [ ] If re-logging: the six counts are back (2 / 9 / 29 / 2 / 2 / 1) and the
+      two weights sessions show their sets, re-entered from memory / the
+      program / Garmin.
