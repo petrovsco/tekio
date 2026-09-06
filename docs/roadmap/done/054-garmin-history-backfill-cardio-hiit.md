@@ -1,10 +1,11 @@
 # Roadmap: Garmin history backfill beyond sport — 157 cardio activities and 63 HIIT
 
 **Label:** feature
-**Status:** in progress — started 2026-09-06, working the shape top to bottom:
-chart time frame first, then `format`, then the sync's claim step and `hiit`
-map, then the backfill run. Free to run before or after 005 — the misreads
-005 fixes touch sessions outside every live window.
+**Status:** done — shipped 2026-09-06 in v2.0.15–v2.0.17: chart time frame,
+`format` + Custom, the sync's claim step and `hiit` map, and the backfill
+itself (220 rows back to 2023-05-13, the two manual runs claimed, a dry
+re-run reporting everything already synced). 005 now has the history as its
+evidence.
 
 ## Progress log
 
@@ -20,7 +21,16 @@ map, then the backfill run. Free to run before or after 005 — the misreads
   offline run of the plan against the 2026-09-06 dump and the three live
   rows gave exactly the acceptance line: 2 claimed, 217 new (130 running,
   24 cycling, 43 rowing intervals, 20 custom intervals), 1 already synced,
-  nothing unmapped. Next: the backfill (step 5).
+  nothing unmapped.
+- 2026-09-06 — Step 5 run (v2.0.17). CI dry run matched the offline plan
+  line for line; the real run wrote 2 claimed + 217 new; a dry re-run read
+  0 / 0 / 220 already synced. The two manual runs kept their typed duration,
+  distance and notes and gained HR, Training Effect and zones. Live table:
+  133 running, 24 cycling, 43 rowing intervals, 20 custom intervals. Two
+  things the history surfaced, fixed in the same commit: six dates carry two
+  sessions of one type, so the chart keys each session rather than each
+  date; and the sessions filter listed Swimming twice (cardio type and
+  sport), a React duplicate-key warning that predates this brief.
 
 ---
 
@@ -115,11 +125,11 @@ table shows the current rules would call it a full endurance session).
 
 - [x] The cardio Progress chart has a time frame, defaults to a window, and
       shows the year when a frame spans more than one.
-- [ ] `cardio_sessions.format` exists and shows on the row; a hand-logged
+- [x] `cardio_sessions.format` exists and shows on the row; a hand-logged
       session can be marked intervals.
-- [ ] A cardio backfill dry run shows the two manual running rows as
+- [x] A cardio backfill dry run shows the two manual running rows as
       *claimed*, not doubled; the 43 "[N4x4] Indoor Rowing" as rowing +
       intervals; the 20 EMOM / Slam/Jump / custom as Custom + intervals;
       walks, the hike and the skate as skipped.
-- [ ] The backfill has run; `cardio_sessions` holds the Garmin history; a dry
+- [x] The backfill has run; `cardio_sessions` holds the Garmin history; a dry
       re-run reports everything as already synced.

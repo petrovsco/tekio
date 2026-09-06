@@ -53,11 +53,13 @@ function CardioRow({ d }: { d: CardioEntry }) {
   return (
     <div className="py-2 border-b border-hairline last:border-0">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5 min-w-0">
+        {/* Wraps: with two labels beside it on a phone the name would
+            otherwise truncate to "Indoor R…", and the name is the row. */}
+        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
           {/* The stroke icon separates the two kinds of session in one list;
               the emoji it replaced was chrome, not data (§7). */}
           <Icon name="cardio" size={13} className="text-ink-3 shrink-0" />
-          <span className="text-xs font-bold text-ink truncate">{d.type}</span>
+          <span className="text-xs font-bold text-ink">{d.type}</span>
           {d.format && <MicroLabel>{d.format === 'intervals' ? 'Intervals' : 'Steady'}</MicroLabel>}
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
@@ -141,7 +143,8 @@ export function SessionList() {
       <HistoryList
         items={merged}
         getDate={sessionDate}
-        categories={[...CARDIO_TYPES, ...sportNames]}
+        // Swimming is a cardio type and a sport; one filter entry covers both rows.
+        categories={[...new Set<string>([...CARDIO_TYPES, ...sportNames])]}
         categoryLabel="Type"
         matchesCategory={(s, cat) => sessionLabel(s) === cat}
         emptyMessage="No sessions yet"

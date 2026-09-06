@@ -42,11 +42,15 @@ export function CardioTab() {
     .sort((a, b) => a.date.localeCompare(b.date))
   // The year joins the axis label only when the frame actually spans two.
   const spansYears = new Set(sessions.map(d => d.date.slice(0, 4))).size > 1
-  const chartData = sessions.map(d => ({
-    date: spansYears ? d.date.slice(2) : d.date.slice(5),
+  // One point per session: two runs on one day (six such dates in the
+  // history) are two points, not one category slot shared. The label is the
+  // date; the suffix only keeps the key unique.
+  const chartData = sessions.map((d, i) => ({
+    key: `${spansYears ? d.date.slice(2) : d.date.slice(5)}#${i}`,
     duration: +d.duration.toFixed(2),
     ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
   }))
+  const dateOf = (key: string) => key.slice(0, key.indexOf('#'))
   // One session is not a line; below two the card says so and the legend
   // stays out with the chart.
   const hasPace = chartData.length > 1 && chartData.some(d => d.distance)
@@ -82,14 +86,14 @@ export function CardioTab() {
           <ResponsiveContainer width="100%" height={170}>
             <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} stroke={CHART.grid} />
-              <XAxis dataKey="date" {...CHART_AXIS} />
+              <XAxis dataKey="key" tickFormatter={dateOf} {...CHART_AXIS} />
               <YAxis yAxisId="duration" width={30} {...CHART_AXIS} />
               {/* Pace gets its own axis: minutes and min/km are two scales, and
                   one frame drawn on the wrong one is the pretty lie P2 forbids. */}
               {hasPace && (
                 <YAxis yAxisId="pace" orientation="right" width={30} domain={['auto', 'auto']} {...CHART_AXIS} />
               )}
-              <Tooltip {...CHART_TOOLTIP} />
+              <Tooltip {...CHART_TOOLTIP} labelFormatter={dateOf} />
               <Line
                 {...CHART_LINE}
                 yAxisId="duration"

@@ -129,6 +129,8 @@ gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport
 A cardio backfill is the same shape (`kinds=cardio`): a run logged by hand
 before the sync existed is claimed by the Garmin activity on that date, not
 doubled, and the dry run lists every claim with the columns it would fill.
+The cardio history was backfilled this way on 2026-09-06 (`days=3650`,
+roadmap 054): 220 activities back to 2023-05-13, two manual runs claimed.
 
 **Studying the history.** `dump=true` writes everything Garmin returned for
 the window — every activity type, every field — to `garmin-activities.json`
