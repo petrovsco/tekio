@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -27,6 +27,71 @@ describe('withinTimeFrame', () => {
 
   it('crosses a year boundary by the calendar, not the year', () => {
     expect(withinTimeFrame('2025-12-20', 'Last 30 days', '2026-01-10')).toBe(true)
+  })
+})
+
+describe('grainForFrame', () => {
+  it('follows the frame, not the point count', () => {
+    expect(grainForFrame('Last 30 days')).toBe('session')
+    expect(grainForFrame('Last 90 days')).toBe('session')
+    expect(grainForFrame('This year')).toBe('week')
+    expect(grainForFrame('All time')).toBe('month')
+  })
+})
+
+describe('rollupCardio', () => {
+  const run = (date: string, duration: number, distance?: number) => ({ date, duration, distance })
+
+  it('sums a bucket and weights pace by distance', () => {
+    // A plain mean of the two paces (6 and 5 min/km) would say 5.5; the 20 km
+    // run weighs four times the 5 km one, so the honest figure is 130 / 25.
+    expect(rollupCardio([run('2026-03-02', 30, 5), run('2026-03-04', 100, 20)], 'month'))
+      .toEqual([{ key: '2026-03', sessions: 2, duration: 130, distance: 25, pace: 5.2 }])
+  })
+
+  it('counts a session without distance in the duration but not the pace', () => {
+    expect(rollupCardio([run('2026-03-02', 30, 5), run('2026-03-04', 45)], 'month'))
+      .toEqual([{ key: '2026-03', sessions: 2, duration: 75, distance: 5, pace: 6 }])
+  })
+
+  it('has no distance or pace when no session in the bucket carried one', () => {
+    expect(rollupCardio([run('2026-03-02', 30)], 'month'))
+      .toEqual([{ key: '2026-03', sessions: 1, duration: 30 }])
+  })
+
+  it('keeps an empty month in the middle as a zero bucket with no pace', () => {
+    const rows = rollupCardio([run('2025-11-10', 30, 5), run('2026-02-01', 30, 5)], 'month')
+    expect(rows.map(b => [b.key, b.sessions, b.duration, b.pace])).toEqual([
+      ['2025-11', 1, 30, 6],
+      ['2025-12', 0, 0, undefined],
+      ['2026-01', 0, 0, undefined],
+      ['2026-02', 1, 30, 6],
+    ])
+  })
+
+  it('buckets weeks by the same start day as weekKey, empty weeks included', () => {
+    // 2026-09-01 is a Tuesday and 2026-09-06 the Sunday of the same week; the
+    // 16th is two weeks on, so the week of the 7th sits empty between them.
+    const rows = rollupCardio([run('2026-09-01', 30), run('2026-09-06', 30), run('2026-09-16', 30)], 'week')
+    expect(rows.map(b => [b.key, b.sessions])).toEqual([
+      [weekKey('2026-09-01'), 2],
+      [weekKey('2026-09-09'), 0],
+      [weekKey('2026-09-16'), 1],
+    ])
+  })
+
+  it('takes the week start day, so Sunday-start weeks match the sport card', () => {
+    const rows = rollupCardio([run('2026-09-06', 30), run('2026-09-07', 30)], 'week', 'sunday')
+    expect(rows.map(b => [b.key, b.sessions])).toEqual([[weekKey('2026-09-06', 'sunday'), 2]])
+  })
+
+  it('rolls December into the next year', () => {
+    const rows = rollupCardio([run('2025-12-15', 30), run('2026-01-15', 30)], 'month')
+    expect(rows.map(b => b.key)).toEqual(['2025-12', '2026-01'])
+  })
+
+  it('returns nothing for no sessions', () => {
+    expect(rollupCardio([], 'month')).toEqual([])
   })
 })
 

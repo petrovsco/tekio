@@ -1,13 +1,13 @@
 # Roadmap: Cardio Progress chart — roll up by week and month in the long frames
 
 **Label:** feature
-**Status:** planned — Peter said yes on 2026-09-06 to the follow-up that 054 left open; kickoff-ready, nobody on it.
+**Status:** done — shipped 2026-09-06 (v2.0.21): `rollupCardio` + `grainForFrame` in utils.ts, the grain wired into CardioTab, checked in a browser at 390 px. The one gap found on the way (an isolated pace bucket draws no mark) is brief 056.
 
 ## Why
 
 **The failure this prevents:** pick *All time* on the Cardio tab's Progress
 chart and the running line is unreadable. Since the Garmin backfill
-([054](done/054-garmin-history-backfill-cardio-hiit.md)) the chart holds
+([054](054-garmin-history-backfill-cardio-hiit.md)) the chart holds
 three years of sessions, one point each, and at 390 px the plot is about
 300 px wide — roughly 2 px per point. The ticks pile up, the line is a
 hairball, and the one question the frame exists to answer ("is my running
@@ -67,11 +67,11 @@ prefix only applies to the per-session grains. The card names the grain next
 to the frame select ("per month"), in the same type as the legend.
 
 **Code.** One pure function next to `weekKey` and `withinTimeFrame` in
-[src/lib/utils.ts](../../src/lib/utils.ts) — `rollupCardio(sessions, grain,
+[src/lib/utils.ts](../../../src/lib/utils.ts) — `rollupCardio(sessions, grain,
 weekStart)` returning the bucket rows above — with cases in
-[src/test/utils.test.ts](../../src/test/utils.test.ts) for the sums, the
+[src/test/utils.test.ts](../../../src/test/utils.test.ts) for the sums, the
 weighted pace, a session without distance, and an empty bucket in the middle.
-[CardioTab](../../src/components/tabs/CardioTab.tsx) maps the frame to a
+[CardioTab](../../../src/components/tabs/CardioTab.tsx) maps the frame to a
 grain and feeds the result to the same `LineChart`; the per-session path
 keeps its `date#index` keys. `SportProgress` stays its own weekly bar chart —
 it counts sessions, this one sums minutes, and they should not merge.
@@ -99,17 +99,17 @@ it counts sessions, this one sums minutes, and they should not merge.
 
 ## Acceptance
 
-- [ ] *All time* / Running draws one point per month, and the ticks read at
+- [x] *All time* / Running draws one point per month, and the ticks read at
       390 px without overlapping.
-- [ ] *This year* draws one point per week, keyed by the same Monday as the
+- [x] *This year* draws one point per week, keyed by the same Monday as the
       sport card.
-- [ ] A rolled-up point's tooltip shows the session count, total minutes,
+- [x] A rolled-up point's tooltip shows the session count, total minutes,
       total km and the distance-weighted pace; a bucket with no distance shows
       no pace.
-- [ ] Empty weeks and months inside the frame's span are drawn with zero
+- [x] Empty weeks and months inside the frame's span are drawn with zero
       duration, not skipped.
-- [ ] *Last 30 days* and *Last 90 days* are unchanged: one point per session.
-- [ ] `rollupCardio` has unit tests; `npm run build`, `npm run test` and
+- [x] *Last 30 days* and *Last 90 days* are unchanged: one point per session.
+- [x] `rollupCardio` has unit tests; `npm run build`, `npm run test` and
       `npm run check:docs` pass; the chart is checked in a browser at 390 px
       with a screenshot in the commit's summary.
 
@@ -117,3 +117,23 @@ it counts sessions, this one sums minutes, and they should not merge.
 
 Write `rollupCardio` and its tests, then wire the grain into `CardioTab`.
 Verify against the live rows: Running / All time should show 29 points.
+
+## Outcome (2026-09-06)
+
+- *All time* / Running draws 40 monthly points, May 2023 to August 2026: the
+  29 months with a run plus the empty ones between them (the "29 points" above
+  counted only months with a session; the empty-buckets rule adds the rest).
+  Five x ticks, none overlapping. June 2023 alone holds 25 runs and 1157 min,
+  which pushed the duration axis to four digits — it widens to 36 px when any
+  bucket passes 1000 min, so "1200" no longer clips to "200".
+- *This year* / Running draws 13 weekly points from the week of 2026-06-01;
+  four hold a run. A rolled-up tooltip reads, for example, "2023-06 · 25
+  sessions · 175.11 km" over duration and pace; an empty week reads "0
+  sessions" with duration 0 and no pace line.
+- The function went at the *end* of utils.ts rather than beside
+  `withinTimeFrame`: ten grounding-inventory line anchors point below line 50
+  and a mid-file insert would have shifted all of them.
+- Found on the way: a pace bucket with empty neighbours on both sides draws
+  nothing, because a line needs two adjacent points and the design system
+  (§9) turns resting dots off. The value is in the tooltip and on the hover
+  dot. Whether that series gets an exception is Peter's call — brief 056.

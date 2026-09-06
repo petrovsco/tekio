@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
+import { usePrefs } from '../../store/prefs'
 import { CARDIO_TYPES } from '../../constants/app'
-import { TIME_FRAMES, withinTimeFrame, type TimeFrame } from '../../lib/utils'
+import {
+  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, type TimeFrame, type CardioBucket,
+} from '../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Chip } from '../ui/Chip'
 import { Toggle } from '../ui/Fields'
@@ -35,25 +38,52 @@ export function CardioTab() {
   // a hairball with the same month-day appearing three times.
   const [frame, setFrame] = useState<TimeFrame>('Last 90 days')
   const cardio = useAppStore(s => s.cardio)
+  const weekStartDay = usePrefs(s => s.weekStartDay)
 
   const ct = filter === 'All' ? 'Running' : filter
   const sessions = cardio
     .filter(d => d.type === ct && withinTimeFrame(d.date, frame))
     .sort((a, b) => a.date.localeCompare(b.date))
-  // The year joins the axis label only when the frame actually spans two.
+  // The grain follows the frame (roadmap 055): a point is a session in the
+  // 30- and 90-day frames, a week this year, a month over all time. Three
+  // years of runs at one point each is a hairball at 390 px.
+  const grain = grainForFrame(frame)
+  // The year joins the per-session axis label only when the frame actually
+  // spans two; the week and month keys carry it always.
   const spansYears = new Set(sessions.map(d => d.date.slice(0, 4))).size > 1
-  // One point per session: two runs on one day (six such dates in the
-  // history) are two points, not one category slot shared. The label is the
-  // date; the suffix only keeps the key unique.
-  const chartData = sessions.map((d, i) => ({
-    key: `${spansYears ? d.date.slice(2) : d.date.slice(5)}#${i}`,
-    duration: +d.duration.toFixed(2),
-    ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
-  }))
-  const dateOf = (key: string) => key.slice(0, key.indexOf('#'))
+  // Per session: two runs on one day (six such dates in the history) are two
+  // points, not one category slot shared. The label is the date; the suffix
+  // only keeps the key unique. Rolled up: one bucket per week or month, empty
+  // ones included.
+  const chartData: CardioBucket[] = grain === 'session'
+    ? sessions.map((d, i) => ({
+        key: `${spansYears ? d.date.slice(2) : d.date.slice(5)}#${i}`,
+        sessions: 1,
+        duration: +d.duration.toFixed(2),
+        ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
+      }))
+    : rollupCardio(sessions, grain, weekStartDay)
+  const labelOf = (key: string) => {
+    const hash = key.indexOf('#')
+    if (hash >= 0) return key.slice(0, hash)
+    return grain === 'week' ? key.slice(2) : key
+  }
+  // A rolled-up point is a sum, so its tooltip leads with the count.
+  const tooltipLabel = (key: string, payload: ReadonlyArray<{ payload?: CardioBucket }>) => {
+    const row = payload[0]?.payload
+    if (grain === 'session' || !row) return labelOf(key)
+    const km = row.distance ? ` · ${row.distance} km` : ''
+    return `${labelOf(key)} · ${row.sessions} session${row.sessions === 1 ? '' : 's'}${km}`
+  }
   // One session is not a line; below two the card says so and the legend
   // stays out with the chart.
   const hasPace = chartData.length > 1 && chartData.some(d => d.distance)
+  // A month of running can pass 1000 min; four digits clip at the 30 px the
+  // per-session axis needs.
+  const durationAxisWidth = chartData.some(d => d.duration >= 1000) ? 36 : 30
+  const emptyMsg = sessions.length < 2
+    ? (frame === 'All time' ? 'Not enough data to chart yet' : `Fewer than two ${ct} sessions in this frame`)
+    : `All ${ct} sessions in this frame fall in one ${grain}`
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,28 +102,33 @@ export function CardioTab() {
           {['All', ...CARDIO_TYPES].map(t => (
             <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>{t}</Chip>
           ))}
-          {/* SelEl is w-full by design; the wrapper gives it its width. */}
-          <div className="ml-auto w-[124px]">
-            <SelEl
-              aria-label="Time frame"
-              value={frame}
-              onChange={e => setFrame(e.target.value as TimeFrame)}
-              options={TIME_FRAMES.map(f => ({ value: f, label: f }))}
-            />
+          {/* The grain label and the frame select wrap as one unit, so the card
+              always says what a point is right beside the frame that set it. */}
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-[10px] text-ink-3">per {grain}</span>
+            {/* SelEl is w-full by design; the wrapper gives it its width. */}
+            <div className="w-[124px]">
+              <SelEl
+                aria-label="Time frame"
+                value={frame}
+                onChange={e => setFrame(e.target.value as TimeFrame)}
+                options={TIME_FRAMES.map(f => ({ value: f, label: f }))}
+              />
+            </div>
           </div>
         </div>
         {chartData.length > 1 ? (
           <ResponsiveContainer width="100%" height={170}>
             <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
               <CartesianGrid vertical={false} stroke={CHART.grid} />
-              <XAxis dataKey="key" tickFormatter={dateOf} {...CHART_AXIS} />
-              <YAxis yAxisId="duration" width={30} {...CHART_AXIS} />
+              <XAxis dataKey="key" tickFormatter={labelOf} {...CHART_AXIS} />
+              <YAxis yAxisId="duration" width={durationAxisWidth} {...CHART_AXIS} />
               {/* Pace gets its own axis: minutes and min/km are two scales, and
                   one frame drawn on the wrong one is the pretty lie P2 forbids. */}
               {hasPace && (
                 <YAxis yAxisId="pace" orientation="right" width={30} domain={['auto', 'auto']} {...CHART_AXIS} />
               )}
-              <Tooltip {...CHART_TOOLTIP} labelFormatter={dateOf} />
+              <Tooltip {...CHART_TOOLTIP} labelFormatter={tooltipLabel} />
               <Line
                 {...CHART_LINE}
                 yAxisId="duration"
@@ -117,7 +152,7 @@ export function CardioTab() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <EmptyMsg>{frame === 'All time' ? 'Not enough data to chart yet' : `Fewer than two ${ct} sessions in this frame`}</EmptyMsg>
+          <EmptyMsg>{emptyMsg}</EmptyMsg>
         )}
         {hasPace && (
           <div className="flex items-center gap-3 mt-2">

@@ -1,6 +1,6 @@
 import type {
   WeightEntry, Program, ProgramDay, ProgramWeekOverride, MobilityEntry, DayOfWeek,
-  ExerciseMuscleLink, LiftSet,
+  ExerciseMuscleLink, LiftSet, CardioEntry,
 } from '../types'
 import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../constants/app'
 
@@ -427,4 +427,85 @@ export function weightsPickerNames(weights: WeightEntry[], links: ExerciseMuscle
   const names = new Set(weights.map(w => w.exercise))
   for (const l of links) if (l.contribution === 'stimulus') names.add(l.exercise)
   return [...names].sort()
+}
+
+// ── Cardio Progress chart rollup ──────────────────────────────────────────────
+// Companion to TIME_FRAMES / withinTimeFrame above (roadmap 055). Lives at the
+// end of the file so the grounding inventory's line anchors above stay put.
+
+/** What one point on the Cardio Progress chart is. */
+export type CardioGrain = 'session' | 'week' | 'month'
+
+/** The grain follows the frame, not the point count: a point-count threshold
+ *  would change what a point means the day one more session is logged, and
+ *  nothing on the card would say so. */
+export const grainForFrame = (frame: TimeFrame): CardioGrain =>
+  frame === 'All time' ? 'month' : frame === 'This year' ? 'week' : 'session'
+
+/** One week or month of cardio, summed. `key` is the week's start date
+ *  (YYYY-MM-DD) or the month (YYYY-MM). `distance` and `pace` are absent when
+ *  no session in the bucket carried a distance; an empty bucket has
+ *  `sessions: 0` and `duration: 0`. */
+export interface CardioBucket {
+  key: string
+  sessions: number
+  duration: number
+  distance?: number
+  pace?: number
+}
+
+const nextBucketKey = (key: string, grain: 'week' | 'month'): string => {
+  if (grain === 'month') {
+    const [y, m] = key.split('-').map(Number)
+    return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`
+  }
+  const d = new Date(`${key}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + 7)
+  return d.toISOString().slice(0, 10)
+}
+
+/** Rolls cardio sessions up into consecutive week or month buckets. Every
+ *  bucket between the first and last session is returned, empty ones included,
+ *  so a gap in training draws as a gap rather than a trend that never happened
+ *  (P2). Pace is summed minutes over summed km across the sessions that have a
+ *  distance — distance-weighted, so a 3 km jog does not count as much as a
+ *  20 km run. Weeks key by `weekKey`, so they match the sport card's. */
+export function rollupCardio(
+  sessions: Pick<CardioEntry, 'date' | 'duration' | 'distance'>[],
+  grain: 'week' | 'month',
+  weekStart: WeekStartDay = 'monday',
+): CardioBucket[] {
+  if (sessions.length === 0) return []
+  const keyOf = (date: string) => grain === 'month' ? date.slice(0, 7) : weekKey(date, weekStart)
+  const sums = new Map<string, { sessions: number; duration: number; distance: number; distDuration: number }>()
+  for (const s of sessions) {
+    const k = keyOf(s.date)
+    const b = sums.get(k) ?? { sessions: 0, duration: 0, distance: 0, distDuration: 0 }
+    b.sessions += 1
+    b.duration += s.duration
+    if (s.distance) {
+      b.distance += s.distance
+      b.distDuration += s.duration
+    }
+    sums.set(k, b)
+  }
+  const keys = [...sums.keys()].sort()
+  const last = keys[keys.length - 1]
+  const out: CardioBucket[] = []
+  for (let k = keys[0]; k <= last; k = nextBucketKey(k, grain)) {
+    const b = sums.get(k)
+    if (!b) {
+      out.push({ key: k, sessions: 0, duration: 0 })
+      continue
+    }
+    out.push({
+      key: k,
+      sessions: b.sessions,
+      duration: +b.duration.toFixed(2),
+      ...(b.distance > 0
+        ? { distance: +b.distance.toFixed(2), pace: +(b.distDuration / b.distance).toFixed(2) }
+        : {}),
+    })
+  }
+  return out
 }
