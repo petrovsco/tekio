@@ -76,8 +76,12 @@ What Garmin's summary does give, on every session: `aerobicTrainingEffect`,
   the same way as a synced run.
 - Manual rows: keep a fallback for sessions with no Garmin data — avg HR as a
   fraction of an HRmax from the profile, or duration as today — and say which.
-- Decide how the HIIT container is read (054 brings the rows in): by TE and
-  zones like other cardio, or by lap structure from the splits endpoint.
+- Read `cardio_sessions.format` (054 adds it: `'steady' | 'intervals'`,
+  Peter's 2026-09-06 decision that HIIT is a format of a modality, not a
+  type). A session flagged *intervals* is never endurance, whatever Garmin's
+  whole-session label says; whether it is VO₂max or anaerobic is the
+  grounding's call, from TE and zones or from lap structure via the splits
+  endpoint.
 - Update `classifyCardio` / the sport loop and the `adaptations.test.ts` cases.
 
 ## Out of scope
