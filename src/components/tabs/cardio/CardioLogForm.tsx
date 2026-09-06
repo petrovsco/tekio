@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { today, parseDurationMins, calcPace } from '../../../lib/utils'
-import { CARDIO_TYPES } from '../../../constants/app'
+import { CARDIO_TYPES, CARDIO_FORMATS } from '../../../constants/app'
 import { Inp, SelEl } from '../../ui/Input'
+import { Toggle } from '../../ui/Fields'
 import { Btn } from '../../ui/Button'
-import type { CardioType } from '../../../types'
+import type { CardioType, CardioFormat } from '../../../types'
 
 export function CardioLogForm() {
   const [type, setType] = useState<CardioType>('Running')
@@ -12,6 +13,7 @@ export function CardioLogForm() {
   const [duration, setDuration] = useState('')
   const [distance, setDistance] = useState('')
   const [avgHr, setAvgHr] = useState('')
+  const [format, setFormat] = useState<CardioFormat | ''>('')
   const [notes, setNotes] = useState('')
   const { addCardioEntry, setToast } = useAppStore()
 
@@ -26,9 +28,10 @@ export function CardioLogForm() {
         date, type, duration: durationMins,
         distance: distKm || undefined,
         avgHr: avgHr ? +avgHr : undefined,
+        format: format || undefined,
         notes: notes || undefined,
       })
-      setDuration(''); setDistance(''); setAvgHr(''); setNotes('')
+      setDuration(''); setDistance(''); setAvgHr(''); setFormat(''); setNotes('')
       setToast('Session logged!')
     } catch {
       setToast('Failed to save.')
@@ -75,6 +78,14 @@ export function CardioLogForm() {
           placeholder="145"
           min="0"
           step="1"
+        />
+        {/* Tapping the chosen format again clears it: "not stated" is a real
+            answer, and most sessions are neither in particular. */}
+        <Toggle
+          label="Format (opt.)"
+          options={CARDIO_FORMATS}
+          value={format}
+          onPick={v => setFormat(f => (f === v ? '' : v))}
         />
         <div className="col-span-2">
           <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. Easy zone 2" />

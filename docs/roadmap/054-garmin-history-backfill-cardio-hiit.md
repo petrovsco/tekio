@@ -1,10 +1,19 @@
 # Roadmap: Garmin history backfill beyond sport — 157 cardio activities and 63 HIIT
 
 **Label:** feature
-**Status:** planned — Peter said on 2026-09-06 that the history matters, and
-settled the shape the same day: a cardio type is the modality, HIIT is a
-format of one, walks are not recorded. Free to run before or after 005 — the
-misreads 005 fixes touch sessions outside every live window.
+**Status:** in progress — started 2026-09-06, working the shape top to bottom:
+chart time frame first, then `format`, then the sync's claim step and `hiit`
+map, then the backfill run. Free to run before or after 005 — the misreads
+005 fixes touch sessions outside every live window.
+
+## Progress log
+
+- 2026-09-06 — Shape steps 1 and 2 shipped (v2.0.15): the Progress chart
+  has the time frame (default Last 90 days, year on the axis when a frame
+  spans two); `cardio_sessions.format` and the `custom` activity type are
+  live (migration `20260906113800_cardio_format_and_custom_type.sql`), the
+  log form and the edit modal have the Format toggle, the row shows the
+  label. Next: the sync script (steps 3–4), then the backfill (step 5).
 
 ---
 
@@ -97,7 +106,7 @@ table shows the current rules would call it a full endurance session).
 
 ## Acceptance
 
-- [ ] The cardio Progress chart has a time frame, defaults to a window, and
+- [x] The cardio Progress chart has a time frame, defaults to a window, and
       shows the year when a frame spans more than one.
 - [ ] `cardio_sessions.format` exists and shows on the row; a hand-logged
       session can be marked intervals.

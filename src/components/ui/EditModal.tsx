@@ -11,11 +11,12 @@ import { Icon } from './Icon'
 import { SSBadge } from './Badges'
 import { SmartInput } from './SmartInput'
 import { ChipListInput } from './ChipListInput'
-import { CARDIO_TYPES, DONATION_TYPES } from '../../constants/app'
+import { CARDIO_TYPES, CARDIO_FORMATS, DONATION_TYPES } from '../../constants/app'
 import type {
   WeightEntry,
   BodyweightEntry,
   CardioEntry,
+  CardioFormat,
   MobilityEntry,
   SportEntry,
   DonationEntry,
@@ -204,6 +205,7 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
   const [duration, setDuration] = useState(formatDurationMins(record.duration))
   const [distance, setDistance] = useState(record.distance != null ? String(record.distance) : '')
   const [avgHr, setAvgHr] = useState(record.avgHr != null ? String(record.avgHr) : '')
+  const [format, setFormat] = useState<CardioFormat | ''>(record.format ?? '')
   const [notes, setNotes] = useState(record.notes ?? '')
 
   const durationMins = parseDurationMins(duration)
@@ -219,6 +221,7 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
         duration: durationMins,
         distance: distKm || undefined,
         avgHr: avgHr ? +avgHr : undefined,
+        format: format || undefined,
         notes: notes || undefined,
       })
       setToast('Updated!')
@@ -266,6 +269,12 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
           placeholder="145"
           min="0"
           step="1"
+        />
+        <Toggle
+          label="Format (opt.)"
+          options={CARDIO_FORMATS}
+          value={format}
+          onPick={v => setFormat(f => (f === v ? '' : v))}
         />
       </div>
       <Inp

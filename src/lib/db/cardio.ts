@@ -6,7 +6,7 @@ import { withOrigin } from '../env'
 const COLS =
   'id, session_date, activity_type, duration_minutes, distance_km, avg_heart_rate, ' +
   'max_heart_rate, elevation_gain_m, zone_distribution, aerobic_te, anaerobic_te, ' +
-  'training_effect_label, training_load, source, garmin_activity_id, notes'
+  'training_effect_label, training_load, source, garmin_activity_id, notes, format'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function toEntry(r: any): CardioEntry {
@@ -27,6 +27,7 @@ function toEntry(r: any): CardioEntry {
     source: (r.source ?? 'manual') as CardioEntry['source'],
     garminActivityId: r.garmin_activity_id != null ? Number(r.garmin_activity_id) : undefined,
     notes: r.notes ?? undefined,
+    format: r.format ?? undefined,
   }
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -52,6 +53,7 @@ export async function saveCardioEntry(entry: Omit<CardioEntry, 'id'>): Promise<C
       distance_km: entry.distance ?? null,
       avg_heart_rate: entry.avgHr ?? null,
       notes: entry.notes ?? null,
+      format: entry.format ?? null,
     }))
     .select(COLS)
     .single()
@@ -77,6 +79,7 @@ export async function updateCardioEntry(
       distance_km: patch.distance ?? null,
       avg_heart_rate: patch.avgHr ?? null,
       notes: patch.notes ?? null,
+      format: patch.format ?? null,
     })
     .eq('id', id)
   if (error) throw error

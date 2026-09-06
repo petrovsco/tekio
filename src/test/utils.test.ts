@@ -1,10 +1,34 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
 // 1RM estimation
 // ---------------------------------------------------------------------------
+
+describe('withinTimeFrame', () => {
+  const ref = '2026-09-06'
+
+  it('All time admits everything', () => {
+    expect(withinTimeFrame('2023-05-13', 'All time', ref)).toBe(true)
+  })
+
+  it('This year is the calendar year of the reference date', () => {
+    expect(withinTimeFrame('2026-01-01', 'This year', ref)).toBe(true)
+    expect(withinTimeFrame('2025-12-31', 'This year', ref)).toBe(false)
+  })
+
+  it('Last N days is inclusive of the cutoff day', () => {
+    expect(withinTimeFrame('2026-08-07', 'Last 30 days', ref)).toBe(true)
+    expect(withinTimeFrame('2026-08-06', 'Last 30 days', ref)).toBe(false)
+    expect(withinTimeFrame('2026-06-08', 'Last 90 days', ref)).toBe(true)
+    expect(withinTimeFrame('2026-06-07', 'Last 90 days', ref)).toBe(false)
+  })
+
+  it('crosses a year boundary by the calendar, not the year', () => {
+    expect(withinTimeFrame('2025-12-20', 'Last 30 days', '2026-01-10')).toBe(true)
+  })
+})
 
 describe('estimate1RM', () => {
   it('returns the weight itself for a single rep', () => {

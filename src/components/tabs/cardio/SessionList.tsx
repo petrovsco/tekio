@@ -58,6 +58,7 @@ function CardioRow({ d }: { d: CardioEntry }) {
               the emoji it replaced was chrome, not data (§7). */}
           <Icon name="cardio" size={13} className="text-ink-3 shrink-0" />
           <span className="text-xs font-bold text-ink truncate">{d.type}</span>
+          {d.format && <MicroLabel>{d.format === 'intervals' ? 'Intervals' : 'Steady'}</MicroLabel>}
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions

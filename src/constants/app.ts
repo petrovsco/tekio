@@ -1,3 +1,5 @@
+import type { CardioFormat } from '../types'
+
 export const USER_ID = 'a0000000-0000-0000-0000-000000000001'
 
 export const CYCLE = 6
@@ -17,7 +19,10 @@ export const DELOAD_REP_FACTOR = 0.7
 
 export const WATER_GOAL_ML = 2500
 
-export const CARDIO_TYPES = ['Running', 'Cycling', 'Swimming', 'Indoor Rowing'] as const
+// A cardio type is the modality. Custom is the one with no modality (EMOM,
+// slam/jump conditioning) — the row's notes say what it was. HIIT is never a
+// type here: it is a `format` on any of these (roadmap 054).
+export const CARDIO_TYPES = ['Running', 'Cycling', 'Swimming', 'Indoor Rowing', 'Custom'] as const
 export type CardioDisplayType = typeof CARDIO_TYPES[number]
 
 export const CARDIO_TYPE_MAP: Record<string, string> = {
@@ -25,13 +30,22 @@ export const CARDIO_TYPE_MAP: Record<string, string> = {
   Cycling: 'cycling',
   Swimming: 'swimming',
   'Indoor Rowing': 'rowing',
+  Custom: 'custom',
 }
 export const CARDIO_TYPE_REVERSE: Record<string, string> = {
   running: 'Running',
   cycling: 'Cycling',
   swimming: 'Swimming',
   rowing: 'Indoor Rowing',
+  custom: 'Custom',
 }
+
+/** The two values `cardio_sessions.format` takes; a form leaves it unset when
+ *  the session was neither in particular. */
+export const CARDIO_FORMATS: { value: CardioFormat; label: string }[] = [
+  { value: 'steady', label: 'Steady' },
+  { value: 'intervals', label: 'Intervals' },
+]
 
 export const DONATION_TYPES = ['Full Blood', 'Plasma'] as const
 export type DonationDisplayType = typeof DONATION_TYPES[number]

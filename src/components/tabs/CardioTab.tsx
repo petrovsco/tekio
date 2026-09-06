@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { CARDIO_TYPES } from '../../constants/app'
+import { TIME_FRAMES, withinTimeFrame, type TimeFrame } from '../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Chip } from '../ui/Chip'
 import { Toggle } from '../ui/Fields'
+import { SelEl } from '../ui/Input'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP } from '../ui/chart'
 import { CardioLogForm } from './cardio/CardioLogForm'
 import { SportLogForm } from './cardio/SportLogForm'
@@ -28,18 +30,26 @@ const MODES: { value: LogMode; label: string }[] = [
 export function CardioTab() {
   const [mode, setMode] = useState<LogMode>('cardio')
   const [filter, setFilter] = useState('All')
+  // A window, not all time: the Garmin backfill (roadmap 054) put three years
+  // of runs behind this chart, and one point per session over three years is
+  // a hairball with the same month-day appearing three times.
+  const [frame, setFrame] = useState<TimeFrame>('Last 90 days')
   const cardio = useAppStore(s => s.cardio)
 
   const ct = filter === 'All' ? 'Running' : filter
-  const chartData = cardio
-    .filter(d => d.type === ct)
+  const sessions = cardio
+    .filter(d => d.type === ct && withinTimeFrame(d.date, frame))
     .sort((a, b) => a.date.localeCompare(b.date))
-    .map(d => ({
-      date: d.date.slice(5),
-      duration: +d.duration.toFixed(2),
-      ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
-    }))
-  const hasPace = chartData.some(d => d.distance)
+  // The year joins the axis label only when the frame actually spans two.
+  const spansYears = new Set(sessions.map(d => d.date.slice(0, 4))).size > 1
+  const chartData = sessions.map(d => ({
+    date: spansYears ? d.date.slice(2) : d.date.slice(5),
+    duration: +d.duration.toFixed(2),
+    ...(d.distance ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
+  }))
+  // One session is not a line; below two the card says so and the legend
+  // stays out with the chart.
+  const hasPace = chartData.length > 1 && chartData.some(d => d.distance)
 
   return (
     <div className="flex flex-col gap-4">
@@ -54,10 +64,19 @@ export function CardioTab() {
       <Card>
         <SecTitle>Progress</SecTitle>
         {/* Plain type names, no emoji: the marker is chrome here, not data (§7). */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
           {['All', ...CARDIO_TYPES].map(t => (
             <Chip key={t} active={filter === t} onClick={() => setFilter(t)}>{t}</Chip>
           ))}
+          {/* SelEl is w-full by design; the wrapper gives it its width. */}
+          <div className="ml-auto w-[124px]">
+            <SelEl
+              aria-label="Time frame"
+              value={frame}
+              onChange={e => setFrame(e.target.value as TimeFrame)}
+              options={TIME_FRAMES.map(f => ({ value: f, label: f }))}
+            />
+          </div>
         </div>
         {chartData.length > 1 ? (
           <ResponsiveContainer width="100%" height={170}>
@@ -94,7 +113,7 @@ export function CardioTab() {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <EmptyMsg>Not enough data to chart yet</EmptyMsg>
+          <EmptyMsg>{frame === 'All time' ? 'Not enough data to chart yet' : `Fewer than two ${ct} sessions in this frame`}</EmptyMsg>
         )}
         {hasPace && (
           <div className="flex items-center gap-3 mt-2">

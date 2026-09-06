@@ -17,12 +17,19 @@ export interface BodyweightEntry {
   weight: number
 }
 
-export type CardioType = 'Running' | 'Cycling' | 'Swimming' | 'Indoor Rowing'
+/** The modality. `Custom` is conditioning with no modality among the four
+ *  (EMOM, slam/jump circuits); its notes say what it was (roadmap 054). */
+export type CardioType = 'Running' | 'Cycling' | 'Swimming' | 'Indoor Rowing' | 'Custom'
+
+/** How the session was run. Any modality can be done as intervals, so this is
+ *  a second column, never a fifth type (roadmap 054). Absent = not stated. */
+export type CardioFormat = 'steady' | 'intervals'
 
 export interface CardioEntry {
   id: string
   date: string
   type: CardioType
+  format?: CardioFormat
   duration: number
   distance?: number
   /** Average heart rate (bpm) for the session. */

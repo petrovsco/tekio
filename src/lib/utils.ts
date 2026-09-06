@@ -29,6 +29,24 @@ export const startOfWeek = (s: string, weekStart: WeekStartDay = 'monday'): stri
 export const weekKey = (s: string, weekStart: WeekStartDay = 'monday'): string =>
   startOfWeek(s, weekStart)
 
+/** The frames the Cardio tab's charts and the sport record share (roadmap 054).
+ *  These are chart windows, not reads: Home and Adaptations keep their own
+ *  grounded windows and never pick from this list. */
+export const TIME_FRAMES = ['All time', 'Last 30 days', 'Last 90 days', 'This year'] as const
+export type TimeFrame = typeof TIME_FRAMES[number]
+
+/** Whether a YYYY-MM-DD date falls inside `frame`, counted back from `ref`
+ *  (today by default). Pure string arithmetic on ISO dates, so the boundary
+ *  does not wobble with the browser's timezone. */
+export function withinTimeFrame(date: string, frame: TimeFrame, ref: string = today()): boolean {
+  if (frame === 'All time') return true
+  if (frame === 'This year') return date.slice(0, 4) === ref.slice(0, 4)
+  const days = frame === 'Last 30 days' ? 30 : 90
+  const cutoff = new Date(`${ref}T00:00:00Z`)
+  cutoff.setUTCDate(cutoff.getUTCDate() - days)
+  return date >= cutoff.toISOString().slice(0, 10)
+}
+
 export const r05 = (v: number): number => Math.round(v * 2) / 2
 
 export interface CycleInfo {

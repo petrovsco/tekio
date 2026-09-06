@@ -2,24 +2,10 @@ import { useState } from 'react'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
-import { weekKey } from '../../../lib/utils'
+import { weekKey, TIME_FRAMES, withinTimeFrame, type TimeFrame } from '../../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { SelEl } from '../../ui/Input'
 import { CHART, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
-
-const TIME_FRAMES = ['All time', 'Last 30 days', 'Last 90 days', 'This year'] as const
-type TimeFrame = typeof TIME_FRAMES[number]
-
-function withinTimeFrame(date: string, frame: TimeFrame): boolean {
-  if (frame === 'All time') return true
-  const d = new Date(date)
-  const now = new Date()
-  if (frame === 'This year') return d.getFullYear() === now.getFullYear()
-  const days = frame === 'Last 30 days' ? 30 : 90
-  const cutoff = new Date(now)
-  cutoff.setDate(cutoff.getDate() - days)
-  return d >= cutoff
-}
 
 /** One column of the win/loss/tie record. The label names the outcome, so the
  *  number needs no colour of its own (design-system §1). */
