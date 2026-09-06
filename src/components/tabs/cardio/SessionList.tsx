@@ -91,6 +91,7 @@ function SportRow({ d }: { d: SportEntry }) {
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon name="sport" size={13} className="text-ink-3 shrink-0" />
           <span className="text-xs font-bold text-ink truncate">{d.sport}</span>
+          {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions
           date={d.date}

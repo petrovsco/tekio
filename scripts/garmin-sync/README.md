@@ -6,19 +6,35 @@ data and upsert it into Supabase:
 - **[Sleep](../../.github/workflows/garmin-sleep-sync.yml)** (`sync_sleep.py`) →
   `sleep_logs`: duration, **Sleep Score**, HRV, resting HR, bed/wake times.
 - **[Activities](../../.github/workflows/garmin-activity-sync.yml)**
-  (`sync_activities.py`) → `cardio_sessions`: cardio activities
-  (cycling / running / swimming / rowing) with distance, elevation, avg/max HR,
-  HR-zone time, and **Aerobic / Anaerobic Training Effect**. The app uses the
-  Training Effect + zones to classify each ride into the correct cardio
-  adaptation (`classifyCardioAdaptations` in `src/lib/adaptations.ts`) — a hard
-  ride can count toward both VO₂max and anaerobic capacity.
+  (`sync_activities.py`), two kinds:
+  - cardio (cycling / running / swimming / rowing) → `cardio_sessions`, with
+    distance, elevation, avg/max HR, HR-zone time, and **Aerobic / Anaerobic
+    Training Effect**. The app uses the Training Effect + zones to classify
+    each ride into the correct cardio adaptation (`classifyCardioAdaptations`
+    in `src/lib/adaptations.ts`) — a hard ride can count toward both VO₂max
+    and anaerobic capacity.
+  - sport (tennis, …) → `sport_sessions`, with duration and avg HR only. The
+    quality rating, competitors and result stay yours to fill in, so a synced
+    session shows up in the Cardio tab as an entry still to be rated. Only
+    activity types seen on a real activity are mapped (`SPORT_TYPE_KEYS`); a
+    dry run (below) lists what is being skipped so the map grows from data.
 
 Both use the unofficial Garmin Connect API (via [`garminconnect`](https://github.com/cyberjunky/python-garminconnect)).
 Fine for reading your own account on this single-user app; it can break if Garmin
 changes their internal API (bump the library version if so). Both share the same
 secrets and are **idempotent** (sleep upserts on `(user_id, log_date)`; activities
-on `(user_id, garmin_activity_id)`), so re-running is safe. Non-cardio activities
-(tennis, strength, walks) are skipped — those stay manual.
+on `(user_id, garmin_activity_id)`), so re-running is safe. Strength and walks
+are skipped — those stay manual.
+
+**Sport sessions claim the row you logged by hand.** Before inserting, each
+sport activity looks for a hand-logged session on the same date for the same
+sport (or a variant — a Garmin *tennis* activity matches a *Tennis Doubles*
+row) and, if there is one, adds the Garmin id plus duration / avg HR to *that*
+row where they were empty. Your notes, rating and result are never touched.
+This is the everyday flow — log the match with its score in the evening, the
+5 AM run adds the watch data — and it is what lets a full-history backfill run
+on top of months of manual rows without doubling them. An activity already in
+the table is skipped, so a re-run writes nothing.
 
 ## How it works
 
@@ -89,9 +105,24 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 ### 3. Run it
 
 Actions tab → **Garmin sleep sync** / **Garmin activity sync** → **Run workflow**.
-Check the logs, then confirm rows landed in `sleep_logs` / `cardio_sessions`.
-After that they run daily (sleep 09:00 UTC, activities 09:20 UTC). Set
-`SYNC_DAYS` higher on a manual run to backfill more history.
+Check the logs, then confirm rows landed in `sleep_logs` / `cardio_sessions` /
+`sport_sessions`. After that they run daily (sleep 09:00 UTC, activities 02:00
+UTC = 5 AM Bulgaria).
+
+**Backfill / dry run.** The activity workflow's *Run workflow* button takes
+three inputs — `days` (how far back), `kinds` (`cardio,sport`, or one of them)
+and `dry_run` (print the plan, write nothing). From a terminal:
+
+```bash
+# see what a two-year sport backfill would do, and which activity types are unmapped
+gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport -f dry_run=true
+gh run watch   # then read the log
+# do it
+gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport
+```
+
+A cardio backfill needs more care: a ride logged by hand *before* the sync
+existed has no Garmin id, so the sync would add a second row next to it.
 
 ## Troubleshooting
 

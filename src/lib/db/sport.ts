@@ -40,7 +40,7 @@ export async function loadSportTypes(): Promise<SportTypeInfo[]> {
 export async function loadSports(): Promise<SportEntry[]> {
   const { data, error } = await supabase
     .from('sport_sessions')
-    .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, sport_types(name)')
+    .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, source, garmin_activity_id, sport_types(name)')
     .eq('user_id', USER_ID)
     .order('session_date', { ascending: false })
   if (error) throw error
@@ -56,6 +56,8 @@ export async function loadSports(): Promise<SportEntry[]> {
     competitorNames: r.competitor_names ?? undefined,
     result: (r.result ?? undefined) as MatchResult | undefined,
     teammateNames: r.teammate_names ?? undefined,
+    source: (r.source ?? 'manual') as SportEntry['source'],
+    garminActivityId: r.garmin_activity_id ?? undefined,
   }))
 }
 

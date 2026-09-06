@@ -1,9 +1,9 @@
 # Roadmap: Garmin sync for sport activities (tennis, padel, …)
 
 **Label:** feature
-**Status:** planned — kickoff-ready. Decided 2026-09-02 after a user question
-about a missing tennis session surfaced that Garmin sync only ever covered
-mono-structural cardio. Committed to 2.1.0 by Peter on 2026-09-05.
+**Status:** in progress — picked up 2026-09-06; migration applied, sync +
+workflow + badge being built, then a full-history backfill of every sport
+activity Garmin holds (Peter's ask the same day).
 **Release:** 2.1.0
 
 ---

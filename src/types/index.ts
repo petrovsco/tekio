@@ -117,6 +117,10 @@ export interface SportEntry {
   competitorNames?: string[]
   result?: MatchResult
   teammateNames?: string[]
+  /** Where the row came from. A `'garmin'` row arrived with duration + avg HR and no rating yet. */
+  source?: 'manual' | 'garmin'
+  /** Garmin activity id — the idempotent-sync dedupe key (absent on manual rows). */
+  garminActivityId?: number
 }
 
 export interface SportTypeInfo {
