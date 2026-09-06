@@ -25,6 +25,10 @@ on:
         description: 'Print the plan and the unmapped activity types; write nothing'
         type: boolean
         default: false
+      dump:
+        description: 'Also upload the raw activity list (every type, every field) as an artifact'
+        type: boolean
+        default: false
 
 concurrency:
   group: garmin-activity-sync
@@ -54,3 +58,14 @@ jobs:
           SYNC_DAYS: ${{ inputs.days || '7' }}
           SYNC_KINDS: ${{ inputs.kinds || 'cardio,sport' }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
+          DUMP_PATH: ${{ inputs.dump && 'garmin-activities.json' || '' }}
+
+      # Only on a manual run that asked for it. Fetch it with
+      #   gh run download <run id> -n garmin-activities -D scripts/garmin-sync/dumps/
+      # (that folder is gitignored — the dump is personal data, not source).
+      - if: ${{ inputs.dump }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: garmin-activities
+          path: garmin-activities.json
+          retention-days: 90

@@ -34,6 +34,8 @@ __pycache__/
 # Never commit Garmin tokens — they belong only in GitHub Actions secrets
 .garminconnect/
 garmin_tokens.json
+# Raw activity dumps downloaded from the workflow's `dump` artifact — personal data
+scripts/garmin-sync/dumps/
 
 # Local Claude Code config — contains secrets (Supabase PAT), never commit.
 # .claude/ is otherwise tracked (agents + skills live there), so ignore by name.

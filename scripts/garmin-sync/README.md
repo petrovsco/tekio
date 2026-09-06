@@ -110,8 +110,9 @@ Check the logs, then confirm rows landed in `sleep_logs` / `cardio_sessions` /
 UTC = 5 AM Bulgaria).
 
 **Backfill / dry run.** The activity workflow's *Run workflow* button takes
-three inputs — `days` (how far back), `kinds` (`cardio,sport`, or one of them)
-and `dry_run` (print the plan, write nothing). From a terminal:
+four inputs — `days` (how far back), `kinds` (`cardio,sport`, or one of them),
+`dry_run` (print the plan, write nothing) and `dump` (also upload the raw
+activity list as an artifact). From a terminal:
 
 ```bash
 # see what a two-year sport backfill would do, and which activity types are unmapped
@@ -123,6 +124,18 @@ gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport
 
 A cardio backfill needs more care: a ride logged by hand *before* the sync
 existed has no Garmin id, so the sync would add a second row next to it.
+
+**Studying the history.** `dump=true` writes everything Garmin returned for
+the window — every activity type, every field — to `garmin-activities.json`
+and uploads it as the `garmin-activities` artifact (kept 90 days). Download it
+into the gitignored `scripts/garmin-sync/dumps/` folder; it is personal data,
+never source:
+
+```bash
+gh workflow run garmin-activity-sync.yml -f days=5000 -f dry_run=true -f dump=true
+gh run watch
+gh run download <run id> -n garmin-activities -D scripts/garmin-sync/dumps/
+```
 
 ## Troubleshooting
 

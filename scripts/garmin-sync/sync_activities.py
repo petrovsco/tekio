@@ -40,9 +40,14 @@ Env vars:
   DRY_RUN                     true → fetch and print the plan, write nothing. Also
                               lists the activity types nothing maps yet, so the
                               maps below grow from real data, not guesses.
+  DUMP_PATH                   if set, write the raw activity list Garmin returned
+                              (every type, every field) to this JSON file. The
+                              workflow uploads it as an artifact, so the history
+                              can be studied locally without any secret leaving CI.
 """
 from __future__ import annotations
 
+import json
 import os
 import sys
 from collections import Counter
@@ -364,6 +369,12 @@ def main() -> None:
         print(f"Logged in as {client.display_name}")
         activities = client.get_activities_by_date(start.isoformat(), end.isoformat()) or []
     print(f"Fetched {len(activities)} activity(ies) {start}..{end}")
+
+    dump_path = os.getenv("DUMP_PATH", "").strip()
+    if dump_path:
+        with open(dump_path, "w", encoding="utf-8") as f:
+            json.dump(activities, f, ensure_ascii=False, indent=1)
+        print(f"Dumped the raw activity list to {dump_path}")
 
     cardio_rows: list[dict] = []
     sport_acts: list[dict] = []
