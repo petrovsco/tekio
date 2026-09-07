@@ -17,10 +17,12 @@ shipped. Theme: **finish the model, clean the house.** Doctrine §6 says no
 new sections until the five-second Home read is proven, so this release
 closes what 2.0.0 opened rather than adding surface.
 
-**Before anything in it:** [053](053-recover-swept-staging-rows.md) — recover
-the seven rows the withdrawn release sweep deleted on 2026-09-05. Not a 2.1.0
-item; it goes first because it is the user's training data and the bytes are
-only on disk until a vacuum runs.
+**Nothing goes before it any more.**
+[053](done/053-recover-swept-staging-rows.md) — recovering the rows the
+withdrawn release sweep deleted on 2026-09-05 — was **discarded** on
+2026-09-07: Peter does not remember the sessions, so nothing honest can be
+re-entered, and the prevention half had already shipped. It was never a 2.1.0
+item.
 
 In running order:
 

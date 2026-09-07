@@ -1,19 +1,25 @@
 # Roadmap: Recover the seven rows the release sweep deleted
 
 **Label:** bug
-**Status:** planned — in-place recovery is impossible on this project, confirmed 2026-09-06: `pageinspect` and `pg_surgery` (and every heap-reading sibling) are superuser-only, Supabase grants the `postgres` role no superuser, and there is no backup (free plan, PITR off), so the on-disk bytes cannot be read. Plans A and B are ruled out; the only route left is **Plan C — re-log by hand**, which is Peter's call.
+**Status:** discarded — Peter declined Plan C on 2026-09-07: he does not remember the sessions, so nothing honest can be re-entered. The rows are written off; prevention is what mattered and it already shipped (024 Part 3 withdrawn, the sweep out of 050).
 
 ## Progress log
 
 - **2026-09-05** — Brief written. Dead tuples confirmed on disk at 19:37 UTC (no vacuum has ever run on the six tables); both extensions available on the server, neither installed; no backup (free plan, PITR off). Scripts ready. Blocked on the `create extension` classifier refusal.
 - **2026-09-06** — Peter gave the go. Retried `create extension pageinspect` on `execute_sql` and `apply_migration`; both refused again (three refusals total). Re-checked: dead-tuple counts unchanged (bodyweight 2/6, session_exercises 212/14, session_sets 821/42, sport_sessions 3/2, training_sessions 10/3, water_logs 2/15; still no vacuum), so nothing has been pruned yet. Probed the pageinspect read path — it passes the classifier and only errors on the missing function, so once the extensions are on I can run the whole recovery. The install is the sole blocker.
 - **2026-09-06 (later)** — Peter ran the two `create extension` lines in the SQL editor himself: both failed with `42501: must be superuser to create this extension`, and the dashboard's Extensions list doesn't carry them. Confirmed via `pg_available_extension_versions` that `pageinspect`, `pg_surgery`, `pgstattuple`, `pg_visibility`, `pg_walinspect`, `pg_freespacemap`, `pg_buffercache` and `amcheck` are all `superuser = true, trusted = false` — none installable by the `postgres` role Supabase gives us. That rules out Plan A **and** Plan B (both need `pageinspect`). The bytes are still on disk but there is no in-project way to read them. Recovery narrows to Plan C.
+- **2026-09-07** — Peter declines Plan C and closes the brief: *"I won't relog the
+  sessions, because I don't remember them. Making sure that doesn't happen anymore
+  is enough."* The 45 rows are written off. The prevention half was already
+  ticked (024 Part 3 withdrawn, the sweep out of the 050 release procedure), so
+  nothing carries forward and the brief is **discarded**, not done — it never
+  recovered a row.
 - **2026-09-06 (final)** — Peter confirms he does not remember the sets. The two weights sessions' exercises, reps and weights are therefore lost for good: unreadable from disk (above) and not in memory. WAL would not have helped either — a default `DELETE` logs only the primary key, not the old row's columns. What Plan C can still restore: the two sport sessions (Garmin), the two water logs, the body weight, and the fact that he trained on 09-02 and 09-03. No set values will be invented to fill the gap.
 
 ## What happened
 
 On the evening of 2026-09-05, after 2.0.0 shipped, the release sweep from
-[024](024-staging-shared-database-safety.md) Part 3 deleted every log row
+[024](../024-staging-shared-database-safety.md) Part 3 deleted every log row
 tagged `origin = 'staging'`. The sweep assumed a staging row was a test row.
 It was not: the user runs the staging build daily, precisely to test
 it in live conditions, so those were his real sessions of that week. The
@@ -228,4 +234,6 @@ the app. Peter's call whether it is worth doing for one week.
       Peter's memory (2026-09-06). The two weights sessions' loads are lost.
 - [ ] Peter decides what, if anything, to re-log by hand (Plan C): the sport
       sessions (Garmin), water, body weight, and optionally the two training
-      days' structure — no invented set values.
+      days' structure — no invented set values. **Decided 2026-09-07: nothing
+      is re-logged.** The box stays unticked and the brief is discarded — no
+      row was ever recovered, and that is the honest record.

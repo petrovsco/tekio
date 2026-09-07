@@ -8,7 +8,7 @@
 [025](done/025-release-blocked-schema-drops.md)) and memory. Every step turned out
 right, but nothing said the order, and two of them — the queued schema drops
 and the staging sweep (since withdrawn: its one run deleted real data,
-[053](053-recover-swept-staging-rows.md)) — were found only because those
+[053](done/053-recover-swept-staging-rows.md)) — were found only because those
 briefs happened to be open.
 
 ## The plain summary

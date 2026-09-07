@@ -4,7 +4,7 @@
 **Status:** planned — Part 2 (the policy) is unstarted; Part 1 split out to
 [037](done/037-row-origin-tagging.md). Part 3, the release sweep, was
 withdrawn on 2026-09-05 after its one run deleted real training data
-(recovery: [053](053-recover-swept-staging-rows.md)). Carried over from
+(recovery: [053](done/053-recover-swept-staging-rows.md)). Carried over from
 2.0.0 to 2.1.0.
 **Depends:** 037
 **Release:** 2.1.0 — carried over: the policy is what makes a release safe on
@@ -76,7 +76,7 @@ assumption was wrong: those were his real sessions from that week, logged on
 staging on purpose. The run deleted 2 `training_sessions` (with 9
 `session_exercises` and 29 `session_sets`), 2 `sport_sessions`, 2 `water_logs`
 and 1 `bodyweight_logs`. Getting them back is
-[053](053-recover-swept-staging-rows.md). This part is withdrawn, and the
+[053](done/053-recover-swept-staging-rows.md). This part is withdrawn, and the
 release procedure ([050](050-release-procedure.md)) no longer carries the step.
 
 ## Questions to answer at kickoff
