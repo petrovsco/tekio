@@ -167,8 +167,11 @@ the HRmax item below.
   "Sofia - Hill Repeats" 28 × 31 s, 2024-06-17 `ANAEROBIC_CAPACITY` 5 × 143 s)
   read as endurance or VO₂max today. Separating them from run/walk needs
   per-split intensity (the typed-splits endpoint carries avg HR and pace per
-  split) or Peter starting such a run on the HIIT profile. Peter's call
-  whether that handful is worth a rule; nothing is built for it.
+  split) or Peter starting such a run on the HIIT profile. **Decided
+  2026-09-07 (Peter): no rule.** `intervals` means high-intensity intervals
+  started as such, on the HIIT profile; a run is a run, and its split
+  structure never earns the label whatever the split lengths. Those four runs
+  stay where the steady rules put them.
 - **Garmin data on sport rows.** A migration mirroring `cardio_sessions`'
   Garmin columns, the sync writing them for `tennis_v2`, and
   `classifySportAdaptations` reading them through the same rules — the seam is
