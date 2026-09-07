@@ -1,7 +1,7 @@
 # Roadmap: Garmin data on sport rows
 
 **Label:** feature
-**Status:** planned — split out of [005](done/005-hr-zone-intensity-classification.md) on 2026-09-07 (Peter's call) so that brief could close. The classifier's seam — `classifySportAdaptations`' unused parameter — is waiting for the columns.
+**Status:** in progress — picked up 2026-09-07; working the five Shape steps in order, migration first. Split out of [005](done/005-hr-zone-intensity-classification.md) on 2026-09-07 (Peter's call) so that brief could close.
 **Release:** 2.1.0
 
 ## Why

@@ -10,9 +10,13 @@ Two kinds of activity are synced, into two tables:
   into the right cardio adaptation (see src/lib/adaptations.ts:classifyCardioAdaptations).
   An intervals row also gets its work-bout length from the summary's
   `splitSummaries` (roadmap 005) — see _bout_seconds.
-- **sport** (tennis, …) -> `sport_sessions` (roadmap 041), with duration and
-  average HR only. Quality, competitors and the result stay manual — Garmin
-  cannot know them — so a synced row shows up as an entry still to be rated.
+- **sport** (tennis, …) -> `sport_sessions` (roadmap 041), with duration,
+  average HR and — since roadmap 058 — the same Training-Effect / HR-zone data
+  a cardio row carries, so the app reads a synced match through the same rules
+  (src/lib/adaptations.ts:classifySportAdaptations). Quality, competitors and
+  the result stay manual — Garmin cannot know them — so a synced row shows up
+  as an entry still to be rated. A row 041 synced before those columns existed
+  is backfilled by the next run that sees its activity (see plan_sport).
 
 Strength, walks, hikes and skating stay out by decision (SKIPPED_BY_DECISION).
 
@@ -136,7 +140,8 @@ def _start(act: dict) -> str:
 
 
 def _summary(plan: dict) -> str:
-    return (f"{len(plan['claimed'])} claimed manual row(s), {len(plan['inserted'])} new row(s), "
+    backfilled = f"{len(plan['backfilled'])} backfilled, " if plan.get("backfilled") else ""
+    return (f"{backfilled}{len(plan['claimed'])} claimed manual row(s), {len(plan['inserted'])} new row(s), "
             f"{len(plan['skipped'])} already synced")
 
 
@@ -290,62 +295,113 @@ def is_variant(sport_name: str, base: str) -> bool:
     return n == b or n.startswith(b + " ")
 
 
+# The columns the watch may fill where a row left them empty — on a claimed
+# manual row and, for the six intensity columns 058 added, on a row 041 synced
+# before they existed. Never `notes` (a hand-written one is the user's; a new
+# row gets the activity name) and never the identity or the rating.
+SPORT_FILL_COLS = (
+    "duration_minutes", "avg_heart_rate", "max_heart_rate", "aerobic_te", "anaerobic_te",
+    "training_effect_label", "training_load", "zone_distribution",
+)
+SPORT_STATE_COLS = "id,session_date,garmin_activity_id," + ",".join(SPORT_FILL_COLS) + ",sport_types(name)"
+
+
+def sport_row(user_id: str, act: dict) -> dict | None:
+    """Map one Garmin sport activity to a sport_sessions row, or None to skip it.
+
+    `sport_name` stands in for `sport_type_id` — the caller resolves the id.
+    The intensity columns are the ones extract_row writes on a cardio row, so
+    the app classifies a synced match through the same rules (roadmap 058).
+    Every key is present, None where Garmin sent nothing: a batch insert needs
+    the same keys on every row, and a claim decides column by column."""
+    base = SPORT_TYPE_KEYS.get(_type_key(act))
+    basics = _basics(act)
+    if not base or not basics:
+        return None
+    activity_id, session_date, duration_min = basics
+    return {
+        "user_id": user_id,
+        "sport_name": base,
+        "session_date": session_date,
+        "duration_minutes": duration_min,
+        "avg_heart_rate": _as_int(act.get("averageHR")),
+        "max_heart_rate": _as_int(act.get("maxHR")),
+        "aerobic_te": _num(act.get("aerobicTrainingEffect")),
+        "anaerobic_te": _num(act.get("anaerobicTrainingEffect")),
+        "training_effect_label": act.get("trainingEffectLabel"),
+        "training_load": _num(act.get("activityTrainingLoad")),
+        "zone_distribution": _zones(act),
+        "notes": act.get("activityName"),
+        "source": "garmin",
+        "garmin_activity_id": activity_id,
+    }
+
+
+def _sport_fills(row: dict, existing: dict) -> list[str]:
+    """The SPORT_FILL_COLS the watch has and `existing` still lacks."""
+    return [k for k in SPORT_FILL_COLS if row.get(k) is not None and existing.get(k) is None]
+
+
+def _sport_label(row: dict) -> str:
+    hr = f", {row['avg_heart_rate']} bpm" if row.get("avg_heart_rate") else ""
+    aero = row["aerobic_te"] if row.get("aerobic_te") is not None else "—"
+    anaero = row["anaerobic_te"] if row.get("anaerobic_te") is not None else "—"
+    return f"{row['session_date']} {row['sport_name']}: {row['duration_minutes']}min{hr}, TE aero {aero} / anaero {anaero}"
+
+
 def plan_sport(user_id: str, acts: list[dict], existing: list[dict]) -> dict:
     """Decide what each sport activity does to sport_sessions, without writing.
 
-    `existing` is every sport_sessions row of the user, each with `id`,
-    `session_date`, `garmin_activity_id`, `duration_minutes`, `avg_heart_rate`
-    and `sport_types.name` (embedded as {"sport_types": {"name": …}}).
+    `existing` is every sport_sessions row of the user with SPORT_STATE_COLS
+    (`sport_types.name` embedded as {"sport_types": {"name": …}}).
 
-    Returns {"skipped": [...], "claimed": [(row_id, patch, label)],
-             "inserted": [row, …]} where an inserted row carries `sport_name`
-    in place of `sport_type_id` — the caller resolves the id.
+    Four outcomes. An activity whose id is already on a row is skipped — unless
+    that row still lacks a column the watch has, when it is backfilled with
+    just those (the 058 columns landing on rows 041 synced without them; a
+    re-run after that writes nothing). A hand-logged row on the same date with
+    the same sport, or a variant of it, is claimed: Garmin id + source, plus
+    every SPORT_FILL_COLS column that is empty on the manual row — a
+    hand-written duration always wins. Otherwise the activity is inserted.
+
+    Returns {"skipped": [label], "backfilled": [(row_id, patch, label)],
+             "claimed": [(row_id, patch, label)], "inserted": [row, …]}.
     """
-    known_ids = {r["garmin_activity_id"] for r in existing if r.get("garmin_activity_id")}
+    owned = {r["garmin_activity_id"]: r for r in existing if r.get("garmin_activity_id")}
     unclaimed = [r for r in existing if not r.get("garmin_activity_id")]
-    plan: dict = {"skipped": [], "claimed": [], "inserted": []}
+    plan: dict = {"skipped": [], "backfilled": [], "claimed": [], "inserted": []}
 
     for act in sorted(acts, key=_start):
-        base = SPORT_TYPE_KEYS.get(_type_key(act))
-        basics = _basics(act)
-        if not base or not basics:
+        row = sport_row(user_id, act)
+        if not row:
             continue
-        activity_id, session_date, duration_min = basics
-        avg_hr = _as_int(act.get("averageHR"))
-        label = f"{session_date} {base}: {duration_min}min" + (f", {avg_hr} bpm" if avg_hr else "")
+        label = _sport_label(row)
 
-        if activity_id in known_ids:
-            plan["skipped"].append(label)
+        mine = owned.get(row["garmin_activity_id"])
+        if mine:
+            filled = _sport_fills(row, mine)
+            if filled:
+                patch = {k: row[k] for k in filled}
+                plan["backfilled"].append((mine["id"], patch, f"{label} → backfills {', '.join(filled)}"))
+            else:
+                plan["skipped"].append(label)
             continue
 
         match = next(
             (r for r in unclaimed
-             if r["session_date"] == session_date
-             and is_variant(((r.get("sport_types") or {}).get("name") or ""), base)),
+             if r["session_date"] == row["session_date"]
+             and is_variant(((r.get("sport_types") or {}).get("name") or ""), row["sport_name"])),
             None,
         )
         if match:
             unclaimed.remove(match)
-            patch = {"garmin_activity_id": activity_id, "source": "garmin"}
-            if match.get("duration_minutes") is None:
-                patch["duration_minutes"] = duration_min
-            if match.get("avg_heart_rate") is None and avg_hr is not None:
-                patch["avg_heart_rate"] = avg_hr
-            name = (match.get("sport_types") or {}).get("name") or base
-            plan["claimed"].append((match["id"], patch, f"{label} → claims manual {name} row"))
+            patch = {"garmin_activity_id": row["garmin_activity_id"], "source": "garmin"}
+            filled = _sport_fills(row, match)
+            patch.update({k: row[k] for k in filled})
+            name = (match.get("sport_types") or {}).get("name") or row["sport_name"]
+            fills = f", fills {', '.join(filled)}" if filled else ""
+            plan["claimed"].append((match["id"], patch, f"{label} → claims manual {name} row{fills}"))
             continue
 
-        row = {
-            "user_id": user_id,
-            "sport_name": base,
-            "session_date": session_date,
-            "duration_minutes": duration_min,
-            "avg_heart_rate": avg_hr,
-            "notes": act.get("activityName"),
-            "source": "garmin",
-            "garmin_activity_id": activity_id,
-        }
-        # Keys stay even when None: a batch insert needs the same keys on every row.
         plan["inserted"].append(row)
     return plan
 
@@ -402,7 +458,8 @@ def apply_cardio_plan(plan: dict) -> None:
 
 
 def fetch_sport_state(user_id: str) -> tuple[dict[str, str], list[dict]]:
-    """(sport type name, lower-cased -> id) and every sport_sessions row of the user."""
+    """(sport type name, lower-cased -> id) and every sport_sessions row of the
+    user, with the columns a claim or a backfill can fill (SPORT_STATE_COLS)."""
     resp = requests.get(
         _rest("sport_types"),
         params={"select": "id,name", "user_id": f"eq.{user_id}"},
@@ -413,11 +470,7 @@ def fetch_sport_state(user_id: str) -> tuple[dict[str, str], list[dict]]:
 
     resp = requests.get(
         _rest("sport_sessions"),
-        params={
-            "select": "id,session_date,garmin_activity_id,duration_minutes,avg_heart_rate,sport_types(name)",
-            "user_id": f"eq.{user_id}",
-            "limit": "10000",
-        },
+        params={"select": SPORT_STATE_COLS, "user_id": f"eq.{user_id}", "limit": "10000"},
         headers=_headers(), timeout=30,
     )
     _check(resp, "sport_sessions read")
@@ -440,14 +493,14 @@ def create_sport_type(user_id: str, name: str) -> str:
 
 
 def apply_sport_plan(user_id: str, plan: dict, types: dict[str, str]) -> None:
-    for row_id, patch, _ in plan["claimed"]:
+    for row_id, patch, _ in plan["backfilled"] + plan["claimed"]:
         resp = requests.patch(
             _rest("sport_sessions"),
             params={"id": f"eq.{row_id}"},
             headers=_headers("return=minimal"),
             json=patch, timeout=30,
         )
-        _check(resp, f"sport_sessions claim ({row_id})")
+        _check(resp, f"sport_sessions patch ({row_id})")
 
     rows = []
     for row in plan["inserted"]:
@@ -575,12 +628,11 @@ def main() -> None:
         plan = plan_sport(user_id, sport_acts, existing)
         for label in plan["skipped"]:
             print(f"  {label} — already synced")
-        for _, _, label in plan["claimed"]:
+        for _, _, label in plan["backfilled"] + plan["claimed"]:
             print(f"  {label}")
         for row in plan["inserted"]:
-            hr = f", {row['avg_heart_rate']} bpm" if row.get("avg_heart_rate") else ""
             new_type = "" if row["sport_name"].lower() in types else " (new sport type)"
-            print(f"  {row['session_date']} {row['sport_name']}: {row['duration_minutes']}min{hr} → new row{new_type}")
+            print(f"  {_sport_label(row)} → new row{new_type}")
         if dry_run:
             print(f"Would write sport: {_summary(plan)}.")
         else:

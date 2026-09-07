@@ -19,9 +19,13 @@ data and upsert it into Supabase:
     length the watch's timer measured, read off the summary's
     `INTERVAL_ACTIVE` split (total ÷ count; roadmap 005) — which the app reads
     first: ≤ 120 s is anaerobic capacity, longer is VO₂max.
-  - sport (tennis, …) → `sport_sessions`, with duration and avg HR only. The
-    quality rating, competitors and result stay yours to fill in, so a synced
-    session shows up in the Cardio tab as an entry still to be rated. Only
+  - sport (tennis, …) → `sport_sessions`, with duration, avg HR and — since
+    roadmap 058 — the same Training Effect + HR zones a cardio row gets, so
+    the app classifies a synced match by the same rules instead of by
+    convention (a row synced before those columns existed is backfilled by
+    the next run that sees its activity). The quality rating, competitors and
+    result stay yours to fill in, so a synced session shows up in the Cardio
+    tab as an entry still to be rated. Only
     activity types seen on a real activity are mapped (`SPORT_TYPE_KEYS`); a
     dry run (below) lists what is being skipped so the map grows from data.
 
