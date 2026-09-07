@@ -91,7 +91,8 @@ def classify_old(a):
 # Grounded 2026-09-06 — docs/grounding/005-hr-zone-intensity-classification.md.
 VO2MAX_Z5_MIN = 8          # minutes at >= 90 % HRmax (Garmin Z5) that make a session VO2max work
 ENDURANCE_FLOOR_MIN = 25   # endurance-credit floor for a steady/unstated row with no intensity data
-THRESHOLD_LABELS = r"TEMPO|THRESHOLD"
+# TEMPO / LACTATE_THRESHOLD are not special-cased: threshold work is endurance by a
+# harder route than Zone 2, so it falls to the aerobic floor (fork 1b, 2026-09-07).
 VO2MAX_LABELS = r"VO2|VO₂|ANAEROBIC|SPRINT|SPEED"
 
 
@@ -118,8 +119,6 @@ def classify(a, fmt=None):
     if z5_min is not None and z5_min >= VO2MAX_Z5_MIN:
         return ["vo2max"]
     if has_te:
-        if re.search(THRESHOLD_LABELS, label):
-            return []  # threshold work: neither Zone 2 nor VO2max (fork 1a)
         if z is None and re.search(VO2MAX_LABELS, label):
             return ["vo2max"]  # label is the fallback only when zones are absent
         return ["endurance"] if aero >= TE_T else []

@@ -144,9 +144,11 @@ describe('classifyCardioAdaptations', () => {
       .toEqual(['endurance'])
   })
 
-  it('tempo / lactate-threshold work credits nothing — neither Zone 2 nor VO₂max (fork 1a)', () => {
-    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.3, anaerobicTe: 0.8, trainingEffectLabel: 'TEMPO' })).toEqual([])
-    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.6, anaerobicTe: 1.2, trainingEffectLabel: 'LACTATE_THRESHOLD', zoneDistribution: [100, 400, 900, 1500, 100] })).toEqual([])
+  it('tempo / lactate-threshold work is endurance — the adaptation it trains, by a harder route than Zone 2 (fork 1b)', () => {
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.3, anaerobicTe: 0.8, trainingEffectLabel: 'TEMPO' })).toEqual(['endurance'])
+    expect(classifyCardioAdaptations({ ...base, aerobicTe: 3.6, anaerobicTe: 1.2, trainingEffectLabel: 'LACTATE_THRESHOLD', zoneDistribution: [100, 400, 900, 1500, 100] })).toEqual(['endurance'])
+    // The aerobic floor still applies: a short tempo effort at TE 1.5 credits nothing.
+    expect(classifyCardioAdaptations({ ...base, duration: 12, aerobicTe: 1.5, anaerobicTe: 0.6, trainingEffectLabel: 'TEMPO' })).toEqual([])
   })
 })
 

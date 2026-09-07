@@ -56,9 +56,7 @@ export const TE_STIMULUS_THRESHOLD = 2.0
 /** 8 — minutes at ≥ 90 % HRmax (Garmin Z5; range 5–10) that make a session VO₂max work: the dose is minutes at ≥ 90 % (Buchheit & Laursen 2013; Seiler 2013: a 4×4 runs at ≈ 94 % HRpeak); Z4 straddles the threshold band and never decides, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const VO2MAX_Z5_MIN = 8
 
-/** Garmin primary-benefit labels that mark threshold work — between LT1 and LT2, neither Zone 2 nor VO₂max; the session credits nothing (005 fork 1a). Garmin benchmarks this label against the user's lactate-threshold HR, so it is the one threshold signal the summary carries. */
-const THRESHOLD_LABELS = /TEMPO|THRESHOLD/
-/** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. */
+/** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. Garmin's TEMPO / LACTATE_THRESHOLD are deliberately not here and not special-cased: threshold work trains endurance by a harder route than Zone 2, so it falls to the aerobic floor (005 fork 1b, Peter 2026-09-07). */
 const VO2MAX_LABELS = /VO2|VO₂|ANAEROBIC|SPRINT|SPEED/
 
 /** Minutes in Garmin's Z5 (≥ 90 % HRmax), or null when the row carries no zones. */
@@ -79,9 +77,10 @@ function z5Minutes(entry: CardioEntry): number | null {
  *    TE > aerobic TE) is the vendor tie-break for anaerobic capacity, and the
  *    rest is VO₂max — the app's own 4×4 protocol.
  * 2. A steady or unstated row is VO₂max on ≥ {@link VO2MAX_Z5_MIN} minutes in
- *    Z5. Otherwise a threshold label credits nothing; a VO₂max-family label is
- *    read only when zones are absent; else aerobic TE ≥
- *    {@link TE_STIMULUS_THRESHOLD} is endurance.
+ *    Z5. Otherwise a VO₂max-family label is read only when zones are absent;
+ *    else aerobic TE ≥ {@link TE_STIMULUS_THRESHOLD} is endurance — tempo and
+ *    lactate-threshold runs included, since the classifier says what a session
+ *    trained, not whether it was the polarized way to train it (fork 1b).
  * 3. With no intensity data, ≥ {@link ENDURANCE_FLOOR_MIN} min is endurance.
  *
  * Anaerobic TE alone never awards anaerobic capacity: Firstbeat's "anaerobic"
@@ -101,7 +100,6 @@ export function classifyCardioAdaptations(entry: CardioEntry): Adaptation[] {
   }
   if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
   if (hasTe) {
-    if (THRESHOLD_LABELS.test(label)) return []
     if (z5 == null && VO2MAX_LABELS.test(label)) return ['vo2max']
     return aerobic >= TE_STIMULUS_THRESHOLD ? ['endurance'] : []
   }

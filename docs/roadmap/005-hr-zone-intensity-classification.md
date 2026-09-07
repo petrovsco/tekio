@@ -1,7 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** in progress — 2026-09-06: both scout runs landed, the classifier was rewritten on them and re-run over the 277-session dump (v2.0.23). Left: bout length on intervals rows, Garmin columns on sport rows, and two calls for Peter (the watch's HRmax; fork 1 on threshold running).
+**Status:** in progress — 2026-09-07: fork 1 decided (b) and shipped, the watch's HRmax set by Peter's call (v2.0.24); bout length on intervals rows is the unit in progress. Left after it: Garmin columns on sport rows, the typed-HR path for manual steady rows.
 **Release:** 2.1.0
 **Note:** Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](done/039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](done/031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
@@ -10,6 +10,7 @@
 - 2026-09-05 — Committed to 2.1.0 by Peter. Kickoff = a `/ground` run on rows 6.1–6.5 plus the two unindexed rules, then the classifier.
 - 2026-09-06 (day) — Data condition met: the whole Garmin history (277 sessions, all with Training Effect, 124 with HR zones) sits in the gitignored `scripts/garmin-sync/dumps/`; since 054 (v2.0.17) the 220 cardio sessions are in `cardio_sessions` with `format = 'intervals'` on the 63 HIIT ones.
 - 2026-09-06 (evening) — Picked up. Two science-scout runs — A: the intensity criterion for a session with Garmin data; B: the fallback with none — landed in [grounding/005](../grounding/005-hr-zone-intensity-classification.md#grounding) after every citation passed eutils / Crossref. Classifier rewritten on them (v2.0.23), tests moved, the dump re-run (§Result). Inventory rows 6.1–6.7, ledger D33–D36.
+- 2026-09-07 — Fork 1 → **(b)** on Peter's call: tempo / lactate-threshold runs credit endurance (`THRESHOLD_LABELS` deleted, row 6.6 retired, D34 amended, 039 S9 carries a boundary note; 42 runs and 3 rides regain credit, §Result). HRmax: Peter sets the watch to 185 (220 − 35) and lets Garmin's auto-detect follow (v2.0.24). Next: bout length.
 
 ## Goal
 
@@ -84,7 +85,7 @@ Two blocks, verbatim, in
 | 6.2 duration ≥ 8 min → VO₂max, else anaerobic | same | not supported | retired |
 | 6.3 TE ≥ 2.0 = a stimulus for that system | both systems, plus "dominant always counts" | convention as an aerobic floor; not supported for anaerobic and for "dominant" | aerobic side only; anaerobic TE never awards anaerobic capacity; walks at TE 0.3–1.3 credit nothing |
 | 6.4 Z4+Z5 > Z1+Z2 → VO₂max | — | not supported | ≥ 8 min in Garmin Z5 (≥ 90 % HRmax; range 5–10) → VO₂max; Z4 never decides |
-| label regex (no row) | TEMPO / THRESHOLD / VO2 / … → VO₂max | partially supported | TEMPO / LACTATE_THRESHOLD = threshold, credits nothing (6.6); VO₂max-family labels a fallback only when zones are absent (6.7) |
+| label regex (no row) | TEMPO / THRESHOLD / VO2 / … → VO₂max | partially supported | TEMPO / LACTATE_THRESHOLD fall to the aerobic floor and credit endurance (fork 1b, 2026-09-07; 6.6 retired after one day as "credits nothing"); VO₂max-family labels a fallback only when zones are absent (6.7) |
 | 6.5 sport default `vo2max` | no duration → VO₂max; timed → the duration ladder | not supported; endurance = convention | every match is endurance, timed or not |
 
 ## Decisions (2026-09-06)
@@ -96,12 +97,17 @@ Two blocks, verbatim, in
   2006; Sylta 2014). Bout length is not on the row yet, so: Z5 ≥ 8 min confirms
   VO₂max; anaerobic TE > aerobic TE is Garmin's own primary rule, kept as the
   vendor tie-break for anaerobic capacity; everything else is VO₂max (D34).
-- **Fork 1 — threshold running, shipped as (a):** TEMPO / LACTATE_THRESHOLD
-  credits nothing, keeping endurance = Zone 2 as 039 S9 grounded it. (b) would
-  widen endurance to "continuous aerobic work below VO₂max" and re-open 039
-  S9. **Peter's call**; (a) changes no grounded definition. Under (a) a
-  tempo-heavy week reads "endurance missing" — that is the polarized claim,
-  stated on purpose.
+- **Fork 1 — threshold running, decided (b) on 2026-09-07 (Peter).** Shipped
+  as (a) for one day: TEMPO / LACTATE_THRESHOLD credited nothing, keeping
+  endurance = Zone 2. Peter's two arguments carried: the classifier says what a
+  session *trained*, not whether it was the polarized way to train it — a
+  tempo run raises sustainable pace, which is the endurance adaptation by a
+  harder route than Zone 2 — and under (a) a third of the running history sat
+  in an uncounted eighth bucket the read could not see, which is the bigger
+  honesty failure. Galpin's long-duration category is cut by structure, not by
+  HR zone. 039 S9's Zone 2 *prescription* stands as the default shape of an
+  endurance session, not the boundary of what counts as one; S9 carries a
+  boundary note saying so.
 - **Fork 2 — a hand-logged match:** endurance, not "adaptation unknown" (which
   would erase 50 of 53 matches from the read) and not VO₂max (Z5 = 0 on every
   synced match). Singles and doubles alike until a verified doubles study
@@ -118,15 +124,16 @@ adaptation, and "before" could count one session twice.
 
 | Type | n | endurance | VO₂max | anaerobic | none |
 |---|---|---|---|---|---|
-| running | 132 | 75 → 76 | 57 → 13 | 9 → 0 | 0 → 43 |
+| running | 132 | 75 → 118 | 57 → 13 | 9 → 0 | 0 → 1 |
 | hiit | 63 | 27 → 0 | 34 → 60 | 46 → 3 | 0 → 0 |
-| cycling | 24 | 21 → 11 | 3 → 0 | 5 → 0 | 0 → 13 |
+| cycling | 24 | 21 → 14 | 3 → 0 | 5 → 0 | 0 → 10 |
 | walking | 9 | 9 → 0 | 0 | 0 | 0 → 9 |
 | tennis (synced) | 3 | 1 → 3 | 2 → 0 | 3 → 0 | 0 |
 
-The 43 uncredited runs are the 42 TEMPO / LACTATE_THRESHOLD ones (fork 1a)
-plus one below the aerobic floor; the 13 uncredited rides sit at aerobic TE
-< 2.0. The 3 anaerobic HIIT rows are "HIIT - Custom" and two "HIIT - EMOM" —
+The one uncredited run and the 10 uncredited rides sit below the aerobic
+floor (TE < 2.0). Under fork 1a — 2026-09-06, one day — the 42 TEMPO /
+LACTATE_THRESHOLD runs and 3 such rides credited nothing too; (b) returned
+them to endurance. The 3 anaerobic HIIT rows are "HIIT - Custom" and two "HIIT - EMOM" —
 the vendor tie-break firing. **0 of 277 sessions reach 8 min in Z5** (HIIT
 max 6.2, running max 3.4), so the Z5 rule never fires on this history — see
 the HRmax item below.
@@ -144,12 +151,13 @@ the HRmax item below.
   Garmin columns, the sync writing them for `tennis_v2`, and
   `classifySportAdaptations` reading them through the same rules — the seam is
   the function's unused parameter.
-- **The watch's HRmax (Peter).** A running spike recorded 214 bpm; the 4×4
-  bouts peak at 185–191 yet the median Z5 share is ~2 %. Either Garmin's HRmax
-  is auto-detected from that spike or set too high. Set it by hand in Garmin
-  Connect; the Z5 rule and the typed-HR path both wait on it.
-- **Fork 1 (Peter).** Keep (a) or widen endurance (b). If (b), one change:
-  route `THRESHOLD_LABELS` rows to endurance and re-open 039 S9.
+- **The typed-HR path for manual steady rows.** Grounded in run B (≤ ~83 %
+  HRmax endurance, ≥ ~89–90 % VO₂max) but the app holds no profile HRmax. The
+  watch's HRmax is settled — Peter sets it to 185 (220 − 35, 2026-09-07) and
+  lets Garmin's auto-detect raise it; a running spike of 214 had likely set it
+  too high, which is why 0 of 277 sessions reached 8 min in Z5. An in-app
+  HRmax is a number with physiological meaning, so it needs a `/ground` run
+  (220 − age vs Tanaka 2001 vs the observed peak) before the path is built.
 - **Strength on the watch** (`strength_training` ×43) stays unmapped: applied
   to it the TE rules invent stimulus (run A caveat).
 
@@ -165,5 +173,6 @@ the HRmax item below.
 - [x] Re-run over the 277-session dump before shipping; `analyze_dump.py` mirrors old and new (§Result).
 - [ ] Bout length on intervals rows (column + P1 field + splits endpoint) and the ≤ 2 min rule wired.
 - [ ] Sport rows store Garmin TE, label and zones; `classifySportAdaptations` reads them.
-- [ ] Peter: the watch's HRmax verified or set; then the typed-HR path for manual steady rows (needs a profile HRmax).
-- [ ] Peter: fork 1 decided and recorded here.
+- [x] Peter: the watch's HRmax set — 185 (220 − 35), Garmin's auto-detect follows (2026-09-07).
+- [ ] The typed-HR path for manual steady rows (needs a grounded profile HRmax).
+- [x] Peter: fork 1 decided and recorded here — (b), 2026-09-07; shipped in v2.0.24.
