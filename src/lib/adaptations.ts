@@ -307,6 +307,26 @@ const inRange = (d: string, start: string, end: string) => d >= start && d <= en
  * the window (rate × days / 7 — the same construction as MUSCLE_SET_TARGET,
  * roadmap 039 §6.6). Default 7: a calendar week, targets as written.
  */
+/**
+ * Per-adaptation weekly target overrides as they arrive from the DB. Structural
+ * on purpose: `lib/` stays free of `lib/db/` imports.
+ */
+export type TargetOverrides =
+  Partial<Record<Adaptation, { weeklyMuscleTarget: number; weeklySessionTarget?: number }>>
+
+/**
+ * The weekly per-muscle set target for one adaptation: the user's override if
+ * there is one, else the model default on the adaptation's metadata.
+ *
+ * One resolver, so every read that draws a muscle against its target draws it
+ * against the same number — the rule roadmap 063 set for the whole-body strip
+ * and 064 applied here. Callers scale it to their own window; the muscle reads
+ * do that with {@link windowMuscleTarget} in `fusedRead.ts`.
+ */
+export function weeklyMuscleTarget(quality: Adaptation, targets?: TargetOverrides): number {
+  return targets?.[quality]?.weeklyMuscleTarget ?? ADAPTATION_MAP[quality].weeklyMuscleTarget
+}
+
 export function adaptationCoverage(
   args: {
     weights: WeightEntry[]
@@ -329,7 +349,7 @@ export function adaptationCoverage(
      * Per-adaptation weekly target overrides (from the DB). Missing keys fall back
      * to the built-in defaults on each adaptation's metadata.
      */
-    targets?: Partial<Record<Adaptation, { weeklyMuscleTarget: number; weeklySessionTarget: number }>>
+    targets?: TargetOverrides
     /** The profile HRmax (roadmap 059) a typed average HR on a manual cardio row is read against. */
     hrMax?: number | null
   },
@@ -362,7 +382,7 @@ export function adaptationCoverage(
 
   const out = {} as Record<Adaptation, AdaptationSummary>
   for (const meta of ADAPTATIONS) {
-    const muscleTarget = (targets?.[meta.key]?.weeklyMuscleTarget ?? meta.weeklyMuscleTarget) * scale
+    const muscleTarget = weeklyMuscleTarget(meta.key, targets) * scale
     const sessionTarget = (targets?.[meta.key]?.weeklySessionTarget ?? meta.weeklySessionTarget) * scale
     const isResistance = meta.modality === 'resistance' && muscleTarget > 0
     const muscles = isResistance && isMuscleQuality(meta.key)

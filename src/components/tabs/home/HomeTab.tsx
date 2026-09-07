@@ -111,7 +111,7 @@ interface GateCol {
   tone: keyof typeof TONE
 }
 
-export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
+export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => void }) {
   const {
     weights, cardio, sports, sleep, donations, water, bodyweight, programs,
     exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets,
@@ -336,6 +336,22 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
         <div className="text-[9px] text-ink-2 mt-1 text-pretty">
           {zeroData ? 'ALL 7 QUALITIES — no data yet' : missingLine}
         </div>
+        {/* The door (064). 062 kept both screens on the split "Home answers,
+            Adaptations explains" — which only works if the answer can be
+            walked to the explanation. Until now Adaptations lived in the
+            hamburger menu and nothing on Home pointed at it. */}
+        <button
+          onClick={() => setTab('Adaptations')}
+          className="mt-1.5 -mx-2.5 -mb-[7px] px-2.5 py-[7px] w-[calc(100%+1.25rem)] border-t border-line flex items-center justify-between text-left cursor-pointer"
+        >
+          <span className="text-[10px] text-ink-2">What to do about it</span>
+          <span className="flex items-center gap-1 text-[9px] font-bold tracking-[0.06em] text-ink-3">
+            ADAPTATIONS
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </button>
       </div>
 
       {/* Whole-body qualities — one state each, all cardio */}
@@ -384,6 +400,7 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
                 muscle={sheet.muscle}
                 onClose={() => setSheet(null)}
                 onSearchExercises={() => { setSheet(null); setTab('Weights') }}
+                onOpenAdaptations={() => { setSheet(null); setTab('Adaptations', sheet.muscle) }}
               />
             ))}
       </Suspense>

@@ -25,10 +25,12 @@ const DRAWER_TABS = ['Weights', 'Cardio', 'Mobility'] as const
 type DrawerTab = typeof DRAWER_TABS[number]
 type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
 
-function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) {
+function TabContent(
+  { tab, setTab, focusMuscle }: { tab: Tab; setTab: (t: string, muscle?: string) => void; focusMuscle: string | null },
+) {
   switch (tab) {
     case 'Home': return <HomeTab setTab={setTab} />
-    case 'Adaptations': return <AdaptationsTab setTab={setTab} />
+    case 'Adaptations': return <AdaptationsTab setTab={setTab} initialMuscle={focusMuscle} />
     case 'Program': return <ProgramTab />
     case 'Weights': return <WeightsTab />
     case 'Cardio': return <CardioTab />
@@ -45,19 +47,29 @@ function TabContent({ tab, setTab }: { tab: Tab; setTab: (t: string) => void }) 
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('Home')
+  // What a destination change carries with it. Today that is one muscle, so a
+  // gap tapped on Home opens Adaptations already on that muscle (roadmap 064)
+  // instead of on the tab's default. Cleared by any navigation that omits it,
+  // so the drawer and the bottom nav always land on the plain tab.
+  const [focusMuscle, setFocusMuscle] = useState<string | null>(null)
   const { loading, bootstrap } = useAppStore()
 
   useEffect(() => { bootstrap() }, [])
 
+  const go = (t: string, muscle?: string) => {
+    setFocusMuscle(muscle ?? null)
+    setTab(t as Tab)
+  }
+
   return (
-    <AppShell tab={tab} setTab={(t) => setTab(t as Tab)}>
+    <AppShell tab={tab} setTab={go}>
       {loading ? (
         <HomeSkeleton />
       ) : (
         <Routes>
           <Route path="*" element={
             <Suspense fallback={<HomeSkeleton />}>
-              <TabContent tab={tab} setTab={(t) => setTab(t as Tab)} />
+              <TabContent tab={tab} setTab={go} focusMuscle={focusMuscle} />
             </Suspense>
           } />
         </Routes>

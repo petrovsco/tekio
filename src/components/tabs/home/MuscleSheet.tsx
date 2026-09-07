@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react'
 import type { LiftSet } from '../../../types'
 import { useAppStore } from '../../../store/app'
 import {
-  muscleStates, muscleWeeklySets, muscleSources, muscleQualityMix,
+  muscleStates, muscleWeeklySets, muscleSources, muscleQualityMix, windowMuscleTarget,
   HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource,
 } from '../../../lib/fusedRead'
 import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
 import { today } from '../../../lib/utils'
 import { BottomSheet, SheetClose } from './BottomSheet'
-import { GAP_CUTOFF } from '../../../lib/adaptations'
+import { GAP_CUTOFF, weeklyMuscleTarget } from '../../../lib/adaptations'
+import { RAMP, rampStep } from './GapMap'
 
 // The muscle drill-in (T2, roadmap 018 unit 3): what a tap on the map reveals.
 // Logging goes through an exercise on purpose — sets classify into adaptations
@@ -43,11 +44,19 @@ interface MuscleSheetProps {
   onClose: () => void
   /** The T3 escape: nothing here fits, go search the exercise list. */
   onSearchExercises: () => void
+  /**
+   * The door to the explanation (roadmap 064). Home passes it so a gap can be
+   * walked to the read that says what to do about it, carrying this muscle.
+   * Adaptations does not — the sheet is already open *on* that read.
+   */
+  onOpenAdaptations?: () => void
 }
 
-export default function MuscleSheet({ muscle, onClose, onSearchExercises }: MuscleSheetProps) {
+export default function MuscleSheet({
+  muscle, onClose, onSearchExercises, onOpenAdaptations,
+}: MuscleSheetProps) {
   const {
-    weights, exerciseMuscles, muscleGroups, exerciseAdaptations, addWeightEntry,
+    weights, exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets, addWeightEntry,
   } = useAppStore()
 
   const state = useMemo(
@@ -65,6 +74,14 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
   const mix = useMemo(
     () => muscleQualityMix(weights, exerciseMuscles, muscle, exerciseAdaptations),
     [weights, exerciseMuscles, muscle, exerciseAdaptations],
+  )
+  // Each quality's own window target — the number the Adaptations map draws
+  // every muscle against, through the same resolver and the same scaler (064).
+  const qualityTargets = useMemo(
+    () => Object.fromEntries(MUSCLE_QUALITIES.map(
+      q => [q, windowMuscleTarget(weeklyMuscleTarget(q, adaptationTargets))],
+    )) as Record<(typeof MUSCLE_QUALITIES)[number], number>,
+    [adaptationTargets],
   )
 
   const [logOpen, setLogOpen] = useState(false)
@@ -218,19 +235,58 @@ export default function MuscleSheet({ muscle, onClose, onSearchExercises }: Musc
       </div>
 
       {/* the four muscle-linked qualities — power reads per muscle (P2).
-          Hidden while the log flow is open: capture takes the room. */}
+          Each count sits on its own window target, so the number is a
+          judgement and not arithmetic left to the reader (064). Same ramp as
+          the body map: these are muscle numbers, and the ramp is a muscle
+          rule (063). Hidden while the log flow is open: capture takes the room. */}
       {!logOpen && (
         <div className="mt-2.5">
-          <div className="text-[8px] font-bold tracking-[0.12em] text-ink-3 mb-[5px]">QUALITY MIX, LAST {MUSCLE_WINDOW_DAYS} DAYS</div>
+          <div className="flex items-baseline gap-1.5 mb-[5px]">
+            <span className="text-[8px] font-bold tracking-[0.12em] text-ink-3">QUALITY MIX, LAST {MUSCLE_WINDOW_DAYS} DAYS</span>
+            <span className="text-[8px] text-ink-4">— of its own target</span>
+          </div>
           <div className="flex gap-1.5">
-            {MUSCLE_QUALITIES.map(q => (
-              <div key={q} className="grow border border-line rounded-[2px] px-1.5 pt-1 pb-[5px] text-center">
-                <div className={`text-[13px] font-bold ${mix[q] === 0 ? 'text-ink-4' : 'text-ink'}`}>{fmtSets(mix[q])}</div>
-                <div className="text-[7px] text-ink-3 tracking-[0.04em] mt-px">{QUALITY_LABELS[q]}</div>
-              </div>
-            ))}
+            {MUSCLE_QUALITIES.map(q => {
+              const target = qualityTargets[q]
+              const fraction = target > 0 ? mix[q] / target : 0
+              return (
+                <div key={q} className="grow basis-0 border border-line rounded-[2px] px-1.5 pt-1 pb-[5px] text-center">
+                  <div className={`text-[13px] font-bold ${mix[q] === 0 ? 'text-ink-4' : 'text-ink'}`}>
+                    {fmtSets(mix[q])}
+                    <span className="text-[8px] font-normal text-ink-3">/{fmtSets(target)}</span>
+                  </div>
+                  <div className="h-[3px] mt-1 rounded-sm bg-line overflow-hidden">
+                    <div
+                      className="h-[3px] rounded-sm"
+                      style={{
+                        width: `${Math.min(100, fraction * 100)}%`,
+                        background: RAMP[rampStep(fraction)],
+                      }}
+                    />
+                  </div>
+                  <div className="text-[7px] text-ink-3 tracking-[0.04em] mt-1">{QUALITY_LABELS[q]}</div>
+                </div>
+              )
+            })}
           </div>
         </div>
+      )}
+
+      {/* The door to the explanation — Home answers, Adaptations explains (062).
+          Carries this muscle across so the drill-down opens where the question
+          was asked. Absent when the sheet was opened from Adaptations. */}
+      {!logOpen && onOpenAdaptations && (
+        <button
+          onClick={onOpenAdaptations}
+          className="mt-2 w-full flex items-center justify-between border border-line rounded-[3px] px-2 py-[7px] bg-white text-left cursor-pointer"
+        >
+          <span className="text-[10px] text-ink-2">
+            Why this gap — see {muscle} across the four qualities
+          </span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
       )}
 
       {/* inline capture — the JIT rule made concrete */}

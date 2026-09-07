@@ -2,13 +2,13 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { today } from '../../lib/utils'
-import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, GAP_CUTOFF } from '../../lib/adaptations'
+import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, weeklyMuscleTarget, GAP_CUTOFF } from '../../lib/adaptations'
 import { useHrMax } from '../../hooks/useHrMax'
 import {
   muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps,
   type MuscleQuality, type WholeBodyQuality,
 } from '../../lib/fusedRead'
-import { ADAPTATIONS, ADAPTATION_MAP } from '../../constants/adaptations'
+import { ADAPTATIONS } from '../../constants/adaptations'
 import { MUSCLE_WINDOW_DAYS } from '../../constants/app'
 import type { Adaptation } from '../../types'
 import { Btn } from '../ui/Button'
@@ -30,10 +30,16 @@ const MuscleSheet = lazy(() => import('./home/MuscleSheet'))
 type OpenSheet = { rx: Adaptation } | { list: true } | { muscle: string }
 
 interface AdaptationsTabProps {
-  setTab: (t: string) => void
+  setTab: (t: string, muscle?: string) => void
+  /**
+   * A muscle carried in from Home's map (roadmap 064): the drill-down opens with
+   * that muscle's sheet already up, so the walk from "this is the gap" to "here
+   * is what it is made of" costs no second search.
+   */
+  initialMuscle?: string | null
 }
 
-export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
+export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
   const { weights, cardio, sports, exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets } = useAppStore()
   const { trackedMuscleGroupIds } = usePrefs()
   const { hrMax } = useHrMax()
@@ -43,7 +49,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
   // Default: hypertrophy — the quality Home's floor is grounded on (010 D10),
   // so the first picture is the one closest to Home's (031 §7 decision 3).
   const [quality, setQuality] = useState<MuscleQuality>('hypertrophy')
-  const [sheet, setSheet] = useState<OpenSheet | null>(null)
+  const [sheet, setSheet] = useState<OpenSheet | null>(initialMuscle ? { muscle: initialMuscle } : null)
   const prefetched = useRef(false)
   const prefetch = () => {
     if (prefetched.current) return
@@ -61,7 +67,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
     [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets, hrMax],
   )
 
-  const weeklyTarget = adaptationTargets[quality]?.weeklyMuscleTarget ?? ADAPTATION_MAP[quality].weeklyMuscleTarget
+  const weeklyTarget = weeklyMuscleTarget(quality, adaptationTargets)
   const states = useMemo(
     () => muscleQualityStates(weights, exerciseMuscles, muscleGroups, quality, weeklyTarget, exerciseAdaptations, date),
     [weights, exerciseMuscles, muscleGroups, quality, weeklyTarget, exerciseAdaptations, date],

@@ -96,6 +96,16 @@ export function muscleStates(
  * `weeklyTarget` is the quality's weekly rate, scaled to the window here
  * exactly as MUSCLE_SET_TARGET is (/ground exemption 2 — a shape change).
  */
+/**
+ * A weekly per-muscle set rate scaled to the muscle window — the same
+ * construction MUSCLE_SET_TARGET uses (roadmap 039 §6.6). One scaler, so the
+ * Adaptations map and Home's muscle sheet cannot draw the same muscle against
+ * two different targets (roadmap 063's rule, applied by 064).
+ * `/ground` exemption 2: a shape change, no new claim.
+ */
+export const windowMuscleTarget = (weeklyRate: number): number =>
+  weeklyRate * MUSCLE_WINDOW_DAYS / 7
+
 export function muscleQualityStates(
   weights: WeightEntry[],
   exerciseMuscles: ExerciseMuscleLink[],
@@ -112,7 +122,7 @@ export function muscleQualityStates(
   }
   const lastAny = lastStimulusDates(weights, exerciseMuscles, date)
   const lastOfQuality = lastStimulusDates(weights, exerciseMuscles, date, feedsQuality)
-  const target = weeklyTarget * MUSCLE_WINDOW_DAYS / 7
+  const target = windowMuscleTarget(weeklyTarget)
   return buildMuscleStates(muscleGroups, byQuality[quality], lastOfQuality, lastAny, target, date)
 }
 
