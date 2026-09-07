@@ -102,6 +102,18 @@ export interface ExerciseMuscleLink {
   contribution: MuscleContribution
 }
 
+/**
+ * Another spelling of an exercise name (roadmap 044). It points at a canonical
+ * *name*, not at an exercise row, so the shipped list works for a user who has
+ * not created a single exercise yet.
+ */
+export interface ExerciseAlias {
+  alias: string
+  canonicalName: string
+  /** False for the list shipped with the app, true for this user's own rows. */
+  isOwn: boolean
+}
+
 export interface MobilityExercise {
   name: string
   duration: number

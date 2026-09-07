@@ -7,19 +7,11 @@ import type {
   ActiveProgram, ProgramCycle, ProgramWeekOverride, DayOfWeek, TrainingTag,
 } from '../../types'
 
-export async function getOrCreateExercise(name: string): Promise<string> {
-  await supabase
-    .from('exercises')
-    .upsert(withOrigin({ user_id: USER_ID, name, is_system: false }), { onConflict: 'user_id,name' })
-  const { data, error } = await supabase
-    .from('exercises')
-    .select('id')
-    .eq('user_id', USER_ID)
-    .eq('name', name)
-    .single()
-  if (error) throw error
-  return data.id
-}
+// Re-exported rather than re-implemented: mobility imports it from here, and
+// two copies of this function is how one write path keeps making twins after
+// the other one is fixed (roadmap 044).
+import { getOrCreateExercise } from './exercises'
+export { getOrCreateExercise }
 
 interface ProgramShape {
   phases: ProgramPhase[]

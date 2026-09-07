@@ -15,8 +15,10 @@ import type {
   ColdEntry,
   Program,
   EditModalTarget,
+  ExerciseAlias,
 } from '../types'
 import { getOrCreateUser } from '../lib/db/user'
+import { loadExerciseAliases } from '../lib/db/exercises'
 import { loadMuscleGroups, loadExerciseMuscleLinks, loadExercises } from '../lib/db/muscles'
 import { loadAdaptationTargets, type AdaptationTargetMap } from '../lib/db/adaptationTargets'
 import {
@@ -148,6 +150,9 @@ interface AppStore extends AppState {
   adaptationTargets: AdaptationTargetMap
   /** Refresh adaptation targets after an admin edit. */
   reloadAdaptationTargets: () => Promise<void>
+
+  /** Other spellings of an exercise name, so one search finds one movement (roadmap 044). */
+  exerciseAliases: ExerciseAlias[]
 }
 
 /** Build the lowercased exercise-name → adaptation override map from loaded exercises. */
@@ -194,6 +199,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   exerciseNames: {},
   exerciseAdaptations: {},
   adaptationTargets: {},
+  exerciseAliases: [],
   loading: true,
   toast: '',
   editModal: null,
@@ -224,7 +230,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, activePrograms, programHistory, weekOverrides, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets] = await Promise.all([
+      const [weights, activePrograms, programHistory, weekOverrides, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
         loadWeights(),
         loadActivePrograms(),
         loadProgramCycles(),
@@ -243,6 +249,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         loadSauna(),
         loadCold(),
         loadAdaptationTargets(),
+        loadExerciseAliases(),
         usePrefs.getState().loadPrefs(),
       ])
       set({
@@ -265,6 +272,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         programHistory,
         weekOverrides,
         adaptationTargets,
+        exerciseAliases,
       })
     } finally {
       set({ loading: false })

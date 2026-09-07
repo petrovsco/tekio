@@ -27,7 +27,7 @@ export function MobilityTab() {
   const [revealedEx, setRevealedEx] = useState(1)
   const [muscleOpen, setMuscleOpen] = useState<number | null>(null)
   const [selEx, setSelEx] = useState('')
-  const { mobility, muscleGroups, addMobilityEntry, removeMobilityEntry, openEditModal, setToast } = useAppStore()
+  const { mobility, muscleGroups, exerciseAliases, addMobilityEntry, removeMobilityEntry, openEditModal, setToast } = useAppStore()
   const { weekStartDay } = usePrefs()
 
   const allExNames = [...new Set(mobility.flatMap(m => m.exercises.map(e => e.name)))].sort()
@@ -121,6 +121,7 @@ export function MobilityTab() {
                   value={ex.name}
                   onChange={v => updateEx(i, 'name', v)}
                   suggestions={allExNames}
+                  aliases={exerciseAliases}
                   placeholder={`Exercise ${i + 1}`}
                 />
                 <Inp

@@ -26,7 +26,7 @@ export function WeightsTab() {
   const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
   const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
 
-  const { weights, exerciseMuscles, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, setToast } = useAppStore()
+  const { weights, exerciseMuscles, exerciseAliases, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, setToast } = useAppStore()
 
   // Auto-advance sequential (legacy index-mode) programs when today's day is done.
   // Weekday-pinned and flexible programs derive their day from the calendar/checklist
@@ -206,6 +206,7 @@ export function WeightsTab() {
                 value={ex}
                 onChange={v => { setEx(v); if (!v) setSsExercises(null) }}
                 suggestions={pickerNames}
+                aliases={exerciseAliases}
                 placeholder="e.g. Bench Press"
               />
             </div>

@@ -52,7 +52,7 @@ In running order:
    items are [058](done/058-garmin-data-on-sport-rows.md) — Garmin data on
    sport rows, done 2026-09-07 — and [059](done/059-profile-hrmax-typed-hr-path.md)
    — profile HRmax and the typed-HR path.
-7. [044](044-exercise-name-aliases.md) — exercise aliases, the first step
+7. [044](done/044-exercise-name-aliases.md) — exercise aliases, the first step
    toward other users.
 8. [049](049-app-version-display.md), [050](050-release-procedure.md),
    [038](038-favicon-and-app-icon.md) — the version on screen, the written

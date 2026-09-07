@@ -2,20 +2,9 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WeightEntry, LiftSet } from '../../types'
 import { withOrigin } from '../env'
-
-async function getOrCreateExercise(name: string): Promise<string> {
-  await supabase
-    .from('exercises')
-    .upsert(withOrigin({ user_id: USER_ID, name, is_system: false }), { onConflict: 'user_id,name' })
-  const { data, error } = await supabase
-    .from('exercises')
-    .select('id')
-    .eq('user_id', USER_ID)
-    .eq('name', name)
-    .single()
-  if (error) throw error
-  return data.id
-}
+// One resolver for every write path (roadmap 044) — a second copy here is how
+// the alias fix would silently miss half the ways a set gets logged.
+import { getOrCreateExerciseRow } from './exercises'
 
 async function getOrCreateSession(date: string): Promise<string> {
   const { data: existing } = await supabase
@@ -83,10 +72,15 @@ export async function loadWeights(): Promise<WeightEntry[]> {
 export async function saveWeightEntry(
   entry: Omit<WeightEntry, 'id'> & { id?: string }
 ): Promise<WeightEntry> {
-  const [exerciseId, sessionId] = await Promise.all([
-    getOrCreateExercise(entry.exercise),
+  // The row, not just its id: what the user typed may be an alias, and the
+  // entry handed back seeds the in-memory log. Returning the typed spelling
+  // would leave the muscle read blind to this set until the next reload —
+  // exactly the split roadmap 044 closes.
+  const [exercise, sessionId] = await Promise.all([
+    getOrCreateExerciseRow(entry.exercise),
     getOrCreateSession(entry.date),
   ])
+  const exerciseId = exercise.id
 
   // Determine sort_order (append after existing exercises in this session)
   const { count } = await supabase
@@ -118,7 +112,7 @@ export async function saveWeightEntry(
     if (setsErr) throw setsErr
   }
 
-  return { id: se.id, date: entry.date, exercise: entry.exercise, sets: entry.sets, supersetId: entry.supersetId }
+  return { id: se.id, date: entry.date, exercise: exercise.name, sets: entry.sets, supersetId: entry.supersetId }
 }
 
 export async function deleteWeightEntry(id: string): Promise<void> {

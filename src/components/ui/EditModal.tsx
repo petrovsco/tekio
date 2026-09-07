@@ -309,6 +309,7 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
   const editMobilityEntry = useAppStore(s => s.editMobilityEntry)
   const setToast = useAppStore(s => s.setToast)
   const mobility = useAppStore(s => s.mobility)
+  const exerciseAliases = useAppStore(s => s.exerciseAliases)
   const allExNames = useMemo(
     () => [...new Set(mobility.flatMap(m => m.exercises.map(e => e.name)))].sort(),
     [mobility]
@@ -352,6 +353,7 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
               value={ex.name}
               onChange={v => updateEx(i, 'name', v)}
               suggestions={allExNames}
+              aliases={exerciseAliases}
               placeholder={`Exercise ${i + 1}`}
               className="flex-1 min-w-0"
             />

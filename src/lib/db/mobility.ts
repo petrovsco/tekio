@@ -1,6 +1,6 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
-import { getOrCreateExercise } from './program'
+import { getOrCreateExerciseRow } from './exercises'
 import type { MobilityEntry } from '../../types'
 import { withOrigin } from '../env'
 
@@ -69,12 +69,16 @@ async function setExerciseMuscleGroups(exerciseId: string, groupNames: string[])
 async function saveMobilityExercises(sessionId: string, entry: Pick<MobilityEntry, 'exercises'>): Promise<void> {
   if (entry.exercises.length === 0) return
 
-  const exerciseIds = await Promise.all(entry.exercises.map(e => getOrCreateExercise(e.name)))
+  // Resolved rows, so `exercise_name` below records the canonical spelling
+  // rather than the alias that was typed — otherwise the id would be right and
+  // the name shown in the history would still be a twin (roadmap 044).
+  const rows = await Promise.all(entry.exercises.map(e => getOrCreateExerciseRow(e.name)))
+  const exerciseIds = rows.map(r => r.id)
 
   const { error: exErr } = await supabase.from('mobility_exercises').insert(
     entry.exercises.map((e, i) => ({
       session_id: sessionId,
-      exercise_name: e.name,
+      exercise_name: rows[i].name,
       duration_minutes: e.duration,
       notes: e.notes || null,
       exercise_id: exerciseIds[i],
