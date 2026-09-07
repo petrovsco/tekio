@@ -1,7 +1,7 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7d is drawn and its findings are below; waiting on Peter to pick a mark or keep the vessel.
+**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7e is drawn and answers 7d's trade — G8 wins both sizes; waiting on Peter to pick a mark or keep the vessel.
 **Release:** 2.1.0
 
 ## Progress log
@@ -17,7 +17,11 @@
 - **2026-09-07, later** — round 7d drawn: ten concepts plus an aperture sweep
   and a dash sweep. Findings under *What the sheet showed*. Nothing shipped;
   the vessel is still the live icon.
-- **Next** — Peter picks from 7d, or says the vessel stays.
+- **2026-09-07, later still** — round 7e: Peter asked for E9 smoothed, with the
+  app's accent tried on it. Fifteen concepts. It resolves the trade 7d called
+  unescapable — see *Round 7e*. Nothing shipped; the vessel is still the live
+  icon.
+- **Next** — Peter picks from 7e, or says the vessel stays.
 
 [index.html](../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for
@@ -256,6 +260,126 @@ window.
 24px and above but not below. The sheet uses 3. This is more headroom than 7c
 had, because eight suckers carry far more weight than six arms did.
 
+## Round 7e — E9 smoothed, and the accent
+
+Peter's direction, 2026-09-07: **make E9 more stylish, with less sharp edges,
+and keep the app's red accent in mind.**
+
+Fifteen concepts in `scripts/mark/rounds/r7e.mjs`, all on 7d's geometry (ink
+reaching 39 units from a centre at 50, 56; a 42 × 3 dash at y 8.5) so only the
+treatment varies. Row 0 is E9 unchanged, so the sheet argues against the thing
+it is improving rather than against a memory of it.
+
+**Five hard edges were attacked, cheapest first.** Naming them separately
+matters, because four are cheap and the fifth is the one that was actually
+holding the mark back:
+
+1. **The flat chop at the base.** `ribbon()` closes its outline with a straight
+   chord, and on E9 that chord lands at the top, where the eye arrives first. A
+   disc of the same fill at each end of the centreline swallows it — one line
+   of code, and the single biggest improvement per character changed (F1).
+2. **The needle at the tip.** A taper exponent of 1.15 sheds width fast. 0.85
+   with a fatter tip keeps the arm an arm all the way round (F2).
+3. **The scalloped counter.** E9's suckers ride *proud* of the inner edge, so
+   the counter is lumpy and the lumps turn to noise below 32px. Putting the
+   suckers *inside* the band instead — as punched apertures, with the arm
+   itself as their rim — leaves both edges as unbroken curves (F3).
+4. **The seam.** Sweeping past a full turn buries the thin tip under the thick
+   root, so the ring closes (F5, F7). This is a smoothness fix *and* the
+   small-size fix, which is why 7d's trade was worth attacking here.
+5. **The step in the silhouette.** This is the one that mattered. The arm is 15
+   units wide at the root and about 5 at the tip, so the *outer* edge drops 5
+   units on the way round — the ring is not a circle, and that reads as
+   unfinished at every size.
+
+**The fix for 5 is to stop letting the taper touch the outer edge.** Pin the
+centreline so it rides outward exactly as fast as the arm thins, and the whole
+taper is spent on the inside: a true circle outside, a crescent counter
+inside. That is how a calligraphic O is drawn, and it is what a ring of
+generated arms had been fighting since 7a. Note the direction — this eases the
+radius *outward* towards the tip. 7d killed easing *inward*, which curls the
+tip into the centre and reads as an ammonite; the opposite motion makes a
+circle, not a spiral.
+
+**But a wrapped ribbon can never close cleanly, and that is a fact about the
+tool, not about this drawing.** `ribbonAt()` walks an *open* centreline and
+caps both ends, so wrapping one into a ring always leaves a cusp where the
+outline meets itself. Two attempts failed before the cause was clear: tucking
+the tip inward under the root bulges the silhouette, because offsetting a
+steep radial dive throws the outer edge past the circle; letting the arm swell
+back to full width at the seam removes the *seam* but not the *cusp*. Both look
+clean on a contact sheet and both show a nick at 330px — which is the size of
+an app icon on a phone. The record is G2 and G6.
+
+**So the last family stops wrapping an arm and draws what it was trying to
+become.** `band()` in the library emits a true outer circle plus a closed inner
+contour whose distance from it varies: the silhouette is exact by construction
+and there is no join anywhere in the shape. The width law is two harmonics of
+the angle — periodic, so it cannot disagree with itself — where `cos φ` does
+the thick-to-thin and `sin 2φ` skews it, so the swell is asymmetric and reads
+as an arm rather than as a calligraphic O.
+
+| | Reads as | Reads at 16px |
+|---|---|---|
+| **E9** the reference | best octopus of 7d | a C or an @ — the seam shows |
+| **F1** rounded caps | the same, no cut edge | unchanged; the gap still breaks it |
+| **F2** softer taper | an arm with body to the end | unchanged |
+| **F3** suckers inside | clean edges, holes not lumps | quieter, still open |
+| **F5** tip meets root | closed, rims still proud | strong closed O, lumpy |
+| **F7** closed + inside | clean and closed | strong O; the outline still steps |
+| **G2** outer circle locked | a true circle, one notch at 12 o'clock | strong |
+| **G6** swelled into its root | no seam by design | strong — but nicks at 330px |
+| **G8** band, suckers one way | **the answer** | solid closed Ō |
+| **G9** deeper swell | more drama, same read | solid |
+| **G10** six larger holes | calmer | best of all at 16px |
+| **G11** brushed macron | softer, slightly less crisp | fine |
+
+**G8 is the recommendation, and it wins both of 7d's questions.** 7d concluded
+that no concept could be both an octopus at 128px and a letter at 16px, because
+reading as an octopus needed an open ring and a closed ring read as a machine
+part. That conclusion was true of every shape *built by wrapping an arm*. It is
+not true of a band: the outer circle holds the letter absolutely, and the
+octopus is carried by the varying width and by the suckers, neither of which
+has to break the silhouette to be seen. The trade was an artefact of the
+construction.
+
+**Three findings worth keeping past this round:**
+
+- **A run of suckers must have a direction.** Spread symmetrically either side
+  of the root they read as a crown, which is 7d's dial in a new costume. Running
+  them one way from the root — and packing them *towards the tip*, which is
+  what a real arm does — is what makes the ring move.
+- **Crowd the small end, never the big one.** The first version bunched the
+  suckers at the root, where the holes are widest; they merged into a wavy slot.
+- **The aperture floor is a floor on the band, not on the hole.** At 0.5 of the
+  band width, an aperture needs roughly 6 units of band to clear 3 units on this
+  grid. The waist is thinner than that, so the sucker run has to stop before it
+  — which is also what an arm does.
+
+### The accent
+
+Design-system §1 says the app is monochrome paper with **one** accent,
+`#c2410c`, and that it means *action lives here*. A brand mark is chrome, not a
+read, so it is not spending that channel — but the moment the icon sits beside
+the app, the accent stops being unambiguous. That objection is recorded here
+once; the rows were drawn as asked, on G8 so only the colour varies.
+
+- **H1 — the macron in the accent.** The safest, and it works: the macron is a
+  separate element, so colouring it reads as deliberate rather than as part of
+  the letter going pale. Survives to 16px on both grounds.
+- **H2 — the apertures in the accent.** Drawn and refuted. The holes stop being
+  holes and become dots; by 32px the sucker read is gone and one side of the
+  ring is a smudge.
+- **H3 — a stretch of the band in the accent.** The most striking at 128px and
+  the best case for an app icon. At 16px on a light ground the accent half is
+  visibly lighter than the ink half, so the ring goes lopsided — the pale-element
+  rule from the vessel rounds arriving again.
+
+**On a dark ground the accent has to be lifted.** `#c2410c` on `#1f1f1f` is a
+dark orange on near-black. The sheet shows the accent rows at `#e2703f` on
+dark, which the shipped SVG can switch to under `prefers-color-scheme` exactly
+as the current favicon already switches its ink.
+
 ## Doctrine check (§4)
 
 1. **Which read does this sharpen?** None directly — it is chrome, and R1 does
@@ -273,7 +397,7 @@ had, because eight suckers carry far more weight than six arms did.
       errors and zero responses ≥ 400 on a fresh load. That 404 was the app's
       only console error, so the console is now clean.
 - [x] The staging/production question is answered: one icon everywhere.
-- [ ] Round 7d is drawn and Peter has picked a mark, or said the vessel stays.
+- [ ] Round 7e is drawn and Peter has picked a mark, or said the vessel stays.
 - [ ] If a new mark wins: its ink bounds measured with
       `node scripts/mark/bbox.mjs public/favicon.svg` before it ships, both
       `public/favicon.svg` and `public/apple-touch-icon.png` replaced, and

@@ -63,6 +63,30 @@ creature.
 sucker as a rim with the aperture punched out, `suckers()` draws a list of them,
 and `dent()` presses one into a solid ink field.
 
+`ribbonAt()` is `ribbon()` with an arbitrary width law instead of a single
+power curve — needed whenever a section of an arm is redrawn in another colour,
+because it has to reuse the parent's widths rather than invent its own.
+`armRound()` adds a disc at each end, which swallows the straight chord
+`ribbon()` closes its outline with; that chord is the hardest edge any mark
+built from arms has, and the disc costs nothing.
+
+## A wrapped ribbon cannot close cleanly — use `band()`
+
+`ribbonAt()` walks an **open** centreline and caps both ends, so wrapping one
+into a ring always leaves a cusp where the outline meets itself. It is
+invisible on a contact sheet and it is a visible nick at 330px, which is the
+size of an app icon on a phone. Hiding it does not work: tucking the tip inward
+under the root bulges the silhouette, because offsetting a steep radial dive
+throws the outer edge past the circle, and swelling the arm back to full width
+at the seam removes the *seam* but not the *cusp*.
+
+`band()` draws a closed ring as what it is — a true outer circle plus a closed
+inner contour whose distance from it varies. The silhouette is exact by
+construction and there is no join anywhere. Give it a width law that is
+periodic (two harmonics of the angle: `cos φ` for thick-to-thin, `sin 2φ` to
+skew the swell so it reads as an arm rather than as a calligraphic O) and the
+shape has no seam to nick.
+
 `suckers()` takes a mode, and the mode is the whole design. `flat` paints every
 rim and then every aperture, so touching suckers merge into one silhouette and
 no rim fills in its neighbour's hole. `stack` paints each one complete before
@@ -90,10 +114,20 @@ These are findings, not opinions — each one killed at least one concept.
 - **A sucker is only a sucker between 0.45 and 0.55 of its rim.** Under that it
   is a dot with a speck in it; over it the rim is a wire and the thing is a
   washer that goes pale and vanishes at 16px.
-- **Openness is the trade, and nothing escapes it.** A ring of separate suckers
-  reads as an octopus and is not a letter at 16px; a ring that closes holds the
-  letter and reads as a machine part. Every concept is a position on that line,
-  so pick the position before polishing the drawing.
+- **Openness looked like a trade, and was an artefact of the construction.**
+  7d found that a ring of separate suckers reads as an octopus and is not a
+  letter at 16px, while a ring that closes holds the letter and reads as a
+  machine part. That is true of every shape built by *wrapping an arm*. Drawn as
+  a band, the outer circle holds the letter absolutely and the creature is
+  carried by the varying width and the suckers, neither of which has to break
+  the silhouette. 7e's G8.
+- **A run of suckers needs a direction.** Spread symmetrically either side of
+  the root they read as a crown, which is the dial again. Run them one way from
+  the root, and pack them towards the *tip* — crowding the root, where the holes
+  are widest, merges them into a wavy slot.
+- **The aperture floor is a floor on the band, not on the hole.** At 0.5 of the
+  band width an aperture needs about 6 units of band to clear 3 on this grid, so
+  a sucker run has to stop before the waist — which is what an arm does anyway.
 - **Sub-pixel strokes go grey, they do not vanish.** A 5-unit bar is 0.8 device
   pixels at 16px: still legible, just quiet. It is affordable when something
   heavier carries the mark, and not when it has to compete.

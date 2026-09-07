@@ -14,6 +14,8 @@ export const d2r = d => (d * Math.PI) / 180
 
 export const INK = 'var(--ink)'
 export const PAPER = 'var(--paper)'
+/** The app's one accent, design-system §1: action lives here / urgency. */
+export const ACCENT = 'var(--accent)'
 
 // ---------- curves ----------
 
@@ -39,7 +41,17 @@ export function smoothClosed(p) {
  * them Catmull-Rom overshoots the right-angle corner where the outline turns
  * back on itself, and the arm grows a spur at its root.
  */
-export function ribbon(pts, wBase, wTip, exp = 1.15) {
+export const ribbon = (pts, wBase, wTip, exp = 1.15) =>
+  ribbonAt(pts, t => wTip + (wBase - wTip) * Math.pow(1 - t, exp))
+
+/**
+ * The same ribbon with an arbitrary width law: `wAt(t)` returns the *whole*
+ * width at position t along the centreline, 0 at the base and 1 at the tip.
+ * Needed whenever the taper is not a single power curve — a section of an arm
+ * redrawn in another colour has to reuse the parent's widths, not invent its
+ * own, or the two shapes do not sit inside one silhouette.
+ */
+export function ribbonAt(pts, wAt) {
   const n = pts.length
   const L = [], R = []
   for (let i = 0; i < n; i++) {
@@ -49,8 +61,7 @@ export function ribbon(pts, wBase, wTip, exp = 1.15) {
     const m = Math.hypot(tx, ty) || 1
     tx /= m; ty /= m
     const nx = -ty, ny = tx
-    const t = i / (n - 1)
-    const w = (wTip + (wBase - wTip) * Math.pow(1 - t, exp)) / 2
+    const w = wAt(i / (n - 1)) / 2
     L.push({ x: pts[i].x + nx * w, y: pts[i].y + ny * w })
     R.push({ x: pts[i].x - nx * w, y: pts[i].y - ny * w })
   }
@@ -114,10 +125,46 @@ export const polar = (cx, cy, r, deg) => ({ x: cx + r * Math.cos(d2r(deg)), y: c
 
 export const arm = (pts, wb, wt, exp) => `<path d="${ribbon(pts, wb, wt, exp)}" fill="${INK}"/>`
 
+/** A filled circle. Dropped on a ribbon's end point it rounds the flat cut. */
+export const disc = (p, r, fill = INK) =>
+  `<circle cx="${f(p.x)}" cy="${f(p.y)}" r="${f(r)}" fill="${fill}"/>`
+
+/**
+ * An arm with no flat cut anywhere: the ribbon plus a disc at each end of the
+ * centreline, sized to that end's half-width. `ribbon()` closes its outline
+ * with a straight chord, and that chord is the hardest edge on any mark built
+ * from arms — a disc of the same fill swallows it at zero cost.
+ */
+export const armRound = (pts, wAt, fill = INK) =>
+  `<path d="${ribbonAt(pts, wAt)}" fill="${fill}"/>` +
+  disc(pts[0], wAt(0) / 2, fill) + disc(pts[pts.length - 1], wAt(1) / 2, fill)
+
+/**
+ * A closed band: a true outer circle with an inner contour whose distance from
+ * that circle is `wAt(t)`, t running 0→1 once round from the +x axis.
+ *
+ * This exists because a *ribbon* cannot close cleanly. `ribbonAt` walks an open
+ * centreline and caps both ends, so wrapping one into a ring always leaves a
+ * cusp where the outline meets itself, and the cusp shows as a nick at 180px
+ * even when the contact sheet looks clean. Here the outer edge is one arc pair
+ * and the inner edge is a closed spline, so the silhouette is a circle by
+ * construction and the only thing that varies is the counter. Give `wAt` a
+ * periodic law and there is no seam anywhere in the shape.
+ */
+export const band = (cx, cy, rOuter, wAt, { n = 256, fill = INK } = {}) => {
+  const inner = Array.from({ length: n }, (_, i) =>
+    polar(cx, cy, rOuter - wAt(i / n), 360 * (i / n)))
+  const outer =
+    `M${f(cx - rOuter)},${f(cy)}` +
+    `A${f(rOuter)},${f(rOuter)} 0 1,0 ${f(cx + rOuter)},${f(cy)}` +
+    `A${f(rOuter)},${f(rOuter)} 0 1,0 ${f(cx - rOuter)},${f(cy)}Z`
+  return `<path d="${outer}${smoothClosed(inner)}" fill="${fill}" fill-rule="evenodd"/>`
+}
+
 /** The macron. `h` is its whole thickness; rx rounds the ends into a dash. */
-export const bar = (cx, cy, w, h, round = true) =>
+export const bar = (cx, cy, w, h, round = true, fill = INK) =>
   `<rect x="${f(cx - w / 2)}" y="${f(cy - h / 2)}" width="${f(w)}" height="${f(h)}" ` +
-  `rx="${round ? f(h / 2) : 0}" fill="${INK}"/>`
+  `rx="${round ? f(h / 2) : 0}" fill="${fill}"/>`
 
 /** A macron drawn with the same brush as the arms: thick left, thin right. */
 export const brushBar = (x0, x1, y, wl, wr) =>
