@@ -206,11 +206,13 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
   const [distance, setDistance] = useState(record.distance != null ? String(record.distance) : '')
   const [avgHr, setAvgHr] = useState(record.avgHr != null ? String(record.avgHr) : '')
   const [format, setFormat] = useState<CardioFormat | ''>(record.format ?? '')
+  const [bout, setBout] = useState(record.boutSeconds != null ? formatDurationMins(record.boutSeconds / 60) : '')
   const [notes, setNotes] = useState(record.notes ?? '')
 
   const durationMins = parseDurationMins(duration)
   const distKm = distance ? +distance : 0
   const livePace = calcPace(durationMins, distKm)
+  const boutSeconds = format === 'intervals' ? Math.round(parseDurationMins(bout) * 60) || undefined : undefined
 
   const save = async () => {
     if (!durationMins) return
@@ -222,6 +224,7 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
         distance: distKm || undefined,
         avgHr: avgHr ? +avgHr : undefined,
         format: format || undefined,
+        boutSeconds,
         notes: notes || undefined,
       })
       setToast('Updated!')
@@ -276,6 +279,17 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
           value={format}
           onPick={v => setFormat(f => (f === v ? '' : v))}
         />
+        {/* Shown only for an intervals session (P1) — the bout length decides
+            anaerobic capacity (≤ 2 min) vs VO₂max, roadmap 005. */}
+        {format === 'intervals' && (
+          <Inp
+            label="Bout (MM:SS, opt.)"
+            type="text"
+            value={bout}
+            onChange={e => setBout(e.target.value)}
+            placeholder="4:00"
+          />
+        )}
       </div>
       <Inp
         label="Notes (opt.)"

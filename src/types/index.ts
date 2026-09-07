@@ -30,6 +30,10 @@ export interface CardioEntry {
   date: string
   type: CardioType
   format?: CardioFormat
+  /** Work-bout length in seconds on an `intervals` row — the 60 in "4×60 s",
+   *  the 240 in a 4×4. Absent = not stated. Decides anaerobic capacity (≤ 120 s)
+   *  vs VO₂max (roadmap 005); ignored unless `format` is `'intervals'`. */
+  boutSeconds?: number
   duration: number
   distance?: number
   /** Average heart rate (bpm) for the session. */

@@ -6,6 +6,7 @@ import {
   classifySportAdaptations,
   ENDURANCE_FLOOR_MIN,
   TE_STIMULUS_THRESHOLD,
+  ANAEROBIC_BOUT_MAX_S,
   VO2MAX_Z5_MIN,
   SPORT_DEFAULT_ADAPTATION,
   resolveExerciseAdaptation,
@@ -120,6 +121,18 @@ describe('classifyCardioAdaptations', () => {
     expect(classifyCardioAdaptations({ ...n4x4, trainingEffectLabel: 'AEROBIC_BASE' })).toEqual(['vo2max'])
     expect(classifyCardioAdaptations({ ...n4x4, trainingEffectLabel: 'RECOVERY' })).toEqual(['vo2max'])
     expect(classifyCardioAdaptations({ ...n4x4, trainingEffectLabel: 'SPEED', zoneDistribution: [130, 580, 480, 800, 40] })).toEqual(['vo2max'])
+  })
+
+  it('on an intervals row the bout length decides first: ≤ 120 s is anaerobic capacity, longer is VO₂max', () => {
+    const iv = { ...base, format: 'intervals' as const, duration: 30, aerobicTe: 3.0, anaerobicTe: 2.1, trainingEffectLabel: 'AEROBIC_BASE' }
+    expect(classifyCardioAdaptations({ ...iv, boutSeconds: 60 })).toEqual(['anaerobic_capacity'])
+    expect(classifyCardioAdaptations({ ...iv, boutSeconds: ANAEROBIC_BOUT_MAX_S })).toEqual(['anaerobic_capacity'])
+    expect(classifyCardioAdaptations({ ...iv, boutSeconds: 240 })).toEqual(['vo2max'])
+    // The bout beats the Z5 dose and the TE tie-break, both ways.
+    expect(classifyCardioAdaptations({ ...iv, boutSeconds: 45, zoneDistribution: [60, 120, 200, 600, VO2MAX_Z5_MIN * 60] })).toEqual(['anaerobic_capacity'])
+    expect(classifyCardioAdaptations({ ...iv, boutSeconds: 240, aerobicTe: 1.8, anaerobicTe: 2.6 })).toEqual(['vo2max'])
+    // On a steady / unstated row the field means nothing and is ignored.
+    expect(classifyCardioAdaptations({ ...base, boutSeconds: 60, aerobicTe: 3.0, anaerobicTe: 0.4, trainingEffectLabel: 'AEROBIC_BASE' })).toEqual(['endurance'])
   })
 
   it('anaerobic TE ≥ 2.0 never awards anaerobic capacity on its own; on an intervals row anaerobic > aerobic is the vendor tie-break', () => {

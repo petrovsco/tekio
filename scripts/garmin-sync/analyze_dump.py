@@ -48,6 +48,24 @@ def fmt_of(a):
     return "intervals" if tk(a) == "hiit" else None
 
 
+BOUT_RE = re.compile(r"\[N?(\d+)x(\d+)\]")  # "[N4x4]" = 4-min bouts, "[4x60]" = 60-s bouts
+
+
+def bout_of(a):
+    """Work-bout seconds *inferred from the session name* — the proposed backfill
+    for cardio_sessions.bout_seconds, which the sync does not fill yet (005).
+    A bracketed NxM reads M as minutes below 20, else seconds; an EMOM is a
+    minute round, so its work bout is <= 60 s. None when the name says nothing."""
+    name = a.get("activityName") or ""
+    m = BOUT_RE.search(name)
+    if m:
+        n = int(m.group(2))
+        return n * 60 if n < 20 else n
+    if "EMOM" in name.upper():
+        return 60
+    return None
+
+
 # --- classifier mirror, BEFORE 005 (the rules up to v2.0.22) ------------------
 TE_T = 2.0
 
@@ -90,14 +108,17 @@ def classify_old(a):
 # --- classifier mirror, AFTER 005 (src/lib/adaptations.ts classifyCardioAdaptations) ---
 # Grounded 2026-09-06 — docs/grounding/005-hr-zone-intensity-classification.md.
 VO2MAX_Z5_MIN = 8          # minutes at >= 90 % HRmax (Garmin Z5) that make a session VO2max work
+ANAEROBIC_BOUT_MAX_S = 120 # an intervals row with work bouts <= 2 min is anaerobic capacity, longer is VO2max
 ENDURANCE_FLOOR_MIN = 25   # endurance-credit floor for a steady/unstated row with no intensity data
 # TEMPO / LACTATE_THRESHOLD are not special-cased: threshold work is endurance by a
 # harder route than Zone 2, so it falls to the aerobic floor (fork 1b, 2026-09-07).
 VO2MAX_LABELS = r"VO2|VO₂|ANAEROBIC|SPRINT|SPEED"
 
 
-def classify(a, fmt=None):
-    """The adaptations a session credits under the 005 rules; [] = no credit."""
+def classify(a, fmt=None, bout=None):
+    """The adaptations a session credits under the 005 rules; [] = no credit.
+    `bout` is cardio_sessions.bout_seconds — None as the DB stands today; pass
+    bout_of(a) to project the name-based backfill."""
     fmt = fmt or fmt_of(a)
     aero, anaero = num(a.get("aerobicTrainingEffect")), num(a.get("anaerobicTrainingEffect"))
     has_te = aero is not None or anaero is not None
@@ -108,8 +129,11 @@ def classify(a, fmt=None):
     minutes = (num(a.get("duration")) or 0) / 60
     # 1. Structure first (session-goal method): an intervals row is never endurance.
     if fmt == "intervals":
-        # Bout length is not in the summary; the Z5 dose confirms VO2max, Garmin's
-        # own primary rule (anaerobic TE > aerobic TE) is the vendor tie-break.
+        # The work-bout length decides when the row carries it (2026-09-07).
+        if bout is not None:
+            return ["anaerobic"] if bout <= ANAEROBIC_BOUT_MAX_S else ["vo2max"]
+        # Without it the Z5 dose confirms VO2max and Garmin's own primary rule
+        # (anaerobic TE > aerobic TE) is the vendor tie-break.
         if z5_min is not None and z5_min >= VO2MAX_Z5_MIN:
             return ["vo2max"]
         if has_te and anaero > aero:
@@ -188,6 +212,12 @@ print("  Z5 minutes where zones exist (the VO2max dose check): " + ", ".join(
 print("  after 005, sessions with >= %d min in Z5: %d" % (VO2MAX_Z5_MIN, sum(1 for a in acts if (zone_seconds(a) or [0]*5)[4] / 60 >= VO2MAX_Z5_MIN)))
 print("  after 005, HIIT rows on anaerobic (vendor tie-break): " + ", ".join(
     f"{a.get('startTimeLocal','')[:10]} '{a.get('activityName')}'" for a in groups.get("hiit", []) if classify(a) == ["anaerobic"]))
+# bout_seconds is NULL on every synced row today; this projects the name-based backfill.
+proj = {}
+for a in groups.get("hiit", []):
+    key = ("+".join(classify(a, bout=bout_of(a))) or "none") + (" (named)" if bout_of(a) is not None else " (no bout in name)")
+    proj[key] = proj.get(key, 0) + 1
+print("  with name-inferred bouts (proposed backfill, NOT in the DB yet), hiit: " + ", ".join(f"{k} {v}" for k, v in sorted(proj.items())))
 
 # --- HIIT deep-dive --------------------------------------------------------------
 h = groups.get("hiit", [])

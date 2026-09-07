@@ -14,12 +14,15 @@ export function CardioLogForm() {
   const [distance, setDistance] = useState('')
   const [avgHr, setAvgHr] = useState('')
   const [format, setFormat] = useState<CardioFormat | ''>('')
+  const [bout, setBout] = useState('')
   const [notes, setNotes] = useState('')
   const { addCardioEntry, setToast } = useAppStore()
 
   const durationMins = parseDurationMins(duration)
   const distKm = distance ? +distance : 0
   const livePace = calcPace(durationMins, distKm)
+  // Same MM:SS convention as Duration, kept in seconds: "4:00" → 240, "0:45" → 45.
+  const boutSeconds = format === 'intervals' ? Math.round(parseDurationMins(bout) * 60) || undefined : undefined
 
   const add = async () => {
     if (!durationMins) return
@@ -29,9 +32,10 @@ export function CardioLogForm() {
         distance: distKm || undefined,
         avgHr: avgHr ? +avgHr : undefined,
         format: format || undefined,
+        boutSeconds,
         notes: notes || undefined,
       })
-      setDuration(''); setDistance(''); setAvgHr(''); setFormat(''); setNotes('')
+      setDuration(''); setDistance(''); setAvgHr(''); setFormat(''); setBout(''); setNotes('')
       setToast('Session logged!')
     } catch {
       setToast('Failed to save.')
@@ -87,6 +91,18 @@ export function CardioLogForm() {
           value={format}
           onPick={v => setFormat(f => (f === v ? '' : v))}
         />
+        {/* The work-bout length is only a question on an intervals session, so
+            the field appears with that answer (P1). It decides anaerobic
+            capacity (≤ 2 min) vs VO₂max — roadmap 005. */}
+        {format === 'intervals' && (
+          <Inp
+            label="Bout (MM:SS, opt.)"
+            type="text"
+            value={bout}
+            onChange={e => setBout(e.target.value)}
+            placeholder="4:00"
+          />
+        )}
         <div className="col-span-2">
           <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. Easy zone 2" />
         </div>

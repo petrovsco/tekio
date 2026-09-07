@@ -56,6 +56,9 @@ export const TE_STIMULUS_THRESHOLD = 2.0
 /** 8 — minutes at ≥ 90 % HRmax (Garmin Z5; range 5–10) that make a session VO₂max work: the dose is minutes at ≥ 90 % (Buchheit & Laursen 2013; Seiler 2013: a 4×4 runs at ≈ 94 % HRpeak); Z4 straddles the threshold band and never decides, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const VO2MAX_Z5_MIN = 8
 
+/** 120 — the work-bout length (s) at or below which an intervals row is anaerobic-capacity work, above which it is VO₂max: aerobic and anaerobic contributions are equal at ~75 s and longer efforts are aerobically dominated (Gastin 2001); Tekiō's anaerobic protocol is 20 s–2 min all-out (row 3.7), its VO₂max intervals 3–8 min (row 3.8; Seiler & Tønnessen 2009: ~1–8 min at 90–100 % V̇O₂max), see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+export const ANAEROBIC_BOUT_MAX_S = 120
+
 /** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. Garmin's TEMPO / LACTATE_THRESHOLD are deliberately not here and not special-cased: threshold work trains endurance by a harder route than Zone 2, so it falls to the aerobic floor (005 fork 1b, Peter 2026-09-07). */
 const VO2MAX_LABELS = /VO2|VO₂|ANAEROBIC|SPRINT|SPEED/
 
@@ -72,10 +75,12 @@ function z5Minutes(entry: CardioEntry): number | null {
  * literature uses (Seiler & Kjerland 2006; Sylta 2014): structure first, then
  * the Z5 dose, then Garmin's label, then duration as a floor.
  *
- * 1. `format = 'intervals'` is never endurance. Bout length is not on the row
- *    yet, so the Z5 dose confirms VO₂max, Garmin's own primary rule (anaerobic
- *    TE > aerobic TE) is the vendor tie-break for anaerobic capacity, and the
- *    rest is VO₂max — the app's own 4×4 protocol.
+ * 1. `format = 'intervals'` is never endurance. The work-bout length decides
+ *    when the row carries it (≤ {@link ANAEROBIC_BOUT_MAX_S} s → anaerobic
+ *    capacity, longer → VO₂max). Without it the Z5 dose confirms VO₂max,
+ *    Garmin's own primary rule (anaerobic TE > aerobic TE) is the vendor
+ *    tie-break for anaerobic capacity, and the rest is VO₂max — the app's own
+ *    4×4 protocol.
  * 2. A steady or unstated row is VO₂max on ≥ {@link VO2MAX_Z5_MIN} minutes in
  *    Z5. Otherwise a VO₂max-family label is read only when zones are absent;
  *    else aerobic TE ≥ {@link TE_STIMULUS_THRESHOLD} is endurance — tempo and
@@ -94,6 +99,7 @@ export function classifyCardioAdaptations(entry: CardioEntry): Adaptation[] {
   const label = entry.trainingEffectLabel?.toUpperCase() ?? ''
 
   if (entry.format === 'intervals') {
+    if (entry.boutSeconds != null) return entry.boutSeconds <= ANAEROBIC_BOUT_MAX_S ? ['anaerobic_capacity'] : ['vo2max']
     if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
     if (hasTe && anaerobic > aerobic) return ['anaerobic_capacity']
     return ['vo2max']

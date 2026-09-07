@@ -1,7 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** in progress — 2026-09-07: fork 1 decided (b) and shipped, the watch's HRmax set by Peter's call (v2.0.24); bout length on intervals rows is the unit in progress. Left after it: Garmin columns on sport rows, the typed-HR path for manual steady rows.
+**Status:** in progress — 2026-09-07: fork 1b shipped (v2.0.24); bout length on intervals rows landed — column, form field, the ≤ 2 min rule (v2.0.25). Left: filling the 63 synced HIIT rows' bouts (name-based backfill on Peter's go, or the Garmin typed-splits probe), Garmin columns on sport rows, the typed-HR path.
 **Release:** 2.1.0
 **Note:** Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](done/039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](done/031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
@@ -11,6 +11,7 @@
 - 2026-09-06 (day) — Data condition met: the whole Garmin history (277 sessions, all with Training Effect, 124 with HR zones) sits in the gitignored `scripts/garmin-sync/dumps/`; since 054 (v2.0.17) the 220 cardio sessions are in `cardio_sessions` with `format = 'intervals'` on the 63 HIIT ones.
 - 2026-09-06 (evening) — Picked up. Two science-scout runs — A: the intensity criterion for a session with Garmin data; B: the fallback with none — landed in [grounding/005](../grounding/005-hr-zone-intensity-classification.md#grounding) after every citation passed eutils / Crossref. Classifier rewritten on them (v2.0.23), tests moved, the dump re-run (§Result). Inventory rows 6.1–6.7, ledger D33–D36.
 - 2026-09-07 — Fork 1 → **(b)** on Peter's call: tempo / lactate-threshold runs credit endurance (`THRESHOLD_LABELS` deleted, row 6.6 retired, D34 amended, 039 S9 carries a boundary note; 42 runs and 3 rides regain credit, §Result). HRmax: Peter sets the watch to 185 (220 − 35) and lets Garmin's auto-detect follow (v2.0.24). Next: bout length.
+- 2026-09-07 (later) — Bout length: `cardio_sessions.bout_seconds` (migration applied), `CardioEntry.boutSeconds`, a Bout (MM:SS) field in the log form and the edit modal shown only when format = intervals (P1), `ANAEROBIC_BOUT_MAX_S = 120` decides first on an intervals row (inventory 6.8, D34). `analyze_dump.py` projects the name-based backfill: 43 `[N4x4]` → VO₂max, 19 EMOM / `[4x60]` → anaerobic (v2.0.25).
 
 ## Goal
 
@@ -134,19 +135,40 @@ The one uncredited run and the 10 uncredited rides sit below the aerobic
 floor (TE < 2.0). Under fork 1a — 2026-09-06, one day — the 42 TEMPO /
 LACTATE_THRESHOLD runs and 3 such rides credited nothing too; (b) returned
 them to endurance. The 3 anaerobic HIIT rows are "HIIT - Custom" and two "HIIT - EMOM" —
-the vendor tie-break firing. **0 of 277 sessions reach 8 min in Z5** (HIIT
+the vendor tie-break firing. With `bout_seconds` filled from the session names
+(§What remains) the 63 HIIT rows would read 43 VO₂max + 20 anaerobic (19 named
++ the Custom tie-break) instead of 60 + 3. **0 of 277 sessions reach 8 min in Z5** (HIIT
 max 6.2, running max 3.4), so the Z5 rule never fires on this history — see
 the HRmax item below.
 
 ## What remains
 
-- **Bout length on intervals rows.** The grounding's own rule — ≤ 2 min
-  all-out → anaerobic capacity, > 2 min → VO₂max — needs the work-bout length,
-  which neither the row nor Garmin's summary carries (`lapCount` = 1 on all
-  63). Until it exists the 15 "HIIT - EMOM" and 4 "[4x60] Slam/Jump" sessions
-  read as VO₂max. Shape: a `cardio_sessions.bout_seconds` column, a field
-  shown only when format = intervals (P1), the Garmin splits endpoint filling
-  it for synced rows.
+- **Bout length on synced rows.** The column, the field and the rule exist
+  (v2.0.25), but every synced row has `bout_seconds = NULL`, so the 63 HIIT
+  rows still classify by the Z5 dose and the TE tie-break (60 VO₂max, 3
+  anaerobic) and the 15 "HIIT - EMOM" and 4 "[4x60] Slam/Jump" sessions read
+  as VO₂max. Two ways to fill them:
+  1. *Name-based backfill.* Peter names his sessions with the protocol, and the
+     sync puts the Garmin name in `notes`: `[N4x4]` = 240 s, `[4x60]` = 60 s,
+     "HIIT - EMOM" = a 60-s round. Projected read: 43 → VO₂max (unchanged),
+     19 → anaerobic capacity; "HIIT - Custom" stays on the tie-break.
+     Reversible with `set bout_seconds = null`. **Peter's go** — the grounding
+     ranks a name-inferred bout below a measured one. Preview, then apply:
+     ```sql
+     select notes, count(*) from cardio_sessions
+       where source = 'garmin' and format = 'intervals' and bout_seconds is null
+       group by notes order by 2 desc;
+     update cardio_sessions set bout_seconds = 240
+       where source = 'garmin' and format = 'intervals' and bout_seconds is null and notes like '%[N4x4]%';
+     update cardio_sessions set bout_seconds = 60
+       where source = 'garmin' and format = 'intervals' and bout_seconds is null
+         and (notes like '%[4x60]%' or notes ilike '%EMOM%');
+     ```
+  2. *Garmin typed splits.* `lapCount` = 1 on all 63, so the plain laps
+     endpoint carries nothing; Garmin's HIIT timers (EMOM / AMRAP / custom)
+     store rounds as *typed splits* (`INTERVAL_ACTIVE` / `INTERVAL_REST`).
+     Probe one EMOM activity through the workflow's dump mode before building
+     the fill — a second call per activity, intervals rows only.
 - **Garmin data on sport rows.** A migration mirroring `cardio_sessions`'
   Garmin columns, the sync writing them for `tennis_v2`, and
   `classifySportAdaptations` reading them through the same rules — the seam is
@@ -171,7 +193,9 @@ the HRmax item below.
 - [x] Every rule in §Evidence grounded or retired — inventory rows 6.1–6.7, ledger D33–D36 (2026-09-06).
 - [x] Classifier rewritten on the blocks: one adaptation or none per session; `format = 'intervals'` never endurance; anaerobic TE never awards anaerobic capacity; threshold credits nothing; walks credit nothing; sport = endurance. `adaptations.test.ts` and `fusedRead.test.ts` moved with it (v2.0.23).
 - [x] Re-run over the 277-session dump before shipping; `analyze_dump.py` mirrors old and new (§Result).
-- [ ] Bout length on intervals rows (column + P1 field + splits endpoint) and the ≤ 2 min rule wired.
+- [x] Bout length on intervals rows: `bout_seconds` column, a Bout (MM:SS) field shown only when format = intervals, `ANAEROBIC_BOUT_MAX_S = 120` decides first on an intervals row (v2.0.25, 2026-09-07).
+- [ ] The 63 synced HIIT rows carry a bout — name-based backfill on Peter's go, or the typed-splits fill.
+- [ ] Garmin typed-splits probe: does one EMOM activity return its rounds?
 - [ ] Sport rows store Garmin TE, label and zones; `classifySportAdaptations` reads them.
 - [x] Peter: the watch's HRmax set — 185 (220 − 35), Garmin's auto-detect follows (2026-09-07).
 - [ ] The typed-HR path for manual steady rows (needs a grounded profile HRmax).
