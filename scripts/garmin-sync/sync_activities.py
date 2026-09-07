@@ -8,6 +8,8 @@ Two kinds of activity are synced, into two tables:
   profile mapped by the modality in its name — roadmap 054) -> `cardio_sessions`,
   with the Training-Effect / HR-zone data the app uses to classify each session
   into the right cardio adaptation (see src/lib/adaptations.ts:classifyCardioAdaptations).
+  An intervals row also gets its work-bout length from the summary's
+  `splitSummaries` (roadmap 005) — see _bout_seconds.
 - **sport** (tennis, …) -> `sport_sessions` (roadmap 041), with duration and
   average HR only. Quality, competitors and the result stay manual — Garmin
   cannot know them — so a synced row shows up as an entry still to be rated.
@@ -146,8 +148,34 @@ CARDIO_IDENTITY = ("user_id", "session_date", "activity_type")
 CARDIO_STATE_COLS = (
     "id,session_date,activity_type,garmin_activity_id,source,duration_minutes,distance_km,"
     "elevation_gain_m,avg_heart_rate,max_heart_rate,aerobic_te,anaerobic_te,"
-    "training_effect_label,training_load,zone_distribution,notes,format"
+    "training_effect_label,training_load,zone_distribution,notes,format,bout_seconds"
 )
+
+
+def _bout_seconds(act: dict) -> int | None:
+    """The work-bout length (s) of an intervals activity, measured by the watch's
+    timer, or None when the summary carries no `INTERVAL_ACTIVE` split.
+
+    Garmin's activity summary lists `splitSummaries` per split type; on a HIIT
+    activity the `INTERVAL_ACTIVE` entry holds the number of work bouts and
+    their total time, so one bout = duration / noOfSplits. That is the measured
+    value cardio_sessions.bout_seconds wants (roadmap 005): the app reads it
+    first on an intervals row — <= 120 s is anaerobic capacity, longer is VO₂max.
+    On the 63-session HIIT history every activity carries it: 4 × 240 s on the
+    [N4x4] rows, 10 × 60 s on an EMOM, 10 × 11 s on the one Tabata-style Custom.
+    (`lapCount` is 1 on all of them — laps say nothing here; splits do.)
+
+    Not derived for steady rows: Garmin Coach's run/walk plans put `INTERVAL_ACTIVE`
+    splits on plain runs too (all 132 running activities carry one, 30 with more
+    than one bout), where a "bout" is a run segment between walks, not an effort.
+    """
+    for split in act.get("splitSummaries") or []:
+        if split.get("splitType") != "INTERVAL_ACTIVE":
+            continue
+        n, total = split.get("noOfSplits"), split.get("duration")
+        if n and total:
+            return max(1, int(round(float(total) / int(n))))
+    return None
 
 
 def cardio_target(act: dict) -> tuple[str, str | None] | None:
@@ -180,6 +208,7 @@ def extract_row(user_id: str, act: dict) -> dict | None:
         "session_date": session_date,
         "activity_type": activity_type,
         "format": fmt,
+        "bout_seconds": _bout_seconds(act) if fmt == "intervals" else None,
         "duration_minutes": duration_min,
         "distance_km": round(act["distance"] / 1000, 3) if act.get("distance") else None,
         "elevation_gain_m": _num(act.get("elevationGain")),
@@ -196,6 +225,8 @@ def extract_row(user_id: str, act: dict) -> dict | None:
 
 def _cardio_label(row: dict) -> str:
     fmt = f" {row['format']}" if row.get("format") else ""
+    if row.get("format") == "intervals":
+        fmt += f" ({row['bout_seconds']} s bouts)" if row.get("bout_seconds") else " (no bout in the splits)"
     aero = row["aerobic_te"] if row.get("aerobic_te") is not None else "—"
     anaero = row["anaerobic_te"] if row.get("anaerobic_te") is not None else "—"
     return f"{row['session_date']} {row['activity_type']}{fmt}: {row['duration_minutes']}min, TE aero {aero} / anaero {anaero}"

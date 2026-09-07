@@ -48,21 +48,15 @@ def fmt_of(a):
     return "intervals" if tk(a) == "hiit" else None
 
 
-BOUT_RE = re.compile(r"\[N?(\d+)x(\d+)\]")  # "[N4x4]" = 4-min bouts, "[4x60]" = 60-s bouts
-
-
 def bout_of(a):
-    """Work-bout seconds *inferred from the session name* — the proposed backfill
-    for cardio_sessions.bout_seconds, which the sync does not fill yet (005).
-    A bracketed NxM reads M as minutes below 20, else seconds; an EMOM is a
-    minute round, so its work bout is <= 60 s. None when the name says nothing."""
-    name = a.get("activityName") or ""
-    m = BOUT_RE.search(name)
-    if m:
-        n = int(m.group(2))
-        return n * 60 if n < 20 else n
-    if "EMOM" in name.upper():
-        return 60
+    """What sync_activities.py writes to cardio_sessions.bout_seconds (005): the
+    work-bout length measured by the watch — the summary's `INTERVAL_ACTIVE`
+    split total divided by its count — on an intervals row; None otherwise."""
+    if fmt_of(a) != "intervals":
+        return None
+    for s in a.get("splitSummaries") or []:
+        if s.get("splitType") == "INTERVAL_ACTIVE" and s.get("noOfSplits") and s.get("duration"):
+            return max(1, int(round(float(s["duration"]) / int(s["noOfSplits"]))))
     return None
 
 
@@ -117,9 +111,9 @@ VO2MAX_LABELS = r"VO2|VO₂|ANAEROBIC|SPRINT|SPEED"
 
 def classify(a, fmt=None, bout=None):
     """The adaptations a session credits under the 005 rules; [] = no credit.
-    `bout` is cardio_sessions.bout_seconds — None as the DB stands today; pass
-    bout_of(a) to project the name-based backfill."""
+    `fmt` and `bout` default to what the sync writes (fmt_of, bout_of)."""
     fmt = fmt or fmt_of(a)
+    bout = bout_of(a) if bout is None else bout
     aero, anaero = num(a.get("aerobicTrainingEffect")), num(a.get("anaerobicTrainingEffect"))
     has_te = aero is not None or anaero is not None
     aero, anaero = aero or 0, anaero or 0
@@ -210,14 +204,14 @@ print("  Z5 minutes where zones exist (the VO2max dose check): " + ", ".join(
     f"{key} med {median(zone_seconds(a)[4] / 60 for a in g if zone_seconds(a)):.1f} max {max(zone_seconds(a)[4] / 60 for a in g if zone_seconds(a)):.1f}"
     for key, g in sorted(groups.items(), key=lambda kv: -len(kv[1])) if any(zone_seconds(a) for a in g)))
 print("  after 005, sessions with >= %d min in Z5: %d" % (VO2MAX_Z5_MIN, sum(1 for a in acts if (zone_seconds(a) or [0]*5)[4] / 60 >= VO2MAX_Z5_MIN)))
-print("  after 005, HIIT rows on anaerobic (vendor tie-break): " + ", ".join(
-    f"{a.get('startTimeLocal','')[:10]} '{a.get('activityName')}'" for a in groups.get("hiit", []) if classify(a) == ["anaerobic"]))
-# bout_seconds is NULL on every synced row today; this projects the name-based backfill.
-proj = {}
-for a in groups.get("hiit", []):
-    key = ("+".join(classify(a, bout=bout_of(a))) or "none") + (" (named)" if bout_of(a) is not None else " (no bout in name)")
-    proj[key] = proj.get(key, 0) + 1
-print("  with name-inferred bouts (proposed backfill, NOT in the DB yet), hiit: " + ", ".join(f"{k} {v}" for k, v in sorted(proj.items())))
+# The sync fills bout_seconds from the INTERVAL_ACTIVE splits (2026-09-07); a HIIT
+# row without one falls to the vendor tie-break, so list those.
+bouts = Counter(bout_of(a) for a in groups.get("hiit", []))
+print("  hiit work bouts from the splits (s × sessions): " + ", ".join(
+    f"{'none' if b is None else b} ×{n}" for b, n in sorted(bouts.items(), key=lambda kv: (kv[0] is None, kv[0] or 0))))
+print("  hiit rows with no bout in the splits (vendor tie-break decides): " + (", ".join(
+    f"{a.get('startTimeLocal','')[:10]} '{a.get('activityName')}' → {'+'.join(classify(a)) or 'none'}"
+    for a in groups.get("hiit", []) if bout_of(a) is None) or "none"))
 
 # --- HIIT deep-dive --------------------------------------------------------------
 h = groups.get("hiit", [])

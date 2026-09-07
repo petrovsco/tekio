@@ -10,12 +10,15 @@ data and upsert it into Supabase:
   - cardio (cycling / running / swimming / rowing) → `cardio_sessions`, with
     distance, elevation, avg/max HR, HR-zone time, and **Aerobic / Anaerobic
     Training Effect**. The app uses the Training Effect + zones to classify
-    each ride into the correct cardio adaptation (`classifyCardioAdaptations`
-    in `src/lib/adaptations.ts`) — a hard ride can count toward both VO₂max
-    and anaerobic capacity. Garmin's **HIIT** profile is a format, not a
-    type: an activity named "… Rowing" lands as rowing, anything else (EMOM,
-    slam/jump circuits) as *Custom*, both with `format = 'intervals'` and the
-    Garmin name in `notes` (roadmap 054).
+    each session into one cardio adaptation, or none
+    (`classifyCardioAdaptations` in `src/lib/adaptations.ts`, roadmap 005).
+    Garmin's **HIIT** profile is a format, not a type: an activity named
+    "… Rowing" lands as rowing, anything else (EMOM, slam/jump circuits) as
+    *Custom*, both with `format = 'intervals'` and the Garmin name in `notes`
+    (roadmap 054). An intervals row also gets `bout_seconds` — the work-bout
+    length the watch's timer measured, read off the summary's
+    `INTERVAL_ACTIVE` split (total ÷ count; roadmap 005) — which the app reads
+    first: ≤ 120 s is anaerobic capacity, longer is VO₂max.
   - sport (tennis, …) → `sport_sessions`, with duration and avg HR only. The
     quality rating, competitors and result stay yours to fill in, so a synced
     session shows up in the Cardio tab as an entry still to be rated. Only
