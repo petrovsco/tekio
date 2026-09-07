@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { today } from '../../lib/utils'
-import { adaptationCoverage, weightSetsIn, GAP_CUTOFF } from '../../lib/adaptations'
+import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, GAP_CUTOFF } from '../../lib/adaptations'
 import { useHrMax } from '../../hooks/useHrMax'
 import {
   muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps,
@@ -87,6 +87,13 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
   if (short.length > 0) subParts.push(`Short: ${short.join(', ')}.`)
   const sub = subParts.length > 0 ? subParts.join(' ') : `Every quality on target in the last ${MUSCLE_WINDOW_DAYS} days.`
 
+  // Threshold sessions are a count inside the endurance band, never a band of
+  // their own — the seven stay seven (roadmap 057).
+  const atThreshold = useMemo(
+    () => thresholdEnduranceCount(cardio, sports, from, date, hrMax),
+    [cardio, sports, from, date, hrMax],
+  )
+
   const bands: SpectrumBand[] = SPECTRUM_QUALITIES.map(key => {
     const q = wholeBody.find(s => s.key === key)
     return {
@@ -95,6 +102,7 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
       target: coverage[key].sessionTarget,
       daysSince: q?.daysSince ?? null,
       stale: q?.stale ?? true,
+      threshold: key === 'endurance' ? atThreshold : undefined,
     }
   })
 

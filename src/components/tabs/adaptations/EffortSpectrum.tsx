@@ -20,6 +20,9 @@ export interface SpectrumBand {
   daysSince: number | null
   /** Past the grounded staleness window (or never) — reads as missing. */
   stale: boolean
+  /** How many of those sessions were at threshold — endurance only, and only
+   *  ever a count inside the band, never a band of its own (roadmap 057). */
+  threshold?: number
 }
 
 interface EffortSpectrumProps {
@@ -67,6 +70,14 @@ export function EffortSpectrum({ bands, zeroData, onPick }: EffortSpectrumProps)
             <text x={cx} y={BAND_Y + BAND_H + 10} textAnchor="middle" fontSize="7.5" fill="#6b6b6b">
               {sub}
             </text>
+            {/* Endurance only: how many of those sessions pushed the threshold.
+                A second line because the one above is already full at this
+                width — and a count, never a band (roadmap 057). */}
+            {!zeroData && b && b.threshold != null && b.sessions > 0 && (
+              <text x={cx} y={BAND_Y + BAND_H + 18} textAnchor="middle" fontSize="7" fill="#8a8a8a">
+                {b.threshold} at threshold
+              </text>
+            )}
             {/* tick under the band's centre on the shared axis */}
             <line x1={cx} y1={AXIS_Y - 2} x2={cx} y2={AXIS_Y + 2} stroke="#c9c9c7" strokeWidth="1" />
             <text x={cx} y={AXIS_Y + 10} textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">

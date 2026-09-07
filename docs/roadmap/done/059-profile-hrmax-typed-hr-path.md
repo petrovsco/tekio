@@ -22,7 +22,7 @@ history backfill ([054](054-garmin-history-backfill-cardio-hiit.md)) and
 the same-date claim, every session the user logs is the watch's. The path matters
 for the day the watch is not worn, and for what the HRmax unlocks elsewhere:
 
-- [057](../057-threshold-sessions-labelled.md) shape B — the threshold label on a
+- [057](057-threshold-sessions-labelled.md) shape B — the threshold label on a
   hand-logged row needs the 84–88 % band, so it needs this number.
 - The Zone-2 gate 005's grounding called "the sturdier gate when HRmax is
   known" for rides and walks sitting on the aerobic TE 2.0 line (cycling's

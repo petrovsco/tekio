@@ -484,3 +484,64 @@ export function classifyTypedHr(entry: Pick<CardioEntry, 'avgHr' | 'duration'>, 
   if (band === 'vo2max') return entry.duration >= VO2MAX_Z5_MIN ? ['vo2max'] : []
   return entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : []
 }
+
+// ── The threshold label (roadmap 057) — an annotation, never a bucket ─────────
+
+/** Garmin's own words for a session whose primary benefit was threshold work; read as written, so no new claim is made (`/ground` Step 0, vendor exemption). */
+const THRESHOLD_LABELS = /TEMPO|LACTATE_THRESHOLD/
+
+/** Whether Garmin called this session threshold work. False on a hand-logged row, which carries no label. */
+function garminThreshold(entry: GarminIntensity): boolean {
+  return THRESHOLD_LABELS.test(entry.trainingEffectLabel?.toUpperCase() ?? '')
+}
+
+/**
+ * Whether a cardio session pushed the lactate threshold. A *label* on the row
+ * and a count inside the endurance band — the credit stays whatever
+ * {@link classifyCardioAdaptations} says, because an eighth bucket is what 005
+ * fork 1b removed (roadmap 057). Two paths, in the classifier's own order:
+ * Garmin's word when the row carries one, otherwise a typed average HR in
+ * {@link typedHrBand}'s `'threshold'` band (84–88 % HRmax, grounded in 059).
+ * The typed path skips an `intervals` row — the average of a 4×4 is
+ * meaningless — while Garmin's word stands on any row it appears on, including
+ * the HIIT sessions it labels `TEMPO`.
+ */
+export function isThresholdCardio(entry: CardioEntry, hrMax?: number | null): boolean {
+  if (entry.trainingEffectLabel) return garminThreshold(entry)
+  if (entry.format === 'intervals') return false
+  return typedHrBand(entry.avgHr, hrMax) === 'threshold'
+}
+
+/**
+ * Whether a sport session pushed the lactate threshold. Garmin's word only: a
+ * match's average HR is the average of an intermittent effort, so the typed
+ * path never reads it (059 decision 4) and a hand-logged match is never
+ * flagged.
+ */
+export function isThresholdSport(entry: SportEntry): boolean {
+  return garminThreshold(entry)
+}
+
+/**
+ * How many of the endurance-credited sessions inside [from, to] were at
+ * threshold — the sub-line under the endurance band. A session counts only if
+ * it credits endurance: a HIIT row Garmin called `TEMPO` is VO₂max work by the
+ * bout it was run in, and belongs in no endurance count whatever its label says.
+ */
+export function thresholdEnduranceCount(
+  cardio: CardioEntry[],
+  sports: SportEntry[],
+  from: string,
+  to: string,
+  hrMax?: number | null,
+): number {
+  const c = cardio.filter(e =>
+    inRange(e.date, from, to)
+    && classifyCardioAdaptations(e, hrMax).includes('endurance')
+    && isThresholdCardio(e, hrMax)).length
+  const s = sports.filter(e =>
+    inRange(e.date, from, to)
+    && classifySportAdaptations(e).includes('endurance')
+    && isThresholdSport(e)).length
+  return c + s
+}

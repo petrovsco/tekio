@@ -1,5 +1,7 @@
 import { useAppStore } from '../../../store/app'
 import { formatDurationMins, calcPace } from '../../../lib/utils'
+import { isThresholdCardio, isThresholdSport } from '../../../lib/adaptations'
+import { useHrMax } from '../../../hooks/useHrMax'
 import { CARDIO_TYPES } from '../../../constants/app'
 import { Card, SecTitle } from '../../ui/Card'
 import { DelBtn, EditBtn } from '../../ui/Button'
@@ -48,8 +50,11 @@ function RowActions({ date, onEdit, onDelete }: { date: string; onEdit: () => vo
   )
 }
 
-function CardioRow({ d }: { d: CardioEntry }) {
+function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
   const { removeCardioEntry, openEditModal } = useAppStore()
+  // The one fact a hard endurance session used to lose on its way to the read
+  // (roadmap 057). It says what the session was, never what it credits.
+  const threshold = isThresholdCardio(d, hrMax)
   return (
     <div className="py-2 border-b border-hairline last:border-0">
       <div className="flex items-center justify-between">
@@ -67,6 +72,7 @@ function CardioRow({ d }: { d: CardioEntry }) {
                 : 'Steady'}
             </MicroLabel>
           )}
+          {threshold && <MicroLabel>Threshold</MicroLabel>}
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions
@@ -84,7 +90,9 @@ function CardioRow({ d }: { d: CardioEntry }) {
       </p>
       {(d.aerobicTe != null || d.anaerobicTe != null) && (
         <p className="text-[11px] text-ink-3 mt-0.5 tabular-nums">
-          {d.trainingEffectLabel ? `${prettyTeLabel(d.trainingEffectLabel)} · ` : ''}
+          {/* The chip above already says Threshold, so the row prints Garmin's
+              word only when it adds one (VO₂max, Recovery, Aerobic Base). */}
+          {d.trainingEffectLabel && !threshold ? `${prettyTeLabel(d.trainingEffectLabel)} · ` : ''}
           aerobic {d.aerobicTe ?? '—'} · anaerobic {d.anaerobicTe ?? '—'}
         </p>
       )}
@@ -94,6 +102,9 @@ function CardioRow({ d }: { d: CardioEntry }) {
 
 function SportRow({ d }: { d: SportEntry }) {
   const { removeSportEntry, openEditModal } = useAppStore()
+  // Garmin's word only: a match's average HR is an intermittent average, so a
+  // hand-logged match is never flagged (roadmap 057, 059 decision 4).
+  const threshold = isThresholdSport(d)
   return (
     <div className="py-2 border-b border-hairline last:border-0">
       <div className="flex items-center justify-between gap-2">
@@ -108,8 +119,9 @@ function SportRow({ d }: { d: SportEntry }) {
           onDelete={() => removeSportEntry(d.id)}
         />
       </div>
-      {(d.withTrainer || d.quality > 0 || d.result) && (
+      {(d.withTrainer || d.quality > 0 || d.result || threshold) && (
         <div className="flex flex-wrap items-center gap-1.5 mt-1">
+          {threshold && <MicroLabel>Threshold</MicroLabel>}
           {d.withTrainer && <MicroLabel>With trainer</MicroLabel>}
           {/* The result is the word, not a colour: green for a win would be a
               second palette, and §1 has exactly one accent to spend. */}
@@ -135,6 +147,9 @@ function SportRow({ d }: { d: SportEntry }) {
 
 export function SessionList() {
   const { cardio, sports } = useAppStore()
+  // Read once for the whole list: the observed peak walks every synced row, so
+  // a per-row hook would repeat that work for each row drawn.
+  const { hrMax } = useHrMax()
 
   const merged: Session[] = [
     ...cardio.map(entry => ({ kind: 'cardio' as const, entry })),
@@ -155,7 +170,7 @@ export function SessionList() {
         matchesCategory={(s, cat) => sessionLabel(s) === cat}
         emptyMessage="No sessions yet"
         renderItem={s => s.kind === 'cardio'
-          ? <CardioRow key={`c-${s.entry.id}`} d={s.entry} />
+          ? <CardioRow key={`c-${s.entry.id}`} d={s.entry} hrMax={hrMax} />
           : <SportRow key={`s-${s.entry.id}`} d={s.entry} />
         }
       />

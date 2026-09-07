@@ -11,6 +11,9 @@ import {
   SPORT_DEFAULT_ADAPTATION,
   typedHrBand,
   classifyTypedHr,
+  isThresholdCardio,
+  isThresholdSport,
+  thresholdEnduranceCount,
   HR_ENDURANCE_MAX_PCT,
   HR_VO2MAX_MIN_PCT,
   resolveExerciseAdaptation,
@@ -519,5 +522,54 @@ describe('on target — counter, "Short:" line and map callouts read one line', 
     expect(r.muscles.find(m => m.id === 'shoulders')!.fillFraction).toBe(1)
     expect(r.met).toBe(false)
     expect(r.callouts).toEqual(['Rear Delt'])
+  })
+})
+
+// ── The threshold label (roadmap 057) ────────────────────────────────────────
+
+describe('isThresholdCardio / isThresholdSport / thresholdEnduranceCount', () => {
+  const HRMAX = 196
+  const c = (extra: Partial<CardioEntry> = {}): CardioEntry =>
+    ({ id: 'x', date: '2025-01-10', type: 'Running', duration: 45, ...extra })
+  const s = (extra: Partial<SportEntry> = {}): SportEntry =>
+    ({ id: 'y', date: '2025-01-10', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', duration: 60, ...extra })
+
+  it('flags Garmin’s own two words and nothing else', () => {
+    expect(isThresholdCardio(c({ aerobicTe: 3.3, trainingEffectLabel: 'TEMPO' }))).toBe(true)
+    expect(isThresholdCardio(c({ aerobicTe: 3.6, trainingEffectLabel: 'LACTATE_THRESHOLD' }))).toBe(true)
+    expect(isThresholdCardio(c({ aerobicTe: 3.2, trainingEffectLabel: 'AEROBIC_BASE' }))).toBe(false)
+    expect(isThresholdCardio(c({ aerobicTe: 4.1, trainingEffectLabel: 'VO2MAX' }))).toBe(false)
+    expect(isThresholdCardio(c())).toBe(false)
+  })
+
+  it('reads a typed average HR in the 84–88 % band when the row carries no Garmin word', () => {
+    expect(isThresholdCardio(c({ avgHr: 170 }), HRMAX)).toBe(true)    // 87 %
+    expect(isThresholdCardio(c({ avgHr: 160 }), HRMAX)).toBe(false)   // 82 % — easy
+    expect(isThresholdCardio(c({ avgHr: 175 }), HRMAX)).toBe(false)   // 89 % — VO₂max
+    expect(isThresholdCardio(c({ avgHr: 170 }))).toBe(false)          // no HRmax, no guess
+  })
+
+  it('the typed path never reads an intervals average; Garmin’s word stands on any row', () => {
+    expect(isThresholdCardio(c({ format: 'intervals', avgHr: 170 }), HRMAX)).toBe(false)
+    expect(isThresholdCardio(c({ format: 'intervals', aerobicTe: 3.4, trainingEffectLabel: 'TEMPO' }), HRMAX)).toBe(true)
+  })
+
+  it('a sport row is Garmin’s word only — a hand-logged match is never flagged', () => {
+    expect(isThresholdSport(s({ aerobicTe: 3.3, trainingEffectLabel: 'TEMPO' }))).toBe(true)
+    expect(isThresholdSport(s({ avgHr: 170 }))).toBe(false)
+  })
+
+  it('counts only the sessions that credit endurance, inside the window', () => {
+    const rows = [
+      c({ date: '2025-01-10', aerobicTe: 3.3, trainingEffectLabel: 'TEMPO' }),            // counts
+      c({ date: '2025-01-11', avgHr: 170 }),                                              // counts — typed HR
+      c({ date: '2025-01-12', aerobicTe: 3.2, trainingEffectLabel: 'AEROBIC_BASE' }),     // easy
+      c({ date: '2025-01-13', duration: 20, avgHr: 170 }),                                // under the floor: credits nothing
+      c({ date: '2025-01-13', format: 'intervals', boutSeconds: 240, aerobicTe: 3.4, trainingEffectLabel: 'TEMPO' }), // VO₂max
+      c({ date: '2025-01-20', aerobicTe: 3.3, trainingEffectLabel: 'TEMPO' }),            // outside the window
+    ]
+    const matches = [s({ date: '2025-01-11', aerobicTe: 3.0, trainingEffectLabel: 'LACTATE_THRESHOLD' })]
+    expect(thresholdEnduranceCount(rows, matches, '2025-01-08', '2025-01-14', HRMAX)).toBe(3)
+    expect(thresholdEnduranceCount(rows, [], '2025-01-08', '2025-01-14', null)).toBe(1) // no HRmax: only Garmin’s word
   })
 })

@@ -123,7 +123,7 @@ Picked by Peter on 2026-09-07, before the code:
   the Garmin by hand).
 - Reading a typed HR on `intervals` rows; Garmin zones — 059's out-of-scope
   stands.
-- The threshold label — [057](../057-threshold-sessions-labelled.md).
+- The threshold label — [057](057-threshold-sessions-labelled.md).
 
 ## Acceptance
 
