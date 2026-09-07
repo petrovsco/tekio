@@ -285,6 +285,11 @@ export function ProfileTab() {
 
       {dataAction === 'import' && <ImportPane onClose={() => setDataAction(null)} />}
       {dataAction === 'export' && <ExportPane onClose={() => setDataAction(null)} />}
+
+      {/* roadmap 049 — the build says which version it is, so a release can be
+          verified by opening the app. A note, not a signal: 10px, no colour,
+          no icon (§5, §1). */}
+      <p className="text-[10px] text-ink-4 text-center pt-1">v{__APP_VERSION__}</p>
     </div>
   )
 }

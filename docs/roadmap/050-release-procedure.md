@@ -33,8 +33,9 @@ without rediscovering anything.
    deployment id; `vercel api "/v13/deployments/<id>?teamId=<team>"` must
    show `meta.githubCommitSha` equal to `master` and the alias
    `tekio.shamatoff.com`. The gate must answer 401 from that deployment.
-   Once [049](049-app-version-display.md) ships: open the site and read the
-   version — the only check a person can do without Vercel.
+   Then open the site and read the version printed at the foot of Profile
+   ([049](049-app-version-display.md), shipped) — the only check a person can
+   do without Vercel.
 6. **Post-release:** unblock what depended on the release (025's pattern:
    `blocked` → `planned`, first acceptance box ticked); run the 025 queue
    as tracked migrations — and never a sweep of `origin`-tagged rows, which
