@@ -1,7 +1,7 @@
 # Roadmap: The exit-condition walk — is the core perfected?
 
 **Label:** feature
-**Status:** done — walked 2026-09-07. Two yeses, one miss: Home cannot name a missing muscle-linked quality, so §6 is **not yet met** and the austerity holds. The miss is [061](../061-home-names-missing-muscle-quality.md); the merge hypothesis it raised is [062](../062-home-adaptations-one-screen.md).
+**Status:** done — walked 2026-09-07. Two yeses, one miss: Home cannot name a missing muscle-linked quality, so §6 is **not yet met** and the austerity holds. Both the miss and the merge hypothesis it raised now live in [062](../062-home-adaptations-one-screen.md) — [061](061-home-names-missing-muscle-quality.md) was folded into it the same day.
 **Release:** 2.1.0
 **Origin:** [doctrine.md](../../doctrine.md) §6: *"The core is perfected when: I
 open Home and, without tapping anything, know within five seconds which
@@ -104,7 +104,11 @@ for.
 
 Peter's verdict on the day: not met, and fix it narrowly — Home names any
 muscle-linked quality that is at zero or short, in the shape the power line
-already uses. That is [061](../061-home-names-missing-muscle-quality.md).
+already uses. That was [061](061-home-names-missing-muscle-quality.md), which
+Peter discarded into [062](../062-home-adaptations-one-screen.md) later the
+same day: Home is being redesigned around the Adaptations screen, so the
+missing-quality read ships as a requirement of that shape rather than as a
+patch in front of it. The requirement is unchanged; only its container is.
 
 ## What the walk also raised
 

@@ -1,8 +1,13 @@
 # Roadmap: Home names the missing muscle-linked quality
 
 **Label:** bug
-**Status:** planned — kickoff-ready. Opened by the exit-condition walk on 2026-09-07 ([051](done/051-exit-condition-walk.md)); it is the one miss standing between Home and doctrine §6, so it runs first in 2.1.0.
+**Status:** discarded — folded into [062](../062-home-adaptations-one-screen.md) on 2026-09-07 (Peter's call): Home is about to be redesigned around the Adaptations screen, so the missing-quality read ships as a requirement of that shape rather than as a patch in front of it. Nothing here was built.
 **Release:** 2.1.0
+
+> **Retired, not dropped.** The requirement below is live — it is an acceptance
+> item on [062](../062-home-adaptations-one-screen.md), which reproduces this
+> argument in full. Read 062; this file is the record of where the argument was
+> first written, kept because the ID is never reused.
 
 ## Why — the failure this prevents
 
@@ -93,6 +98,6 @@ number?** No new one — see above.
       the other three.
 - [ ] With a zero-data database Home degrades gracefully — no "everything is
       missing" sentence.
-- [ ] The walk in [051](done/051-exit-condition-walk.md) is re-run on Home's
+- [ ] The walk in [051](051-exit-condition-walk.md) is re-run on Home's
       question 2 and passes; doctrine §6's verdict line is updated with the
       result.
