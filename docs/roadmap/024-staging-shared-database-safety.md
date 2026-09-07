@@ -93,5 +93,7 @@ release procedure ([050](050-release-procedure.md)) no longer carries the step.
       not do destructively.
 - [ ] The same rule says that `origin`-tagged rows are real data and are never
       deleted by tag; a test entry is deleted in the app right after the test.
-- [ ] The versioning rules in `CLAUDE.md` point at the migration policy as part
-      of a major release.
+- [x] The versioning rules in `CLAUDE.md` point at the migration policy as part
+      of a major release. Ticked 2026-09-07 by
+      [050](050-release-procedure.md): step 6 of the release checklist sends the
+      reader here and says `origin`-tagged rows are never deleted by tag.

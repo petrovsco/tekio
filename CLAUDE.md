@@ -56,6 +56,18 @@ that pays them, are
 [roadmap/024-staging-shared-database-safety.md](docs/roadmap/024-staging-shared-database-safety.md)
 (the migration policy).
 
+**Releasing a version.** Seven steps, in this order — 2.0.0 went out this way on
+2026-09-05, and the reasoning behind each one is
+[roadmap/050-release-procedure.md](docs/roadmap/050-release-procedure.md):
+
+1. **Pre-flight on `develop`** — `npm run build`, `npm run test`, `npm run check:docs`, all green.
+2. **Registry** — in [docs/roadmap/releases.md](docs/roadmap/releases.md) set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line.
+3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
+4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`.
+5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so only Peter can open the site and read the version at the foot of Profile.
+6. **Post-release** — take the briefs that waited on the release off `blocked`; run the queued schema drops as tracked migrations ([roadmap/025](docs/roadmap/done/025-release-blocked-schema-drops.md)) under the migration policy in [roadmap/024](docs/roadmap/024-staging-shared-database-safety.md), and never delete rows by their `origin` tag — they are real data; move finished briefs to `done/` and repoint their links.
+7. **Open the next release** section in `releases.md`.
+
 ## Commands
 
 ```bash

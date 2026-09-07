@@ -1,7 +1,7 @@
 # Roadmap: The release procedure, written down
 
 **Label:** infra
-**Status:** planned — kickoff-ready, committed to 2.1.0 by Peter on 2026-09-05. Docs only: the steps below are the ones 2.0.0 was released by; the work is putting them where a session reads them.
+**Status:** in progress — the checklist is now in `CLAUDE.md`; the last box waits for 2.1.0 to actually be released from it.
 **Release:** 2.1.0
 **Origin:** 2.0.0 was released by hand on 2026-09-05 from three files
 (`CLAUDE.md`, [024](024-staging-shared-database-safety.md),
@@ -53,7 +53,7 @@ steps. That also ticks 024's third acceptance box ("the versioning rules in
 
 ## Acceptance
 
-- [ ] The checklist is in `CLAUDE.md`, seven steps or fewer, each one line.
-- [ ] 024's third acceptance box is ticked by the same edit.
+- [x] The checklist is in `CLAUDE.md`, seven steps or fewer, each one line.
+- [x] 024's third acceptance box is ticked by the same edit.
 - [ ] 2.1.0 is released from the checklist, and whatever it missed is added
       in that session.
