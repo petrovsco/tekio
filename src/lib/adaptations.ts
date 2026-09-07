@@ -1,5 +1,5 @@
 import type {
-  Adaptation, WeightEntry, CardioEntry, SportEntry, ExerciseMuscleLink, MuscleGroup,
+  Adaptation, WeightEntry, CardioEntry, SportEntry, GarminIntensity, ExerciseMuscleLink, MuscleGroup,
 } from '../types'
 import { ADAPTATIONS, ADAPTATION_MAP, defaultAdaptationForExercise } from '../constants/adaptations'
 import { LEVEL_WEIGHT, today } from './utils'
@@ -63,9 +63,29 @@ export const ANAEROBIC_BOUT_MAX_S = 120
 const VO2MAX_LABELS = /VO2|VO₂|ANAEROBIC|SPRINT|SPEED/
 
 /** Minutes in Garmin's Z5 (≥ 90 % HRmax), or null when the row carries no zones. */
-function z5Minutes(entry: CardioEntry): number | null {
+function z5Minutes(entry: GarminIntensity): number | null {
   const z = entry.zoneDistribution
   return z && z.length >= 5 ? (z[4] ?? 0) / 60 : null
+}
+
+/**
+ * What a steady session's Garmin data says it trained — the core the cardio
+ * and sport classifiers share (roadmap 058), so the rules have one home.
+ * VO₂max on ≥ {@link VO2MAX_Z5_MIN} minutes in Z5. Otherwise a VO₂max-family
+ * label is read only when zones are absent; else aerobic TE ≥
+ * {@link TE_STIMULUS_THRESHOLD} is endurance — tempo and lactate-threshold
+ * runs included, since the classifier says what a session trained, not
+ * whether it was the polarized way to train it (005 fork 1b). `null` when
+ * the row carries no Training Effect: the caller says what a row with no
+ * intensity data is (a duration floor for cardio, the convention for sport).
+ */
+export function classifyGarminIntensity(entry: GarminIntensity): Adaptation[] | null {
+  const z5 = z5Minutes(entry)
+  if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
+  if (entry.aerobicTe == null && entry.anaerobicTe == null) return null
+  const label = entry.trainingEffectLabel?.toUpperCase() ?? ''
+  if (z5 == null && VO2MAX_LABELS.test(label)) return ['vo2max']
+  return (entry.aerobicTe ?? 0) >= TE_STIMULUS_THRESHOLD ? ['endurance'] : []
 }
 
 /**
@@ -81,35 +101,23 @@ function z5Minutes(entry: CardioEntry): number | null {
  *    Garmin's own primary rule (anaerobic TE > aerobic TE) is the vendor
  *    tie-break for anaerobic capacity, and the rest is VO₂max — the app's own
  *    4×4 protocol.
- * 2. A steady or unstated row is VO₂max on ≥ {@link VO2MAX_Z5_MIN} minutes in
- *    Z5. Otherwise a VO₂max-family label is read only when zones are absent;
- *    else aerobic TE ≥ {@link TE_STIMULUS_THRESHOLD} is endurance — tempo and
- *    lactate-threshold runs included, since the classifier says what a session
- *    trained, not whether it was the polarized way to train it (fork 1b).
+ * 2. A steady or unstated row reads its Garmin data through
+ *    {@link classifyGarminIntensity}.
  * 3. With no intensity data, ≥ {@link ENDURANCE_FLOOR_MIN} min is endurance.
  *
  * Anaerobic TE alone never awards anaerobic capacity: Firstbeat's "anaerobic"
  * is any work above VO₂max intensity, Tekiō's is 20 s–2 min all-out repeats.
  */
 export function classifyCardioAdaptations(entry: CardioEntry): Adaptation[] {
-  const hasTe = entry.aerobicTe != null || entry.anaerobicTe != null
-  const aerobic = entry.aerobicTe ?? 0
-  const anaerobic = entry.anaerobicTe ?? 0
-  const z5 = z5Minutes(entry)
-  const label = entry.trainingEffectLabel?.toUpperCase() ?? ''
-
   if (entry.format === 'intervals') {
     if (entry.boutSeconds != null) return entry.boutSeconds <= ANAEROBIC_BOUT_MAX_S ? ['anaerobic_capacity'] : ['vo2max']
+    const z5 = z5Minutes(entry)
     if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
-    if (hasTe && anaerobic > aerobic) return ['anaerobic_capacity']
+    const hasTe = entry.aerobicTe != null || entry.anaerobicTe != null
+    if (hasTe && (entry.anaerobicTe ?? 0) > (entry.aerobicTe ?? 0)) return ['anaerobic_capacity']
     return ['vo2max']
   }
-  if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
-  if (hasTe) {
-    if (z5 == null && VO2MAX_LABELS.test(label)) return ['vo2max']
-    return aerobic >= TE_STIMULUS_THRESHOLD ? ['endurance'] : []
-  }
-  return entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : []
+  return classifyGarminIntensity(entry) ?? (entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : [])
 }
 
 /** The single adaptation a session credits, or null when it credits none (first of {@link classifyCardioAdaptations}). */
@@ -121,13 +129,16 @@ export function classifyCardio(entry: CardioEntry): Adaptation | null {
 export const SPORT_DEFAULT_ADAPTATION: Adaptation = 'endurance'
 
 /**
- * The cardio adaptations a sport session credits. Sport rows carry no Garmin
- * Training Effect or zones yet (roadmap 058 stores them), so every match —
- * timed or not, singles or doubles — is {@link SPORT_DEFAULT_ADAPTATION}.
- * The parameter is the seam 058 fills.
+ * The cardio adaptations a sport session credits. A synced row carries the
+ * same Garmin data a cardio row does (roadmap 058) and reads it through the
+ * same steady-row core: a match with 8 min in Z5 is VO₂max work, one below
+ * the aerobic floor credits nothing. Only a row with no Garmin data — every
+ * hand-logged match, timed or not, singles or doubles — is
+ * {@link SPORT_DEFAULT_ADAPTATION}. `format` is never read: a sport row has
+ * none, and a match is never intervals.
  */
-export function classifySportAdaptations(_entry: SportEntry): Adaptation[] {
-  return [SPORT_DEFAULT_ADAPTATION]
+export function classifySportAdaptations(entry: SportEntry): Adaptation[] {
+  return classifyGarminIntensity(entry) ?? [SPORT_DEFAULT_ADAPTATION]
 }
 
 // ── Muscle stimulus — the one accounting (roadmap 039 §6) ──────────────────────

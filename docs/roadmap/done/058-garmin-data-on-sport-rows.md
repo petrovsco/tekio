@@ -1,7 +1,7 @@
 # Roadmap: Garmin data on sport rows
 
 **Label:** feature
-**Status:** in progress — picked up 2026-09-07; working the five Shape steps in order, migration first. Split out of [005](done/005-hr-zone-intensity-classification.md) on 2026-09-07 (Peter's call) so that brief could close.
+**Status:** done — 2026-09-07 (v2.0.31–v2.0.32): migration 20260907070704 applied and mirrored, the sync writes and backfills the six columns, the three synced matches are backfilled (dry → real → dry clean: 3 backfilled, then 3 already synced), and `classifySportAdaptations` reads them through the shared core `classifyGarminIntensity`. No verdict moved — all three matches still read endurance. Split out of [005](005-hr-zone-intensity-classification.md) on 2026-09-07 (Peter's call) so that brief could close.
 **Release:** 2.1.0
 
 ## Why
@@ -9,11 +9,11 @@
 A synced tennis match arrives with everything a synced cardio session does —
 aerobic and anaerobic Training Effect, Garmin's primary-benefit label, max HR,
 training load, seconds in each HR zone — and the sync throws all of it away:
-[041](done/041-garmin-sport-activity-sync.md) stores only the duration and the
+[041](041-garmin-sport-activity-sync.md) stores only the duration and the
 average HR. So every match, synced or hand-logged, credits endurance by
 convention (`SPORT_DEFAULT_ADAPTATION`, inventory row 6.5, D36), while the
 cardio classifier next to it reads the same Garmin numbers through the
-grounded rules of [005](done/005-hr-zone-intensity-classification.md).
+grounded rules of [005](005-hr-zone-intensity-classification.md).
 
 The three synced matches in the 2026-09-06 dump show what is being dropped:
 
@@ -38,7 +38,7 @@ stays checkable if the zones are stored.
   left 005 instead of holding it open.
 - **A migration on the shared database.** Additive columns only — adds are
   fine, drops are release-blocked
-  ([025](done/025-release-blocked-schema-drops.md)) — mirroring what
+  ([025](025-release-blocked-schema-drops.md)) — mirroring what
   `cardio_sessions` already has.
 - **Two classifiers reading one rule set.** The cardio rules must not be
   copied into a sport twin; the shared core is extracted once and both call it.
@@ -85,15 +85,15 @@ stays checkable if the zones are stored.
 ## Out of scope
 
 - A typed avg HR on a hand-logged match as a share of HRmax —
-  [059](059-profile-hrmax-typed-hr-path.md).
+  [059](../059-profile-hrmax-typed-hr-path.md).
 - A singles / doubles distinction (D36: alike until a verified doubles study
   exists).
 - Any Garmin type other than `tennis_v2` (the sync's `SPORT_TYPE_KEYS`).
 
 ## Acceptance
 
-- [ ] Migration applied; `supabase/migrations/` carries it.
-- [ ] The sync writes the six columns for `tennis_v2` on insert and on claim (fill-empty-only); the three synced matches are backfilled.
-- [ ] `SportEntry` + `db/sport.ts` read them; `classifySportAdaptations` routes through the shared core; tests cover above-floor, below-floor and Z5 cases.
-- [ ] `analyze_dump.py` mirrors the sport path; the 277-session table shows the three matches still endurance.
-- [ ] Inventory row 6.5's note updated; `npm run check:docs` passes.
+- [x] Migration applied; `supabase/migrations/` carries it — `20260907070704_sport_garmin_intensity_fields.sql`, types mirroring `cardio_sessions`.
+- [x] The sync writes the six columns for `tennis_v2` on insert and on claim (fill-empty-only); the three synced matches are backfilled — `sport_row` builds the full row, `SPORT_FILL_COLS` is what a claim or a backfill may fill (never `notes`); "backfilled" is a fourth plan outcome for a row the activity already owns, so the three matches came in through a normal `days=340 kinds=sport` run (dry: 3 backfills → real: wrote 3 → dry: 3 already synced), the score note on 2026-09-01 untouched. The claim-with-fills path is covered by a local run of `plan_sport` on the dump against a fabricated same-date "Tennis Doubles" row (hand-written duration kept).
+- [x] `SportEntry` + `db/sport.ts` read them; `classifySportAdaptations` routes through the shared core; tests cover above-floor, below-floor and Z5 cases — `GarminIntensity` in `src/types/index.ts` is the shape both entries extend; `classifyGarminIntensity` in `adaptations.ts` is the core (Z5 dose → label when zones are absent → aerobic floor → `null` for "no data", the caller's floor or convention). Tests: the three real matches, a hand-logged row with a typed HR, a below-floor RECOVERY, the floor edge, a Z5 = 8 min match, a SPEED label with no zones.
+- [x] `analyze_dump.py` mirrors the sport path; the 277-session table shows the three matches still endurance — `classify_garmin` / `classify_sport` / `classify_any`; tennis_v2 n=3: endurance 1→3, vo2max 2→0, anaerobic 3→0.
+- [x] Inventory row 6.5's note updated; `npm run check:docs` passes — 70/75 anchors, 0 failed (four repointed after the classifier edit shifted `adaptations.ts`).

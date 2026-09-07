@@ -107,20 +107,34 @@ ENDURANCE_FLOOR_MIN = 25   # endurance-credit floor for a steady/unstated row wi
 # TEMPO / LACTATE_THRESHOLD are not special-cased: threshold work is endurance by a
 # harder route than Zone 2, so it falls to the aerobic floor (fork 1b, 2026-09-07).
 VO2MAX_LABELS = r"VO2|VO₂|ANAEROBIC|SPRINT|SPEED"
+SPORT_TYPE_KEYS = {"tennis_v2"}   # what sync_activities.py routes to sport_sessions
+SPORT_DEFAULT = "endurance"       # SPORT_DEFAULT_ADAPTATION — a match with no Garmin data, by convention (inventory 6.5)
+
+
+def classify_garmin(a):
+    """The steady-row core both classifiers share (classifyGarminIntensity, 058):
+    the Z5 dose, then Garmin's label only when zones are absent, then the
+    aerobic floor. None when the row carries no Training Effect — the caller
+    says what a row with no intensity data is."""
+    aero, anaero = num(a.get("aerobicTrainingEffect")), num(a.get("anaerobicTrainingEffect"))
+    z = zone_seconds(a)
+    z5_min = z[4] / 60 if z else None
+    if z5_min is not None and z5_min >= VO2MAX_Z5_MIN:
+        return ["vo2max"]
+    if aero is None and anaero is None:
+        return None
+    label = (a.get("trainingEffectLabel") or "").upper()
+    if z is None and re.search(VO2MAX_LABELS, label):
+        return ["vo2max"]  # label is the fallback only when zones are absent
+    return ["endurance"] if (aero or 0) >= TE_T else []
 
 
 def classify(a, fmt=None, bout=None):
-    """The adaptations a session credits under the 005 rules; [] = no credit.
-    `fmt` and `bout` default to what the sync writes (fmt_of, bout_of)."""
+    """The adaptations a cardio session credits under the 005 rules
+    (classifyCardioAdaptations); [] = no credit. `fmt` and `bout` default to
+    what the sync writes (fmt_of, bout_of)."""
     fmt = fmt or fmt_of(a)
     bout = bout_of(a) if bout is None else bout
-    aero, anaero = num(a.get("aerobicTrainingEffect")), num(a.get("anaerobicTrainingEffect"))
-    has_te = aero is not None or anaero is not None
-    aero, anaero = aero or 0, anaero or 0
-    z = zone_seconds(a)
-    z5_min = z[4] / 60 if z else None
-    label = (a.get("trainingEffectLabel") or "").upper()
-    minutes = (num(a.get("duration")) or 0) / 60
     # 1. Structure first (session-goal method): an intervals row is never endurance.
     if fmt == "intervals":
         # The work-bout length decides when the row carries it (2026-09-07).
@@ -128,20 +142,32 @@ def classify(a, fmt=None, bout=None):
             return ["anaerobic"] if bout <= ANAEROBIC_BOUT_MAX_S else ["vo2max"]
         # Without it the Z5 dose confirms VO2max and Garmin's own primary rule
         # (anaerobic TE > aerobic TE) is the vendor tie-break.
-        if z5_min is not None and z5_min >= VO2MAX_Z5_MIN:
+        aero, anaero = num(a.get("aerobicTrainingEffect")), num(a.get("anaerobicTrainingEffect"))
+        z = zone_seconds(a)
+        if z and z[4] / 60 >= VO2MAX_Z5_MIN:
             return ["vo2max"]
-        if has_te and anaero > aero:
+        if (aero is not None or anaero is not None) and (anaero or 0) > (aero or 0):
             return ["anaerobic"]
         return ["vo2max"]
     # 2. Steady or unstated, with Garmin data.
-    if z5_min is not None and z5_min >= VO2MAX_Z5_MIN:
-        return ["vo2max"]
-    if has_te:
-        if z is None and re.search(VO2MAX_LABELS, label):
-            return ["vo2max"]  # label is the fallback only when zones are absent
-        return ["endurance"] if aero >= TE_T else []
+    out = classify_garmin(a)
+    if out is not None:
+        return out
     # 3. No intensity data at all: duration is an endurance-credit floor, nothing more.
+    minutes = (num(a.get("duration")) or 0) / 60
     return ["endurance"] if minutes >= ENDURANCE_FLOOR_MIN else []
+
+
+def classify_sport(a):
+    """classifySportAdaptations (058): the shared core, else the convention.
+    `format` is never read — a match is never intervals."""
+    out = classify_garmin(a)
+    return [SPORT_DEFAULT] if out is None else out
+
+
+def classify_any(a):
+    """The classifier the sync's routing sends this activity to."""
+    return classify_sport(a) if tk(a) in SPORT_TYPE_KEYS else classify(a)
 
 
 # --- structure ---------------------------------------------------------------
@@ -187,13 +213,13 @@ for key, g in sorted(groups.items(), key=lambda kv: -len(kv[1])):
           + ", ".join(f"{l} ×{n}" for l, n in labels))
 
 # --- what the current classifier would do ---------------------------------------
-print("\n== Classifier before 005 → after 005, per type (sessions per adaptation; before could count one session twice; none = no credit) ==")
+print("\n== Classifier before 005 → after 005, per type (sessions per adaptation; before could count one session twice; none = no credit; sport types go through classify_sport) ==")
 for key, g in sorted(groups.items(), key=lambda kv: -len(kv[1])):
     old, new = Counter(), Counter()
     for a in g:
         for o in classify_old(a):
             old[o] += 1
-        out = classify(a)
+        out = classify_any(a)
         for o in out:
             new[o] += 1
         if not out:
@@ -259,5 +285,5 @@ if csv_out:
                         round((num(a.get("distance")) or 0) / 1000, 2), a.get("averageHR"), a.get("maxHR"),
                         a.get("aerobicTrainingEffect"), a.get("anaerobicTrainingEffect"), a.get("trainingEffectLabel"),
                         a.get("activityTrainingLoad"), *[None if v is None else round(v, 3) for v in z],
-                        a.get("vO2MaxValue"), a.get("calories"), "+".join(classify_old(a)), "+".join(classify(a)) or "none"])
+                        a.get("vO2MaxValue"), a.get("calories"), "+".join(classify_old(a)), "+".join(classify_any(a)) or "none"])
     print(f"\nCSV written to {csv_out}")

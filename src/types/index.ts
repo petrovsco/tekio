@@ -25,7 +25,26 @@ export type CardioType = 'Running' | 'Cycling' | 'Swimming' | 'Indoor Rowing' | 
  *  a second column, never a fifth type (roadmap 054). Absent = not stated. */
 export type CardioFormat = 'steady' | 'intervals'
 
-export interface CardioEntry {
+/**
+ * The Garmin numbers a synced session carries — the one shape the cardio and
+ * sport classifiers both read (roadmap 058). Absent on a hand-logged row.
+ */
+export interface GarminIntensity {
+  /** Peak heart rate (bpm). */
+  maxHr?: number
+  /** Garmin Aerobic Training Effect (0–5). */
+  aerobicTe?: number
+  /** Garmin Anaerobic Training Effect (0–5). */
+  anaerobicTe?: number
+  /** Garmin's own primary-benefit label, e.g. `VO2MAX`, `TEMPO`, `RECOVERY`. */
+  trainingEffectLabel?: string
+  /** Garmin per-activity training load (EPOC-based). */
+  trainingLoad?: number
+  /** Seconds spent in HR zones 1–5 (Garmin `hrTimeInZone_1..5`). */
+  zoneDistribution?: number[]
+}
+
+export interface CardioEntry extends GarminIntensity {
   id: string
   date: string
   type: CardioType
@@ -39,24 +58,12 @@ export interface CardioEntry {
   /** Average heart rate (bpm) for the session. */
   avgHr?: number
   notes?: string
-  /** Where the row came from. `'garmin'` rows carry the Training-Effect fields below. */
+  /** Where the row came from. `'garmin'` rows carry the {@link GarminIntensity} fields. */
   source?: 'manual' | 'garmin'
   /** Garmin activity id — the idempotent-sync dedupe key (absent on manual rows). */
   garminActivityId?: number
-  /** Peak heart rate (bpm). */
-  maxHr?: number
   /** Elevation gain / denivelation in metres. */
   elevationGain?: number
-  /** Garmin Aerobic Training Effect (0–5). */
-  aerobicTe?: number
-  /** Garmin Anaerobic Training Effect (0–5). */
-  anaerobicTe?: number
-  /** Garmin's own primary-benefit label, e.g. `VO2MAX`, `TEMPO`, `RECOVERY`. */
-  trainingEffectLabel?: string
-  /** Garmin per-activity training load (EPOC-based). */
-  trainingLoad?: number
-  /** Seconds spent in HR zones 1–5 (Garmin `hrTimeInZone_1..5`). */
-  zoneDistribution?: number[]
 }
 
 /**
@@ -114,21 +121,21 @@ export type SportType = 'Tennis' | 'Swimming' | 'Volleyball'
 export type QualityRating = 1 | 2 | 3 | 4 | 5
 export type MatchResult = 'win' | 'loss' | 'tie'
 
-export interface SportEntry {
+export interface SportEntry extends GarminIntensity {
   id: string
   date: string
   sport: SportType
   withTrainer: boolean
   quality: QualityRating
   notes: string
-  /** Session length in minutes. Drives the cardio-adaptation classification. */
+  /** Session length in minutes. */
   duration?: number
   /** Average heart rate (bpm) for the session. */
   avgHr?: number
   competitorNames?: string[]
   result?: MatchResult
   teammateNames?: string[]
-  /** Where the row came from. A `'garmin'` row arrived with duration + avg HR and no rating yet. */
+  /** Where the row came from. A `'garmin'` row arrived with duration, avg HR and the {@link GarminIntensity} fields (roadmap 058) — never typed — and no rating yet. */
   source?: 'manual' | 'garmin'
   /** Garmin activity id — the idempotent-sync dedupe key (absent on manual rows). */
   garminActivityId?: number

@@ -166,11 +166,27 @@ describe('classifyCardioAdaptations', () => {
 })
 
 describe('classifySportAdaptations', () => {
-  const s = (duration?: number): SportEntry => ({ id: 's', date: '2025-01-01', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', duration })
-  it('a match is endurance, timed or not', () => {
-    expect(classifySportAdaptations(s(90))).toEqual([SPORT_DEFAULT_ADAPTATION])
-    expect(classifySportAdaptations(s(20))).toEqual(['endurance'])
+  const s = (extra: Partial<SportEntry> = {}): SportEntry => ({ id: 's', date: '2025-01-01', sport: 'Tennis', withTrainer: false, quality: 3, notes: '', ...extra })
+  it('a hand-logged match (no Garmin data) is endurance by convention, timed or not', () => {
+    expect(classifySportAdaptations(s({ duration: 90 }))).toEqual([SPORT_DEFAULT_ADAPTATION])
+    expect(classifySportAdaptations(s({ duration: 20 }))).toEqual(['endurance'])
     expect(classifySportAdaptations(s())).toEqual(['endurance'])
+    expect(classifySportAdaptations(s({ duration: 60, avgHr: 150 }))).toEqual(['endurance'])
+  })
+  // The three matches the watch had synced by 2026-09-06 (058): two are
+  // SPEED-labelled, but zones are present and Z5 = 0, so the label never decides.
+  it('a synced match reads its Garmin data through the cardio rules — the three synced matches stay endurance', () => {
+    expect(classifySportAdaptations(s({ duration: 47.24, avgHr: 146, maxHr: 173, aerobicTe: 3.1, anaerobicTe: 2.5, trainingEffectLabel: 'SPEED', trainingLoad: 115.55, zoneDistribution: [155.5, 690, 1128, 861.1, 0] }))).toEqual(['endurance'])
+    expect(classifySportAdaptations(s({ duration: 46.31, avgHr: 139, maxHr: 171, aerobicTe: 2.7, anaerobicTe: 2.2, trainingEffectLabel: 'SPEED', trainingLoad: 76.5, zoneDistribution: [177, 1194, 1252.4, 153, 0] }))).toEqual(['endurance'])
+    expect(classifySportAdaptations(s({ duration: 43.16, avgHr: 124, maxHr: 172, aerobicTe: 2.3, anaerobicTe: 2.0, trainingEffectLabel: 'RECOVERY', trainingLoad: 54.47, zoneDistribution: [654.1, 1059.8, 561, 104, 0] }))).toEqual(['endurance'])
+  })
+  it('below the aerobic floor a synced match credits nothing — the convention is for rows with no data, not a rescue', () => {
+    expect(classifySportAdaptations(s({ duration: 40, aerobicTe: 1.6, anaerobicTe: 0.9, trainingEffectLabel: 'RECOVERY', zoneDistribution: [900, 800, 300, 40, 0] }))).toEqual([])
+    expect(classifySportAdaptations(s({ duration: 40, aerobicTe: TE_STIMULUS_THRESHOLD, anaerobicTe: 0.9, trainingEffectLabel: 'RECOVERY', zoneDistribution: [900, 800, 300, 40, 0] }))).toEqual(['endurance'])
+  })
+  it('8 min in Z5 makes a match VO₂max work whatever the label; the label stands in only when zones are absent', () => {
+    expect(classifySportAdaptations(s({ duration: 60, aerobicTe: 3.8, anaerobicTe: 2.9, trainingEffectLabel: 'AEROBIC_BASE', zoneDistribution: [100, 500, 900, 1500, VO2MAX_Z5_MIN * 60] }))).toEqual(['vo2max'])
+    expect(classifySportAdaptations(s({ duration: 40, aerobicTe: 3.0, anaerobicTe: 2.4, trainingEffectLabel: 'SPEED' }))).toEqual(['vo2max'])
   })
 })
 

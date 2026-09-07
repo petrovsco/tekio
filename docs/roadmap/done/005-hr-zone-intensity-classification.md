@@ -1,7 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** done — 2026-09-07: the grounded classifier, the bout length and the measured sync shipped as patches (v2.0.23–v2.0.28); the two open items split out on Peter's call — [058](../058-garmin-data-on-sport-rows.md) (Garmin data on sport rows) and [059](../059-profile-hrmax-typed-hr-path.md) (profile HRmax and the typed-HR path), both 2.1.0.
+**Status:** done — 2026-09-07: the grounded classifier, the bout length and the measured sync shipped as patches (v2.0.23–v2.0.28); the two open items split out on Peter's call — [058](058-garmin-data-on-sport-rows.md) (Garmin data on sport rows) and [059](../059-profile-hrmax-typed-hr-path.md) (profile HRmax and the typed-HR path), both 2.1.0.
 **Release:** 2.1.0
 **Note:** Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
@@ -14,7 +14,7 @@
 - 2026-09-07 (later) — Bout length: `cardio_sessions.bout_seconds` (migration applied), `CardioEntry.boutSeconds`, a Bout (MM:SS) field in the log form and the edit modal shown only when format = intervals (P1), `ANAEROBIC_BOUT_MAX_S = 120` decides first on an intervals row (inventory 6.8, D34). `analyze_dump.py` projects the name-based backfill: 43 `[N4x4]` → VO₂max, 19 EMOM / `[4x60]` → anaerobic (v2.0.25).
 - 2026-09-07 (evening) — Name-based backfill run on Peter's go: 43 rows → 240 s, 19 → 60 s, the one "HIIT - Custom" stays NULL. The anaerobic read moves from "767 d ago" (the tie-break row) to "354 d ago" (`[4x60] Slam/Jump`, 2025-09-18). Peter asked for threshold sessions to be labelled → [057](../057-threshold-sessions-labelled.md) (v2.0.26).
 - 2026-09-07 (night) — The typed-splits probe answered itself from the 2026-09-06 dump: the activity *summary* already carries `splitSummaries`, and every one of the 63 HIIT activities has an `INTERVAL_ACTIVE` entry (count + total seconds), so the bout is total ÷ count with no second call. The sync now fills `bout_seconds` from it (`_bout_seconds`, `analyze_dump.py` mirrors it); the claim rule fills an empty manual bout and never overwrites a typed one. Measured vs name-based on the 63 rows: 54 identical, 9 moved (§What remains). Verdicts unchanged: 43 VO₂max + 20 anaerobic (v2.0.27).
-- 2026-09-07 (close) — Peter's call: the two open boxes split into [058](../058-garmin-data-on-sport-rows.md) (Garmin data on sport rows) and [059](../059-profile-hrmax-typed-hr-path.md) (profile HRmax and the typed-HR path), both 2.1.0; this brief moves to done/ (v2.0.30). Found on the way: all 220 `cardio_sessions` rows are Garmin-sourced, so the manual-row rules — 6.1's floor and the typed-HR path — serve no row today.
+- 2026-09-07 (close) — Peter's call: the two open boxes split into [058](058-garmin-data-on-sport-rows.md) (Garmin data on sport rows) and [059](../059-profile-hrmax-typed-hr-path.md) (profile HRmax and the typed-HR path), both 2.1.0; this brief moves to done/ (v2.0.30). Found on the way: all 220 `cardio_sessions` rows are Garmin-sourced, so the manual-row rules — 6.1's floor and the typed-HR path — serve no row today.
 
 ## Goal
 
@@ -178,7 +178,7 @@ the HRmax item below.
   Garmin columns, the sync writing them for `tennis_v2`, and
   `classifySportAdaptations` reading them through the same rules — the seam is
   the function's unused parameter. **Split out 2026-09-07 →
-  [058](../058-garmin-data-on-sport-rows.md).**
+  [058](058-garmin-data-on-sport-rows.md).**
 - **The typed-HR path for manual steady rows.** Grounded in run B (≤ ~83 %
   HRmax endurance, ≥ ~89–90 % VO₂max) but the app holds no profile HRmax. The
   watch's HRmax is settled — Peter sets it to 185 (220 − 35, 2026-09-07) and
@@ -211,6 +211,6 @@ the HRmax item below.
 
 Split out on 2026-09-07 (Peter's call), each now its own brief with its own
 acceptance: sport rows storing Garmin TE, label and zones →
-[058](../058-garmin-data-on-sport-rows.md); the typed-HR path for manual
+[058](058-garmin-data-on-sport-rows.md); the typed-HR path for manual
 steady rows and the profile HRmax it needs →
 [059](../059-profile-hrmax-typed-hr-path.md).

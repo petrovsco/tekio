@@ -40,7 +40,8 @@ export async function loadSportTypes(): Promise<SportTypeInfo[]> {
 export async function loadSports(): Promise<SportEntry[]> {
   const { data, error } = await supabase
     .from('sport_sessions')
-    .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, source, garmin_activity_id, sport_types(name)')
+    // One literal on purpose: supabase-js parses the select string at the type level, and a concatenation is just `string`.
+    .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, source, garmin_activity_id, max_heart_rate, aerobic_te, anaerobic_te, training_effect_label, training_load, zone_distribution, sport_types(name)')
     .eq('user_id', USER_ID)
     .order('session_date', { ascending: false })
   if (error) throw error
@@ -58,6 +59,13 @@ export async function loadSports(): Promise<SportEntry[]> {
     teammateNames: r.teammate_names ?? undefined,
     source: (r.source ?? 'manual') as SportEntry['source'],
     garminActivityId: r.garmin_activity_id ?? undefined,
+    // The Garmin intensity columns (roadmap 058) — written by the sync only, never typed.
+    maxHr: r.max_heart_rate != null ? Number(r.max_heart_rate) : undefined,
+    aerobicTe: r.aerobic_te != null ? Number(r.aerobic_te) : undefined,
+    anaerobicTe: r.anaerobic_te != null ? Number(r.anaerobic_te) : undefined,
+    trainingEffectLabel: r.training_effect_label ?? undefined,
+    trainingLoad: r.training_load != null ? Number(r.training_load) : undefined,
+    zoneDistribution: Array.isArray(r.zone_distribution) ? r.zone_distribution.map(Number) : undefined,
   }))
 }
 
