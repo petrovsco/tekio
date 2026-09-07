@@ -118,7 +118,7 @@ Pending work lives in `docs/roadmap/`, never in this file (house rule
 | Surface | Verdict | Note |
 |---|---|---|
 | Home (Overview) | **Core — read** | The product. Answers "what's missing" without tapping. |
-| Adaptations | **Core — read** | The seven qualities (simplified 2026-08-29 — roadmap 019). |
+| Adaptations | **Core — read** | The seven qualities (simplified 2026-08-29 — roadmap 019). Its split with Home is deliberate since 2026-09-07 (roadmap 062): Home *answers* what's missing, Adaptations *explains* what to do about it — the per-quality map, the effort spectrum and the rx stay here, and its header sentence is the same line Home prints. |
 | Weights | **Core — capture** | Primary stimulus source. |
 | Cardio | **Core — capture** | Endurance / VO₂max / anaerobic stimulus. |
 | Mobility | **Core — capture** | Recovery-axis input with its own volume model. |
@@ -164,6 +164,16 @@ read correctly that morning only because power happened to be the one
 muscle-linked quality at zero. The austerity therefore holds. Record of the
 walk and the fix:
 [roadmap/done/051-exit-condition-walk.md](roadmap/done/051-exit-condition-walk.md).
+
+**Re-walked 2026-09-07, the same evening — question 2 now passes.** Home
+prints the seven by name from the same coverage read as Adaptations — one
+helper, one sentence on both screens, the power line gone — and still fits one
+900 px screen with nothing to scroll. It read: *Untouched: power, anaerobic,
+VO₂max. Short: strength, hypertrophy, muscular endurance, endurance.* All three
+questions have now passed at source. The sentence above is Peter's own
+five-second read, not a test run's, so the verdict is his to record here;
+until that line says **met**, the austerity holds. Record:
+[roadmap/done/062-home-adaptations-one-screen.md](roadmap/done/062-home-adaptations-one-screen.md).
 
 ## 7. What this doctrine does not cover
 

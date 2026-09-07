@@ -15,7 +15,7 @@ import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 import { GapMap } from './home/GapMap'
 import { EffortSpectrum, type SpectrumBand } from './adaptations/EffortSpectrum'
-import { MAP_QUALITIES, QUALITY_PROSE, QUALITY_SHORT, SPECTRUM_QUALITIES } from './adaptations/labels'
+import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, coverageLine } from './adaptations/labels'
 
 // The Adaptations drill-down (roadmap 031): a second Home. One body map with a
 // four-way quality toggle for the muscle-linked four, one effort spectrum for
@@ -80,12 +80,8 @@ export function AdaptationsTab({ setTab }: AdaptationsTabProps) {
   const inWindow = (d: string) => d >= from && d <= date
   const cardioSessions = cardio.filter(c => inWindow(c.date)).length + sports.filter(s => inWindow(s.date)).length
 
-  const untouched = ADAPTATIONS.filter(a => coverage[a.key].volume === 0).map(a => QUALITY_PROSE[a.key])
-  const short = ADAPTATIONS.filter(a => coverage[a.key].volume > 0 && !coverage[a.key].met).map(a => QUALITY_PROSE[a.key])
-  const subParts: string[] = []
-  if (untouched.length > 0) subParts.push(`Untouched: ${untouched.join(', ')}.`)
-  if (short.length > 0) subParts.push(`Short: ${short.join(', ')}.`)
-  const sub = subParts.length > 0 ? subParts.join(' ') : `Every quality on target in the last ${MUSCLE_WINDOW_DAYS} days.`
+  // The same sentence Home prints under its map — one helper, one split (062).
+  const sub = coverageLine(coverage, MUSCLE_WINDOW_DAYS)
 
   // Threshold sessions are a count inside the endurance band, never a band of
   // their own — the seven stay seven (roadmap 057).

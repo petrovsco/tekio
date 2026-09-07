@@ -395,6 +395,27 @@ export function adaptationCoverage(
 }
 
 /**
+ * The seven sorted into the two states worth naming: `untouched` — no volume
+ * at all inside the window — and `short` — some volume, but not on target
+ * (`met` false). Both in ADAPTATIONS order. A quality on target is in neither.
+ * This is the one split Home's "what is missing" line and the Adaptations
+ * header both print (roadmap 062); it reads `volume` and `met`, so it makes no
+ * claim of its own.
+ */
+export function splitCoverage(
+  coverage: Record<Adaptation, AdaptationSummary>,
+): { untouched: Adaptation[]; short: Adaptation[] } {
+  const untouched: Adaptation[] = []
+  const short: Adaptation[] = []
+  for (const a of ADAPTATIONS) {
+    const c = coverage[a.key]
+    if (c.volume === 0) untouched.push(a.key)
+    else if (!c.met) short.push(a.key)
+  }
+  return { untouched, short }
+}
+
+/**
  * Rolls direct per-group weighted sets up into a top-level tree (parent +
  * immediate children), assigning each a status against `target`.
  */

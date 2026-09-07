@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import {
   daysBetween, muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, powerSetCount, HISTORY_WEEKS,
+  donationStatus, waterStatus, fusedVerdict, HISTORY_WEEKS,
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
@@ -134,18 +134,6 @@ describe('rankMuscleGaps', () => {
     const links = [link('Curls', 'Biceps'), link('Extensions', 'Triceps')]
     const ranked = rankMuscleGaps(muscleStates(weights, links, GROUPS, TODAY))
     expect(ranked.map(m => m.name)).toEqual(['Chest', 'Triceps', 'Biceps'])
-  })
-})
-
-describe('powerSetCount', () => {
-  it('counts sets classified as power via keyword default or override, in window only', () => {
-    const weights = [
-      weight(ago(3), 'Box Jump', 4),                  // keyword default → power
-      weight(ago(3), 'Curls', 5),                     // 10 reps → not power
-      weight(ago(MUSCLE_WINDOW_DAYS + 1), 'Box Jump'), // outside the window
-    ]
-    expect(powerSetCount(weights, undefined, TODAY)).toBe(4)
-    expect(powerSetCount(weights, { curls: 'power' }, TODAY)).toBe(9)
   })
 })
 

@@ -28,7 +28,7 @@ In running order:
    2026-09-07: the muscle read and the push-or-rest call passed, the
    adaptation read did not, so doctrine §6 is **not met** and the austerity
    holds — 2.1.0 adds no sections. Its child runs next:
-   [062](062-home-adaptations-one-screen.md) — whether Home and Adaptations
+   [062](done/062-home-adaptations-one-screen.md) — whether Home and Adaptations
    should be one screen, now carrying the miss itself (Home names the missing
    muscle-linked quality). That miss was [061](done/061-home-names-missing-muscle-quality.md),
    discarded into 062 on 2026-09-07 (Peter's call) so the read ships as part

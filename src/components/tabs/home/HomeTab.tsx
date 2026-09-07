@@ -1,15 +1,17 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
+import { usePrefs } from '../../../store/prefs'
 import {
-  muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, powerSetCount, daysBetween,
+  muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
+  donationStatus, waterStatus, fusedVerdict, daysBetween,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { cycleInfo, today } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort } from './GapMap'
-import { GAP_CUTOFF } from '../../../lib/adaptations'
+import { adaptationCoverage, GAP_CUTOFF } from '../../../lib/adaptations'
+import { coverageLine } from '../adaptations/labels'
 import type { FoldKind } from './FoldSheet'
 
 // The fused Home read (roadmap 010/018, design-system.md, language SIGNAL).
@@ -112,8 +114,9 @@ interface GateCol {
 export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
   const {
     weights, cardio, sports, sleep, donations, water, bodyweight, programs,
-    exerciseMuscles, muscleGroups, exerciseAdaptations,
+    exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets,
   } = useAppStore()
+  const { trackedMuscleGroupIds } = usePrefs()
 
   const [sheet, setSheet] = useState<OpenSheet | null>(null)
   const prefetched = useRef(false)
@@ -138,7 +141,20 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
   const sys = useMemo(() => systemicReadiness(sleep), [sleep])
   const don = useMemo(() => donationStatus(donations), [donations])
   const wat = useMemo(() => waterStatus(water), [water])
-  const powerSets = useMemo(() => powerSetCount(weights, exerciseAdaptations), [weights, exerciseAdaptations])
+
+  // The seven-quality coverage read, the same call the Adaptations tab makes
+  // (roadmap 062): Home names every quality that is untouched or short, by
+  // name, instead of a line hardcoded to power.
+  const date = today()
+  const { from } = muscleWindow(date)
+  const coverage = useMemo(
+    () => adaptationCoverage({
+      weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, windowDays: MUSCLE_WINDOW_DAYS,
+      overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets, hrMax,
+    }),
+    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets, hrMax],
+  )
+  const missingLine = coverageLine(coverage, MUSCLE_WINDOW_DAYS)
 
   const verdict = fusedVerdict(sys.readiness, don)
   const gated = verdict.mode === 'hold'
@@ -299,12 +315,12 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
           <span className="text-[9px] text-ink-4">— ranked on the body · worst first</span>
         </div>
         <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={m => setSheet({ muscle: m })} />
-        {/* power is muscle-linked, not whole-body — its zero lives on the muscle
-            side, not in the cardio strip (P2) */}
-        <div className="text-[9px] text-ink-2 mt-1">
-          {zeroData
-            ? 'POWER — no data yet'
-            : `POWER — ${powerSets} sets, any muscle · muscle-linked, reads per muscle`}
+        {/* the seven qualities by name — the sentence the Adaptations header
+            prints, from one helper (062). Power is one name in it, not a line
+            of its own: it is muscle-linked, so its zero lives here, on the
+            muscle side, never in the cardio strip (P2) */}
+        <div className="text-[9px] text-ink-2 mt-1 text-pretty">
+          {zeroData ? 'ALL 7 QUALITIES — no data yet' : missingLine}
         </div>
       </div>
 

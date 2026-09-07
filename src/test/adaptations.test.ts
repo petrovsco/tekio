@@ -18,14 +18,17 @@ import {
   HR_VO2MAX_MIN_PCT,
   resolveExerciseAdaptation,
   adaptationCoverage,
+  splitCoverage,
   buildMuscleStatusTree,
   muscleStimulus,
   weightSetsIn,
   MUSCLE_QUALITIES,
   GAP_CUTOFF,
+  type AdaptationSummary,
 } from '../lib/adaptations'
 import { muscleQualityStates, muscleWindow, rankMuscleGaps } from '../lib/fusedRead'
-import type { CardioEntry, CardioFormat, ExerciseMuscleLink, MuscleGroup, SportEntry, WeightEntry } from '../types'
+import { coverageLine } from '../components/tabs/adaptations/labels'
+import type { Adaptation, CardioEntry, CardioFormat, ExerciseMuscleLink, MuscleGroup, SportEntry, WeightEntry } from '../types'
 import { ADAPTATIONS, ADAPTATION_MAP } from '../constants/adaptations'
 import { MUSCLE_WINDOW_DAYS } from '../constants/app'
 
@@ -571,5 +574,39 @@ describe('isThresholdCardio / isThresholdSport / thresholdEnduranceCount', () =>
     const matches = [s({ date: '2025-01-11', aerobicTe: 3.0, trainingEffectLabel: 'LACTATE_THRESHOLD' })]
     expect(thresholdEnduranceCount(rows, matches, '2025-01-08', '2025-01-14', HRMAX)).toBe(3)
     expect(thresholdEnduranceCount(rows, [], '2025-01-08', '2025-01-14', null)).toBe(1) // no HRmax: only Garmin’s word
+  })
+})
+
+describe('splitCoverage / coverageLine — the one untouched/short split Home and Adaptations print (062)', () => {
+  const summary = (key: Adaptation, volume: number, met: boolean): AdaptationSummary => ({
+    key, volume, unit: 'sets', muscles: [], onTrack: 0, worked: 0, totalMuscles: 0, sessionTarget: 0, met,
+  })
+  const coverage = (rows: Partial<Record<Adaptation, [number, boolean]>>): Record<Adaptation, AdaptationSummary> =>
+    Object.fromEntries(ADAPTATIONS.map(a => {
+      const [volume, met] = rows[a.key] ?? [0, false]
+      return [a.key, summary(a.key, volume, met)]
+    })) as Record<Adaptation, AdaptationSummary>
+
+  const mixed = coverage({ strength: [12, true], hypertrophy: [30, false], endurance: [1, false], vo2max: [2, true] })
+  const allMet = coverage(Object.fromEntries(ADAPTATIONS.map(a => [a.key, [5, true]])))
+
+  it('zero volume is untouched, volume under target is short, both in ADAPTATIONS order', () => {
+    expect(splitCoverage(mixed)).toEqual({
+      untouched: ['power', 'muscular_endurance', 'anaerobic_capacity'],
+      short: ['hypertrophy', 'endurance'],
+    })
+  })
+
+  it('a quality at zero is untouched, never short, whatever met says; on target is in neither', () => {
+    expect(splitCoverage(coverage({}))).toEqual({ untouched: [...ADAPTATIONS.map(a => a.key)], short: [] })
+    expect(splitCoverage(allMet)).toEqual({ untouched: [], short: [] })
+  })
+
+  it('prints one sentence per side in prose names, or the all-clear with the window', () => {
+    expect(coverageLine(mixed, MUSCLE_WINDOW_DAYS))
+      .toBe('Untouched: power, muscular endurance, anaerobic. Short: hypertrophy, endurance.')
+    expect(coverageLine(coverage({ power: [3, false] }), MUSCLE_WINDOW_DAYS))
+      .toBe('Untouched: strength, hypertrophy, muscular endurance, anaerobic, VO₂max, endurance. Short: power.')
+    expect(coverageLine(allMet, 14)).toBe('Every quality on target in the last 14 days.')
   })
 })

@@ -238,26 +238,6 @@ export function qualityStates(
   })
 }
 
-/**
- * Working sets classified as power within the muscle window, across all muscles.
- * Power is muscle-linked (doctrine P2) and reads per muscle in the drill-in;
- * the T1 line only reports whether any power work exists at all. Uses the same
- * override-aware set classification as the Adaptations dashboard.
- */
-export function powerSetCount(
-  weights: WeightEntry[],
-  overrides?: Record<string, Adaptation>,
-  date: string = today(),
-): number {
-  let n = 0
-  for (const w of weights) {
-    if (w.date > date || daysBetween(w.date, date) >= MUSCLE_WINDOW_DAYS) continue
-    const override = resolveExerciseAdaptation(w.exercise, overrides)
-    for (const s of w.sets) if (classifyWeightSet(s.reps, override).includes('power')) n++
-  }
-  return n
-}
-
 // ── Local: one muscle's drill-in (T2) ───────────────────────────────────────
 
 /** Total stimulus level-weight linking each exercise (lowercased) to `muscle`. */

@@ -1,5 +1,6 @@
 import type { Adaptation } from '../../../types'
 import type { MuscleQuality } from '../../../lib/fusedRead'
+import { splitCoverage, type AdaptationSummary } from '../../../lib/adaptations'
 
 // Editorial short names for the Adaptations drill-down (roadmap 031). Home's
 // whole-body tiles already say VO₂MAX / ANAEROBIC / ENDURANCE and its muscle
@@ -25,6 +26,20 @@ export const QUALITY_PROSE: Record<Adaptation, string> = {
   anaerobic_capacity: 'anaerobic',
   vo2max: 'VO₂max',
   endurance: 'endurance',
+}
+
+/**
+ * The window in one sentence — "Untouched: power, anaerobic. Short: strength."
+ * — or the all-clear. Home's "what is missing" card and the Adaptations header
+ * print this same string, so the two screens can never disagree about which
+ * quality is missing (roadmap 062). Callers handle the zero-data case first.
+ */
+export function coverageLine(coverage: Record<Adaptation, AdaptationSummary>, windowDays: number): string {
+  const { untouched, short } = splitCoverage(coverage)
+  const parts: string[] = []
+  if (untouched.length > 0) parts.push(`Untouched: ${untouched.map(k => QUALITY_PROSE[k]).join(', ')}.`)
+  if (short.length > 0) parts.push(`Short: ${short.map(k => QUALITY_PROSE[k]).join(', ')}.`)
+  return parts.length > 0 ? parts.join(' ') : `Every quality on target in the last ${windowDays} days.`
 }
 
 /** The segmented control's order — the force–velocity continuum, fastest first
