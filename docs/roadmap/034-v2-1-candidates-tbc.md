@@ -36,7 +36,7 @@ scope creep.
 
 Ideas that already have parked briefs stay in them:
 [001](done/001-cross-adaptation-rep-ranges.md) (fuzzy rep ranges — decided and shipped inside 039),
-[005](005-hr-zone-intensity-classification.md) (HR zones),
+[005](done/005-hr-zone-intensity-classification.md) (HR zones),
 [020](020-skill-recommendations-per-exercise.md) (skill recommendations),
 [022](022-companion-service-live-sync.md) (companion service).
 

@@ -36,9 +36,13 @@ In running order:
    setting.
 5. [041](done/041-garmin-sport-activity-sync.md) — Garmin sync for sport
    activities.
-6. [005](005-hr-zone-intensity-classification.md) — HR-based intensity
+6. [005](done/005-hr-zone-intensity-classification.md) — HR-based intensity
    classification, a grounding candidate (inventory rows 6.1–6.5); after 041
-   because the sport sync widens the HR supply it needs.
+   because the sport sync widens the HR supply it needs. Closed 2026-09-07
+   (the classifier and the bout length shipped as patches); its two open
+   items are [058](058-garmin-data-on-sport-rows.md) — Garmin data on
+   sport rows — and [059](059-profile-hrmax-typed-hr-path.md) — profile
+   HRmax and the typed-HR path.
 7. [044](044-exercise-name-aliases.md) — exercise aliases, the first step
    toward other users.
 8. [049](049-app-version-display.md), [050](050-release-procedure.md),

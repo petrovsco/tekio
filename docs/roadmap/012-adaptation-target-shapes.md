@@ -256,7 +256,7 @@ because it is part of the cost of choosing Attia.
 The **≥25 min endurance classification threshold**
 (`classifyCardioByDuration` in [adaptations.ts](../../src/lib/adaptations.ts), inventory row 6.1, state
 *unknown*) belongs to
-[005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md) and is
+[005-hr-zone-intensity-classification.md](done/005-hr-zone-intensity-classification.md) and is
 **out of scope here**. But moving to minutes changes what it does, so it should
 not be forgotten: today it decides whether a session counts at all; under a
 minutes model it decides which adaptation a session's minutes are credited to. A
@@ -326,7 +326,7 @@ before implementation.
 **Out:**
 - Anaerobic-capacity block periodisation (§5) — recorded as an open question.
 - The ≥25 min classification threshold (§6) — belongs to
-  [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md).
+  [005-hr-zone-intensity-classification.md](done/005-hr-zone-intensity-classification.md).
 - Row 1.6, skill = 3 sessions/week — still blocked on the product decision in
   [006-skill-adaptation-data-source.md](done/006-skill-adaptation-data-source.md).
 - Any change to the strength, hypertrophy or muscular-endurance targets. Their

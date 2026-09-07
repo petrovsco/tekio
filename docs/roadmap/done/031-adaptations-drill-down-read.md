@@ -140,7 +140,7 @@ it.
 session, the three qualities as regions). It is the better picture and it needs
 an intensity per session that the app mostly does not have — of 3 logged cardio
 sessions, 1 carries Training Effect and HR zones. Revisit after
-[005](../005-hr-zone-intensity-classification.md); do not build it on a duration
+[005](005-hr-zone-intensity-classification.md); do not build it on a duration
 proxy dressed as intensity.
 
 ### 3c. What leaves the page
@@ -162,7 +162,7 @@ Whether it survives as a hero or shrinks to a header line is a build decision.
   lands first the units shown here follow it; neither blocks the other's kickoff.
 - **User-set adaptation goals** — [040](../040-adaptation-goals.md), backlog.
 - **Classifier changes** — [001](001-cross-adaptation-rep-ranges.md)
-  (retired — decided inside 039), [005](../005-hr-zone-intensity-classification.md).
+  (retired — decided inside 039), [005](005-hr-zone-intensity-classification.md).
 
 ## 5. Doctrine check (§4)
 

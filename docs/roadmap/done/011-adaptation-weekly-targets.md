@@ -347,7 +347,7 @@ picks a side and records it.
   maintenance source qualifies its result with *"provided intensity is
   maintained"*. A session auto-classified as VO₂max from Garmin zone distribution
   may never have reached 90–100% HRmax. That points at
-  [005-hr-zone-intensity-classification.md](../005-hr-zone-intensity-classification.md),
+  [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md),
   not at this brief.
 
 ## Follow-ups this brief creates
@@ -358,7 +358,7 @@ picks a side and records it.
 | 2 | **Weekly-minutes target for endurance**, replacing the session count, and picking a side in the Attia/Galpin fork. Garmin already supplies duration. | Same class as #1: a shape change to the target model, not a value. **Briefed in [012-adaptation-target-shapes.md](../012-adaptation-target-shapes.md).** |
 | 3 | **Anaerobic capacity as a block-periodised quality** rather than a standing weekly target. | A periodisation feature, not a number. Carried as an open question in [012-adaptation-target-shapes.md](../012-adaptation-target-shapes.md) §5. |
 | 4 | **Row 1.6 — skill = 3 sessions/week.** | Deliberately deferred: blocked on the product decision in [006-skill-adaptation-data-source.md](006-skill-adaptation-data-source.md), not on evidence. |
-| 5 | **Tighten the VO₂max classifier's intensity criterion.** | Belongs to [005-hr-zone-intensity-classification.md](../005-hr-zone-intensity-classification.md). |
+| 5 | **Tighten the VO₂max classifier's intensity criterion.** | Belongs to [005-hr-zone-intensity-classification.md](005-hr-zone-intensity-classification.md). |
 | 6 | **An RIR / effort field.** | Named as the single change that would make Tekiō's "set" mean what the literature's "set" means. Not urgent — ACSM 2026 reports training to momentary fatigue did not consistently affect outcomes. |
 
 ## Acceptance

@@ -2,7 +2,7 @@
 
 Reference only: this file states what the evidence *is*. It holds the verbatim
 `## Grounding` blocks the science-scout runs of
-[roadmap 005](../roadmap/005-hr-zone-intensity-classification.md) returned —
+[roadmap 005](../roadmap/done/005-hr-zone-intensity-classification.md) returned —
 one `###` per run, in landing order — each pasted after its citations were
 checked through NCBI eutils or Crossref, and each closing with the **Decision**
 paragraph the run forced. What every decision changed is recorded in the brief

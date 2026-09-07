@@ -34,7 +34,7 @@ chart earn their screen at all is a product question — parked in
 ## Out of scope
 
 - The Sports → Cardio **DB merge** (its own future brief, per the ledger).
-- Classification changes (HR zones are [005](../005-hr-zone-intensity-classification.md)).
+- Classification changes (HR zones are [005](005-hr-zone-intensity-classification.md)).
 
 ## Doctrine check (§4)
 

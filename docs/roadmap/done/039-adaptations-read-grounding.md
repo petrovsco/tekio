@@ -134,7 +134,7 @@ parked:
 |---|---|---|---|
 | 7.1, 7.4, 7.5 | `LEVEL_WEIGHT` (a level-2 muscle gets half a set), the 5 mobility-min target, and the on-track/needs-work/untouched cut | `home-fused-reads` **(due)** | 010 shipped and is in `done/`. These rows point at a brief that will never run again |
 | 3.3, 3.4, 3.6, 3.10 | Power / strength / muscular-endurance `rx` prose and `ADAPTATION_PRINCIPLE` | `cross-adaptation-rep-ranges` | [001](001-cross-adaptation-rep-ranges.md) is `backlog` and is about a *different* question — whether classification should be fuzzy |
-| 3.7, 3.8, 3.9 | Anaerobic / VO₂max / endurance `rx` prose | `hr-zone-intensity-classification` | [005](../005-hr-zone-intensity-classification.md) is about *classifier thresholds*, not the prescriptions the page prints |
+| 3.7, 3.8, 3.9 | Anaerobic / VO₂max / endurance `rx` prose | `hr-zone-intensity-classification` | [005](005-hr-zone-intensity-classification.md) is about *classifier thresholds*, not the prescriptions the page prints |
 | — | `CYCLE_SET_TARGET` = 60 | — | **Has no inventory row at all**, despite being the denominator of the whole Home map |
 
 Row 7.1 is the sharpest: *"Every muscle-coverage number and the whole BodyMap is
@@ -183,7 +183,7 @@ keeps that text — behind an icon, but still on the page.
 - ~~Rep-range boundaries and fuzzy classification — 001~~ **Pulled in
   2026-09-02** (§6.0): 001's question is decided by this brief.
 - **Cardio classifier thresholds** (rows 6.1–6.5, the ≥25/≥8 min heuristic, the
-  TE cutoff) — [005](../005-hr-zone-intensity-classification.md).
+  TE cutoff) — [005](005-hr-zone-intensity-classification.md).
 - **Any pixel of the redesign** — [031](031-adaptations-drill-down-read.md).
 
 The split to hold in mind: **039 grounds what the page *displays* and how a

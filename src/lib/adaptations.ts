@@ -122,9 +122,9 @@ export const SPORT_DEFAULT_ADAPTATION: Adaptation = 'endurance'
 
 /**
  * The cardio adaptations a sport session credits. Sport rows carry no Garmin
- * Training Effect or zones yet (roadmap 005's next unit stores them), so every
- * match — timed or not, singles or doubles — is {@link SPORT_DEFAULT_ADAPTATION}.
- * The parameter is the seam that unit fills.
+ * Training Effect or zones yet (roadmap 058 stores them), so every match —
+ * timed or not, singles or doubles — is {@link SPORT_DEFAULT_ADAPTATION}.
+ * The parameter is the seam 058 fills.
  */
 export function classifySportAdaptations(_entry: SportEntry): Adaptation[] {
   return [SPORT_DEFAULT_ADAPTATION]

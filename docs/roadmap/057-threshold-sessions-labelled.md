@@ -5,7 +5,7 @@
 
 ## Why
 
-Fork 1b in [005](005-hr-zone-intensity-classification.md) (2026-09-07) made
+Fork 1b in [005](done/005-hr-zone-intensity-classification.md) (2026-09-07) made
 tempo and lactate-threshold sessions credit **endurance**, because that is the
 adaptation they train. The price is that the endurance band on Home and
 Adaptations now reads the same for a week of three easy runs and a week of
