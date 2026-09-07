@@ -171,7 +171,7 @@ for the day the watch is not worn, and for what the HRmax unlocks elsewhere:
 4. **Sport rows never promote** — the scout's sport variant. A hand-logged match with a typed HR stays `SPORT_DEFAULT_ADAPTATION`; the typed HR may carry the threshold label (057 B) and nothing else. Recorded as a test, not a code change.
 5. **One number, app-side.** No per-modality HRmax (fork 4) and no sync of the watch's value (fork 3): the Profile shows the derived number with the session that set it, so Peter can type it into the watch. Not built: the scout's "stale when no session in the window comes within 5 %" flag — the observed number refreshes on every sync and the Profile names the peak's date, which says the same thing without a fourth constant.
 
-**Amended the same evening — [060](../060-hrmax-any-user-birth-date-default.md).** Decisions 1 and 2 are reversed for general use: a derivation only the user's synced rows can produce serves no other user, so the formula fallback and a birth date come in as the default, and the observed peak becomes a proposal the user accepts instead of a number that overwrites theirs.
+**Amended the same evening — [060](060-hrmax-any-user-birth-date-default.md).** Decisions 1 and 2 are reversed for general use: a derivation only the user's synced rows can produce serves no other user, so the formula fallback and a birth date come in as the default, and the observed peak becomes a proposal the user accepts instead of a number that overwrites theirs.
 
 ## Acceptance
 

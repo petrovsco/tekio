@@ -1,7 +1,7 @@
 # Roadmap: HRmax for any user — a birth-date default, a tracker peak on acceptance
 
 **Label:** feature
-**Status:** planned — Peter's call on 2026-09-07, the evening [059](done/059-profile-hrmax-typed-hr-path.md) shipped: "this is built only for me". Three forks under *Shape* are his to pick before the code starts; the recommendation sits next to each.
+**Status:** done — shipped 2026-09-07 (v2.0.35), the evening [059](059-profile-hrmax-typed-hr-path.md) shipped and Peter said "this is built only for me". He picked the forks (A: Profile plus a hint on the cardio form; B: one number plus a source; C: propose again every time); the Tanaka estimate is the default from a birth date, the tracker's 196 is offered on his Profile and nothing is stored until he accepts or types.
 **Release:** 2.1.0
 
 ## Why
@@ -83,18 +83,20 @@ can produce is one.
 
 ### Forks for Peter
 
-- **A — where the proposal lives.** Profile card only (recommended — P1: the
-  surface that owns the number; Home stays a read) / also a one-line hint on
-  the cardio form when a typed HR has no denominator ("add your birth date in
-  Profile to read this").
-- **B — storage.** One number plus a source column, last write wins
-  (recommended) / two columns, `hr_max_override` typed and `hr_max_accepted`
-  tracker, typed winning — this one fails when an old typed 185 outranks a
-  freshly accepted 196.
-- **C — re-proposing.** Propose again whenever a new replicated peak exceeds
-  the stored number by more than 3 bpm (recommended; the proposal lives only on
-  the Profile card, so it never nags a read) / propose once per value and
-  remember a dismissal (one more column).
+Picked by Peter on 2026-09-07, before the code:
+
+- **A — where the proposal lives.** ~~Profile card only~~ / **Profile plus a
+  one-line hint on the cardio form** when a typed HR has no denominator
+  ("Not read yet — add your birth date in Profile to read it against your max
+  heart rate"), never on an intervals row. Peter took the wider shape over the
+  recommendation: the form is where the question is raised (P1).
+- **B — storage.** **One number plus a source column, last write wins** /
+  ~~two columns, typed winning~~ — the second fails when an old typed 185
+  outranks a freshly accepted 196.
+- **C — re-proposing.** **Propose again whenever a new replicated peak
+  exceeds the stored number by more than 3 bpm** — the proposal lives only on
+  the Profile card, so it never nags a read / ~~propose once and remember a
+  dismissal~~.
 
 ## Doctrine checklist
 
@@ -121,12 +123,12 @@ can produce is one.
   the Garmin by hand).
 - Reading a typed HR on `intervals` rows; Garmin zones — 059's out-of-scope
   stands.
-- The threshold label — [057](057-threshold-sessions-labelled.md).
+- The threshold label — [057](../057-threshold-sessions-labelled.md).
 
 ## Acceptance
 
-- [ ] Migration applied and mirrored under `supabase/migrations/`: `birth_date`, and the storage shape fork B picks.
-- [ ] Profile: a birth date picker; the card shows the estimate / tracker / typed state; the tracker proposal with a **Use N** button; the typed field relabelled.
-- [ ] `resolveHrMax` reads stored ?? formula ?? null; a sync never overwrites a stored number; tests for the formula (age 35 → 184), the proposal rule (no stored number / more than 3 bpm above / lower never), and last write wins.
-- [ ] Inventory row for the formula; ledger D39; the pointer in 059's decisions; `npm run check:docs` passes.
-- [ ] Browser-checked: the user's card proposes 196; accepting stores it with source `tracker`; with the stored number cleared and a birth date set, the card shows the estimate.
+- [x] Migration applied and mirrored under `supabase/migrations/`: `birth_date`, and the storage shape fork B picks — `20260907180000_user_profiles_birth_date_hr_max_source.sql`, applied 2026-09-07: `birth_date date`, `hr_max_source text`, and a check that the source is set exactly when the number is.
+- [x] Profile: a birth date picker; the card shows the estimate / tracker / typed state; the tracker proposal with a **Use N** button; the typed field relabelled — "Another device or a test (bpm)".
+- [x] `resolveHrMax` reads stored ?? formula ?? null; a sync never overwrites a stored number; tests for the formula (age 35 → 184), the proposal rule (no stored number / more than 3 bpm above / lower never), and last write wins — `formulaHrMax`, `ageAt`, `hrMaxProposal` in `src/lib/hrMax.ts`; 12 tests in `hrMax.test.ts` (184 / 180 / 194 by age, the day before a birthday, 192 → offered and 193 → not); the 43 classifier tests unchanged.
+- [x] Inventory row for the formula; ledger D39; the pointer in 059's decisions; `npm run check:docs` passes — rows 6.13–6.14, D37 amended, D39 added; 81 anchors, 76 passed, 0 failed.
+- [x] Browser-checked: the user's card proposes 196; accepting stores it with source `tracker`; with the stored number cleared and a birth date set, the card shows the estimate — headless Chromium 2026-09-07: "No number yet" + the 196 proposal → **Use 196** → "Using 196 bpm from your tracker (Indoor Rowing, 2024-10-25)", no proposal → typed 200 → "Using 200 bpm you typed" → cleared → proposal back → birth date → "Estimated 184 bpm from your age"; the cardio form's hint shows with a typed 150 and no number, and not with the estimate or on an intervals row. The only console error is the known favicon 404. Everything reset to NULL afterwards — the accept is Peter's to click.

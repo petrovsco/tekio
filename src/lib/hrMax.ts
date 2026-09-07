@@ -53,15 +53,56 @@ export function observedHrMax(cardio: CardioEntry[], sports: SportEntry[], date:
   return null
 }
 
+// ─── The number the app divides by (roadmap 060) ─────────────────────────────
+// The observed peak above is a proposal, never the number itself: the user
+// accepts it on the Profile, or types one from another device or a test, and
+// a sync never overwrites what they set. Without either, an age estimate.
+
+/** Where the stored HRmax came from: typed by the user, or the tracker peak they accepted. */
+export type HrMaxSource = 'typed' | 'tracker'
+
+/** 208 — the intercept of the Tanaka age formula (HRmax ≈ 208 − 0.7 × age), the default when the user has set no number; lowest RMSE of the age formulas in athletes (Tanaka 2001; Kasiak 2023: 9.2 bpm) and still ±9–11 bpm for one person (Martin 2025), so the Profile calls it an estimate; never 220 − age (Robergs & Landwehr 2002), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+export const HR_MAX_FORMULA_INTERCEPT = 208
+
+/** 0.7 — bpm of HRmax lost per year of age in the same formula (Tanaka 2001; within-person 0.7 bpm/yr, Gellish 2007), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+export const HR_MAX_FORMULA_SLOPE = 0.7
+
+/** Whole years from `birthDate` to `date`; null without a birth date, or for one not yet reached. */
+export function ageAt(birthDate: string | null | undefined, date: string = today()): number | null {
+  if (!birthDate || birthDate > date) return null
+  const b = new Date(`${birthDate}T00:00:00Z`)
+  const d = new Date(`${date}T00:00:00Z`)
+  if (Number.isNaN(b.getTime()) || Number.isNaN(d.getTime())) return null
+  let age = d.getUTCFullYear() - b.getUTCFullYear()
+  const beforeBirthday =
+    d.getUTCMonth() < b.getUTCMonth() || (d.getUTCMonth() === b.getUTCMonth() && d.getUTCDate() < b.getUTCDate())
+  return beforeBirthday ? age - 1 : age
+}
+
+/** The age estimate, rounded to a whole bpm; null without a birth date. */
+export function formulaHrMax(birthDate: string | null | undefined, date: string = today()): number | null {
+  const age = ageAt(birthDate, date)
+  return age == null ? null : Math.round(HR_MAX_FORMULA_INTERCEPT - HR_MAX_FORMULA_SLOPE * age)
+}
+
 /**
- * The HRmax the app divides by: the typed override when there is one, unless
- * a synced peak has since exceeded it by more than
- * {@link HR_MAX_REPLICATION_BPM} bpm — the heart settles the argument. Null
- * when neither exists.
+ * The HRmax the app divides by: the number the user set — typed, or the
+ * tracker peak they accepted — else the age estimate from their birth date,
+ * else null, and the typed-HR path stays off.
  */
-export function resolveHrMax(observed: ObservedHrMax | null, override: number | null | undefined): number | null {
-  if (override != null && override > 0) {
-    return observed != null && observed.value > override + HR_MAX_REPLICATION_BPM ? observed.value : override
-  }
-  return observed?.value ?? null
+export function resolveHrMax(stored: number | null | undefined, birthDate: string | null | undefined, date: string = today()): number | null {
+  if (stored != null && stored > 0) return stored
+  return formulaHrMax(birthDate, date)
+}
+
+/**
+ * The tracker peak the Profile offers: the observed peak when the user has
+ * no stored number, or when it sits more than {@link HR_MAX_REPLICATION_BPM}
+ * bpm above the one they have — offered again every time a higher one
+ * repeats. A lower peak is never proposed, and the estimate never blocks one.
+ */
+export function hrMaxProposal(observed: ObservedHrMax | null, stored: number | null | undefined): ObservedHrMax | null {
+  if (observed == null) return null
+  if (stored == null || stored <= 0) return observed
+  return observed.value > stored + HR_MAX_REPLICATION_BPM ? observed : null
 }

@@ -20,8 +20,9 @@ import { useAppStore } from '../../store/app'
 import { Card, SecTitle } from '../ui/Card'
 import { Inp } from '../ui/Input'
 import { Chip } from '../ui/Chip'
+import { Btn } from '../ui/Button'
 import { useHrMax } from '../../hooks/useHrMax'
-import { HR_MAX_REPLICATION_BPM, HR_MAX_WINDOW_MONTHS } from '../../lib/hrMax'
+import { HR_MAX_WINDOW_MONTHS, HR_MAX_FORMULA_INTERCEPT, HR_MAX_FORMULA_SLOPE } from '../../lib/hrMax'
 import { Icon, type IconName } from '../ui/Icon'
 import { Toggle } from '../ui/Fields'
 import { AssistantSettings } from './AssistantSettings'
@@ -102,21 +103,30 @@ export function ProfileTab() {
   const {
     sections, reorderSections, weekStartDay, setWeekStartDay,
     trackedMuscleGroupIds, setTrackedMuscleGroupIds,
-    hrMaxOverride, setHrMaxOverride,
+    setHrMaxStored, setBirthDate,
   } = usePrefs()
   const muscleGroups = useAppStore(s => s.muscleGroups)
   const [dataAction, setDataAction] = useState<'import' | 'export' | null>(null)
 
-  // The profile HRmax (roadmap 059): the observed peak is shown, the override
-  // is the one typed field, and the draft commits on blur or Enter.
-  const { observed, hrMax } = useHrMax()
+  // The profile HRmax (roadmap 060): the number the user set — typed here, or
+  // the tracker peak accepted here — else the age estimate. The typed draft
+  // commits on blur or Enter; a sync never writes the number itself.
+  const { observed, stored, birthDate, estimate, hrMax, source, proposal } = useHrMax()
   const [hrDraft, setHrDraft] = useState<string | null>(null)
   const commitHrMax = () => {
     if (hrDraft === null) return
     const n = Number.parseInt(hrDraft, 10)
-    setHrMaxOverride(Number.isFinite(n) && n > 0 ? n : null)
+    setHrMaxStored(Number.isFinite(n) && n > 0 ? n : null, 'typed')
     setHrDraft(null)
   }
+  const hrMaxStatus =
+    source === 'tracker' && stored
+      ? `Using ${stored.value} bpm from your tracker${observed?.value === stored.value ? ` (${observed.label}, ${observed.date})` : ''}.`
+      : source === 'typed' && stored
+        ? `Using ${stored.value} bpm you typed.`
+        : source === 'estimate'
+          ? `Estimated ${estimate} bpm from your age (${HR_MAX_FORMULA_INTERCEPT} − ${HR_MAX_FORMULA_SLOPE} × age, about ±10 bpm for one person) — a tracker peak or a typed number replaces it.`
+          : 'No number yet — add your birth date, or type a max heart rate from another device or a test.'
 
   const topMuscles = useMemo(
     () => muscleGroups.filter(g => !g.parentId).sort((a, b) => a.name.localeCompare(b.name)),
@@ -164,29 +174,42 @@ export function ProfileTab() {
       <Card>
         <SecTitle>Max heart rate</SecTitle>
         <p className="text-xs text-ink-2 mb-2.5 leading-[1.4]">
-          {observed
-            ? `Observed ${observed.value} bpm (${observed.label}, ${observed.date}) — the highest peak a second session came within ${HR_MAX_REPLICATION_BPM} bpm of in the last ${HR_MAX_WINDOW_MONTHS} months. `
-            : `No repeated peak in the last ${HR_MAX_WINDOW_MONTHS} months — one reading is never a maximum. `}
-          A typed average heart rate on a manual session is read against this number; set the watch to it too.
-          A chest-strap test typed below overrides it until a synced peak beats it by more than {HR_MAX_REPLICATION_BPM} bpm.
+          {hrMaxStatus}{' '}
+          {hrMax != null
+            ? 'A typed average heart rate on a manual session is read against it; set the watch to it too.'
+            : 'Until then a typed average heart rate on a manual session is not read.'}
         </p>
-        <div className="flex items-end gap-3">
-          <div className="w-28">
-            <Inp
-              label="Override (bpm)"
-              type="number"
-              inputMode="numeric"
-              min={1}
-              placeholder="—"
-              value={hrDraft ?? (hrMaxOverride == null ? '' : String(hrMaxOverride))}
-              onChange={e => setHrDraft(e.target.value)}
-              onBlur={commitHrMax}
-              onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
-            />
+        {/* The tracker's replicated peak is offered, never imposed: accepting
+            it writes the stored number, and it is offered again whenever a
+            higher one repeats (roadmap 060, forks B and C). */}
+        {proposal && (
+          <div className="flex items-center justify-between gap-3 border border-line rounded-[3px] px-2.5 py-2 mb-2.5">
+            <span className="text-xs text-ink leading-[1.4]">
+              Your tracker recorded {proposal.value} bpm twice in the last {HR_MAX_WINDOW_MONTHS} months ({proposal.label}, {proposal.date}).
+            </span>
+            <Btn small className="shrink-0" onClick={() => setHrMaxStored(proposal.value, 'tracker')}>
+              Use {proposal.value}
+            </Btn>
           </div>
-          <span className="text-xs text-ink-2 pb-2">
-            {hrMax != null ? `Reading typed heart rates against ${hrMax} bpm.` : 'No number yet — typed heart rates are not read.'}
-          </span>
+        )}
+        <div className="grid grid-cols-2 gap-2.5">
+          <Inp
+            label="Birth date"
+            type="date"
+            value={birthDate ?? ''}
+            onChange={e => { const v = e.target.value || null; if (v !== birthDate) setBirthDate(v) }}
+          />
+          <Inp
+            label="Another device or a test (bpm)"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            placeholder="—"
+            value={hrDraft ?? (stored == null ? '' : String(stored.value))}
+            onChange={e => setHrDraft(e.target.value)}
+            onBlur={commitHrMax}
+            onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
+          />
         </div>
       </Card>
 

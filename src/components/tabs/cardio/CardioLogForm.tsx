@@ -5,9 +5,11 @@ import { CARDIO_TYPES, CARDIO_FORMATS } from '../../../constants/app'
 import { Inp, SelEl } from '../../ui/Input'
 import { Toggle } from '../../ui/Fields'
 import { Btn } from '../../ui/Button'
+import { useHrMax } from '../../../hooks/useHrMax'
 import type { CardioType, CardioFormat } from '../../../types'
 
 export function CardioLogForm() {
+  const { hrMax } = useHrMax()
   const [type, setType] = useState<CardioType>('Running')
   const [date, setDate] = useState(today())
   const [duration, setDuration] = useState('')
@@ -74,15 +76,26 @@ export function CardioLogForm() {
             <p className="text-[11px] text-ink-2 mt-1 tabular-nums">{livePace}</p>
           )}
         </div>
-        <Inp
-          label="Avg HR (bpm, opt.)"
-          type="number"
-          value={avgHr}
-          onChange={e => setAvgHr(e.target.value)}
-          placeholder="145"
-          min="0"
-          step="1"
-        />
+        <div>
+          <Inp
+            label="Avg HR (bpm, opt.)"
+            type="number"
+            value={avgHr}
+            onChange={e => setAvgHr(e.target.value)}
+            placeholder="145"
+            min="0"
+            step="1"
+          />
+          {/* A typed HR is read as a share of the profile HRmax; without one
+              it is not read, and the fix lives on the Profile — said here,
+              where the question came up (P1, roadmap 060). An intervals row's
+              typed HR is not read either way, so no hint there. */}
+          {avgHr && hrMax == null && format !== 'intervals' && (
+            <p className="text-[11px] text-ink-2 mt-1">
+              Not read yet — add your birth date in Profile to read it against your max heart rate.
+            </p>
+          )}
+        </div>
         {/* Tapping the chosen format again clears it: "not stated" is a real
             answer, and most sessions are neither in particular. */}
         <Toggle

@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { observedHrMax, resolveHrMax, HR_MAX_WINDOW_MONTHS, HR_MAX_REPLICATION_BPM } from '../lib/hrMax'
+import {
+  observedHrMax, resolveHrMax, formulaHrMax, ageAt, hrMaxProposal,
+  HR_MAX_WINDOW_MONTHS, HR_MAX_REPLICATION_BPM, HR_MAX_FORMULA_INTERCEPT, HR_MAX_FORMULA_SLOPE,
+} from '../lib/hrMax'
 import type { CardioEntry, SportEntry } from '../types'
 
 const row = (date: string, maxHr: number | undefined, type: CardioEntry['type'] = 'Indoor Rowing'): CardioEntry =>
@@ -42,18 +45,58 @@ describe('observedHrMax — the replicated peak (059)', () => {
   })
 })
 
-describe('resolveHrMax — the typed override, and when the heart overrules it', () => {
-  const observed = { value: 196, date: '2024-10-25', label: 'Indoor Rowing' }
-  it('the override stands unless a synced peak exceeds it by more than 3 bpm', () => {
-    expect(resolveHrMax(observed, 200)).toBe(200)
-    expect(resolveHrMax(observed, 193)).toBe(193)
-    expect(resolveHrMax(observed, 192)).toBe(196)
-    expect(resolveHrMax(null, 185)).toBe(185)
+describe('formulaHrMax — the age estimate (060)', () => {
+  it('is Tanaka, 208 − 0.7 × age, rounded: 184 at 35, 180 at 40, 194 at 20', () => {
+    expect(HR_MAX_FORMULA_INTERCEPT).toBe(208)
+    expect(HR_MAX_FORMULA_SLOPE).toBe(0.7)
+    expect(formulaHrMax('1991-03-10', '2026-09-07')).toBe(184)
+    expect(formulaHrMax('1986-09-07', '2026-09-07')).toBe(180)
+    expect(formulaHrMax('2006-01-01', '2026-09-07')).toBe(194)
   })
-  it('without an override the observed peak is the number; without either there is none', () => {
-    expect(resolveHrMax(observed, null)).toBe(196)
-    expect(resolveHrMax(observed, undefined)).toBe(196)
-    expect(resolveHrMax(null, null)).toBeNull()
-    expect(resolveHrMax(observed, 0)).toBe(196)
+  it('counts whole years — the day before a birthday is still the younger age', () => {
+    expect(ageAt('1991-09-08', '2026-09-07')).toBe(34)
+    expect(ageAt('1991-09-07', '2026-09-07')).toBe(35)
+    expect(ageAt('1991-09-06', '2026-09-07')).toBe(35)
+  })
+  it('has nothing to say without a birth date, or for one in the future', () => {
+    expect(formulaHrMax(null, '2026-09-07')).toBeNull()
+    expect(formulaHrMax(undefined, '2026-09-07')).toBeNull()
+    expect(formulaHrMax('', '2026-09-07')).toBeNull()
+    expect(formulaHrMax('2027-01-01', '2026-09-07')).toBeNull()
+    expect(formulaHrMax('not a date', '2026-09-07')).toBeNull()
+  })
+})
+
+describe('resolveHrMax — the number the user set, else the estimate, else nothing (060)', () => {
+  const BIRTH = '1991-03-10'
+  it('a stored number wins over the estimate whatever its size', () => {
+    expect(resolveHrMax(196, BIRTH, '2026-09-07')).toBe(196)
+    expect(resolveHrMax(170, BIRTH, '2026-09-07')).toBe(170)
+  })
+  it('without one the birth date gives the estimate; without either there is none', () => {
+    expect(resolveHrMax(null, BIRTH, '2026-09-07')).toBe(184)
+    expect(resolveHrMax(undefined, BIRTH, '2026-09-07')).toBe(184)
+    expect(resolveHrMax(0, BIRTH, '2026-09-07')).toBe(184)
+    expect(resolveHrMax(null, null, '2026-09-07')).toBeNull()
+  })
+})
+
+describe('hrMaxProposal — the tracker peak is offered, never imposed (060)', () => {
+  const observed = { value: 196, date: '2024-10-25', label: 'Indoor Rowing' }
+  it('is offered when the user has no stored number, whatever the estimate says', () => {
+    expect(hrMaxProposal(observed, null)).toEqual(observed)
+    expect(hrMaxProposal(observed, undefined)).toEqual(observed)
+    expect(hrMaxProposal(observed, 0)).toEqual(observed)
+  })
+  it('is offered again only when it sits more than 3 bpm above the stored number', () => {
+    expect(hrMaxProposal(observed, 192)).toEqual(observed)
+    expect(hrMaxProposal(observed, 193)).toBeNull()
+    expect(hrMaxProposal(observed, 196)).toBeNull()
+    expect(hrMaxProposal(observed, 200)).toBeNull()
+  })
+  it('a lower peak is never proposed, and no peak proposes nothing', () => {
+    expect(hrMaxProposal({ ...observed, value: 190 }, 196)).toBeNull()
+    expect(hrMaxProposal(null, null)).toBeNull()
+    expect(hrMaxProposal(null, 185)).toBeNull()
   })
 })

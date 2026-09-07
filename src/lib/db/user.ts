@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WeekStartDay } from '../utils'
+import type { HrMaxSource } from '../hrMax'
 
 export async function getOrCreateUser(): Promise<void> {
   const { error } = await supabase
@@ -50,21 +51,42 @@ export async function updateTrackedMuscleGroupIds(ids: string[]): Promise<void> 
   if (error) throw error
 }
 
-/** The typed HRmax override (bpm), or null when the observed peak stands alone (roadmap 059). */
-export async function getHrMaxOverride(): Promise<number | null> {
+/** The HRmax the user set and where it came from, plus the birth date the age estimate needs (roadmap 060). */
+export interface HrMaxProfile {
+  hrMaxStored: number | null
+  hrMaxSource: HrMaxSource | null
+  birthDate: string | null
+}
+
+export async function getHrMaxProfile(): Promise<HrMaxProfile> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('hr_max_override')
+    .select('hr_max_override, hr_max_source, birth_date')
     .eq('id', USER_ID)
     .single()
   if (error) throw error
-  return data.hr_max_override == null ? null : Number(data.hr_max_override)
+  const value = data.hr_max_override == null ? null : Number(data.hr_max_override)
+  const source = data.hr_max_source === 'typed' || data.hr_max_source === 'tracker' ? data.hr_max_source : null
+  return {
+    hrMaxStored: value,
+    hrMaxSource: value == null ? null : source,
+    birthDate: data.birth_date ?? null,
+  }
 }
 
-export async function updateHrMaxOverride(value: number | null): Promise<void> {
+/** One stored number, last write wins: typing and accepting the tracker's peak write the same column. */
+export async function updateHrMax(value: number | null, source: HrMaxSource): Promise<void> {
   const { error } = await supabase
     .from('user_profiles')
-    .update({ hr_max_override: value })
+    .update({ hr_max_override: value, hr_max_source: value == null ? null : source })
+    .eq('id', USER_ID)
+  if (error) throw error
+}
+
+export async function updateBirthDate(value: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ birth_date: value })
     .eq('id', USER_ID)
   if (error) throw error
 }
