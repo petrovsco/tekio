@@ -394,13 +394,26 @@ export function adaptationCoverage(
   return out
 }
 
+/** One quality's state inside the window: nothing logged, some but not the
+ *  target, or the target reached. */
+export type CoverageState = 'untouched' | 'short' | 'on_target'
+
 /**
- * The seven sorted into the two states worth naming: `untouched` — no volume
- * at all inside the window — and `short` — some volume, but not on target
- * (`met` false). Both in ADAPTATIONS order. A quality on target is in neither.
- * This is the one split Home's "what is missing" line and the Adaptations
- * header both print (roadmap 062); it reads `volume` and `met`, so it makes no
- * claim of its own.
+ * The one word a quality gets inside the window. Everything on screen that
+ * names a quality's state calls this — the "what is missing" sentence, the
+ * Adaptations header, and Home's whole-body squares (roadmap 063) — so two
+ * surfaces can no longer reach opposite words through two thresholds. It reads
+ * `volume` and `met` off the coverage summary and makes no claim of its own.
+ */
+export function coverageState(c: AdaptationSummary): CoverageState {
+  if (c.volume === 0) return 'untouched'
+  return c.met ? 'on_target' : 'short'
+}
+
+/**
+ * The seven sorted into the two states worth naming, both in ADAPTATIONS order;
+ * a quality on target is in neither. This is the one split Home's "what is
+ * missing" line and the Adaptations header both print (roadmap 062).
  */
 export function splitCoverage(
   coverage: Record<Adaptation, AdaptationSummary>,
@@ -408,9 +421,9 @@ export function splitCoverage(
   const untouched: Adaptation[] = []
   const short: Adaptation[] = []
   for (const a of ADAPTATIONS) {
-    const c = coverage[a.key]
-    if (c.volume === 0) untouched.push(a.key)
-    else if (!c.met) short.push(a.key)
+    const state = coverageState(coverage[a.key])
+    if (state === 'untouched') untouched.push(a.key)
+    else if (state === 'short') short.push(a.key)
   }
   return { untouched, short }
 }

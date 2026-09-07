@@ -9,8 +9,8 @@ import {
 import { useHrMax } from '../../../hooks/useHrMax'
 import { cycleInfo, today } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
-import { GapMap, muscleShort } from './GapMap'
-import { adaptationCoverage, GAP_CUTOFF } from '../../../lib/adaptations'
+import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
+import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { coverageLine } from '../adaptations/labels'
 import type { FoldKind } from './FoldSheet'
 
@@ -224,6 +224,13 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
           : { kind: 'blood', label: 'BLOOD', value: '—', note: 'tap to log' },
   ]
 
+  // The square reads coverage, the note reads recency (roadmap 063). Both were
+  // once thresholds: the square used QUALITY_STALENESS_DAYS (14/28/14) while
+  // the line above it used the 14-day coverage window, so the same quality
+  // could be a filled chip under "Untouched: anaerobic". The fill now comes
+  // from the same `coverage` call the line makes — sessions ÷ the window's
+  // target, on the map's ramp — so the two cannot disagree. `N d ago` stays
+  // because it is the fact the line cannot state.
   const qualityTiles = ([
     { key: 'vo2max', name: 'VO₂MAX' },
     { key: 'anaerobic_capacity', name: 'ANAEROBIC' },
@@ -231,13 +238,20 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
   ] as const).map(meta => {
     const q = qualities.find(s => s.key === meta.key)
     if (zeroData || !q) return { ...meta, note: '—', fill: '#ffffff', edge: '#e2e2e0' }
-    return {
-      ...meta,
-      note: q.daysSince === null ? 'never' : `${q.daysSince} d ago`,
-      // Same polarity as the map: trained fills with ink, untouched gets the accent edge.
-      fill: q.stale ? '#ffffff' : '#1f1f1f',
-      edge: q.stale ? '#c2410c' : '#1f1f1f',
-    }
+    const c = coverage[meta.key]
+    const note = q.daysSince === null ? 'never' : `${q.daysSince} d ago`
+    // Same polarity as the map: untouched is white with the accent edge, and
+    // work accumulates ink. The word comes from `coverageState`, the same call
+    // the line makes, so the ink band means exactly what the line means by "on
+    // target" — a muscle reaches that at GAP_CUTOFF, a cardio quality only at
+    // its whole session target, and reading the raw ramp here would ink a
+    // square at 0.75 under a line still calling that quality short.
+    const state = coverageState(c)
+    if (state === 'untouched') return { ...meta, note, fill: '#ffffff', edge: '#c2410c' }
+    const step = state === 'on_target'
+      ? 3
+      : Math.min(rampStep(c.sessionTarget > 0 ? c.volume / c.sessionTarget : 1), 2)
+    return { ...meta, note, fill: RAMP[step], edge: step === 3 ? '#1f1f1f' : '#c9c9c7' }
   })
 
   return (
@@ -328,7 +342,7 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
       <div className="mt-2 bg-white border border-line rounded-[3px] px-2.5 pt-[7px] pb-2">
         <div className="flex items-baseline gap-1.5 mb-1.5">
           <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">WHOLE-BODY QUALITIES</span>
-          <span className="text-[9px] text-ink-4">— all cardio · one state each</span>
+          <span className="text-[9px] text-ink-4">— all cardio · fill = {MUSCLE_WINDOW_DAYS} d coverage</span>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           {qualityTiles.map(q => (

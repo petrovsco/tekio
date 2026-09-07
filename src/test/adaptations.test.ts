@@ -19,6 +19,7 @@ import {
   resolveExerciseAdaptation,
   adaptationCoverage,
   splitCoverage,
+  coverageState,
   buildMuscleStatusTree,
   muscleStimulus,
   weightSetsIn,
@@ -600,6 +601,23 @@ describe('splitCoverage / coverageLine — the one untouched/short split Home an
   it('a quality at zero is untouched, never short, whatever met says; on target is in neither', () => {
     expect(splitCoverage(coverage({}))).toEqual({ untouched: [...ADAPTATIONS.map(a => a.key)], short: [] })
     expect(splitCoverage(allMet)).toEqual({ untouched: [], short: [] })
+  })
+
+  it('gives Home’s whole-body square the same word the line prints (063)', () => {
+    // The square used to read staleness (14/28/14 d) while the line read
+    // coverage, so a quality could be inked under "Untouched: …". Both now go
+    // through coverageState, so agreement is by construction, not by luck.
+    const { untouched, short } = splitCoverage(mixed)
+    for (const a of ADAPTATIONS) {
+      const state = coverageState(mixed[a.key])
+      expect(untouched.includes(a.key)).toBe(state === 'untouched')
+      expect(short.includes(a.key)).toBe(state === 'short')
+    }
+    // The 0.70 ramp cutoff is not the line's cutoff: three of a four-session
+    // target is 0.75 — the map's top band — and still "short".
+    expect(coverageState(summary('endurance', 3, false))).toBe('short')
+    expect(coverageState(summary('endurance', 4, true))).toBe('on_target')
+    expect(coverageState(summary('endurance', 0, false))).toBe('untouched')
   })
 
   it('prints one sentence per side in prose names, or the all-clear with the window', () => {

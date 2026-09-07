@@ -1,7 +1,7 @@
 # Roadmap: Should Home and Adaptations be one screen?
 
 **Label:** feature
-**Status:** done — closed 2026-09-07 (v2.0.39). Verdict: keep both, sharpen the split — Home answers, Adaptations explains; the seven-quality sentence now prints on both screens from one helper, the hardcoded power line is gone, and Home still fits one 900 px screen. The one leftover (the whole-body strip and the new line read one question two ways) is [063](../063-home-whole-body-strip-vs-line.md). Raised by Peter during the exit-condition walk on 2026-09-07 ([051](051-exit-condition-walk.md)). Absorbed [061](061-home-names-missing-muscle-quality.md) on 2026-09-07 (Peter's call): the quality Home cannot name is now a requirement of whatever shape this brief lands on, not a separate patch in front of it.
+**Status:** done — closed 2026-09-07 (v2.0.39). Verdict: keep both, sharpen the split — Home answers, Adaptations explains; the seven-quality sentence now prints on both screens from one helper, the hardcoded power line is gone, and Home still fits one 900 px screen. The one leftover (the whole-body strip and the new line read one question two ways) is [063](063-home-whole-body-strip-vs-line.md). Raised by Peter during the exit-condition walk on 2026-09-07 ([051](051-exit-condition-walk.md)). Absorbed [061](061-home-names-missing-muscle-quality.md) on 2026-09-07 (Peter's call): the quality Home cannot name is now a requirement of whatever shape this brief lands on, not a separate patch in front of it.
 **Release:** 2.1.0
 
 ## Why — the observation this starts from
@@ -223,7 +223,7 @@ twice; and the measured cost was one extra 9 px line, with Home still on one
 screen. What it leaves behind: on a day like today the chip and the line both
 call VO₂max and anaerobic untouched, and on other days they can disagree
 (anaerobic's staleness window is 28 days, the coverage window 14). That is
-[063](../063-home-whole-body-strip-vs-line.md).
+[063](063-home-whole-body-strip-vs-line.md).
 
 **Zero data:** the line reads `ALL 7 QUALITIES — no data yet` behind the same
 guard the power line used. Verified by reading the code path and the helper's
@@ -283,4 +283,4 @@ kickoff.
       (removing or re-scoping the Adaptations destination) carries into a
       follow-up brief and this one closes — nothing structural is left under
       sharpen (the destination stays, as the explain half); the one leftover
-      is the strip-versus-line question, [063](../063-home-whole-body-strip-vs-line.md).
+      is the strip-versus-line question, [063](063-home-whole-body-strip-vs-line.md).

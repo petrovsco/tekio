@@ -72,9 +72,12 @@ Muscle fill by share of the cycle target:
 `#1f1f1f` (70% and up). With no data at all, everything sits at `#eeeeec`.
 
 Body outline `#c9c9c7` at 1px; muscle shapes separate with a 0.7px white
-stroke. A whole-body quality is one square: untouched = white fill with an
-accent edge; no data = white fill with a `#e2e2e0` edge; trained = ink,
-same polarity as the map.
+stroke. A whole-body quality is one square, read on the same ramp: untouched =
+white fill with an accent edge; no data = white fill with a `#e2e2e0`
+edge; trained = the ramp band for its share of the window's session
+target, edged `#c9c9c7` below the top band and `#1f1f1f` at it. Same
+polarity and same scale as the map, so a square and a muscle never
+disagree.
 
 ## 5. Type
 
