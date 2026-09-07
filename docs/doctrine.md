@@ -153,6 +153,18 @@ Until then, new sections don't get built and the shelf doesn't unshelve.
 This is the sentence that ends the austerity — replace it if it's wrong, but
 don't leave it blank.
 
+**Walked 2026-09-07 — not yet met.** Two of the three questions passed cold, on
+a real day, against real data: the under-stimulated muscles and the
+push-or-rest call were both on the screen inside five seconds and both correct
+at source. The third failed. Home can name at most four of the seven
+adaptations — the three whole-body ones, plus power, printed by a line
+hardcoded to power alone. Strength, hypertrophy and muscular endurance appear
+nowhere, because Home's body map counts every set whatever its rep band. It
+read correctly that morning only because power happened to be the one
+muscle-linked quality at zero. The austerity therefore holds. Record of the
+walk and the fix:
+[roadmap/done/051-exit-condition-walk.md](roadmap/done/051-exit-condition-walk.md).
+
 ## 7. What this doctrine does not cover
 
 - **Is the claim true?** → [`/ground`](../.claude/skills/ground/SKILL.md) + the

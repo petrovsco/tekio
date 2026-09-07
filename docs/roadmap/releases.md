@@ -24,8 +24,14 @@ only on disk until a vacuum runs.
 
 In running order:
 
-1. [051](051-exit-condition-walk.md) — the exit-condition walk. It runs
-   first because its verdict decides whether 2.1.0 may add anything.
+1. [051](done/051-exit-condition-walk.md) — the exit-condition walk. Walked
+   2026-09-07: the muscle read and the push-or-rest call passed, the
+   adaptation read did not, so doctrine §6 is **not met** and the austerity
+   holds — 2.1.0 adds no sections. Its two children run next:
+   [061](061-home-names-missing-muscle-quality.md) (Home names the missing
+   muscle-linked quality — the miss itself) and, behind it,
+   [062](062-home-adaptations-one-screen.md) (whether Home and Adaptations
+   should be one screen).
 2. [024](024-staging-shared-database-safety.md) — the migration policy
    (Part 2). [025](done/025-release-blocked-schema-drops.md) closed on
    2026-09-05; the release sweep 024 once carried is withdrawn, because
