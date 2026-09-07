@@ -1,16 +1,22 @@
 # Drawing the brand mark
 
+> **This folder is temporary and gets deleted.** It is scaffolding for choosing
+> a mark, not something the app needs. It lives in the repo only so a drawing
+> round survives the session that ran the previous one — sessions are cheap,
+> redrawing this library is not. The moment a mark is chosen and shipped, the
+> whole folder goes: that is a tracked acceptance box on
+> `docs/roadmap/038-favicon-and-app-icon.md`, not a good intention. Git
+> remembers it if a later round ever needs it back.
+>
+> Nothing worth keeping is only here — the findings below also live in the
+> brief, which is what survives.
+
 Tooling for designing Tekiō's favicon and app icon. It is a design bench, not
 app code: nothing here is imported by `src/`, nothing ships in the bundle, and
 the build does not type-check it.
 
-It exists because the mark has now been through seven rounds, and each round is
-cheap only if the drawing library survives the last one. What lives here is the
-part that took the longest to get right — how to draw a tapering, curling
-tentacle that still looks like one at 16 pixels.
-
 The decision record for the mark itself is
-[docs/roadmap/038-favicon-and-app-icon.md](../../docs/roadmap/038-favicon-and-app-icon.md).
+`docs/roadmap/038-favicon-and-app-icon.md`.
 
 ## Running a round
 

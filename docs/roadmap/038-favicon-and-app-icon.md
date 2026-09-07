@@ -12,8 +12,8 @@
   and it is what is live right now.
 - **2026-09-07, same evening** — rounds 7a–7c, a new concept: **an octopus
   forming the Ō** of Tekiō. Nothing shipped; the vessel is still the live icon.
-  Findings under *Round 7*. The drawing tooling moved into
-  [scripts/mark/](../../scripts/mark/README.md) so it survives the session.
+  Findings under *Round 7*. The drawing tooling moved into `scripts/mark/` so
+  it survives the session — **temporarily**; see *The bench is scaffolding*.
 - **Next** — round 7d, specified below: eight suckers forming the O.
 
 [index.html](../../index.html) declares no icon and there is no `public/`
@@ -89,13 +89,27 @@ Peter, 2026-09-07: *"I want to experiment with a different concept, but for that
 I will need higher quality design. Octopus making an Ō, either with head or with
 tentacles."* The Ō is the capital O with the bar over it, from the name Tekiō.
 
-**The quality fix came first, and it is the reusable part.** The earlier rounds
-drew tentacles by guessing bezier control points, which is why a hand-drawn
-chameleon collapsed into a blob. Arms are now generated: sample a centreline,
-push it out sideways by a width that shrinks along the length, and run a smooth
-closed spline round the resulting outline. That library is
-[scripts/mark/](../../scripts/mark/README.md), with the accumulated 16px rules
-in its README.
+**The quality fix came first.** The earlier rounds drew tentacles by guessing
+bezier control points, which is why a hand-drawn chameleon collapsed into a
+blob. Arms are now generated: sample a centreline, push it out sideways by a
+width that shrinks along the length, and run a smooth closed spline round the
+resulting outline. That library is `scripts/mark/`.
+
+### The bench is scaffolding, and it is deleted at the end
+
+Peter, 2026-09-07: *"I don't want to have it durable, no benefit of having that
+in the repo. Make sure we clean that up when we have the final variant."*
+
+`scripts/mark/` is in the repo for one reason only — a drawing round is cheap
+only if the library survives the session that ran the previous one, and a
+session scratchpad does not. It is not app code: nothing in `src/` imports it,
+nothing ships in the bundle, `tsc` does not see it, and it is deliberately kept
+out of `check:docs` so that removing it later breaks nothing.
+
+The moment a mark is chosen and shipped, the whole folder goes — that is the
+acceptance box below, so it happens rather than being remembered. Git keeps it
+if a later round ever wants it back. Nothing of lasting value is only in there:
+the findings are in this brief, which is what survives.
 
 Three rounds, about 34 concepts, and one structural finding per round.
 
@@ -205,6 +219,13 @@ sucker treatment wins inside it.
       `node scripts/mark/bbox.mjs public/favicon.svg` before it ships, both
       `public/favicon.svg` and `public/apple-touch-icon.png` replaced, and
       *What shipped* above rewritten to describe the mark that is actually live.
+- [ ] `scripts/mark/` is deleted once the mark is settled — the whole folder,
+      in the same commit that ships the winner (or, if the vessel stays, as soon
+      as Peter says so). Check first that every finding worth keeping is written
+      into *Round 7* above, because the folder's README is the only other copy.
+      Nothing else references it: it is out of `check:docs` on purpose and no
+      link in `docs/` points at it, so the deletion is `git rm -r` and nothing
+      more.
 - [ ] The tab icon is visible on staging and production. **Peter's to tick** —
       both sites sit behind the cookie gate whose credentials are Vercel
       Secrets, so no session here can open them. Staging shows it on the next
