@@ -49,3 +49,22 @@ export async function updateTrackedMuscleGroupIds(ids: string[]): Promise<void> 
     .eq('id', USER_ID)
   if (error) throw error
 }
+
+/** The typed HRmax override (bpm), or null when the observed peak stands alone (roadmap 059). */
+export async function getHrMaxOverride(): Promise<number | null> {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('hr_max_override')
+    .eq('id', USER_ID)
+    .single()
+  if (error) throw error
+  return data.hr_max_override == null ? null : Number(data.hr_max_override)
+}
+
+export async function updateHrMaxOverride(value: number | null): Promise<void> {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ hr_max_override: value })
+    .eq('id', USER_ID)
+  if (error) throw error
+}

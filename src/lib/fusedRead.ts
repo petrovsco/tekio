@@ -205,14 +205,16 @@ export interface QualityState {
 
 /**
  * One state per whole-body quality (vo2max / endurance / anaerobic_capacity),
- * judged against its grounded staleness window. Cardio classifies via Training
- * Effect (multi-quality); a sport session counts by duration, defaulting to
- * VO₂max — the typical intermittent-sport stimulus.
+ * judged against its grounded staleness window. A session credits what its
+ * Garmin data says it trained; a manual cardio row falls to the typed-HR path
+ * against `hrMax` (roadmap 059) and then to the duration floor; a hand-logged
+ * match is endurance by convention (roadmap 005).
  */
 export function qualityStates(
   cardio: CardioEntry[],
   sports: SportEntry[],
   date: string = today(),
+  hrMax?: number | null,
 ): QualityState[] {
   const last: Partial<Record<string, string>> = {}
   const feed = (q: string, d: string) => {
@@ -222,7 +224,7 @@ export function qualityStates(
   }
   for (const c of cardio) {
     if (c.date > date) continue
-    for (const a of classifyCardioAdaptations(c)) feed(a, c.date)
+    for (const a of classifyCardioAdaptations(c, hrMax)) feed(a, c.date)
   }
   for (const s of sports) {
     if (s.date > date) continue

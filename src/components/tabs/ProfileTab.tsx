@@ -18,7 +18,10 @@ import { useMemo, useState } from 'react'
 import { usePrefs } from '../../store/prefs'
 import { useAppStore } from '../../store/app'
 import { Card, SecTitle } from '../ui/Card'
+import { Inp } from '../ui/Input'
 import { Chip } from '../ui/Chip'
+import { useHrMax } from '../../hooks/useHrMax'
+import { HR_MAX_REPLICATION_BPM, HR_MAX_WINDOW_MONTHS } from '../../lib/hrMax'
 import { Icon, type IconName } from '../ui/Icon'
 import { Toggle } from '../ui/Fields'
 import { AssistantSettings } from './AssistantSettings'
@@ -99,9 +102,21 @@ export function ProfileTab() {
   const {
     sections, reorderSections, weekStartDay, setWeekStartDay,
     trackedMuscleGroupIds, setTrackedMuscleGroupIds,
+    hrMaxOverride, setHrMaxOverride,
   } = usePrefs()
   const muscleGroups = useAppStore(s => s.muscleGroups)
   const [dataAction, setDataAction] = useState<'import' | 'export' | null>(null)
+
+  // The profile HRmax (roadmap 059): the observed peak is shown, the override
+  // is the one typed field, and the draft commits on blur or Enter.
+  const { observed, hrMax } = useHrMax()
+  const [hrDraft, setHrDraft] = useState<string | null>(null)
+  const commitHrMax = () => {
+    if (hrDraft === null) return
+    const n = Number.parseInt(hrDraft, 10)
+    setHrMaxOverride(Number.isFinite(n) && n > 0 ? n : null)
+    setHrDraft(null)
+  }
 
   const topMuscles = useMemo(
     () => muscleGroups.filter(g => !g.parentId).sort((a, b) => a.name.localeCompare(b.name)),
@@ -144,6 +159,35 @@ export function ProfileTab() {
           value={weekStartDay}
           onPick={setWeekStartDay}
         />
+      </Card>
+
+      <Card>
+        <SecTitle>Max heart rate</SecTitle>
+        <p className="text-xs text-ink-2 mb-2.5 leading-[1.4]">
+          {observed
+            ? `Observed ${observed.value} bpm (${observed.label}, ${observed.date}) — the highest peak a second session came within ${HR_MAX_REPLICATION_BPM} bpm of in the last ${HR_MAX_WINDOW_MONTHS} months. `
+            : `No repeated peak in the last ${HR_MAX_WINDOW_MONTHS} months — one reading is never a maximum. `}
+          A typed average heart rate on a manual session is read against this number; set the watch to it too.
+          A chest-strap test typed below overrides it until a synced peak beats it by more than {HR_MAX_REPLICATION_BPM} bpm.
+        </p>
+        <div className="flex items-end gap-3">
+          <div className="w-28">
+            <Inp
+              label="Override (bpm)"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              placeholder="—"
+              value={hrDraft ?? (hrMaxOverride == null ? '' : String(hrMaxOverride))}
+              onChange={e => setHrDraft(e.target.value)}
+              onBlur={commitHrMax}
+              onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
+            />
+          </div>
+          <span className="text-xs text-ink-2 pb-2">
+            {hrMax != null ? `Reading typed heart rates against ${hrMax} bpm.` : 'No number yet — typed heart rates are not read.'}
+          </span>
+        </div>
       </Card>
 
       <Card>

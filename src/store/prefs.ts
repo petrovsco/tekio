@@ -3,6 +3,7 @@ import type { SectionConfig } from '../lib/db/sectionConfig'
 import { loadSectionConfig, updateSectionField, saveSectionConfig } from '../lib/db/sectionConfig'
 import {
   getWeekStartDay, updateWeekStartDay, getTrackedMuscleGroupIds, updateTrackedMuscleGroupIds,
+  getHrMaxOverride, updateHrMaxOverride,
 } from '../lib/db/user'
 import type { WeekStartDay } from '../lib/utils'
 
@@ -11,23 +12,27 @@ interface PrefsStore {
   weekStartDay: WeekStartDay
   /** Muscle-group ids counted toward adaptation completion. Empty = count all. */
   trackedMuscleGroupIds: string[]
+  /** Typed HRmax (bpm) standing in for a chest-strap test; null = the observed peak alone (roadmap 059). */
+  hrMaxOverride: number | null
   loadPrefs: () => Promise<void>
   setSection: (key: string, patch: Partial<Pick<SectionConfig, 'showInMenu'>>) => Promise<void>
   reorderSections: (newOrder: string[]) => Promise<void>
   setWeekStartDay: (value: WeekStartDay) => Promise<void>
   setTrackedMuscleGroupIds: (ids: string[]) => Promise<void>
+  setHrMaxOverride: (value: number | null) => Promise<void>
 }
 
 export const usePrefs = create<PrefsStore>((set, get) => ({
   sections: [],
   weekStartDay: 'monday',
   trackedMuscleGroupIds: [],
+  hrMaxOverride: null,
 
   loadPrefs: async () => {
-    const [sections, weekStartDay, trackedMuscleGroupIds] = await Promise.all([
-      loadSectionConfig(), getWeekStartDay(), getTrackedMuscleGroupIds(),
+    const [sections, weekStartDay, trackedMuscleGroupIds, hrMaxOverride] = await Promise.all([
+      loadSectionConfig(), getWeekStartDay(), getTrackedMuscleGroupIds(), getHrMaxOverride(),
     ])
-    set({ sections, weekStartDay, trackedMuscleGroupIds })
+    set({ sections, weekStartDay, trackedMuscleGroupIds, hrMaxOverride })
   },
 
   setSection: async (key, patch) => {
@@ -59,5 +64,10 @@ export const usePrefs = create<PrefsStore>((set, get) => ({
   setTrackedMuscleGroupIds: async (ids) => {
     set({ trackedMuscleGroupIds: ids })
     await updateTrackedMuscleGroupIds(ids)
+  },
+
+  setHrMaxOverride: async (value) => {
+    set({ hrMaxOverride: value })
+    await updateHrMaxOverride(value)
   },
 }))

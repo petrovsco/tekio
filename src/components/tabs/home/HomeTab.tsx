@@ -5,6 +5,7 @@ import {
   donationStatus, waterStatus, fusedVerdict, powerSetCount, daysBetween,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
+import { useHrMax } from '../../../hooks/useHrMax'
 import { cycleInfo, today } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort } from './GapMap'
@@ -132,7 +133,8 @@ export function HomeTab({ setTab }: { setTab: (t: string) => void }) {
     () => rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF),
     [states],
   )
-  const qualities = useMemo(() => qualityStates(cardio, sports), [cardio, sports])
+  const { hrMax } = useHrMax()
+  const qualities = useMemo(() => qualityStates(cardio, sports, undefined, hrMax), [cardio, sports, hrMax])
   const sys = useMemo(() => systemicReadiness(sleep), [sleep])
   const don = useMemo(() => donationStatus(donations), [donations])
   const wat = useMemo(() => waterStatus(water), [water])

@@ -85,7 +85,7 @@ stays checkable if the zones are stored.
 ## Out of scope
 
 - A typed avg HR on a hand-logged match as a share of HRmax —
-  [059](../059-profile-hrmax-typed-hr-path.md).
+  [059](059-profile-hrmax-typed-hr-path.md).
 - A singles / doubles distinction (D36: alike until a verified doubles study
   exists).
 - Any Garmin type other than `tennis_v2` (the sync's `SPORT_TYPE_KEYS`).

@@ -103,12 +103,14 @@ export function classifyGarminIntensity(entry: GarminIntensity): Adaptation[] | 
  *    4×4 protocol.
  * 2. A steady or unstated row reads its Garmin data through
  *    {@link classifyGarminIntensity}.
- * 3. With no intensity data, ≥ {@link ENDURANCE_FLOOR_MIN} min is endurance.
+ * 3. With no Garmin data, a typed average HR against the profile HRmax picks
+ *    the bucket ({@link classifyTypedHr}, roadmap 059).
+ * 4. With no intensity data at all, ≥ {@link ENDURANCE_FLOOR_MIN} min is endurance.
  *
  * Anaerobic TE alone never awards anaerobic capacity: Firstbeat's "anaerobic"
  * is any work above VO₂max intensity, Tekiō's is 20 s–2 min all-out repeats.
  */
-export function classifyCardioAdaptations(entry: CardioEntry): Adaptation[] {
+export function classifyCardioAdaptations(entry: CardioEntry, hrMax?: number | null): Adaptation[] {
   if (entry.format === 'intervals') {
     if (entry.boutSeconds != null) return entry.boutSeconds <= ANAEROBIC_BOUT_MAX_S ? ['anaerobic_capacity'] : ['vo2max']
     const z5 = z5Minutes(entry)
@@ -117,12 +119,12 @@ export function classifyCardioAdaptations(entry: CardioEntry): Adaptation[] {
     if (hasTe && (entry.anaerobicTe ?? 0) > (entry.aerobicTe ?? 0)) return ['anaerobic_capacity']
     return ['vo2max']
   }
-  return classifyGarminIntensity(entry) ?? (entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : [])
+  return classifyGarminIntensity(entry) ?? classifyTypedHr(entry, hrMax) ?? (entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : [])
 }
 
 /** The single adaptation a session credits, or null when it credits none (first of {@link classifyCardioAdaptations}). */
-export function classifyCardio(entry: CardioEntry): Adaptation | null {
-  return classifyCardioAdaptations(entry)[0] ?? null
+export function classifyCardio(entry: CardioEntry, hrMax?: number | null): Adaptation | null {
+  return classifyCardioAdaptations(entry, hrMax)[0] ?? null
 }
 
 /** 'endurance' — a tennis match is ~70–75 % HRmax, ~52 % V̇O₂max, ~77 % of time below VT1 and ~3 % above VT2 with 5–10 s rallies (Baiget 2015; Ferrauti 2001; Fernandez 2006): aerobic-base work, not VO₂max or anaerobic; convention, singles and doubles alike, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
@@ -328,6 +330,8 @@ export function adaptationCoverage(
      * to the built-in defaults on each adaptation's metadata.
      */
     targets?: Partial<Record<Adaptation, { weeklyMuscleTarget: number; weeklySessionTarget: number }>>
+    /** The profile HRmax (roadmap 059) a typed average HR on a manual cardio row is read against. */
+    hrMax?: number | null
   },
 ): Record<Adaptation, AdaptationSummary> {
   const { weights, cardio, sports, exerciseMuscles, muscleGroups, from, overrides, targets } = args
@@ -347,7 +351,7 @@ export function adaptationCoverage(
   // VO₂max + anaerobic) when several systems each got a real Training Effect.
   for (const c of cardio) {
     if (!inRange(c.date, from, date)) continue
-    for (const a of classifyCardioAdaptations(c)) volume[a] += 1
+    for (const a of classifyCardioAdaptations(c, args.hrMax)) volume[a] += 1
   }
 
   // Sport sessions count as cardio work — a match is endurance (roadmap 005).
@@ -437,3 +441,46 @@ export function totalAdaptationVolume(cov: Record<Adaptation, AdaptationSummary>
 }
 
 export { ADAPTATIONS, ADAPTATION_MAP }
+
+// ── The typed-HR path (roadmap 059) — its rule and two cuts are docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding ──
+
+/** 83 — % of HRmax at or below which a typed average HR on a steady row is endurance work: Tønnessen's Z2 is 74–83 % HRmax (Stöggl & Sperlich 2015) and 84–88 % is the threshold band — a label (057), never a bucket — so this cut moves no credit on its own; a ±5 % band, not a line (Jamnick 2020), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+export const HR_ENDURANCE_MAX_PCT = 83
+
+/** 89 — % of HRmax at or above which a typed average HR on a steady row is VO₂max work: Tønnessen's Z4 floor (89 %), Garmin's Z5 line (90 %) and Buchheit & Laursen 2013's ≥ 90 % criterion coincide, so one cut serves this path and the Z5 dose (row 6.4); steady 85 % work raised V̇O₂max less than intervals (Helgerud 2007), which is why the band below files as endurance, see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+export const HR_VO2MAX_MIN_PCT = 89
+
+export type TypedHrBand = 'endurance' | 'threshold' | 'vo2max'
+
+/**
+ * The band a typed average HR sits in against the profile HRmax, in whole
+ * percent so the edges match the source's integer bands (Z2 ≤ 83, Z3 84–88,
+ * Z4 ≥ 89). Null when either number is missing — the path never divides by a
+ * guess (059 decision 2).
+ */
+export function typedHrBand(avgHr: number | undefined, hrMax: number | null | undefined): TypedHrBand | null {
+  if (avgHr == null || avgHr <= 0 || hrMax == null || hrMax <= 0) return null
+  const pct = Math.round((100 * avgHr) / hrMax)
+  if (pct >= HR_VO2MAX_MIN_PCT) return 'vo2max'
+  return pct > HR_ENDURANCE_MAX_PCT ? 'threshold' : 'endurance'
+}
+
+/**
+ * What a steady/unstated row with no Garmin data but a typed average HR
+ * credits (005 run B, built in 059). The HR picks the bucket; the floors the
+ * synced path already uses decide the credit: ≥ {@link HR_VO2MAX_MIN_PCT} % is
+ * VO₂max when the row is at least {@link VO2MAX_Z5_MIN} min — a steady row's
+ * average holds for its whole length, so its minutes at ≥ 90 % are its
+ * duration and the same dose applies — and anything below is endurance at the
+ * {@link ENDURANCE_FLOOR_MIN} floor, threshold band included (that band is a
+ * label, 057). Null when the path does not apply, so the caller falls through
+ * to the duration floor. Never read on an `intervals` row — the average of a
+ * 4×4 is meaningless — and never on a sport row, which stays endurance (059
+ * decision 4).
+ */
+export function classifyTypedHr(entry: Pick<CardioEntry, 'avgHr' | 'duration'>, hrMax?: number | null): Adaptation[] | null {
+  const band = typedHrBand(entry.avgHr, hrMax)
+  if (band == null) return null
+  if (band === 'vo2max') return entry.duration >= VO2MAX_Z5_MIN ? ['vo2max'] : []
+  return entry.duration >= ENDURANCE_FLOOR_MIN ? ['endurance'] : []
+}

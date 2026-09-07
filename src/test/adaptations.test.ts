@@ -9,6 +9,10 @@ import {
   ANAEROBIC_BOUT_MAX_S,
   VO2MAX_Z5_MIN,
   SPORT_DEFAULT_ADAPTATION,
+  typedHrBand,
+  classifyTypedHr,
+  HR_ENDURANCE_MAX_PCT,
+  HR_VO2MAX_MIN_PCT,
   resolveExerciseAdaptation,
   adaptationCoverage,
   buildMuscleStatusTree,
@@ -92,6 +96,51 @@ describe('classifyCardio — no intensity data (005 run B)', () => {
   })
 })
 
+// ── The typed-HR path (005 run B, built in 059) ───────────────────────────────
+
+describe('typedHrBand / classifyTypedHr — a typed average HR against the profile HRmax (059)', () => {
+  const HRMAX = 196 // the user's replicated observed peak on 2026-09-07
+  const c = (duration: number, avgHr?: number, extra: Partial<CardioEntry> = {}): CardioEntry =>
+    ({ id: 'x', date: '2025-01-01', type: 'Indoor Rowing', duration, avgHr, ...extra })
+  it('bands in whole percent at the grounded cuts: ≤ 83 endurance, 84–88 threshold, ≥ 89 VO₂max', () => {
+    expect(HR_ENDURANCE_MAX_PCT).toBe(83)
+    expect(HR_VO2MAX_MIN_PCT).toBe(89)
+    expect(typedHrBand(163, HRMAX)).toBe('endurance')   // 83.2 % → 83
+    expect(typedHrBand(164, HRMAX)).toBe('threshold')   // 83.7 % → 84
+    expect(typedHrBand(173, HRMAX)).toBe('threshold')   // 88.3 % → 88
+    expect(typedHrBand(174, HRMAX)).toBe('vo2max')      // 88.8 % → 89
+    expect(typedHrBand(120, HRMAX)).toBe('endurance')   // no lower cut — 005 B set none
+  })
+  it('never divides by a guess: no HR or no HRmax is null, and the row falls to the duration floor', () => {
+    expect(typedHrBand(undefined, HRMAX)).toBeNull()
+    expect(typedHrBand(160, null)).toBeNull()
+    expect(typedHrBand(160, 0)).toBeNull()
+    expect(classifyTypedHr(c(45, 175), null)).toBeNull()
+    expect(classifyCardio(c(45, 175))).toBe('endurance')
+    expect(classifyCardio(c(20, 175))).toBeNull()
+  })
+  it('the HR picks the bucket, the existing floors decide the credit', () => {
+    expect(classifyCardio(c(30, 175), HRMAX)).toBe('vo2max')
+    expect(classifyCardio(c(VO2MAX_Z5_MIN, 175), HRMAX)).toBe('vo2max')
+    expect(classifyCardio(c(VO2MAX_Z5_MIN - 1, 175), HRMAX)).toBeNull()
+    expect(classifyCardio(c(45, 160), HRMAX)).toBe('endurance')   // 82 %
+    expect(classifyCardio(c(45, 170), HRMAX)).toBe('endurance')   // 87 % — threshold is a label (057), not a bucket
+    expect(classifyCardio(c(ENDURANCE_FLOOR_MIN - 1, 160), HRMAX)).toBeNull()
+  })
+  it('Garmin data and the intervals format both win over the typed HR', () => {
+    expect(classifyCardio(c(45, 175, { aerobicTe: 2.5, anaerobicTe: 1.0 }), HRMAX)).toBe('endurance')
+    expect(classifyCardio(c(45, 175, { format: 'steady' }), HRMAX)).toBe('vo2max')
+    expect(classifyCardio(c(30, 140, { format: 'intervals' }), HRMAX)).toBe('vo2max')
+    expect(classifyCardio(c(30, 140, { format: 'intervals', boutSeconds: 60 }), HRMAX)).toBe('anaerobic_capacity')
+  })
+  it('the denominator moves the read: 160 bpm is threshold-band endurance at 185 and plain endurance at 196; 170 is VO₂max at 185 only', () => {
+    expect(typedHrBand(160, 185)).toBe('threshold')   // 86 %
+    expect(typedHrBand(160, 196)).toBe('endurance')   // 82 %
+    expect(classifyCardio(c(30, 170), 185)).toBe('vo2max')      // 92 %
+    expect(classifyCardio(c(30, 170), 196)).toBe('endurance')   // 87 %
+  })
+})
+
 // ── classifyCardioAdaptations (Garmin-informed, 005 run A) ────────────────────
 
 describe('classifyCardioAdaptations', () => {
@@ -172,6 +221,9 @@ describe('classifySportAdaptations', () => {
     expect(classifySportAdaptations(s({ duration: 20 }))).toEqual(['endurance'])
     expect(classifySportAdaptations(s())).toEqual(['endurance'])
     expect(classifySportAdaptations(s({ duration: 60, avgHr: 150 }))).toEqual(['endurance'])
+    // A typed HR never promotes a match (059 decision 4): HR over-reads tennis by
+    // about a zone, and Z5 = 0 on every synced match. The threshold label is 057's.
+    expect(classifySportAdaptations(s({ duration: 60, avgHr: 178 }))).toEqual(['endurance'])
   })
   // The three matches the watch had synced by 2026-09-06 (058): two are
   // SPEED-labelled, but zones are present and Z5 = 0, so the label never decides.
