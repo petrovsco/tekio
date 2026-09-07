@@ -1,7 +1,7 @@
 # Roadmap: HR-based intensity classification for cardio & sport sessions
 
 **Label:** feature
-**Status:** in progress — 2026-09-07 (night): the sync now fills `bout_seconds` from Garmin's `INTERVAL_ACTIVE` split in the activity summary — measured, no second call — and the 63 synced HIIT rows are being moved from the name-based value to the measured one. Left: Garmin columns on sport rows, the typed-HR path.
+**Status:** in progress — 2026-09-07 (night): the sync fills `bout_seconds` from Garmin's `INTERVAL_ACTIVE` split (measured, no second call, v2.0.27) and the 63 synced HIIT rows carry the measured value (9 changed, no verdict moved). Runs never get the intervals label (Peter, v2.0.28). Two boxes open — Garmin columns on sport rows, the typed-HR path — and Peter is to decide whether they split into briefs 058 / 059 so this one closes.
 **Release:** 2.1.0
 **Note:** Narrowed 2026-09-02: inventory rows 3.7–3.9 (the cardio `rx` prose) move to [039](done/039-adaptations-read-grounding.md); this brief keeps the classifier thresholds (rows 6.1–6.5). [031](done/031-adaptations-drill-down-read.md) §3b defers its effort-plane read until this lands.
 
