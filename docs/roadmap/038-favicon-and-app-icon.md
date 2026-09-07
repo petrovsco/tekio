@@ -1,7 +1,7 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7d is specified below and is the next thing to do.
+**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7d is drawn and its findings are below; waiting on Peter to pick a mark or keep the vessel.
 **Release:** 2.1.0
 
 ## Progress log
@@ -14,7 +14,10 @@
   forming the Ō** of Tekiō. Nothing shipped; the vessel is still the live icon.
   Findings under *Round 7*. The drawing tooling moved into `scripts/mark/` so
   it survives the session — **temporarily**; see *The bench is scaffolding*.
-- **Next** — round 7d, specified below: eight suckers forming the O.
+- **2026-09-07, later** — round 7d drawn: ten concepts plus an aperture sweep
+  and a dash sweep. Findings under *What the sheet showed*. Nothing shipped;
+  the vessel is still the live icon.
+- **Next** — Peter picks from 7d, or says the vessel stays.
 
 [index.html](../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for
@@ -196,6 +199,62 @@ and breaking the symmetry is the defence against the first three.
 
 The family question is settled — do not reopen it. What is open is which
 sucker treatment wins inside it.
+
+### What the sheet showed
+
+Ten concepts E1–E10 (`scripts/mark/rounds/r7d.mjs`), plus the two sweeps. All
+ten sit on one geometry so only the sucker treatment varies: the ink reaches 39
+units from a centre at (50, 56), and the dash is 42 × 3 at y 8.5.
+
+**The one finding that decides the round: the two questions have different
+winners, and no concept wins both.** The concepts that read best as an octopus
+at 128px are the ones whose ring is open, and an open ring is not a letter at
+16px. The concepts that hold the O at 16px do it by closing the ring, and a
+closed ring of eight equal rims is a machine part. Whatever ships is a position
+on that trade, not an escape from it.
+
+| | Reads as | Reads at 16px | Collides with |
+|---|---|---|---|
+| **E1** equal, evenly spaced | washers on a dial | dust; the O is gone | the three 7c ruled unwinnable — dotted spinner, lock dial, and Braille once the dots are equal |
+| **E2** graded by height | an arm, clearly | bottom solid, top gone | grapes; and the small top suckers vanish under the thin dash |
+| **E3** just touching | eight suckers sharing a rim | strong closed O | a roller chain, and a flower from the scalloped outer edge |
+| **E4** overlapping chain | a chain with direction | strongest closed O of the open family | a bicycle chain, hard — that is literally the shape |
+| **E5** two staggered rows | a scatter; you cannot see it is two rows | dust | a clock face, Braille, a constellation |
+| **E6** on a bridging arm | one continuous arm carrying suckers | clean closed O | a bead bracelet, a bicycle chain |
+| **E7** foreshortened, leaning | the most creature-like of the equal family; biggest counter | open, but the fat counter helps | coffee beans; the ellipses can read as eyes |
+| **E8** graded and touching | an arm, dense at the root | a horseshoe — closed at the bottom, open at the top | a horseshoe or a U, not an O |
+| **E9** one tapering arm | best octopus on the sheet | a C or an @ — the seam is visible | a loading spinner caught mid-spin |
+| **E10** dented into a solid ring | a machined part | unbreakable O, best of all ten | a rotary phone dial, a ball bearing, a bolted flange |
+
+**Three concepts survive, one per position on the trade.** E6 is the balance:
+the arm reads as an arm, the suckers stay separate at 128px, and the O never
+breaks because the band under them closes it. E4 is the strongest small read
+that is still made of suckers. E9 is the strongest octopus and the weakest
+letter. E10 is the honest far end — it wins 16px outright and is not an octopus.
+
+**Two-row anatomy does not survive the size (E5).** *Octopus vulgaris* really
+has two rows, but at eight suckers the two radii read as one untidy scatter
+rather than as two rows, and the O is gone by 32px. Authenticity that cannot be
+seen is not a design argument.
+
+**The seam is the cost of the single-arm idea (E9).** Two things were tried and
+both failed: easing the radius inward so the tip tucks under the base turns the
+mark into a spiral, which 7c already killed as an ammonite and an @; and moving
+the seam from the top to the bottom just puts the blunt base where the eye lands
+first. 7c's own geometry — constant radius, seam at the top, taper all the way
+round — is still the best of the three, and it still shows a break at 16px.
+
+**Sweep 1 — the sucker window is 0.45–0.55 of the rim.** At 0.30 and 0.40 it is
+a dot with a speck in it. At 0.50 it is a sucker. At 0.62 the rim is thin enough
+to read as a washer, and at 0.72 the rim is a wire: it goes pale at 16px and
+disappears, which is the pale-element rule from the vessel rounds arriving in a
+new costume. So 0.5 is not a rough guess, it is near the middle of a narrow
+window.
+
+**Sweep 2 — "really thin" is affordable down to 2.5 units.** 3 units holds at
+16px as a quiet grey line, 2.5 still reads, and 2 is a smudge that survives at
+24px and above but not below. The sheet uses 3. This is more headroom than 7c
+had, because eight suckers carry far more weight than six arms did.
 
 ## Doctrine check (§4)
 

@@ -60,7 +60,15 @@ creature.
 
 `arcCurl()` is the arm that wraps a circle and then hooks at the tip;
 `wrap()` spirals; `bez()` is for a hand-placed centreline; `sucker()` draws a
-sucker as a rim with the aperture punched out.
+sucker as a rim with the aperture punched out, `suckers()` draws a list of them,
+and `dent()` presses one into a solid ink field.
+
+`suckers()` takes a mode, and the mode is the whole design. `flat` paints every
+rim and then every aperture, so touching suckers merge into one silhouette and
+no rim fills in its neighbour's hole. `stack` paints each one complete before
+the next, so a later sucker crops the one beneath and the ring gains a direction
+of travel. The difference is invisible while they are apart and decides the read
+once they are not.
 
 ## What the sheets have established
 
@@ -79,6 +87,13 @@ These are findings, not opinions — each one killed at least one concept.
 - **Detail has a floor.** A sucker aperture closes up below roughly 3 units on
   the 100 grid; suckers are a large-size reward, and the small-size read has to
   work as whatever the dots add up to.
+- **A sucker is only a sucker between 0.45 and 0.55 of its rim.** Under that it
+  is a dot with a speck in it; over it the rim is a wire and the thing is a
+  washer that goes pale and vanishes at 16px.
+- **Openness is the trade, and nothing escapes it.** A ring of separate suckers
+  reads as an octopus and is not a letter at 16px; a ring that closes holds the
+  letter and reads as a machine part. Every concept is a position on that line,
+  so pick the position before polishing the drawing.
 - **Sub-pixel strokes go grey, they do not vanish.** A 5-unit bar is 0.8 device
   pixels at 16px: still legible, just quiet. It is affordable when something
   heavier carries the mark, and not when it has to compete.

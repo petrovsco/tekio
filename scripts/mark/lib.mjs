@@ -145,13 +145,38 @@ export const eyes = (cx, cy, dx, r) =>
  * a large-size detail, and any mark built from suckers still has to read at
  * 16px as whatever the dots add up to.
  */
-export const sucker = ({ x, y, r, hole = 0.5, squash = 1, deg = 0 }) => {
-  const g = deg ? ` transform="rotate(${f(deg)} ${f(x)} ${f(y)})"` : ''
-  return `<g${g}>` +
-    `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(r)}" ry="${f(r * squash)}" fill="${INK}"/>` +
-    `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(r * hole)}" ry="${f(r * hole * squash)}" fill="${PAPER}"/>` +
-    `</g>`
-}
+const ell = (x, y, rx, ry, fill, deg) =>
+  `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(rx)}" ry="${f(ry)}" fill="${fill}"` +
+  (deg ? ` transform="rotate(${f(deg)} ${f(x)} ${f(y)})"` : '') + '/>'
+
+export const sucker = ({ x, y, r, hole = 0.5, squash = 1, deg = 0 }) =>
+  ell(x, y, r, r * squash, INK, deg) + ell(x, y, r * hole, r * hole * squash, PAPER, deg)
+
+/**
+ * A list of suckers drawn as one group. `mode` is what overlap means:
+ *
+ * - `flat` paints every rim, then every aperture. Suckers that touch or overlap
+ *   merge into one silhouette and no rim ever fills in a neighbour's hole.
+ * - `stack` paints each sucker complete before starting the next, so a later
+ *   one crops the one beneath it and the ring reads as a chain running in a
+ *   direction rather than as a set of equals.
+ *
+ * The difference is invisible while they are apart and decides the whole read
+ * once they are not.
+ */
+export const suckers = (list, mode = 'flat') =>
+  mode === 'stack'
+    ? list.map(s => sucker(s)).join('')
+    : list.map(s => ell(s.x, s.y, s.r, s.r * (s.squash ?? 1), INK, s.deg)).join('') +
+      list.map(s => ell(s.x, s.y, s.r * (s.hole ?? 0.5), s.r * (s.hole ?? 0.5) * (s.squash ?? 1), PAPER, s.deg)).join('')
+
+/**
+ * A sucker seen as a dent in a solid ink field: the rim shows as a paper gap
+ * and the aperture stays dark, which is what an embossed sucker actually looks
+ * like. Only useful on ink; on paper it is a bullseye.
+ */
+export const dent = ({ x, y, r, rim = 0.58 }) =>
+  ell(x, y, r, r, PAPER) + ell(x, y, r * rim, r * rim, INK)
 
 // ---------- contact sheet ----------
 
