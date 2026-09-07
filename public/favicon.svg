@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <!--
+    Tekiō — roadmap 038.
+
+    A vessel tipped over, with the water still sitting level. The container
+    changes; the reference does not. That is the app's one sentence, drawn.
+
+    Geometry: 21° lean, 16.4 box on a 24 grid, 2.3 walls, 1.1 radius,
+    waterline at y = 12.55. Everything here is fixed shape, no text and no
+    font — a favicon cannot rely on the viewer having anything installed.
+
+    The box size is not free: a square of side s rotated by 21° and stroked
+    reaches sqrt(2)·(s/2 − r) + r + sw/2 from the centre along its corner
+    diagonal, and that has to stay inside 12 or the corners get sliced flat
+    by the viewBox. 16.4 leaves ~0.77 of margin; 17.4 measured as touching all
+    four edges and 18.2 sliced two corners flat.
+
+    Ink #1a1a1a is design-system §3's primary. The mark inverts to white on a
+    dark tab bar via prefers-color-scheme, so it never disappears into chrome.
+  -->
+  <style>
+    .water { fill: #1a1a1a }
+    .wall  { fill: none; stroke: #1a1a1a; stroke-width: 2.3 }
+    @media (prefers-color-scheme: dark) {
+      .water { fill: #ffffff }
+      .wall  { stroke: #ffffff }
+    }
+  </style>
+  <defs>
+    <clipPath id="vessel">
+      <rect x="3.8" y="3.8" width="16.4" height="16.4" rx="1.1" transform="rotate(21 12 12)"/>
+    </clipPath>
+  </defs>
+  <rect class="water" x="0" y="12.55" width="24" height="11.45" clip-path="url(#vessel)"/>
+  <rect class="wall" x="3.8" y="3.8" width="16.4" height="16.4" rx="1.1" transform="rotate(21 12 12)"/>
+</svg>

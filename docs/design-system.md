@@ -116,6 +116,12 @@ borders 1px, with 2px reserved for the sheet and true emphasis.
 Stroke SVGs on a 24 viewBox: stroke-width 1.8, round caps and joins, no
 fills. 18px in the nav, 13px inline. No icon font, no emoji in app chrome.
 
+The **favicon is not an icon under this rule** and does not follow it. It is
+the brand mark, it lives outside the app in browser chrome, and it has to hold
+against solid marks at 16px — so it carries a fill and heavier walls
+(`public/favicon.svg`, roadmap 038). Its geometry and the reason for each
+number are commented in the file itself.
+
 ## 8. Controls
 
 - **Chips**: 11px / 600, 3px radius, 5px×10px padding, 1px `#1a1a1a`
