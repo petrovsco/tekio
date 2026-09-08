@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { isDeloadDate, uid } from '../../../lib/utils'
+import { lastPerformance, uid } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Btn } from '../../ui/Button'
 import { SSBadge, DeloadBadge } from '../../ui/Badges'
 import { FIELD } from '../../ui/Input'
+import { toSetStr, parseSets } from '../../../lib/sets'
+import type { SetStr } from '../../../lib/sets'
 import type { WeightEntry, LiftSet } from '../../../types'
-
-interface SetStr { weight: string; reps: string }
 
 function padArr(arr: SetStr[], n: number): SetStr[] {
   if (arr.length >= n) return arr
@@ -26,18 +26,14 @@ interface SupersetLoggerProps {
 }
 
 export function SupersetLogger({ exercises, weights, date, programStartDate, isDeload, initialSets0, initialSets1, onSave, onCancel }: SupersetLoggerProps) {
-  const lastPerf = (n: string): WeightEntry | undefined =>
-    [...weights]
-      .filter(d => d.exercise.toLowerCase() === n.toLowerCase() && !isDeloadDate(programStartDate, d.date))
-      .sort((a, b) => b.date.localeCompare(a.date))[0]
+  const lastPerf = (n: string) => lastPerformance(weights, n, [programStartDate])
 
   const lp0 = lastPerf(exercises[0])
   const lp1 = lastPerf(exercises[1])
 
-  const toStr = (sets: LiftSet[]): SetStr[] => sets.map(s => ({ weight: String(s.weight), reps: String(s.reps) }))
   const mkSets = (lp: WeightEntry | undefined, initial?: LiftSet[]): SetStr[] => {
-    if (initial) return toStr(initial)
-    if (lp?.sets) return toStr(lp.sets)
+    if (initial) return toSetStr(initial)
+    if (lp?.sets) return toSetStr(lp.sets)
     return [{ weight: '', reps: '' }]
   }
 
@@ -66,8 +62,8 @@ export function SupersetLogger({ exercises, weights, date, programStartDate, isD
 
   const save = () => {
     const ssId = uid()
-    const vs0 = sets0.slice(0, revealed).filter(s => s.weight && s.reps).map(s => ({ weight: +s.weight, reps: +s.reps }))
-    const vs1 = sets1.slice(0, revealed).filter(s => s.weight && s.reps).map(s => ({ weight: +s.weight, reps: +s.reps }))
+    const vs0 = parseSets(sets0, revealed)
+    const vs1 = parseSets(sets1, revealed)
     const entries: Array<Omit<WeightEntry, 'id'>> = []
     if (vs0.length) entries.push({ date, exercise: exercises[0], sets: vs0, supersetId: ssId })
     if (vs1.length) entries.push({ date, exercise: exercises[1], sets: vs1, supersetId: ssId })

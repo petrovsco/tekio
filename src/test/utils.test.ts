@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -268,6 +268,47 @@ describe('isDeloadDate', () => {
   it('returns false after deload week ends (cycle wraps)', () => {
     // +42 days → week 1 of next cycle
     expect(isDeloadDate('2025-01-01', '2025-02-12')).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// lastPerformance
+// ---------------------------------------------------------------------------
+
+describe('lastPerformance', () => {
+  const w = (id: string, exercise: string, date: string): WeightEntry =>
+    ({ id, exercise, date, sets: [{ weight: 60, reps: 8 }] })
+
+  // startDate 2025-01-01 → week 6 (the deload week) is 2025-02-05 … 2025-02-11.
+  const START = '2025-01-01'
+  const rows = [
+    w('1', 'Bench Press', '2025-01-08'),
+    w('2', 'Bench Press', '2025-02-06'), // deload week
+    w('3', 'Bench Press', '2025-01-22'),
+    w('4', 'Squat', '2025-03-01'),
+  ]
+
+  it('returns the most recent session whatever the array order', () => {
+    expect(lastPerformance(rows, 'Bench Press')?.id).toBe('2')
+  })
+
+  it('skips sessions that fall in a deload week', () => {
+    expect(lastPerformance(rows, 'Bench Press', [START])?.id).toBe('3')
+  })
+
+  it('skips a session that is deload for any of the programs given', () => {
+    // 2025-01-22 is week 4 of the first program but week 6 of one started
+    // five weeks later, so with both programs active it is excluded too.
+    expect(lastPerformance(rows, 'Bench Press', [START, '2024-12-18'])?.id).toBe('1')
+  })
+
+  it('matches the name case-insensitively and trims it', () => {
+    expect(lastPerformance(rows, '  bench press ')?.id).toBe('2')
+  })
+
+  it('returns undefined for a blank name or an exercise never logged', () => {
+    expect(lastPerformance(rows, '   ')).toBeUndefined()
+    expect(lastPerformance(rows, 'Deadlift')).toBeUndefined()
   })
 })
 

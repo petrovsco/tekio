@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import {
-  cycleInfo, getGrouped, isDeloadDate, isTodayDone,
+  cycleInfo, getGrouped, isTodayDone, lastPerformance,
   programMode, resolveTodayDay, isDayDoneInWeek, startOfWeek, today, weekdayOf, variantGroups,
 } from '../../../lib/utils'
 import type { GroupedExercise } from '../../../lib/utils'
@@ -15,7 +15,7 @@ interface PickHandlers {
   onPickSingle: (ex: string) => void
   onPickSingleWithSets: (ex: string, sets: LiftSet[]) => void
   onPickSuperset: (exercises: [string, string]) => void
-  onPickSupersetDeload: (exercises: [string, string], lastPerf: (n: string) => WeightEntry | undefined) => void
+  onPickSupersetDeload: (exercises: [string, string]) => void
 }
 
 interface TodaysPlanProps extends PickHandlers {
@@ -69,10 +69,7 @@ function WeightGroups({ groups, program, weights, isDeload, ...h }: {
   weights: WeightEntry[]
   isDeload: boolean
 } & PickHandlers) {
-  const lastPerf = (n: string): WeightEntry | undefined =>
-    [...weights]
-      .filter(d => d.exercise.toLowerCase() === n.toLowerCase() && !isDeloadDate(program.startDate, d.date))
-      .sort((a, b) => b.date.localeCompare(a.date))[0]
+  const lastPerf = (n: string) => lastPerformance(weights, n, [program.startDate])
 
   return (
     <>
@@ -86,7 +83,7 @@ function WeightGroups({ groups, program, weights, isDeload, ...h }: {
                   <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
                 </div>
                 {isDeload ? (
-                  <button onClick={() => h.onPickSupersetDeload(g.exercises, lastPerf)} className={ACT_CHIP}>
+                  <button onClick={() => h.onPickSupersetDeload(g.exercises)} className={ACT_CHIP}>
                     Deload <Icon name="chevronDown" size={11} />
                   </button>
                 ) : (
@@ -96,13 +93,13 @@ function WeightGroups({ groups, program, weights, isDeload, ...h }: {
                 )}
               </div>
               {g.exercises.map((ex, ei) => (
-                <ExPlan key={ei} ex={ex} last={lastPerf(ex)} isDeload={isDeload} programStartDate={program.startDate} onPick={h.onPickSingle} onPickWithSets={h.onPickSingleWithSets} />
+                <ExPlan key={ei} ex={ex} last={lastPerf(ex)} isDeload={isDeload} onPick={h.onPickSingle} onPickWithSets={h.onPickSingleWithSets} />
               ))}
             </div>
           )
         }
         return (
-          <ExPlan key={gi} ex={g.exercises[0]} last={lastPerf(g.exercises[0])} isDeload={isDeload} programStartDate={program.startDate} onPick={h.onPickSingle} onPickWithSets={h.onPickSingleWithSets} />
+          <ExPlan key={gi} ex={g.exercises[0]} last={lastPerf(g.exercises[0])} isDeload={isDeload} onPick={h.onPickSingle} onPickWithSets={h.onPickSingleWithSets} />
         )
       })}
     </>

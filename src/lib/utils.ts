@@ -90,6 +90,32 @@ export function deloadSets(lastSets: LiftSet[]): LiftSet[] {
   }))
 }
 
+/**
+ * The most recent session logged for an exercise, ignoring deload sessions.
+ *
+ * Deload weeks are excluded because this is the value the next session is
+ * planned from — a light week must not become the new baseline. `startDates`
+ * is a list, not one date, because a date counts as deload if it falls in the
+ * deload week of *any* active program: WeightsTab has several in scope, the
+ * plan components have one. Matching is case-insensitive and trims the name,
+ * so a half-typed exercise in the log form still finds its history.
+ */
+export function lastPerformance(
+  weights: WeightEntry[],
+  exercise: string,
+  startDates: (string | null | undefined)[] = [],
+): WeightEntry | undefined {
+  const name = exercise.trim().toLowerCase()
+  if (!name) return undefined
+  let best: WeightEntry | undefined
+  for (const d of weights) {
+    if (d.exercise.toLowerCase() !== name) continue
+    if (startDates.some(sd => isDeloadDate(sd, d.date))) continue
+    if (!best || d.date.localeCompare(best.date) > 0) best = d
+  }
+  return best
+}
+
 export function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
   const m = new Map(existing.map((e) => [e.id, e]))
   incoming.forEach((e) => m.set(e.id, e))

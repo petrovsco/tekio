@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isDeloadDate, deloadSets } from '../../../lib/utils'
+import { deloadSets } from '../../../lib/utils'
 import { VolumeRow } from './VolumeRow'
 import { Icon } from '../../ui/Icon'
 import type { WeightEntry, LiftSet } from '../../../types'
@@ -16,20 +16,18 @@ const GHOST_CHIP =
 
 interface ExPlanProps {
   ex: string
+  /** Already the last *non-deload* session — `lastPerformance` did the filtering. */
   last: WeightEntry | undefined
   isDeload: boolean
-  programStartDate?: string
   onPick: (ex: string) => void
   onPickWithSets: (ex: string, sets: LiftSet[]) => void
 }
 
-export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWithSets }: ExPlanProps) {
+export function ExPlan({ ex, last, isDeload, onPick, onPickWithSets }: ExPlanProps) {
   const [expanded, setExpanded] = useState(false)
   const [volPct, setVolPct] = useState(7.5)
 
-  // lastPerf skips deload sessions
-  const lastPerf = last && programStartDate && isDeloadDate(programStartDate, last.date) ? undefined : last
-  const lastV = lastPerf ? totalVol(lastPerf.sets) : null
+  const lastV = last ? totalVol(last.sets) : null
 
   return (
     <div className="pt-3 border-t border-hairline mt-3 first:mt-0 first:border-0 first:pt-0">
@@ -42,20 +40,20 @@ export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWit
         </div>
         <div className="flex items-center gap-1 shrink-0">
           {isDeload ? (
-            lastPerf && (
-              <button onClick={() => onPickWithSets(ex, deloadSets(lastPerf.sets))} className={ACT_CHIP}>
+            last && (
+              <button onClick={() => onPickWithSets(ex, deloadSets(last.sets))} className={ACT_CHIP}>
                 Deload <Icon name="chevronDown" size={11} />
               </button>
             )
           ) : (
             <>
-              {lastPerf && (
+              {last && (
                 <button onClick={() => setExpanded(e => !e)} className={GHOST_CHIP}>
                   {expanded ? 'Hide' : 'Targets'}
                 </button>
               )}
               <button
-                onClick={() => lastPerf ? onPickWithSets(ex, lastPerf.sets) : onPick(ex)}
+                onClick={() => last ? onPickWithSets(ex, last.sets) : onPick(ex)}
                 className={ACT_CHIP}
               >
                 Last <Icon name="chevronDown" size={11} />
@@ -65,13 +63,13 @@ export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWit
         </div>
       </div>
 
-      {lastPerf && (
+      {last && (
         <p className="text-[11px] text-ink-2 mb-1.5">
-          Last ({lastPerf.date}): {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
+          Last ({last.date}): {last.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
         </p>
       )}
 
-      {expanded && lastPerf && (
+      {expanded && last && (
         <div className="bg-white rounded-[3px] p-2.5 border border-line mt-1">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 whitespace-nowrap">Volume goal</span>
@@ -84,8 +82,7 @@ export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWit
           </div>
           <VolumeRow
             pct={volPct / 100}
-            lastSets={lastPerf.sets}
-            isDeload={false}
+            lastSets={last.sets}
             onUse={sets => { onPickWithSets(ex, sets); setExpanded(false) }}
           />
           <p className="text-[10px] text-ink-3 mt-2 leading-relaxed">
@@ -93,7 +90,7 @@ export function ExPlan({ ex, last, isDeload, programStartDate, onPick, onPickWit
           </p>
         </div>
       )}
-      {!lastPerf && (
+      {!last && (
         <p className="text-[11px] text-ink-3">No previous data — set your starting weight</p>
       )}
     </div>

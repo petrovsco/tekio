@@ -1,7 +1,6 @@
 import { DelBtn } from './Button'
 import { FIELD } from './Input'
-
-export interface SetStr { weight: string; reps: string }
+import type { SetStr } from '../../lib/sets'
 
 interface SetsGridProps {
   sets: SetStr[]

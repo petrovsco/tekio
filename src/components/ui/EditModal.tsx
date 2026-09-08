@@ -3,7 +3,8 @@ import { parseDurationMins, formatDurationMins, calcPace } from '../../lib/utils
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
-import type { SetStr } from './SetsGrid'
+import { toSetStr, parseSets } from '../../lib/sets'
+import type { SetStr } from '../../lib/sets'
 import { Inp, SelEl, FIELD_LABEL } from './Input'
 import { FieldLabel, Toggle, Rating } from './Fields'
 import { Btn, DelBtn } from './Button'
@@ -79,17 +80,6 @@ function useSave(onClose: () => void, ready: boolean, write: () => Promise<void>
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
-
-function toSetStr(sets: LiftSet[]): SetStr[] {
-  return sets.map(s => ({ weight: String(s.weight), reps: String(s.reps) }))
-}
-
-function parseSets(sets: SetStr[], revealed: number): LiftSet[] {
-  return sets
-    .slice(0, revealed)
-    .filter(s => s.weight && s.reps)
-    .map(s => ({ weight: +s.weight, reps: +s.reps }))
-}
 
 /** Custom hook — manages a sets grid's local state. */
 function useSets(initial: LiftSet[]) {

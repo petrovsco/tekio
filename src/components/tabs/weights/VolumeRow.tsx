@@ -1,6 +1,4 @@
-import { r05, deloadSets } from '../../../lib/utils'
-import { DELOAD_REP_FACTOR } from '../../../constants/app'
-import { DeloadBadge } from '../../ui/Badges'
+import { r05 } from '../../../lib/utils'
 import { Icon } from '../../ui/Icon'
 import type { LiftSet } from '../../../types'
 
@@ -20,65 +18,45 @@ const TIERS = [
 interface VolumeRowProps {
   pct: number
   lastSets: LiftSet[]
-  isDeload: boolean
   onUse: (sets: LiftSet[]) => void
 }
 
-export function VolumeRow({ pct, lastSets, isDeload, onUse }: VolumeRowProps) {
-  if (isDeload) {
-    return (
-      <div className="mb-2.5">
-        <div className="flex items-center gap-1.5">
-          <DeloadBadge />
-          <span className="text-[11px] text-ink-2">{Math.round(DELOAD_REP_FACTOR * 100)}% reps</span>
-        </div>
-        <div className="flex flex-wrap gap-1 mt-1.5">
-          {deloadSets(lastSets).map((s, i) => (
-            <span key={i} className="text-[11px] px-2 py-1 rounded-[2px] bg-hairline text-ink font-semibold">
-              Set {i + 1}: {s.weight}kg × {s.reps}
-            </span>
-          ))}
-        </div>
-      </div>
-    )
-  }
-
-  const computeSets = (offset: number): LiftSet[] =>
-    lastSets.map(s => {
-      const w = offset === 0 ? s.weight : r05(s.weight + offset)
-      const tv = setVol(s.weight, s.reps) * (1 + pct)
-      const r = repsNeeded(tv, w)
-      return { weight: w, reps: typeof r === 'number' ? r : 0 }
-    })
+export function VolumeRow({ pct, lastSets, onUse }: VolumeRowProps) {
+  // One computation per tier, read by both the table and its "Use" button —
+  // they must prescribe the same thing. `reps` is '–' where there is no weight
+  // to divide the target volume by; "Use" logs that row as 0 reps.
+  const tiers = TIERS.map(t => ({
+    label: t.label,
+    sets: lastSets.map(s => {
+      const weight = t.offset === 0 ? s.weight : r05(s.weight + t.offset)
+      return { weight, reps: repsNeeded(setVol(s.weight, s.reps) * (1 + pct), weight) }
+    }),
+  }))
 
   return (
     <div>
       <div className="grid gap-1 mb-1.5" style={{ gridTemplateColumns: '28px 1fr 1fr 1fr' }}>
         <div />
-        {TIERS.map(t => (
+        {tiers.map(t => (
           <span key={t.label} className="text-[9px] font-bold uppercase tracking-[0.08em] text-ink-3 text-center py-0.5">{t.label}</span>
         ))}
-        {lastSets.map((s, si) => (
+        {lastSets.map((_, si) => (
           <div key={si} className="contents">
             <span className="text-[11px] text-ink-3 text-center self-center">S{si + 1}</span>
-            {TIERS.map((t, ti) => {
-              const w = t.offset === 0 ? s.weight : r05(s.weight + t.offset)
-              const tv = setVol(s.weight, s.reps) * (1 + pct)
-              return (
-                <span key={ti} className="text-[11px] text-ink text-center py-1 rounded-[2px] bg-hairline font-semibold tabular-nums whitespace-nowrap">
-                  {w}×{repsNeeded(tv, w)}
-                </span>
-              )
-            })}
+            {tiers.map((t, ti) => (
+              <span key={ti} className="text-[11px] text-ink text-center py-1 rounded-[2px] bg-hairline font-semibold tabular-nums whitespace-nowrap">
+                {t.sets[si].weight}×{t.sets[si].reps}
+              </span>
+            ))}
           </div>
         ))}
       </div>
       <div className="grid gap-1 mt-2" style={{ gridTemplateColumns: '28px 1fr 1fr 1fr' }}>
         <div />
-        {TIERS.map((t, ti) => (
+        {tiers.map((t, ti) => (
           <button
             key={ti}
-            onClick={() => onUse(computeSets(t.offset))}
+            onClick={() => onUse(t.sets.map(s => ({ weight: s.weight, reps: typeof s.reps === 'number' ? s.reps : 0 })))}
             className="py-1 flex items-center justify-center gap-0.5 rounded-[3px] text-[11px] font-semibold text-ink bg-white border border-line hover:border-ink cursor-pointer transition-colors"
           >
             Use <Icon name="chevronDown" size={11} />

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, cycleInfo, isDeloadDate, isTodayDone, programMode, activeVariantWeekdays, best1RM, weightsPickerNames } from '../../../lib/utils'
+import { today, cycleInfo, deloadSets, isDeloadDate, isTodayDone, lastPerformance, programMode, activeVariantWeekdays, best1RM, weightsPickerNames } from '../../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, DelBtn, EditBtn } from '../../ui/Button'
@@ -10,7 +10,8 @@ import { SSBadge } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
-import type { SetStr } from '../../ui/SetsGrid'
+import { toSetStr, parseSets } from '../../../lib/sets'
+import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
 import { TodaysPlan } from './TodaysPlan'
 import { SupersetLogger } from './SupersetLogger'
@@ -49,24 +50,15 @@ export function WeightsTab() {
 
   const isAnyDeload = programs.some(ap => isDeloadDate(ap.startDate, today()))
 
-  const getLastPerf = (n: string): WeightEntry | undefined =>
-    n.trim()
-      ? [...weights]
-          .filter(d =>
-            d.exercise.toLowerCase() === n.trim().toLowerCase() &&
-            !programs.some(ap => isDeloadDate(ap.startDate, d.date))
-          )
-          .sort((a, b) => b.date.localeCompare(a.date))[0]
-      : undefined
+  // A session counts as deload if it falls in *any* active program's deload week.
+  const programStartDates = programs.map(ap => ap.startDate)
+  const getLastPerf = (n: string) => lastPerformance(weights, n, programStartDates)
 
   const lastPerf = getLastPerf(ex)
 
   // Estimated 1RM (Epley × Brzycki blend): live from the sets being entered,
   // plus the historical best across all logged sets for this exercise.
-  const liveSets = sets.slice(0, revealed)
-    .filter(s => s.weight && s.reps)
-    .map(s => ({ weight: +s.weight, reps: +s.reps }))
-  const live1RM = best1RM(liveSets)
+  const live1RM = best1RM(parseSets(sets, revealed))
   const historical1RM = ex.trim()
     ? Math.max(
         0,
@@ -79,14 +71,14 @@ export function WeightsTab() {
   const handleSelectEx = (n: string) => {
     setEx(n); setSelEx(n); setSsExercises(null)
     const p = getLastPerf(n)
-    if (p) { setSets(p.sets.map(s => ({ weight: String(s.weight), reps: String(s.reps) }))); setRevealed(p.sets.length) }
+    if (p) { setSets(toSetStr(p.sets)); setRevealed(p.sets.length) }
     else { setSets([{ weight: '', reps: '' }]); setRevealed(1) }
   }
 
   const handlePickWithSets = (n: string, computedSets: LiftSet[]) => {
     setSsExercises(null)
     setEx(n); setSelEx(n)
-    setSets(computedSets.map(s => ({ weight: String(s.weight), reps: String(s.reps) })))
+    setSets(toSetStr(computedSets))
     setRevealed(computedSets.length)
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
   }
@@ -107,7 +99,7 @@ export function WeightsTab() {
 
   const addEntry = async () => {
     if (!ex.trim()) return
-    const vs: LiftSet[] = sets.slice(0, revealed).filter(s => s.weight && s.reps).map(s => ({ weight: +s.weight, reps: +s.reps }))
+    const vs = parseSets(sets, revealed)
     if (!vs.length) return
     await withToast(async () => {
       await addWeightEntry({ date, exercise: ex.trim(), sets: vs })
@@ -166,10 +158,14 @@ export function WeightsTab() {
             onPickSingle={n => { setSsExercises(null); handleSelectEx(n); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50) }}
             onPickSingleWithSets={handlePickWithSets}
             onPickSuperset={exArr => { setSsInitialSets(null); setSsExercises(exArr); setEx(''); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50) }}
-            onPickSupersetDeload={(exArr, getLastFn) => {
-              const s0 = getLastFn(exArr[0])?.sets.map(s => ({ weight: s.weight, reps: Math.max(1, Math.round(s.reps * 0.7)) }))
-              const s1 = getLastFn(exArr[1])?.sets.map(s => ({ weight: s.weight, reps: Math.max(1, Math.round(s.reps * 0.7)) }))
-              setSsInitialSets({ sets0: s0, sets1: s1 })
+            onPickSupersetDeload={exArr => {
+              // One deload model, from lib/utils — this used to re-implement it
+              // with a bare 0.7 and disagree with the plan preview beside it.
+              const prescribe = (n: string) => {
+                const p = getLastPerf(n)
+                return p && deloadSets(p.sets)
+              }
+              setSsInitialSets({ sets0: prescribe(exArr[0]), sets1: prescribe(exArr[1]) })
               setSsExercises(exArr); setEx('')
               setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
             }}

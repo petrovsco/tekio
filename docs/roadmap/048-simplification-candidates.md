@@ -1,11 +1,12 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — six landed: **A8** (v2.0.58), **A1** (v2.0.63, which
+**Status:** in progress — eight landed: **A8** (v2.0.58), **A1** (v2.0.63, which
 took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
 EditModal, after which the repo sits at 023's accepted floor of 6 lint
-warnings) and **A4 + A5** together (v2.0.68, the whole `lib/db` layer).
-**B2 + B3 are next.**
+warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer) and
+**B2 + B3** together (v2.0.69, the weights plan).
+**The small `lib` dedupes A2 + A3 + A10 + A11 are next.**
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -241,6 +242,39 @@ the corrections are the useful part of this record:
   `ui/SetsGrid.tsx` (where `SetStr` lives).
 - **Risk:** low; the util is coverable in `utils.test.ts`.
 
+**Landed 2026-09-08 (v2.0.69), together with B3** — one commit, because both
+edit the same five weights files. `lastPerformance` is in `lib/utils.ts` with
+five tests in `utils.test.ts`; the three hand-written copies are gone and so is
+ExPlan's re-filter. Three departures from what this entry proposed:
+
+- **The third argument is a *list* of start dates, not one.** WeightsTab has
+  several active programs in scope and excluded a session that was deload in
+  **any** of them; the two plan components knew one program each. A list serves
+  both, and it removed an inconsistency the singular signature would have kept:
+  the superset "Deload" button used one program's rule while the "Last (…)" line
+  printed beside it used all of them.
+- **`onPickSupersetDeload` lost its second argument.** It took a
+  `(n: string) => WeightEntry | undefined` closure that existed only because
+  TodaysPlan had built one and WeightsTab had not. With the helper in `lib/utils`
+  the parent computes it itself, so `PickHandlers` is one parameter shorter and
+  nothing threads a lookup function down two levels.
+- **The converters went to a new `src/lib/sets.ts`, not to `ui/SetsGrid.tsx`.**
+  Exporting a plain function beside a component is two
+  `react-refresh/only-export-components` warnings, which took `npm run lint`
+  from 6 to 8 — above 023's accepted floor. `lib/sets.ts` holds `SetStr`,
+  `toSetStr` and its inverse `parseSets`, keeps the floor at 6, and stays out of
+  `lib/utils.ts`, which is loaded eagerly: only EditModal and the weights tab
+  import it, so it builds as its own 1.49 kB lazy chunk. `parseSets` was not in
+  this entry and is the same finding — the exact inverse of `toSetStr`, written
+  inline four more times (WeightsTab's live 1RM and its save, SupersetLogger's
+  two columns) beside the named copy in EditModal. SupersetLogger's own
+  `interface SetStr` — a fourth declaration of the type — went with it.
+
+First paint 349.99 kB: `lastPerformance` costs 0.20 kB because `lib/utils.ts` is
+in the entry chunk, and the file is still 2.48 kB under the committed baseline.
+The plan also stopped copy-sorting: each exercise used to sort all 212 weight
+entries to read `[0]`, and the helper is one O(n) scan.
+
 ### B3. Dead deload branch and a `0.7` literal (−30)
 
 - **Where:** `weights/VolumeRow.tsx:28-44` never runs: its only caller
@@ -253,6 +287,41 @@ the corrections are the useful part of this record:
   `deloadSets(...)` (it also rounds the weight to 0.5; logged weights already
   are, so no visible change expected); VolumeRow computes once per tier.
 - **Risk:** low. **Visual:** check today's plan on a deload week.
+
+**Landed 2026-09-08 (v2.0.69) with B2.** The dead branch checked out — the only
+caller passed `isDeload={false}` — so `VolumeRow` lost 20 lines, its prop and
+three imports. The `deloadSets` re-export this entry names was **already gone**:
+A1 deleted it as one of three forwarding re-exports, and the comment claiming
+"so WeightsTab can use it" went with it. Two notes:
+
+- **The tiers are computed once and read twice.** The table and the "Use" button
+  under it each used to run the same `weight → min reps` arithmetic. `reps` stays
+  `number | '–'` in the shared value rather than becoming 0 — the dash is what
+  the table prints for a set logged at 0 kg, and only the button coerces it —
+  so the display is unchanged for that case too.
+- **Nothing on screen moved, which is the expected result.** `DELOAD_REP_FACTOR`
+  *is* 0.7, and `r05` is a no-op on weights that are already half-kilos, so the
+  literal and the helper agree digit for digit. The win is that there is one
+  deload model instead of two, and it is the one carrying the grounding comment.
+
+**Browser-checked on live data** (house rule `verify-in-browser`). There is no
+active program today, so the plan surface is unreachable from real rows: a
+`defaultProgram()` was put into the store with `useAppStore.setState` — memory
+only, no write — first at week 1 and then with its start date shifted 35 days
+back to reach week 6. Normal week: the plan printed the right last session for
+all three exercises (Back Squat 2026-07-28, Bench Press 2026-09-01, Bicep Curls
+2026-05-18), the targets table read `100×7 / 102.5×7 / 105×7`, `90×9 / 92.5×9 /
+95×9`, `80×11 / 82.5×11 / 85×11` at +7.5 %, and the middle "Use" button filled
+the log form with exactly `102.5×7 · 92.5×9 · 82.5×11` — the table and the button
+agree, which is what computing once has to guarantee. Deload week: the badge and
+four "Deload" buttons appeared, the single-exercise one prefilled Bicep Curls
+`7.5×14 · 10×11 · 12.5×10 · 15×8` from a logged `7.5×20 · 10×16 · 12.5×14 ·
+15×12`, and the superset one opened the logger with Bench Press `40×21, 60×11,
+70×3, 50×11` beside those same curls — every rep `round(reps × 0.7)`, every
+weight untouched. The Weights edit modal still filled its sets grid from a real
+row (`40kg×30 · 60kg×16 · 70kg×4 · 50kg×16`), which is the check that moving
+`toSetStr` did not break the other file that uses it. Zero console errors, and
+nothing was saved.
 
 ### B4. `fmtSets` ×4, `fmtAgo` ×5, `QUALITY_LABELS` ⊂ `QUALITY_SHORT` (−15)
 
@@ -702,8 +771,8 @@ Tier 1:
 - [ ] A13 one profile select
 - [ ] A14 type aliases, casts gone
 - [x] A8 react-router removed, CLAUDE.md routing paragraph updated — 2026-09-08, v2.0.58 (via roadmap 023 item 0)
-- [ ] B2 `lastPerformance` + `toSetStr` shared
-- [ ] B3 dead deload branch gone, `DELOAD_REP_FACTOR` used in WeightsTab
+- [x] B2 `lastPerformance` + `toSetStr` shared — 2026-09-08, v2.0.69. Browser-checked at week 1 and week 6; the third argument is a list of program start dates, and the converters live in a new `lib/sets.ts` so the lint floor stays at 6
+- [x] B3 dead deload branch gone, `DELOAD_REP_FACTOR` used in WeightsTab — 2026-09-08, v2.0.69. Each tier computed once and read by both the table and its Use button; the numbers on screen are unchanged, as predicted
 - [ ] B4 `fmtSets`/`fmtAgo` shared, `QUALITY_SHORT` reused
 - [ ] B10 tone constants exported once
 - [ ] B11 inline SVGs replaced by `Icon`
