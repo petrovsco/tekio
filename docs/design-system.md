@@ -118,7 +118,7 @@ fills. 18px in the nav, 13px inline. No icon font, no emoji in app chrome.
 
 The **favicon is not an icon under this rule** and does not follow it. It is
 the brand mark, it lives outside the app in browser chrome, and it has to hold
-against solid marks at 16px — so it carries a fill and heavier walls
+against solid marks at 16px — so it is a solid filled shape with no stroke at all
 (`public/favicon.svg`, roadmap 038). Its geometry and the reason for each
 number are commented in the file itself.
 

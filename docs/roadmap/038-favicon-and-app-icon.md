@@ -1,7 +1,7 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7f draws the calligraphic circle he asked for on top of 7e's G4; L2 is the recommendation, waiting on Peter to pick one.
+**Status:** in progress — Peter picked 7e's **G4** on 2026-09-08 and it ships (v2.0.52): the octopus arm written as the Ō, with the brushed macron. The drawing bench is deleted. One box is left and it is Peter's: seeing the tab icon on staging, and on production at the 2.1.0 release.
 **Release:** 2.1.0
 
 ## Progress log
@@ -25,7 +25,9 @@
   ring with the brushed macron — and asked for the *circle* to be written with
   the same brush as the dash. Five proposals, deliberately not a library.
   Findings under *Round 7f*. Nothing shipped; the vessel is still the live icon.
-- **Next** — Peter picks from 7f, or says the vessel stays.
+- **2026-09-08 (v2.0.52)** — Peter picked **G4** off the 7e sheet rather than
+  any 7f row. The octopus-Ō is now the live mark, both files are replaced, and
+  `scripts/mark/` is deleted. See *The pick*.
 
 [index.html](../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for
@@ -59,11 +61,59 @@ announces itself with the black banner across the top of the screen, so a
 second signal in the tab would be duplicate work for no extra information. No
 build-time branching; `VITE_ENV` stays unused by the icon.
 
-**The mark: a tipped vessel with the water still level.** The container leans
-21°; the water surface stays horizontal. The container changes, the reference
-does not — which is the app's own sentence, drawn.
+**The mark: an octopus arm written as the Ō of Tekiō.** One stroke closed into
+a ring — thick where it starts at the top left, thinning as it travels round —
+with eight suckers punched through it and a macron drawn above with the same
+brush. It is the letter and the creature at the same time, which is the thing
+seven rounds were trying to get.
 
-It was chosen over 40-odd alternatives across four rounds, and the discards are
+**The numbers, so it can be redrawn without the bench.** On a 0–100 grid: the
+ring is a true circle of radius 39 about (50, 56), so the silhouette is exact;
+the whole taper is spent on the *inside*, where the counter is a closed spline
+whose distance from that circle is `9.6 + 5·cos φ + 1.4·sin 2φ`, with φ measured
+from the root at −95°. Eight suckers run one way from the root at half the band
+width, packed towards the thin end the way a real arm packs them, stopping
+before the waist because an aperture needs about 6 units of band to stay open.
+The macron is a bowed stroke from x 29 to 71 at y 8.5, 4.2 units thick at the
+left and 2.4 at the right. Every number is also commented in the file.
+
+**Three construction decisions that are easy to get wrong.**
+
+- **The ring is a band, not a wrapped arm.** A ribbon walks an open centreline
+  and caps both ends, so wrapping one into a ring always leaves a cusp where the
+  outline meets itself — invisible on a contact sheet, a visible nick at 330px,
+  which is the size of an app icon on a phone. A band is a true outer circle
+  plus a closed inner contour, and its width law is periodic, so there is no
+  seam anywhere in the shape at any size. The sheet row Peter picked was drawn
+  the ribbon way; it ships the band way, because at the sizes the two differ he
+  would only ever see the nick.
+- **The suckers are holes, not paper-coloured discs.** On a contact sheet a
+  sucker is a disc filled with the page colour. A shipped icon sits on a tab bar
+  of unknown colour, so each sucker is instead a subpath of the ring under
+  `fill-rule="evenodd"` — a real hole, correct on any ground.
+- **The inner contour is sampled 72 times, not 256.** Rasterised at 512px the
+  two differ on 129 antialiased edge pixels out of 262 144 and nowhere by a
+  whole pixel, and the file is a third of the size. A favicon is fetched on
+  every page load.
+
+**Measured before shipping, not eyeballed:** ink bounds on the 100 grid are
+left 10.83, top 5.83, right 89.17, bottom 95 — clear of all four edges, centred
+in x, sitting 0.41 low in y.
+
+**Files:** [public/favicon.svg](../../public/favicon.svg) (inverts to white on
+a dark tab bar via `prefers-color-scheme`, so it never vanishes into chrome)
+and `public/apple-touch-icon.png` (180×180, paper ground, ink mark, inset to
+78% so the iOS squircle mask cannot clip it).
+
+### The vessel, which was the mark for one day
+
+A tipped vessel with the water still sitting level: the container leans 21°,
+the water surface stays horizontal. The container changes, the reference does
+not — the app's own sentence, drawn. It shipped 2026-09-07 (v2.0.46) and was
+replaced by the octopus the next day. Its rounds are still worth keeping,
+because the reasons it beat 40-odd alternatives apply to any small mark.
+
+It was chosen over those alternatives across four rounds, and the discards are
 worth recording because they are all the same failure: **a small mark inherits
 whatever icon the viewer already knows.** A folded corner is a file icon. A
 ring is Oura. Concentric circles are a bullseye, not tree rings. A drop with
@@ -81,18 +131,15 @@ Both Japanese options were drawn and both failed the same way: 適 and a
 gecko-shaped 応 are handsome at 64px and unreadable mush at 16. Worth knowing,
 since the name invites the idea.
 
-**Files:** [public/favicon.svg](../../public/favicon.svg) (inverts to white on
-a dark tab bar via `prefers-color-scheme`, so it never vanishes into chrome)
-and `public/apple-touch-icon.png` (180×180, paper ground, ink mark).
-
-**One trap the geometry hides.** A square rotated inside the viewBox does not
-fit at its own width. A side-`s` square with corner radius `r` and stroke `sw`,
-rotated 21°, reaches `sqrt(2)·(s/2 − r) + r + sw/2` from the centre along its
-corner diagonal, and the vertical component of that has to stay under 12. At
-s = 18.2 two corners were sliced flat; at 17.4 the ink measured as touching all
-four edges. It ships at 16.4, which leaves ~0.55 of margin. The measurement is
-worth redoing rather than eyeballing — the clipping is invisible at 16px and
-obvious at 180px.
+**One trap its geometry hid, and the rule that came out of it.** A square
+rotated inside the viewBox does not fit at its own width. A side-`s` square with
+corner radius `r` and stroke `sw`, rotated 21°, reaches
+`sqrt(2)·(s/2 − r) + r + sw/2` from the centre along its corner diagonal, and
+the vertical component of that has to stay under 12. At s = 18.2 two corners
+were sliced flat; at 17.4 the ink measured as touching all four edges; it
+shipped at 16.4. **Measure where the ink actually reaches before shipping any
+mark, rather than eyeballing it** — the clipping is invisible at 16px and
+obvious at 180px. That is why the octopus above carries a measurement too.
 
 ## Round 7 — an octopus forming the Ō
 
@@ -121,6 +168,10 @@ The moment a mark is chosen and shipped, the whole folder goes — that is the
 acceptance box below, so it happens rather than being remembered. Git keeps it
 if a later round ever wants it back. Nothing of lasting value is only in there:
 the findings are in this brief, which is what survives.
+
+**Deleted 2026-09-08**, in the commit that shipped the mark. The
+`scripts/mark/…` paths named below record where each round was drawn; they are
+not files you will find in the tree.
 
 Three rounds, about 34 concepts, and one structural finding per round.
 
@@ -455,6 +506,29 @@ only in the bench:
 - **The open ensō confirms 7d at 16px.** The gap stops being a gap and becomes a
   gauge with a needle. It is the honest reference and it is not a letter.
 
+## The pick
+
+Peter, 2026-09-08, marking the 7e sheet again: **G4** — the ring with the
+brushed macron. It is the row he had already kept, and he chose it over the
+five calligraphic circles 7f drew from it, so the answer to "should the circle
+be written with the same brush as the dash?" is **no**: a ring whose weight
+comes from the arm tapering is enough, and adding a nib or a brush law on top
+of it buys nothing the mark needed. L1–L5 are not shipped, and the reasons they
+were drawn are kept above so the question does not get asked a third time.
+
+Two things changed between the sheet row and the shipped file, both recorded in
+*What shipped*: the ring is drawn as a **band** rather than as a wrapped
+ribbon, which removes a nick that only appears at app-icon size, and the
+suckers are real holes rather than paper-coloured discs, so the mark survives a
+tab bar of any colour. Neither changes the drawing at the sizes the sheet
+showed.
+
+Verified on the production build (`vite preview`), 2026-09-08: `/favicon.svg`
+and `/apple-touch-icon.png` both 200, zero console messages of any kind, zero
+responses ≥ 400, and both files rendered by the browser at 16, 24, 32, 64 and
+180px on light, dark and tab-grey grounds. The letter still closes at 16px and
+the suckers are still holes at 32px.
+
 ## Doctrine check (§4)
 
 1. **Which read does this sharpen?** None directly — it is chrome, and R1 does
@@ -472,18 +546,16 @@ only in the bench:
       errors and zero responses ≥ 400 on a fresh load. That 404 was the app's
       only console error, so the console is now clean.
 - [x] The staging/production question is answered: one icon everywhere.
-- [ ] Round 7f is drawn and Peter has picked a mark, or said the vessel stays.
-- [ ] If a new mark wins: its ink bounds measured with
-      `node scripts/mark/bbox.mjs public/favicon.svg` before it ships, both
-      `public/favicon.svg` and `public/apple-touch-icon.png` replaced, and
+- [x] Round 7f is drawn and Peter has picked a mark: **G4**, 2026-09-08 — see
+      *The pick*.
+- [x] The new mark's ink bounds measured before it shipped (left 10.83, top
+      5.83, right 89.17, bottom 95 on the 100 grid — clear of all four edges),
+      both `public/favicon.svg` and `public/apple-touch-icon.png` replaced, and
       *What shipped* above rewritten to describe the mark that is actually live.
-- [ ] `scripts/mark/` is deleted once the mark is settled — the whole folder,
-      in the same commit that ships the winner (or, if the vessel stays, as soon
-      as Peter says so). Check first that every finding worth keeping is written
-      into *Round 7* above, because the folder's README is the only other copy.
-      Nothing else references it: it is out of `check:docs` on purpose and no
-      link in `docs/` points at it, so the deletion is `git rm -r` and nothing
-      more.
+- [x] `scripts/mark/` is deleted — the whole folder, in the commit that ships
+      the winner. Every finding worth keeping was written into *Round 7* first,
+      the geometry into *What shipped*, and nothing else referenced the folder,
+      so the deletion was `git rm -r` and nothing more.
 - [ ] The tab icon is visible on staging and production. **Peter's to tick** —
       both sites sit behind the cookie gate whose credentials are Vercel
       Secrets, so no session here can open them. Staging shows it on the next
