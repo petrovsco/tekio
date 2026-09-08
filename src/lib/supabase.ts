@@ -13,8 +13,8 @@
 // the sign-in path, rather than in the chunk that paints Home.
 import { PostgrestClient } from '@supabase/postgrest-js'
 
-export const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
-export const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 /** `https://<ref>.supabase.co/` — trailing slash, so `new URL(path, base)` keeps
  *  the host instead of resolving the path against the root. */

@@ -75,6 +75,7 @@ npm run dev          # Start Vite dev server
 npm run build        # TypeScript check + Vite build
 npm run typecheck    # Type-check only (no emit)
 npm run lint         # ESLint (flat config in eslint.config.js)
+npm run knip         # Dead files, exports and dependencies (knip.jsonc)
 npm run test         # Run all tests once (Vitest)
 npm run test:watch   # Vitest in watch mode
 npm run preview      # Preview production build locally
@@ -87,6 +88,11 @@ build's ~13 s, and Vercel runs the build on every push. Run it before a commit
 that changes `src/`. It is mechanical checks only (roadmap 023 item 1);
 judgement about whether code is *good* stays with `/simplify` and
 `/code-review`.
+
+`knip` reports dead files, exports and dependencies; it never deletes. Its
+findings are triaged by hand into candidate A1 of
+[roadmap/048](docs/roadmap/048-simplification-candidates.md), which is the brief
+that does the deleting — so `knip` reporting zero is what says A1 is finished.
 
 ## Environment Setup
 

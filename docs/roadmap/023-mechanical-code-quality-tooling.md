@@ -1,10 +1,11 @@
 # Roadmap: Mechanical code quality — ESLint, dead-code detection, perf budget
 
 **Label:** infra
-**Status:** in progress — items 0 and 1 landed 2026-09-08: first paint 552 kB →
-324 kB with the 500 kB warning gone (v2.0.58), and `npm run lint` green on a
-clean tree (v2.0.59). Items 2–4 (knip, the conventions file, the perf budget)
-remain. Spun out of
+**Status:** in progress — items 0, 1 and 2 landed 2026-09-08: first paint 552 kB
+→ 324 kB with the 500 kB warning gone (v2.0.58), `npm run lint` green on a clean
+tree (v2.0.59), and `npm run knip` triaged with its deletions scheduled into 048
+A1 (v2.0.60). Items 3 and 4 (the conventions file, the perf budget) remain.
+Spun out of
 [009-feature-grounding.md](done/009-feature-grounding.md) on 2026-08-30 so that brief
 holds only the grounding back-fill it still tracks. Committed to 2.1.0 by Peter
 on 2026-09-05.
@@ -61,9 +62,9 @@ are both over 800 lines. Mechanize first, judge second.
    the build on every push, which is the "slows the build meaningfully" the
    scope line reserved. What its first run found is
    [§ Item 1 — the first run](#item-1--the-first-run) below.
-2. **Dead-code detection.** `knip` (unused files, exports, dependencies). Its
-   first run on a repo this age will find real things; triage them, do not
-   auto-delete.
+2. **Dead-code detection — done 2026-09-08 (v2.0.60).** `knip`, configured in
+   [knip.jsonc](../../knip.jsonc), `npm run knip`. It reports and never deletes.
+   The triage is [§ Item 2 — the knip triage](#item-2--the-knip-triage) below.
 3. **A tekiō conventions file** for `/code-review` to read, so its judgement is
    project-specific rather than generic React advice. Short — the house rules and
    the doctrine already carry most of it; this file is only what a reviewer needs
@@ -180,6 +181,43 @@ other direction — 048 found react-router by reading the code, item 0 found it 
 measuring the bundle, and neither knew about the other until the roadmap was
 grepped. A8's box is now ticked.
 
+## Item 2 — the knip triage
+
+The first run reported four "unused files", and **three of them were wrong** —
+`middleware.ts` (Vercel loads the auth gate by file-name convention) and the two
+Deno edge functions. It also called `@vercel/edge` an unused dependency for the
+same reason. A tool that calls the auth gate dead code gets ignored within a
+week, so the config came first: `middleware.ts` is an entry point,
+`supabase/functions/` is outside the project rather than ignored inside it, and
+`tailwindcss` is declared used because knip does not follow the `@import` inside
+`src/index.css`. Each of those carries its reason in
+[knip.jsonc](../../knip.jsonc) — a bare ignore list is how a tool quietly stops
+meaning anything.
+
+With that, the run is **26 findings, and every one of them is real.** Triage:
+
+| Finding | Verdict |
+|---|---|
+| `@testing-library/react`, `@testing-library/user-event` | **Kept, deliberately.** Genuinely unimported — but jsdom, the vitest setup file and `jest-dom` are already wired up, so these two are the rest of the component-testing kit. Deleting them means reinstalling them the first time anyone writes a component test. Recorded with that reason in `knip.jsonc`. |
+| `src/hooks/useCountUp.ts` (whole file) | **Delete** — scheduled into 048 A1. |
+| 14 unused exports, 9 unused exported types, 1 duplicate export | **Delete** — scheduled into 048 A1. |
+
+Nothing was deleted here, which is what the scope line asked for. The deletions
+belong to candidate **A1** of
+[048-simplification-candidates.md](048-simplification-candidates.md), which
+predicted this run in writing: *"Overlaps 023, whose `knip` run would find the
+same exports."* It did — and it found **eleven more** that the hand read had
+missed, including a whole orphaned file, two exports whose `export` keyword is
+dead while the constant beside it is live, and a re-export whose comment
+("so WeightsTab can use it") is false, because WeightsTab imports from
+`lib/utils` directly. All eleven are now written into A1, so `npm run knip`
+reporting zero is what says A1 is finished.
+
+**The one thing found here and fixed here:** item 0 exported `supabaseUrl` and
+`supabaseAnonKey` from `src/lib/supabase.ts` when only `supabaseHeaders` and
+`functionsUrl` are read outside the file. Knip caught it in the same run that
+introduced it, which is the argument for having the tool at all.
+
 ## Out of scope
 
 - Actually splitting `EditModal.tsx` and `ProgramTab.tsx`. The tools are what
@@ -198,8 +236,9 @@ grepped. A8's box is now ticked.
 - [x] `npm run lint` exists, passes on a clean tree, and fails on a deliberate
       violation. Done 2026-09-08 — exit 0 clean, exit 1 on a probe file. See
       [§ Item 1 — the first run](#item-1--the-first-run).
-- [ ] `npx knip` runs and its findings are triaged in a list — kept, deleted, or
-      deliberately ignored with a reason.
+- [x] `npx knip` runs and its findings are triaged in a list — kept, deleted, or
+      deliberately ignored with a reason. Done 2026-09-08 — 26 findings, all
+      real; see [§ Item 2 — the knip triage](#item-2--the-knip-triage).
 - [ ] A conventions file exists and `/code-review` is pointed at it.
 - [ ] `npm run perf` reports bundle size against a committed baseline and exits
       non-zero when the budget is exceeded.

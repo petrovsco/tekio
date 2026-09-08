@@ -79,6 +79,36 @@ dedupes A2 + A3 + A10 + A11. That set is about −430 lines at low risk.
   run would find the same exports; doing it by hand now costs little and 023
   then confirms zero.
 
+**Knip ran 2026-09-08 (023 item 2) and confirmed the prediction** — it found the
+hand-read list above, and eleven more this entry did not have. Add these when A1
+is landed; `npm run knip` is the check that A1 is finished:
+
+- **A whole orphaned file:** `src/hooks/useCountUp.ts`. Added 2026-06-19 for
+  Home's count-up animations (`6c6ea41`); the SIGNAL restyle removed its last
+  caller and nothing has imported it since.
+- **Three re-exports that only forward:** `TodaysPlan.tsx:292`
+  `export { deloadSets }` — its comment says "so WeightsTab can use it" and
+  WeightsTab imports it from `lib/utils` directly, so the comment is false as
+  well as the export; `adaptations.ts:497` also re-exports `ADAPTATION_MAP`
+  beside the `ADAPTATIONS` already listed; `program.ts:14`
+  `export { getOrCreateExercise }`, which belongs with A2.
+- **Two exports whose keyword is dead but whose value is not:** `QUALITY_PROSE`
+  (`adaptations/labels.ts:21`) and `MUSCLE_SHORT` (`home/GapMap.tsx:29`) are
+  both used further down their own file. Drop the `export`, keep the constant.
+- **Two more dead functions:** `epley1RM` and `brzycki1RM` (`utils.ts:151,156`).
+  Note for whoever deletes them: they are 1RM estimators, so if they are ever
+  revived instead they are formulas and `/ground` applies. Nothing in
+  [grounding-inventory.md](../grounding-inventory.md) cites them today, because
+  the app does not use them.
+- **`classifyGarminIntensity`** (`adaptations.ts:82`) — this entry says
+  `classifyCardio`, which no longer exists under that name.
+- **Seven unused exported types** beyond the two listed: `AdaptationModality`,
+  `MuscleStatus`, `ProposalStatus`, `Proposal`, `MetricSeries`, `SportType`,
+  `DonationType`.
+- **One duplicate export:** `DELOAD_WEEK = CYCLE` in `constants/app.ts` — one
+  value under two names, which is the "duplicated constants" in this entry's
+  own title.
+
 ### A2. `weights.ts` copies `program.ts` and itself (−22)
 
 - **Where:** `src/lib/db/weights.ts:6-18` is `getOrCreateExercise` verbatim from
