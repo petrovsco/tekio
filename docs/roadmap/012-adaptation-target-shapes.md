@@ -1,4 +1,4 @@
-# Roadmap: Adaptation target shapes — one gap, not three follow-ups
+# Roadmap: A weekly target is sets or sessions — never minutes
 
 **Label:** feature
 **Status:** planned — kickoff-ready, no code. Unblocked 2026-09-01: 019 landed, so the seven qualities it reshapes are final. Carried over from 2.0.0 to 2.1.0 when 2.0.0 shipped on 2026-09-05.

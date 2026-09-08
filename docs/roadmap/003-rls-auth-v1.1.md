@@ -1,4 +1,4 @@
-# Roadmap: v1.1 — Real RLS + Auth
+# Roadmap: Lock the database — real logins, and rows only their owner can read
 
 **Label:** infra
 **Status:** backlog — explicitly post-MVP; nothing starts it before the general-use launch. Left in backlog at the 2.1.0 planning (Peter, 2026-09-05).

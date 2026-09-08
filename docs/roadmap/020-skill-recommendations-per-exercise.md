@@ -1,4 +1,4 @@
-# Roadmap: Skill training recommendations per exercise
+# Roadmap: Hang technique tips off an exercise, instead of tracking skill
 
 **Label:** backlog
 **Status:** backlog — idea captured 2026-08-29 when the skill adaptation was retired. 019 landed 2026-09-01, so it is shapeable now; it still needs a decision to commit. Left in backlog at the 2.1.0 planning (Peter, 2026-09-05).

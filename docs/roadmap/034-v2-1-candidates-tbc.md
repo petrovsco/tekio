@@ -1,4 +1,4 @@
-# Roadmap: v2.1 candidates — TBC discussion list
+# Roadmap: Product questions the screen survey raised — decide keep or cut
 
 **Label:** feature
 **Status:** planned — committed to 2.2.0 by Peter on 2026-09-05: "we need to review more deeply before cut". The work is the review session itself; keepers graduate into their own briefs and cuts execute from this one. Raised by the 2026-09-01 screen survey.
