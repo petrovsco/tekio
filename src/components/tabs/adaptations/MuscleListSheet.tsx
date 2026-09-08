@@ -1,6 +1,6 @@
 import { rankMuscleGaps, type MuscleQuality, type MuscleState } from '../../../lib/fusedRead'
 import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
-import { BottomSheet, SheetClose } from '../home/BottomSheet'
+import { BottomSheet, SheetHeader } from '../home/BottomSheet'
 import { RAMP, rampStep } from '../home/GapMap'
 import { QUALITY_SHORT } from './labels'
 import { fmtAgo, fmtSets } from '../../../lib/utils'
@@ -24,16 +24,12 @@ export default function MuscleListSheet({ quality, states, weeklyTarget, onPick,
   const target = weeklyTarget * MUSCLE_WINDOW_DAYS / 7
   return (
     <BottomSheet label={`${QUALITY_SHORT[quality]} — all muscles`} onClose={onClose}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[9px] font-bold tracking-[0.14em] text-ink-3">ALL MUSCLES · WORST FIRST</div>
-          <h3 className="text-[19px] font-bold tracking-[-0.02em] leading-tight mt-0.5">{QUALITY_SHORT[quality]}</h3>
-          <p className="text-xs text-ink-2 mt-0.5">
-            {weeklyTarget}/wk per muscle · {MUSCLE_WINDOW_DAYS}-day window · target {fmtSets(target)} sets
-          </p>
-        </div>
-        <SheetClose onClose={onClose} />
-      </div>
+      <SheetHeader
+        eyebrow="ALL MUSCLES · WORST FIRST"
+        title={QUALITY_SHORT[quality]}
+        sub={`${weeklyTarget}/wk per muscle · ${MUSCLE_WINDOW_DAYS}-day window · target ${fmtSets(target)} sets`}
+        onClose={onClose}
+      />
 
       <ul className="mt-3 border-t border-hairline">
         {ranked.map(m => (

@@ -1,9 +1,7 @@
-import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { startOfWeek, today } from '../../../lib/utils'
-import { BottomSheet, SheetClose, Chip } from './BottomSheet'
-import type { SleepEntry } from '../../../types'
+import { BottomSheet, SheetHeader, CaptureLabel, Chip, Recent, StepperCapture } from './BottomSheet'
 
 // The systemic-recovery captures (SAUNA / COLD / SLEEP) as one T2 sheet
 // (roadmap 018 unit 4). They used to live on RecoveryCard, which the fused
@@ -29,11 +27,7 @@ export default function RecoverySheet({ onClose }: RecoverySheetProps) {
 
   return (
     <BottomSheet onClose={onClose} label="RECOVERY INPUTS">
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">RECOVERY INPUTS</span>
-        <span className="grow" />
-        <SheetClose onClose={onClose} />
-      </div>
+      <SheetHeader eyebrow="RECOVERY INPUTS" onClose={onClose} className="mb-2" />
 
       <SessionRow
         label="SAUNA"
@@ -51,10 +45,23 @@ export default function RecoverySheet({ onClose }: RecoverySheetProps) {
         onEdit={e => openEditModal({ type: 'cold', record: e })}
       />
 
-      <SleepRow
-        sleep={sleep}
+      <StepperCapture
+        className="border-t border-line pt-2.5"
+        label="SLEEP"
+        // Store keeps sleep newest-first; prefill from the last night on record.
+        meta={sleep[0] ? `last on record ${sleep[0].date}` : 'nothing on record'}
+        initial={sleep[0]?.hours ?? 7.5}
+        unit="h"
+        steps={[-1, -0.5, +0.5, +1]}
+        logLabel={h => `Log ${h} h — today`}
         onLog={hours => addSleepEntry({ date: today(), hours })}
-        onEdit={e => openEditModal({ type: 'sleep', record: e })}
+        recent={
+          <Recent
+            entries={sleep.slice(0, 4)}
+            label={e => `${e.date.slice(5)} · ${e.hours}h${e.score != null ? `·${e.score}` : ''}`}
+            onEdit={e => openEditModal({ type: 'sleep', record: e })}
+          />
+        }
       />
 
       <div className="text-[9px] text-ink-3 mt-3 text-pretty">
@@ -78,87 +85,16 @@ function SessionRow<T extends { id: string; date: string; duration: number }>({
   const total = entries.reduce((s, e) => s + e.duration, 0)
   return (
     <div className="border-t border-line pt-2.5 mb-2.5">
-      <div className="flex items-baseline gap-1.5 mb-1.5">
-        <span className="text-[10px] font-bold tracking-[0.1em]">{label}</span>
-        <span className="text-[9px] text-ink-3">
-          {entries.length > 0 ? `${entries.length}× this week · ${total} min` : 'nothing this week'}
-        </span>
-      </div>
+      <CaptureLabel
+        label={label}
+        meta={entries.length > 0 ? `${entries.length}× this week · ${total} min` : 'nothing this week'}
+      />
       <div className="flex gap-1.5 flex-wrap">
         {minutes.map(min => (
           <Chip key={min} onClick={() => onLog(min)}>+ {min} min</Chip>
         ))}
       </div>
       <Recent entries={entries} label={e => `${e.date.slice(5)} · ${e.duration}m`} onEdit={onEdit} />
-    </div>
-  )
-}
-
-const roundHalf = (v: number): number => Math.round(v * 2) / 2
-
-function SleepRow({
-  sleep, onLog, onEdit,
-}: {
-  sleep: SleepEntry[]
-  onLog: (hours: number) => void | Promise<void>
-  onEdit: (e: SleepEntry) => void
-}) {
-  // Store keeps sleep newest-first; prefill from the last night on record.
-  const [hours, setHours] = useState(() => sleep[0]?.hours ?? 7.5)
-  const recent = sleep.slice(0, 4)
-
-  return (
-    <div className="border-t border-line pt-2.5">
-      <div className="flex items-baseline gap-1.5 mb-1.5">
-        <span className="text-[10px] font-bold tracking-[0.1em]">SLEEP</span>
-        <span className="text-[9px] text-ink-3">
-          {sleep[0] ? `last on record ${sleep[0].date}` : 'nothing on record'}
-        </span>
-      </div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-[25px] font-bold tracking-[-0.02em]">{hours.toFixed(1)}</span>
-        <span className="text-[11px] text-ink-2">h</span>
-      </div>
-      <div className="flex gap-1.5 mt-2">
-        {[-1, -0.5, +0.5, +1].map(step => (
-          <Chip key={step} onClick={() => setHours(v => Math.max(0, roundHalf(v + step)))}>
-            {step > 0 ? `+ ${step}` : `− ${Math.abs(step)}`}
-          </Chip>
-        ))}
-      </div>
-      <div className="mt-2.5">
-        <Chip solid onClick={() => onLog(hours)}>Log {hours.toFixed(1)} h — today</Chip>
-      </div>
-      <Recent
-        entries={recent}
-        label={e => `${e.date.slice(5)} · ${e.hours}h${e.score != null ? `·${e.score}` : ''}`}
-        onEdit={onEdit}
-      />
-    </div>
-  )
-}
-
-/** Recent entries, tap to edit — the fold carries the correction path with it,
- *  not just the capture (the old tab was where a mistyped entry got fixed). */
-function Recent<T extends { id: string }>({
-  entries, label, onEdit,
-}: {
-  entries: T[]
-  label: (e: T) => string
-  onEdit: (e: T) => void
-}) {
-  if (entries.length === 0) return null
-  return (
-    <div className="flex gap-1.5 flex-wrap mt-2">
-      {entries.map(e => (
-        <button
-          key={e.id}
-          onClick={() => onEdit(e)}
-          className="text-[9px] text-ink-2 border border-line rounded-[3px] px-1.5 py-[3px] cursor-pointer"
-        >
-          {label(e)}
-        </button>
-      ))}
     </div>
   )
 }

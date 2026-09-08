@@ -1,8 +1,7 @@
-import { useState, type ReactNode } from 'react'
 import { useAppStore } from '../../../store/app'
 import { WATER_GOAL_ML, DONATION_SUPPRESSION } from '../../../constants/app'
 import { today } from '../../../lib/utils'
-import { BottomSheet, SheetClose, Chip } from './BottomSheet'
+import { BottomSheet, SheetHeader, Chip, Recent, StepperCapture } from './BottomSheet'
 
 // The three folded captures (WATER / WEIGHT / BLOOD) as one T2 bottom sheet
 // (roadmap 018 unit 3, design-system §8). Water and blood are readiness
@@ -24,11 +23,7 @@ const TITLES: Record<FoldKind, string> = {
 export default function FoldSheet({ kind, onClose }: FoldSheetProps) {
   return (
     <BottomSheet onClose={onClose} label={TITLES[kind]}>
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">{TITLES[kind]}</span>
-        <span className="grow" />
-        <SheetClose onClose={onClose} />
-      </div>
+      <SheetHeader eyebrow={TITLES[kind]} onClose={onClose} className="mb-2" />
       {kind === 'water' && <WaterCapture />}
       {kind === 'weight' && <WeightCapture onClose={onClose} />}
       {kind === 'blood' && <BloodCapture onClose={onClose} />}
@@ -62,47 +57,32 @@ function WaterCapture() {
   )
 }
 
-const roundTenth = (v: number): number => Math.round(v * 10) / 10
-
 function WeightCapture({ onClose }: { onClose: () => void }) {
   const { bodyweight, addBodyweightEntry, openEditModal } = useAppStore()
   // Store keeps bodyweight sorted newest-first; prefill from the last entry.
-  const [kg, setKg] = useState(() => bodyweight[0]?.weight ?? 80.0)
   const last = bodyweight[0]
 
   return (
-    <div>
-      <div className="flex items-baseline gap-1">
-        <span className="text-[25px] font-bold tracking-[-0.02em]">{kg.toFixed(1)}</span>
-        <span className="text-[11px] text-ink-2">kg</span>
-      </div>
-      <div className="flex gap-1.5 mt-2">
-        {[-1, -0.1, +0.1, +1].map(step => (
-          <Chip key={step} onClick={() => setKg(v => roundTenth(v + step))}>
-            {step > 0 ? `+ ${step}` : `− ${Math.abs(step)}`}
-          </Chip>
-        ))}
-      </div>
-      <div className="mt-3">
-        <Chip
-          solid
-          onClick={async () => {
-            await addBodyweightEntry({ date: today(), weight: kg })
-            onClose()
-          }}
-        >
-          Log {kg.toFixed(1)} kg
-        </Chip>
-      </div>
-      <Recent
-        entries={bodyweight.slice(0, 4)}
-        label={e => `${e.date.slice(5)} · ${e.weight.toFixed(1)}`}
-        onEdit={e => openEditModal({ type: 'bodyweight', record: e })}
-      />
-      <div className="text-[9px] text-ink-3 mt-1.5">
-        {last ? `prefilled from ${last.date} (${last.weight.toFixed(1)} kg) — step to today, then log` : 'no entries yet — step to today, then log'}
-      </div>
-    </div>
+    <StepperCapture
+      initial={last?.weight ?? 80.0}
+      unit="kg"
+      steps={[-1, -0.1, +0.1, +1]}
+      logLabel={kg => `Log ${kg} kg`}
+      onLog={async kg => {
+        await addBodyweightEntry({ date: today(), weight: kg })
+        onClose()
+      }}
+      recent={
+        <Recent
+          entries={bodyweight.slice(0, 4)}
+          label={e => `${e.date.slice(5)} · ${e.weight.toFixed(1)}`}
+          onEdit={e => openEditModal({ type: 'bodyweight', record: e })}
+        />
+      }
+      note={last
+        ? `prefilled from ${last.date} (${last.weight.toFixed(1)} kg) — step to today, then log`
+        : 'no entries yet — step to today, then log'}
+    />
   )
 }
 
@@ -129,32 +109,6 @@ function BloodCapture({ onClose }: { onClose: () => void }) {
         suppresses aerobic work for ~{DONATION_SUPPRESSION.aerobicTailDays} d
         (PLACEHOLDER) — it lands on the readiness gate, not on the map.
       </div>
-    </div>
-  )
-}
-
-/** Recent entries, tap to edit. The fold moves the correction path with the
- *  capture — the old tab was where a mistyped entry got fixed, and a wrong
- *  donation date gates the day for 48 h. */
-function Recent<T extends { id: string }>({
-  entries, label, onEdit,
-}: {
-  entries: T[]
-  label: (e: T) => ReactNode
-  onEdit: (e: T) => void
-}) {
-  if (entries.length === 0) return null
-  return (
-    <div className="flex gap-1.5 flex-wrap mt-2">
-      {entries.map(e => (
-        <button
-          key={e.id}
-          onClick={() => onEdit(e)}
-          className="text-[9px] text-ink-2 border border-line rounded-[3px] px-1.5 py-[3px] cursor-pointer"
-        >
-          {label(e)}
-        </button>
-      ))}
     </div>
   )
 }

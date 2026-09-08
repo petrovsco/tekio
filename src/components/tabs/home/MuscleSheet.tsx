@@ -7,7 +7,7 @@ import {
 } from '../../../lib/fusedRead'
 import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
 import { today, fmtSets, fmtAgo } from '../../../lib/utils'
-import { BottomSheet, SheetClose } from './BottomSheet'
+import { BottomSheet, SheetHeader } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
 import { GAP_CUTOFF, weeklyMuscleTarget } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
@@ -137,11 +137,7 @@ export default function MuscleSheet({
   return (
     <BottomSheet onClose={onClose} label={muscle}>
       {/* identity */}
-      <div className="flex items-center gap-2">
-        <span className="text-[19px] font-bold tracking-[-0.01em]">{muscle}</span>
-        <span className="grow" />
-        <SheetClose onClose={onClose} />
-      </div>
+      <SheetHeader title={muscle} onClose={onClose} />
 
       {/* the one-line verdict: both dimensions at once */}
       <div className={`mt-2 px-[11px] py-[9px] border border-ink rounded-[3px] ${verdict.invert ? 'bg-ink text-white' : 'bg-white'}`}>

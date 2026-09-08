@@ -1,9 +1,9 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tier 1 is finished** (twenty-two candidates, v2.0.58
-→ v2.0.75; the progress log below has the units). What is left is Tier 2 — B5,
-B6, B7, B8, B9, B14 — and Tier 3 — A7, A9, C2; each is one atomic unit a later
+**Status:** in progress — **Tier 1 is finished** and Tier 2 is half done
+(v2.0.58 → v2.0.77; the progress log below has the units). What is left is B7,
+B8, B9, B14 of Tier 2 and A7, A9, C2 of Tier 3; each is one atomic unit a later
 session lands with `/simplify`, ticking its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 
@@ -20,6 +20,9 @@ Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
   **B10 + B11 + B13** (v2.0.74, the last three Tier-1 UI entries) ·
   **C1** (v2.0.75, the Garmin scripts). Each entry below carries its own record
   of what shipped and where the entry was wrong.
+- **2026-09-08, v2.0.77 — Tier 2 continues: B5 + B6**, one unit, because both
+  rebuild the same two Home sheets. One `SheetHeader`, `CaptureLabel`, `Recent`
+  and `StepperCapture` in `BottomSheet.tsx`; five sheets read them.
 **Release:** 2.1.0
 
 ## What this is
@@ -1083,6 +1086,40 @@ insert-embed, plus `deleteRow`). Zero console errors.
   optional `title`/`sub` props on `BottomSheet` that render the header.
 - **Risk:** low. **Visual:** open each sheet.
 
+**Landed 2026-09-08 (v2.0.77), with B6.** `SheetHeader`, `CaptureLabel` and
+`Recent` are in `BottomSheet.tsx`; all five sheets read them. Four departures:
+
+- **The header is three shapes, not one, so `SheetHeader` picks its own
+  alignment.** A header of one line (`FoldSheet`, `RecoverySheet`, `MuscleSheet`)
+  centres against the close target; a stacked eyebrow + title + sub (`RxSheet`,
+  `MuscleListSheet`) aligns to its top. That is what the five hand-written
+  copies already did, and hardcoding either one would have moved the other
+  three. `title` and `sub` therefore sit on the *header*, not on `BottomSheet`
+  as this entry proposes — `BottomSheet` is the scrim, the panel and the Escape
+  key, and a sheet like `MuscleSheet` puts a whole verdict block under a header
+  it still wants shared.
+- **`SheetClose` stopped being exported**, exactly as `EditBtn` did under B12:
+  `SheetHeader` absorbed all five callers, and `knip` is what said so. A close
+  control never appears in this app except in a sheet's header.
+- **A third copy the entry did not count.** `RecoverySheet`'s `SessionRow`
+  builds the same label-plus-meta row as its `SleepRow` — 10px/0.1em name, 9px
+  ink-3 meta. That is `CaptureLabel`, and B6's stepper renders one too when it
+  is given a `label`, so the three are now one.
+- **`MuscleSheet`'s title changed, on purpose and measurably.** It was a `span`
+  at `tracking-[-0.01em]` with the body's 1.5 line-height; it is now the same
+  `h3` the other two title sheets use — `-0.02em`, `leading-tight`. Measured
+  against its own old markup rebuilt beside it in the page: the title line goes
+  **28.5 px → 23.8 px** and its width **197.4 px → 194.0 px**, so the verdict
+  block and everything under it sit 4.7 px higher. Both trackings are inside
+  design-system §5's "−0.01 to −0.02em" band for a 17–19px title, so this is one
+  sheet-title style where there were two, not a new one.
+
+**One correction to B10.** That entry left eight `uppercase`-less eyebrows and
+said "five of the eight are B5's scope". It is **four** — `RxSheet`,
+`MuscleListSheet`, `FoldSheet` and `RecoverySheet`, which are the sheet headers.
+The other four (`AdaptationsTab` ×2, `HomeTab` ×2) are card eyebrows on a tab,
+not sheet headers, and this entry does not reach them.
+
 ### B6. Two identical stepper captures (−30)
 
 - **Where:** `home/RecoverySheet.tsx:97-139` (`SleepRow`) and
@@ -1091,6 +1128,68 @@ insert-embed, plus `deleteRow`). Zero console errors.
   `roundTenth`), steps, unit and `onLog` differ.
 - **Change:** `StepperCapture({ value, unit, steps, round, onLog, recent, note })`.
 - **Risk:** low–medium. **Visual.** Pairs with B5.
+
+**Landed 2026-09-08 (v2.0.77), with B5.** `StepperCapture` is in
+`BottomSheet.tsx`; `SleepRow` and `WeightCapture` are gone and both call sites
+are one element. Four departures, and the first is the finding this entry
+missed:
+
+- **`round` is not a parameter, because it was never an independent choice.**
+  Sleep rounds to halves and steps by 0.5; weight rounds to tenths and steps by
+  0.1. The value is simply held on the grid of its own smallest step, so the
+  component derives it (`scale = 1 / min |step|`) and the two module-level
+  helpers `roundHalf` and `roundTenth` are deleted. The arithmetic stays on
+  integers — `Math.round(v * scale) / scale`, which is what both helpers spelled
+  out — because `v + 0.1` does not.
+- **Bodyweight now clamps at 0.** Sleep already did (`Math.max(0, …)`); weight
+  did not, so it could be stepped negative. Keeping the difference would have
+  meant a prop for a state neither capture should reach, and it takes eighty
+  taps of "− 1" to notice.
+- **`recent` and `note` are slots, not prop bundles.** The caller passes
+  `<Recent … />` rather than handing the stepper three more props to forward,
+  which keeps the name this entry proposed without moving the recent list's own
+  concerns inside.
+- **One 2 px move.** The weight sheet's Log chip sat at `mt-3` and sleep's at
+  `mt-2.5`; both are `mt-2.5` now.
+
+**Measured, for B5 + B6 together (v2.0.77):** **−1 line** across six files
+(+182 / −183), of which **+27 are comment** — so about −28 lines of code
+against the −75 the two entries predicted. Same arithmetic as every unit before
+it: an entry counts the copies it deletes and not the shared thing plus the doc
+comment that replaces them. What is bought: one sheet header, one stepper, one
+`Recent`, one capture label. First paint **349.06 kB**, unchanged — every file
+here is in a lazy chunk, which is the mirror of the trap B10 hit. `npm run lint`
+6 warnings / 0 errors (023's floor), `npm run knip` clean once `SheetClose` lost
+its export, 227 tests pass.
+
+**Browser-checked on live data** (house rule `verify-in-browser`; five sheets
+change, so all five were opened). Zero console errors, and **nothing was written
+to the database** — the only non-GET requests in the whole run were the two seed
+upserts CLAUDE.md documents as deliberate on every bootstrap.
+
+- **The headers were checked by computed style**, because a relocated class
+  string is what a screenshot cannot prove. All four eyebrows — LOG WEIGHT, LOG
+  WATER, LOG BLOOD, RECOVERY INPUTS, HOW TO TRAIN IT, ALL MUSCLES · WORST FIRST
+  — read `9px / 700 / letter-spacing 1.26px / rgb(138,138,138)`, which is 0.14em
+  at 9px; all three titles read `19px / 700 / -0.38px`; both subs `12px / 400 /
+  rgb(107,107,107)`. The close target is `44×44` at x=338 in every sheet (390px
+  viewport, 16px gutter, `-mr-2`) with an 18px glyph at stroke 1.8 in
+  `rgb(107,107,107)`. Alignment came back `center` for the three one-line
+  headers and `flex-start` for the two stacked ones, which is the rule above.
+- **Both steppers were stepped, not just looked at.** Weight, prefilled 74.9 kg
+  from 2026-09-01: − 0.1 → 74.8, − 1 → 73.8, + 0.1 → 73.9, + 1 → 74.9 — back on
+  the tenth it started from, and the confirm chip tracked it (*Log 74.9 kg*).
+  Sleep, prefilled 8.15 h from last night: − 0.5 → 7.5, − 1 → 6.5, + 0.5 → 7.0,
+  chip *Log 7.0 h — today*. Every intermediate value is on its own grid, which
+  is the claim the derived rounding makes.
+- **The rest of each sheet still reads.** Recovery: SAUNA / COLD *nothing this
+  week* with their +10/+15/+20 and +2/+3/+5 chips, SLEEP *last on record
+  2026-09-08*, four recent chips (`09-08 · 8.15h·94` …) and the footnote.
+  Weight: four recent chips and *prefilled from 2026-09-01 (74.9 kg) — step to
+  today, then log*. The muscle sheet opened on Upper Back / Traps with its
+  verdict, both dimension tiles, the six week bars and the quality mix; RxSheet
+  drew Hypertrophy's rx table and both notes; MuscleListSheet drew its ranked
+  list under the header at y=229.
 
 ### B7. WeightsTab rebuilds its history on every keystroke (perf, +6)
 
@@ -1268,8 +1367,8 @@ Tier 2:
 - [x] S1 save-and-toast helper (EditModal) — 2026-09-08, v2.0.66. Browser-checked on live data: a sleep entry saved unchanged ("Updated!", modal closed); the same save with the API cut off printed "Failed to update." and left the modal open with every value intact; clearing a required field made Save a no-op with no toast; "Delete entry" with the API cut off printed "Failed to delete."; the superset form, driven through the store because the history holds none, rendered both exercises and kept its eight set rows on a failed save. Zero console errors
 - [x] A4 `userRows` / `deleteRow` — 2026-09-08, v2.0.68. Ten files, not eight; `cols` is generic over its literal type so the callers keep their column checking
 - [x] A5 `toRow` / `toEntry`, derived reverse maps — 2026-09-08, v2.0.68. The forward fallbacks are gone and the maps are now total by type; the reverse fallbacks stay, because the `activity_type` constraint is wider than `CARDIO_TYPES`
-- [ ] B5 sheet header + `Recent` shared
-- [ ] B6 `StepperCapture`
+- [x] B5 sheet header + `Recent` shared — 2026-09-08, v2.0.77. `SheetHeader` picks its own alignment (a one-line header centres against the close target, a stacked one tops), `title`/`sub` sit on it rather than on `BottomSheet`, `SheetClose` stopped being exported, and a third copy fell out as `CaptureLabel`. `MuscleSheet`'s title is now the same `h3` as the other two: 28.5 px → 23.8 px tall, 4.7 px up the sheet
+- [x] B6 `StepperCapture` — 2026-09-08, v2.0.77. `round` is derived from the smallest step, so `roundHalf`/`roundTenth` are gone; bodyweight now clamps at 0 like sleep already did. Both steppers stepped in the browser and every value stayed on its own grid
 - [ ] B7 WeightsTab memoised
 - [ ] B8 `weights` read from the store in the leaves
 - [ ] B9 `TrendChart`

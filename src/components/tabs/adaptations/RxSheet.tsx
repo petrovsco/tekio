@@ -1,6 +1,6 @@
 import { ADAPTATION_MAP, ADAPTATION_PRINCIPLE } from '../../../constants/adaptations'
 import type { Adaptation } from '../../../types'
-import { BottomSheet, SheetClose } from '../home/BottomSheet'
+import { BottomSheet, SheetHeader } from '../home/BottomSheet'
 import { AdaptationRxTable } from '../home/AdaptationRx'
 
 // "How to train it" for one adaptation (roadmap 031 §3a, §7 decision 5): the
@@ -16,14 +16,7 @@ export default function RxSheet({ quality, onClose }: RxSheetProps) {
   const meta = ADAPTATION_MAP[quality]
   return (
     <BottomSheet label={`How to train ${meta.label}`} onClose={onClose}>
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-[9px] font-bold tracking-[0.14em] text-ink-3">HOW TO TRAIN IT</div>
-          <h3 className="text-[19px] font-bold tracking-[-0.02em] leading-tight mt-0.5">{meta.label}</h3>
-          <p className="text-xs text-ink-2 mt-0.5">{meta.summary}</p>
-        </div>
-        <SheetClose onClose={onClose} />
-      </div>
+      <SheetHeader eyebrow="HOW TO TRAIN IT" title={meta.label} sub={meta.summary} onClose={onClose} />
 
       <div className="mt-3 border border-line rounded-[3px] px-2.5 py-2">
         <AdaptationRxTable rx={meta.rx} />
