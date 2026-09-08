@@ -1,7 +1,7 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** in progress — the live mark is 7e's **G4** turned to one o'clock (v2.0.53): the octopus arm written as the Ō, with the brushed macron. v2.0.52 shipped a band ring in its place and was corrected. The drawing bench is deleted again. One box is left and it is Peter's: seeing the tab icon on staging, and on production at the 2.1.0 release.
+**Status:** in progress — the live mark is 7e's **G4** turned to half past one (v2.0.54): the octopus arm written as the Ō, with the brushed macron. v2.0.52 shipped a band ring in its place and was corrected. The drawing bench is deleted again. One box is left and it is Peter's: seeing the tab icon on staging, and on production at the 2.1.0 release.
 **Release:** 2.1.0
 
 ## Progress log
@@ -32,6 +32,9 @@
   *wrapped arm*, and a band was substituted for it. Round 7g restores the arm
   and applies his second call — the ring turned to one o'clock, the way G3 is.
   See *The pick* and *The tilt*.
+- **2026-09-08 (v2.0.54)** — Peter took the turn one hour further: round 7g's
+  **T4**, the root at half past one. No new round; the row was already drawn and
+  is in the commit history at `475207b`. Re-emitted at −45° and re-measured.
 
 [index.html](../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for
@@ -66,7 +69,7 @@ second signal in the tab would be duplicate work for no extra information. No
 build-time branching; `VITE_ENV` stays unused by the icon.
 
 **The mark: an octopus arm written as the Ō of Tekiō.** One stroke wrapped into
-a ring — thick where it starts at one o'clock, thinning as it travels all the
+a ring — thick where it starts at half past one, thinning as it travels all the
 way round — with eight suckers punched through it and a macron drawn above with
 the same brush. It is the letter and the creature at the same time, which is the
 thing seven rounds were trying to get.
@@ -78,7 +81,7 @@ and the whole taper is spent on the *inside*. Width runs `w(t) = 5.2 + 9.8·(1�
 — 15 units at the root, 5.2 at the tip — over a sweep of 366°, six degrees more
 than a full turn, so the thin tip lies inside the root's own ink and needs no
 cap. The root does, and gets a true semicircle, which is why the counter ends in
-a bulb rather than a chisel. The root sits at **−60°, one o'clock** (see *The
+a bulb rather than a chisel. The root sits at **−45°, half past one** (see *The
 tilt*). Eight suckers at half the local width, spaced `(i + 0.6)/(n + 0.8)`
 along the sweep so they clear both ends. The macron is a bowed stroke from x 29
 to 71 at `y = 8.5 − 0.9·sin πt`, 4.2 units thick at the left and 2.4 at the
@@ -99,7 +102,7 @@ right. Every number is also commented in the file.
   hole, correct on any ground. The rule has to be the default **nonzero**, and
   each hole is a 20-gon wound against the arm. Not `evenodd`: the arm laps its
   own root by 6°, and evenodd reads that doubly-covered wedge as a hole, which
-  gashes the ring white at one o'clock. This was seen, not reasoned about.
+  gashes the ring white at the root. This was seen, not reasoned about.
 - **The arm is one closed outline, not a ribbon plus two cap discs.** The bench
   rounds an arm's ends by dropping a disc on each, which is fine when everything
   is ink; under a fill rule those discs punch half-moons. So the shipped outline
@@ -547,23 +550,31 @@ is his to overrule, not mine to route around.
 Peter, 2026-09-08, after the correction: *"I would choose the same G4, but
 tilted the way G3 is."* G3's note on his sheet reads *"six larger apertures and
 the root at 1 o'clock, so the weight is not stacked."* The tilt is the second
-half of that: the **ring turns 35°**, from −95° (just left of twelve) to −60°,
-and the macron does not turn at all, because a tilted macron stops being a
-macron. G3's other change — six bigger holes instead of eight — was not asked
-for and is not taken; the round drew it as **T3** so the choice was on the
-screen rather than in an argument.
+half of that: the **ring turns**, and the macron does not turn at all, because a
+tilted macron stops being a macron. G3's other change — six bigger holes instead
+of eight — was not asked for and is not taken; the round drew it as **T3** so
+the choice was on the screen rather than in an argument.
 
 What the turn buys, and it is visible at 180px: with the root at twelve the
 heavy end of the stroke stacks directly under the macron, so the two heaviest
 things in the mark sit on the same vertical axis and the eye reads a lid on a
-pot. Turned to one o'clock the weight comes off that axis, the counter's step
-reads as the end of a stroke rather than as a defect, and the thin tail runs
-under the macron where it belongs.
+pot. Turned, the weight comes off that axis, the counter's step reads as the end
+of a stroke rather than as a defect, and the thin tail runs under the macron
+where it belongs.
 
 Round 7g drew five rows — the base G2, G4 untilted, G4 at one o'clock, G4 at one
 o'clock with G3's six holes, and G4 at half past one — at 16 to 128px on light
-and dark, plus all five at 180. One o'clock is what shipped, unchanged from the
-ask.
+and dark, plus all five at 180. That last row exists because "the way G3 is" is
+a direction and not a number, so the round put both sides of one o'clock on the
+screen instead of guessing which one he meant.
+
+**One o'clock shipped as v2.0.53; Peter then took half past one** — *"I choose
+the 1:30 version"* — which is row **T4**, and it is what is live. The root moves
+from −60° to **−45°**, a further 15°, for a total turn of 50° off the original
+−95°. Nothing else about the drawing changes, and nothing else *can*: the outer
+edge is a true circle and the root's cap sits exactly on it, so a turn moves
+only where the stroke begins and ends. The measured ink bounds are identical
+before and after.
 
 **One thing does differ from the sheet, and it is forced.** The bench draws an
 arm as a ribbon plus a disc on each end; a shipped icon needs the suckers to be
@@ -574,11 +585,14 @@ the small cusp the sheet version carries on the outer edge is gone. It is a
 hairline at 330px, it makes the mark cleaner rather than different, and it is
 recorded here rather than left to be discovered.
 
-Verified on the production build (`vite preview`), 2026-09-08: `/favicon.svg`
-and `/apple-touch-icon.png` both 200, zero console messages of any kind, zero
-responses ≥ 400, and both files rendered by the browser at 16, 24, 32, 64 and
-180px on light, dark and tab-grey grounds. The letter still closes at 16px and
-the suckers are still holes at 32px.
+Verified on the production build (`vite preview`) after each turn, most recently
+for T4 on 2026-09-08: `link[rel=icon]` resolves to `/favicon.svg`, that file and
+`/apple-touch-icon.png` both return 200, the app loads with zero console
+messages of any kind and zero responses ≥ 400, and both files were rendered by
+the browser at 16, 24, 32 and 64px on tab-bar grey and on a dark tab bar (where
+the `prefers-color-scheme` rule flips the ink to white), plus the touch icon at
+90px on its paper ground. The letter still closes at 16px and the suckers are
+still holes at 32px.
 
 ## Doctrine check (§4)
 
@@ -604,8 +618,9 @@ the suckers are still holes at 32px.
       both `public/favicon.svg` and `public/apple-touch-icon.png` replaced, and
       *What shipped* above rewritten to describe the mark that is actually live.
 - [x] The drawing shipped is the one Peter picked, not a construction chosen for
-      him: 7e's **G2 arm** with the brushed macron, turned to one o'clock
-      (v2.0.53). v2.0.52 shipped a band in its place; see *The pick*.
+      him: 7e's **G2 arm** with the brushed macron, turned to half past one —
+      round 7g's T4, v2.0.54. v2.0.52 shipped a band in its place and v2.0.53
+      stopped an hour short; see *The pick* and *The tilt*.
 - [x] `scripts/mark/` is deleted — the whole folder, in the commit that ships
       the winner. Every finding worth keeping was written into *Round 7* first,
       the geometry into *What shipped*, and nothing else referenced the folder,
