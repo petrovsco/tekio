@@ -12,6 +12,17 @@ ledger for every surface. It is imported below so it is always in context.
 
 @docs/doctrine.md
 
+## Reviewing code
+
+**Before `/code-review` or `/simplify` on this repo, read
+[docs/code-review.md](docs/code-review.md).** It is the list of things a good
+generic React reviewer gets wrong here — the deliberate decisions that look like
+defects (one hardcoded user, wide-open RLS, no router, `any` at the database
+edge), where the real risk is (any number claiming physiological meaning is
+grounded and needs `/ground`, not an opinion), and what `npm run lint` and
+`npm run knip` already cover so a review need not. It is a link rather than an
+import on purpose: a reviewer opens it, every other session does not pay for it.
+
 ## Branching and versioning
 
 **Push to `develop`.** `master` holds the last released state and is not pushed
@@ -168,6 +179,7 @@ carries a `**Label:**` line — bug / infra / feature / backlog — defined in
 **Reference-only docs** — these state what *is* and must never grow a follow-up,
 a "proposed edit" or a next step; those go to `docs/roadmap/` instead:
 [docs/doctrine.md](docs/doctrine.md) (decisions),
+[docs/code-review.md](docs/code-review.md) (what a reviewer needs),
 [docs/grounding-inventory.md](docs/grounding-inventory.md) (an index of the 75
 numbers), [docs/grounding/](docs/grounding/) (the verbatim scout blocks a brief
 outgrew), [docs/design-system.md](docs/design-system.md) (the visual

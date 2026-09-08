@@ -65,10 +65,10 @@ are both over 800 lines. Mechanize first, judge second.
 2. **Dead-code detection — done 2026-09-08 (v2.0.60).** `knip`, configured in
    [knip.jsonc](../../knip.jsonc), `npm run knip`. It reports and never deletes.
    The triage is [§ Item 2 — the knip triage](#item-2--the-knip-triage) below.
-3. **A tekiō conventions file** for `/code-review` to read, so its judgement is
-   project-specific rather than generic React advice. Short — the house rules and
-   the doctrine already carry most of it; this file is only what a reviewer needs
-   that is not already written down.
+3. **A tekiō conventions file — done 2026-09-08 (v2.0.61).**
+   [docs/code-review.md](../code-review.md), pointed at from a *Reviewing code*
+   section in `CLAUDE.md`. See
+   [§ Item 3 — the conventions file](#item-3--the-conventions-file).
 4. **`scripts/perf-budget.mjs`.** Fails on a bundle-size delta against a
    committed baseline. Plus a Playwright startup / interaction timing run — the
    Playwright MCP is already wired for this repo.
@@ -218,6 +218,31 @@ reporting zero is what says A1 is finished.
 `functionsUrl` are read outside the file. Knip caught it in the same run that
 introduced it, which is the argument for having the tool at all.
 
+## Item 3 — the conventions file
+
+[docs/code-review.md](../code-review.md), four short sections and nothing that
+is written down elsewhere:
+
+1. **Deliberate, so not findings** — the seven things a generic React reviewer
+   raises every single time and is wrong about here: one hardcoded user, RLS
+   `USING (true)`, no router, the `PostgrestClient` (so no `supabase.auth`),
+   `any` at the database edge, `origin = 'staging'` rows being real data, and
+   the two long files already scheduled in 048.
+2. **Where the real risk is** — any number claiming physiological meaning is
+   grounded and indexed, so a reviewer who "corrects" a rep range from memory
+   has broken the product's one promise; reads never run on the program cycle;
+   doctrine caps bind proposals; a visible change needs a browser check.
+3. **Already mechanised** — lint and knip cover the mechanical layer, so a
+   review should spend itself on behaviour instead.
+4. **Small house habits** — symbols not line numbers, mixed line endings,
+   and colour carrying meaning in the SIGNAL language.
+
+**How it is "pointed at":** a *Reviewing code* section near the top of
+`CLAUDE.md`, which every session loads, telling the reviewer to open the file.
+Deliberately a **link, not an `@import`** like `doctrine.md` — an import is paid
+for by every session in the repo, and this is only wanted during a review. It is
+also added to the reference-only list, so it can never grow a follow-up.
+
 ## Out of scope
 
 - Actually splitting `EditModal.tsx` and `ProgramTab.tsx`. The tools are what
@@ -239,7 +264,9 @@ introduced it, which is the argument for having the tool at all.
 - [x] `npx knip` runs and its findings are triaged in a list — kept, deleted, or
       deliberately ignored with a reason. Done 2026-09-08 — 26 findings, all
       real; see [§ Item 2 — the knip triage](#item-2--the-knip-triage).
-- [ ] A conventions file exists and `/code-review` is pointed at it.
+- [x] A conventions file exists and `/code-review` is pointed at it. Done
+      2026-09-08 — [docs/code-review.md](../code-review.md), pointed at from
+      `CLAUDE.md`; see [§ Item 3](#item-3--the-conventions-file).
 - [ ] `npm run perf` reports bundle size against a committed baseline and exits
       non-zero when the budget is exceeded.
 - [ ] The startup timing run produces a number, and that number is written down
