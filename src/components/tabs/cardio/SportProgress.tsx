@@ -29,7 +29,8 @@ export function SportProgress() {
   const [selSport, setSelSport] = useState('')
   const [statsCompetitor, setStatsCompetitor] = useState('')
   const [statsTimeFrame, setStatsTimeFrame] = useState<TimeFrame>('All time')
-  const { sports, sportTypes } = useAppStore()
+  const sports = useAppStore(s => s.sports)
+  const sportTypes = useAppStore(s => s.sportTypes)
   const { weekStartDay } = usePrefs()
 
   const allSports = uniqSorted(sports.map(d => d.sport))

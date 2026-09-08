@@ -32,7 +32,9 @@ export default function FoldSheet({ kind, onClose }: FoldSheetProps) {
 }
 
 function WaterCapture() {
-  const { water, addWaterEntry, openEditModal } = useAppStore()
+  const water = useAppStore(s => s.water)
+  const addWaterEntry = useAppStore(s => s.addWaterEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
   const todayEntries = water.filter(w => w.date === today())
   const todayMl = todayEntries.reduce((s, w) => s + w.amountMl, 0)
 
@@ -58,7 +60,9 @@ function WaterCapture() {
 }
 
 function WeightCapture({ onClose }: { onClose: () => void }) {
-  const { bodyweight, addBodyweightEntry, openEditModal } = useAppStore()
+  const bodyweight = useAppStore(s => s.bodyweight)
+  const addBodyweightEntry = useAppStore(s => s.addBodyweightEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
   // Store keeps bodyweight sorted newest-first; prefill from the last entry.
   const last = bodyweight[0]
 
@@ -87,7 +91,9 @@ function WeightCapture({ onClose }: { onClose: () => void }) {
 }
 
 function BloodCapture({ onClose }: { onClose: () => void }) {
-  const { donations, addDonationEntry, openEditModal } = useAppStore()
+  const donations = useAppStore(s => s.donations)
+  const addDonationEntry = useAppStore(s => s.addDonationEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
   return (
     <div>
       <Chip

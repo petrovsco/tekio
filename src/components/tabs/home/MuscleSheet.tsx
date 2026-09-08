@@ -48,9 +48,12 @@ interface MuscleSheetProps {
 export default function MuscleSheet({
   muscle, onClose, onSearchExercises, onOpenAdaptations,
 }: MuscleSheetProps) {
-  const {
-    weights, exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets, addWeightEntry,
-  } = useAppStore()
+  const weights = useAppStore(s => s.weights)
+  const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
+  const muscleGroups = useAppStore(s => s.muscleGroups)
+  const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
+  const adaptationTargets = useAppStore(s => s.adaptationTargets)
+  const addWeightEntry = useAppStore(s => s.addWeightEntry)
 
   const state = useMemo(
     () => muscleStates(weights, exerciseMuscles, muscleGroups).find(s => s.name === muscle),

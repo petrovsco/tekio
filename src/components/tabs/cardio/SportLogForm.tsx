@@ -33,7 +33,10 @@ export function SportLogForm() {
   const [teammates, setTeammates] = useState<string[]>([])
   const [newSportHasCompetitor, setNewSportHasCompetitor] = useState(false)
   const [newSportHasTeammate, setNewSportHasTeammate] = useState(false)
-  const { sports, sportTypes, addSportEntry, withToast } = useAppStore()
+  const sports = useAppStore(s => s.sports)
+  const sportTypes = useAppStore(s => s.sportTypes)
+  const addSportEntry = useAppStore(s => s.addSportEntry)
+  const withToast = useAppStore(s => s.withToast)
 
   const allSports = uniqSorted(sports.map(d => d.sport))
   const allCompetitors = uniqSorted(sports.flatMap(d => d.competitorNames ?? []))

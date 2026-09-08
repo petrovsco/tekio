@@ -14,7 +14,9 @@ const REGION_OPTS: { value: BodyRegion; label: string }[] = [
 ]
 
 export function MuscleGroupEditor() {
-  const { muscleGroups, reloadMuscleData, setToast } = useAppStore()
+  const muscleGroups = useAppStore(s => s.muscleGroups)
+  const reloadMuscleData = useAppStore(s => s.reloadMuscleData)
+  const setToast = useAppStore(s => s.setToast)
 
   const [newName, setNewName] = useState('')
   const [newRegion, setNewRegion] = useState<BodyRegion>('upper')

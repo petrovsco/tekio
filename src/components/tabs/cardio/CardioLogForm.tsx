@@ -18,7 +18,8 @@ export function CardioLogForm() {
   const [format, setFormat] = useState<CardioFormat | ''>('')
   const [bout, setBout] = useState('')
   const [notes, setNotes] = useState('')
-  const { addCardioEntry, withToast } = useAppStore()
+  const addCardioEntry = useAppStore(s => s.addCardioEntry)
+  const withToast = useAppStore(s => s.withToast)
 
   const durationMins = parseDurationMins(duration)
   const distKm = distance ? +distance : 0

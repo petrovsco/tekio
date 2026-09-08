@@ -50,7 +50,8 @@ export default function App() {
   // instead of on the tab's default. Cleared by any navigation that omits it,
   // so the drawer and the bottom nav always land on the plain tab.
   const [focusMuscle, setFocusMuscle] = useState<string | null>(null)
-  const { loading, bootstrap } = useAppStore()
+  const loading = useAppStore(s => s.loading)
+  const bootstrap = useAppStore(s => s.bootstrap)
 
   useEffect(() => { bootstrap() }, [])
 

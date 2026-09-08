@@ -16,11 +16,13 @@ const RANGE_OPTS = [
 ]
 
 export function ExportPane({ onClose }: ExportPaneProps) {
-  const store = useAppStore()
   const [fromDate, setFromDate] = useState(today())
   const [exportAll, setExportAll] = useState(false)
 
   const doExport = () => {
+    // Read at click time rather than subscribing: this pane renders once, in a
+    // sheet, and a whole-store subscription re-rendered it on every write.
+    const store = useAppStore.getState()
     const cutoff = exportAll ? '' : fromDate
     const f = <T extends { date: string }>(arr: T[]) => cutoff ? arr.filter(e => e.date >= cutoff) : arr
 

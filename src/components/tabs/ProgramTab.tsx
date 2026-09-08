@@ -726,12 +726,10 @@ type EditingState = { programId?: string; userProgramId?: string; draft: Program
 export function ProgramTab() {
   const [editing, setEditing] = useState<EditingState>(null)
   const [saving, setSaving] = useState(false)
-  const {
-    programs,
-    programHistory,
-    saveActiveProgram,
-    withToast,
-  } = useAppStore()
+  const programs = useAppStore(s => s.programs)
+  const programHistory = useAppStore(s => s.programHistory)
+  const saveActiveProgram = useAppStore(s => s.saveActiveProgram)
+  const withToast = useAppStore(s => s.withToast)
 
   // The one handler that stays here: it owns ProgramTab's editor state.
   const handleSave = async (p: Program, programId?: string, userProgramId?: string) => {

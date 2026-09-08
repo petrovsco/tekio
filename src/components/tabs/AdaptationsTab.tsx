@@ -40,7 +40,13 @@ interface AdaptationsTabProps {
 }
 
 export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
-  const { weights, cardio, sports, exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets } = useAppStore()
+  const weights = useAppStore(s => s.weights)
+  const cardio = useAppStore(s => s.cardio)
+  const sports = useAppStore(s => s.sports)
+  const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
+  const muscleGroups = useAppStore(s => s.muscleGroups)
+  const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
+  const adaptationTargets = useAppStore(s => s.adaptationTargets)
   const { trackedMuscleGroupIds } = usePrefs()
   const { hrMax } = useHrMax()
   const date = today()

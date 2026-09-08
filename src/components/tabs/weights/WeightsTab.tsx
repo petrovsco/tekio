@@ -28,7 +28,15 @@ export function WeightsTab() {
   const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
   const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
 
-  const { weights, exerciseMuscles, exerciseAliases, programs, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, withToast } = useAppStore()
+  const weights = useAppStore(s => s.weights)
+  const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
+  const exerciseAliases = useAppStore(s => s.exerciseAliases)
+  const programs = useAppStore(s => s.programs)
+  const addWeightEntry = useAppStore(s => s.addWeightEntry)
+  const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
+  const advanceActiveProgram = useAppStore(s => s.advanceActiveProgram)
+  const withToast = useAppStore(s => s.withToast)
 
   // Auto-advance sequential (legacy index-mode) programs when today's day is done.
   // Weekday-pinned and flexible programs derive their day from the calendar/checklist

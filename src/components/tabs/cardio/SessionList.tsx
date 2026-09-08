@@ -39,7 +39,8 @@ function sessionLabel(s: Session): string {
 }
 
 function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
-  const { removeCardioEntry, openEditModal } = useAppStore()
+  const removeCardioEntry = useAppStore(s => s.removeCardioEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
   // The one fact a hard endurance session used to lose on its way to the read
   // (roadmap 057). It says what the session was, never what it credits.
   const threshold = isThresholdCardio(d, hrMax)
@@ -90,7 +91,8 @@ function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
 }
 
 function SportRow({ d }: { d: SportEntry }) {
-  const { removeSportEntry, openEditModal } = useAppStore()
+  const removeSportEntry = useAppStore(s => s.removeSportEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
   // Garmin's word only: a match's average HR is an intermittent average, so a
   // hand-logged match is never flagged (roadmap 057, 059 decision 4).
   const threshold = isThresholdSport(d)
@@ -136,7 +138,8 @@ function SportRow({ d }: { d: SportEntry }) {
 }
 
 export function SessionList() {
-  const { cardio, sports } = useAppStore()
+  const cardio = useAppStore(s => s.cardio)
+  const sports = useAppStore(s => s.sports)
   // Read once for the whole list: the observed peak walks every synced row, so
   // a per-row hook would repeat that work for each row drawn.
   const { hrMax } = useHrMax()

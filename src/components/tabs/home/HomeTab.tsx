@@ -111,10 +111,18 @@ interface GateCol {
 }
 
 export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => void }) {
-  const {
-    weights, cardio, sports, sleep, donations, water, bodyweight, programs,
-    exerciseMuscles, muscleGroups, exerciseAdaptations, adaptationTargets,
-  } = useAppStore()
+  const weights = useAppStore(s => s.weights)
+  const cardio = useAppStore(s => s.cardio)
+  const sports = useAppStore(s => s.sports)
+  const sleep = useAppStore(s => s.sleep)
+  const donations = useAppStore(s => s.donations)
+  const water = useAppStore(s => s.water)
+  const bodyweight = useAppStore(s => s.bodyweight)
+  const programs = useAppStore(s => s.programs)
+  const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
+  const muscleGroups = useAppStore(s => s.muscleGroups)
+  const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
+  const adaptationTargets = useAppStore(s => s.adaptationTargets)
   const { trackedMuscleGroupIds } = usePrefs()
 
   const [sheet, setSheet] = useState<OpenSheet | null>(null)

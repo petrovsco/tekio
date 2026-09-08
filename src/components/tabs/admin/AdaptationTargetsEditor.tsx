@@ -7,7 +7,9 @@ import { updateAdaptationTarget } from '../../../lib/db/adaptationTargets'
 import type { Adaptation } from '../../../types'
 
 export function AdaptationTargetsEditor() {
-  const { adaptationTargets, reloadAdaptationTargets, setToast } = useAppStore()
+  const adaptationTargets = useAppStore(s => s.adaptationTargets)
+  const reloadAdaptationTargets = useAppStore(s => s.reloadAdaptationTargets)
+  const setToast = useAppStore(s => s.setToast)
   const [saving, setSaving] = useState<Adaptation | null>(null)
 
   const save = async (

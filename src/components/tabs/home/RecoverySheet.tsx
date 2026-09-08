@@ -14,10 +14,13 @@ interface RecoverySheetProps {
 }
 
 export default function RecoverySheet({ onClose }: RecoverySheetProps) {
-  const {
-    sauna, cold, sleep,
-    addSaunaEntry, addColdEntry, addSleepEntry, openEditModal,
-  } = useAppStore()
+  const sauna = useAppStore(s => s.sauna)
+  const cold = useAppStore(s => s.cold)
+  const sleep = useAppStore(s => s.sleep)
+  const addSaunaEntry = useAppStore(s => s.addSaunaEntry)
+  const addColdEntry = useAppStore(s => s.addColdEntry)
+  const addSleepEntry = useAppStore(s => s.addSleepEntry)
+  const openEditModal = useAppStore(s => s.openEditModal)
   const { weekStartDay } = usePrefs()
   const weekStart = startOfWeek(today(), weekStartDay)
   const inWeek = (d: string) => d >= weekStart && d <= today()

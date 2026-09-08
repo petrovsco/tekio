@@ -44,7 +44,11 @@ function muscleOptions(groups: MuscleGroup[]): { value: string; label: string }[
 }
 
 export function ExerciseMuscleEditor() {
-  const { exerciseNames, exerciseAdaptations, muscleGroups, reloadMuscleData, setToast } = useAppStore()
+  const exerciseNames = useAppStore(s => s.exerciseNames)
+  const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
+  const muscleGroups = useAppStore(s => s.muscleGroups)
+  const reloadMuscleData = useAppStore(s => s.reloadMuscleData)
+  const setToast = useAppStore(s => s.setToast)
 
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(false)

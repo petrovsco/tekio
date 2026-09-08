@@ -22,7 +22,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
   const [val, setVal] = useState('')
   const [loading, setLoading] = useState(false)
   const ref = useRef<HTMLTextAreaElement>(null)
-  const store = useAppStore()
+  const setToast = useAppStore(s => s.setToast)
 
   useEffect(() => {
     const t = setTimeout(() => ref.current?.focus(), 50)
@@ -30,6 +30,10 @@ export function ImportPane({ onClose }: ImportPaneProps) {
   }, [])
 
   async function applyData(text: string): Promise<boolean> {
+    // Read at apply time rather than subscribing (see ExportPane) — and this
+    // way the merge reads the store as it is when Import is pressed, not as it
+    // was when the pane rendered.
+    const store = useAppStore.getState()
     let parsed: Record<string, unknown>
     try { parsed = JSON.parse(text) } catch { return false }
     if (!Array.isArray(parsed.weights) || !Array.isArray(parsed.bodyweight)) return false
@@ -138,7 +142,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
     ref.current?.blur()
     setTimeout(async () => {
       const ok = await applyData(text)
-      if (!ok) store.setToast('Invalid data format.')
+      if (!ok) setToast('Invalid data format.')
       onClose()
     }, 100)
   }
@@ -153,7 +157,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
           <Btn
             onClick={async () => {
               const ok = await applyData(val)
-              if (!ok) store.setToast('Invalid data format.')
+              if (!ok) setToast('Invalid data format.')
               else onClose()
             }}
             disabled={!val.trim() || loading}

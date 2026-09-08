@@ -1,11 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tier 1 is finished** and Tier 2 is down to one
-entry (v2.0.58 → v2.0.79; the progress log below has the units). What is left is
-B14 of Tier 2 and A7, A9, C2 of Tier 3; each is one atomic unit a later session
-lands with `/simplify`, ticking its box in Acceptance when it ships. Committed
-to 2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Status:** in progress — **Tiers 1 and 2 are both finished** (v2.0.58 →
+v2.0.80; the progress log below has the units). What is left is Tier 3 — A7, A9
+and C2 — plus the two housekeeping boxes; each is one atomic unit a later
+session lands with `/simplify`, ticking its box in Acceptance when it ships.
+Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 
 ## Progress log
 
@@ -29,6 +29,9 @@ to 2.1.0 by Peter on 2026-09-05 as spare-time units.
   are read from the store by the five components that need them, not threaded.
 - **2026-09-08, v2.0.79 — Tier 2 continues: B9**, one unit. One `ChartFrame` in
   `ui/`; four charts read it, including the two the entry expected to leave out.
+- **2026-09-08, v2.0.80 — Tier 2 closed: B14**, one unit. Per-field selectors
+  at 20 subscription sites; a store write now wakes the components that read
+  what changed instead of all four of App, AppShell, Toast and the open tab.
 **Release:** 2.1.0
 
 ## What this is
@@ -1364,6 +1367,17 @@ in `ui/chart.ts` takes the fourth repeat, the `r: 3, stroke: 'none'` hover marke
   destructured set; rows select only their two actions (stable refs).
 - **Risk:** low.
 
+**Landed as 20 sites in 18 files (v2.0.80), not 17 components.** The entry
+missed `App.tsx` — the root, and so the most expensive of the lot — and the
+third of `SessionList`'s three. `useShallow` was not used anywhere: naming each
+field twice inside a selector object is longer than one `useAppStore(s => s.x)`
+line per field, and a per-field selector compares one reference instead of
+allocating an object per render. `ImportPane` and `ExportPane` came off the
+store entirely rather than onto a selector — both read it only inside their
+handlers, so `useAppStore.getState()` at click time is right, and it also fixes
+a latent staleness: the merge now reads the store as it is when Import is
+pressed, not as it was when the pane rendered.
+
 ## Tier 3 — medium risk, a behaviour change, or a redeploy
 
 ### A7. `store/app.ts` CRUD triplets (−80)
@@ -1500,7 +1514,7 @@ Tier 2:
 - [x] B7 WeightsTab memoised — 2026-09-08, v2.0.78. Measured with a counting proxy over `store.weights`: three keystrokes went from 12 `map` / 12 `filter` / 12 iterations of the 212-entry history to **0 / 6 / 6**, and the superset pairing from 2805 comparisons to 38 for the same 193 groups. The two passes left are keyed on the name being typed, not on the history
 - [x] B8 `weights` read from the store in the leaves — 2026-09-08, v2.0.78. Five components read it; `useVariantWeek(userProgramId)` replaces both hand-wired variant pairs, deriving its `Set` in the caller's render rather than inside a selector (a selector returning a fresh object never stops re-rendering); the duplicated chip pair is `VariantChips`
 - [x] B9 chart frame shared — 2026-09-08, v2.0.79. `ChartFrame`, not `TrendChart`, and four sites rather than three: Recharts identifies its children by element type, so the series had to stay with the caller and only the frame could move — which is why Cardio's dual axis and the Sports bar chart came along too. Proved by an A/B census: the old and new code render a byte-identical reading of all four charts (container height, grid count and computed stroke, every axis tick, the line/bar path geometry, the tooltip text and the hover dot's r/fill/stroke, and the empty-message branch), 0 console errors both ways. It grew the code by 16 lines rather than saving 35 — the four call sites lost 20, the new file costs 36 (over half of it the comment explaining why the series stay with the caller) — and first paint did not move: 349.20 kB with the change and without it, measured by stashing it
-- [ ] B14 selectors in the 17 components
+- [x] B14 selectors in the 17 components — 2026-09-08, v2.0.80. 20 sites in 18 files; `App.tsx` and one of `SessionList`'s three were missing from the entry. Measured with a render counter injected at each subscription, then stripped: **before, every store write re-rendered exactly four components** — `App` → `AppShell` → `Toast` → whichever tab was mounted — whatever had been written. After, a `setToast` on Weights re-renders `Toast` alone (4 → 1) and a `setCardio` while Weights is open re-renders **nothing** (4 → 0), while a `setCardio` on Home still re-renders `HomeTab`, which is correct — Home reads cardio. Regression-walked all six tabs, the three Home fold sheets and both data panes: every screen still reacts to the fields it displays and restores, 0 console errors, and the only writes were the documented bootstrap seed upserts. +61 lines, first paint 349.20 → 349.32 kB
 
 Tier 3:
 
