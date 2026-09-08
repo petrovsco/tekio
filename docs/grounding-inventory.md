@@ -96,7 +96,7 @@ the Habits section (035), and 10.4 is fixed by the same fold; rows 1.12 and
 yet"; every `#L<n>` anchor was re-read against its target line.
 
 Rows marked **†** are ones I would *not* spend a scout run on — see
-[§13.2](roadmap/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
+[§13.2](roadmap/done/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
 
 **Step 0** records whether the trigger spec in
 [.claude/skills/ground/SKILL.md](../.claude/skills/ground/SKILL.md) catches the
@@ -117,7 +117,7 @@ it; one has to be created before a scout run has anywhere to land.
 Counts: **81 rows** — 50 fire the trigger (32 `named`, 18 `unnamed`), 6 are
 ambiguous, 3 do not fire, and 22 are struck through (fixed or retired, with
 nothing left to ground). **18 of the 50 firing rows are `unnamed`** — see
-[§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
+[§13.1](roadmap/done/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 Recounted 2026-09-05 after the 036 sweep; the 2026-09-01 figures
 (77 / 57 / 8 / 3 / 9) predated the readiness retirements and the four rows
 moved in from §12.
@@ -202,7 +202,7 @@ weights").
 > **1.11 matters more than it looks.** Grounding the constants changes nothing
 > the user sees. The DB rows shadow every default, are currently byte-identical,
 > and carry no marker distinguishing "seeded" from "user-edited". See
-> [§13.3](roadmap/015-ground-trigger-spec-fixes.md#133-the-db-shadow-makes-defaults-not-runtime-edits-undecidable).
+> [§13.3](roadmap/done/015-ground-trigger-spec-fixes.md#133-the-db-shadow-makes-defaults-not-runtime-edits-undecidable).
 
 ## 2. Rep-range classification
 
@@ -220,7 +220,7 @@ weights").
 > constant is the live one. Behaviour is unchanged, so no claim moved
 > (exemption 2). The rows stay `unknown`: de-duplicating a number does not ground
 > it. The finding it produced stands — see
-> [§13.1](roadmap/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
+> [§13.1](roadmap/done/015-ground-trigger-spec-fixes.md#131-the-gated-table-is-a-location-list).
 
 ## 3. `rx` prescriptions — 7 blocks, ~35 numbers in prose
 
@@ -381,12 +381,22 @@ they were missed.
 
 The inventory doubled as the first real test of `/ground` Step 0's trigger and
 found **eight gaps** — 8 of 75 rows (11%) needed a judgement call Step 0 does not
-make. Each carries a proposed `SKILL.md` edit; **none are applied**.
+make. Each carries a proposed `SKILL.md` edit.
 
-**Moved 2026-08-26 to [roadmap/015-ground-trigger-spec-fixes.md](roadmap/015-ground-trigger-spec-fixes.md)**
+**Moved 2026-08-26 to [roadmap/done/015-ground-trigger-spec-fixes.md](roadmap/done/015-ground-trigger-spec-fixes.md)**
 under the `pending-work-in-roadmap` house rule: they are pending work, and this
 file is an index. The `13.x` numbering is preserved there, so existing references
 to §13.1–§13.8 still resolve.
+
+**Applied 2026-09-08.** Seven of the eight edits are in `SKILL.md`; §13.8 was
+deliberately left alone; §13.7's fork was postponed to 3.0.0 as
+[roadmap/065-rescale-exemption-unchecked-base.md](roadmap/065-rescale-exemption-unchecked-base.md),
+its uncontested half shipping with the rest. Two consequences land on this file:
+the trigger now fires on claims with no digit in them (§13.4) and on formulas
+(§13.5), and `/ground`'s vocabulary table carries an **`n/a — definitional`**
+inventory state (§13.2). Applying that state to the `†` rows is
+[roadmap/066-inventory-definitional-rows.md](roadmap/066-inventory-definitional-rows.md);
+until it runs they read `unknown †` as before.
 
 The back-fill running order that was §13.9 now lives in
 [roadmap/done/009-feature-grounding.md](roadmap/done/009-feature-grounding.md) beside pushback #7,

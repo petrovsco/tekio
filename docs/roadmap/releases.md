@@ -60,7 +60,10 @@ In running order:
 9. [023](023-mechanical-code-quality-tooling.md) — code quality tooling,
    starting with the chart-bundle code split.
 10. [048](048-simplification-candidates.md) and
-    [015](015-ground-trigger-spec-fixes.md) — spare-time units.
+    [015](done/015-ground-trigger-spec-fixes.md) — spare-time units. 015 closed
+    2026-09-08: the eight holes in the grounding gate are shut, except the one
+    that cannot be judged without a set of weights to judge it against — that
+    became [065](065-rescale-exemption-unchecked-base.md) in 3.0.0.
 
 Left out on purpose: 003, 020 and 022 (stay in backlog — Peter, 2026-09-05),
 013 (cycle grounding — a program property, grounded only if it ships as the
@@ -89,7 +92,14 @@ cut. Keepers become briefs; cuts execute from 034.
 
 Named by Peter on 2026-09-05 as the home of adaptation goals
 ([040](040-adaptation-goals.md)). A major bump is his concept-validation
-call; nothing else is tagged here yet.
+call.
+
+Also tagged: [065](065-rescale-exemption-unchecked-base.md) — whether the
+grounding gate should fire when never-checked weights are rescaled. Split out of
+[015](done/015-ground-trigger-spec-fixes.md) on 2026-09-08 and postponed here by
+Peter, because no set of weights with that shape survives in the app: it belongs
+with however recovery gets measured next, which is when a real case returns to
+decide it against.
 
 ## 2.0.0
 

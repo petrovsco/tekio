@@ -1,8 +1,29 @@
-# Roadmap: `/ground` Step 0 — eight trigger-spec fixes
+# Roadmap: Close the eight holes in the grounding gate
 
 **Label:** infra
-**Status:** planned — eight findings, each with a proposed `SKILL.md` edit. None are applied. No research needed; this is spec surgery. Committed to 2.1.0 by Peter on 2026-09-05 as a spare-time unit.
+**Status:** done — seven wording edits applied to `SKILL.md` on 2026-09-08, plus four examples the app had since overtaken. §13.7's fork was postponed to 3.0.0 as [065](../065-rescale-exemption-unchecked-base.md); §13.8 was deliberately left alone.
 **Release:** 2.1.0
+
+**The gate** is `/ground`
+([.claude/skills/ground/SKILL.md](../../../.claude/skills/ground/SKILL.md)) — the
+checklist run before a claim about how a body adapts or recovers is written into
+the app. Step 0 decides whether the checklist runs at all. An audit of all 75
+such numbers found **eight ways a real claim slips past Step 0 unchecked**. This
+brief is the wording surgery that closes them. No research, no app code — only
+the skill file.
+
+## Progress log
+
+- **2026-09-08** — applied. Seven edits landed; §13.7's decision postponed to
+  3.0.0 (065) because no set of weights with that shape exists in the app any
+  more. Four things the brief described had gone stale in the two weeks since it
+  was written and were refreshed rather than pasted: §13.1's headline example
+  (`repRange` is no longer dead code), the gated table's `RECOVERY_WEIGHTS` /
+  `RECOVERY_TARGETS` / Nutrition-FRS rows (all three deleted or discarded), the
+  Mode B "targets before weights" rule (both sides of its comparison are gone),
+  and the whole "Known debt" section (its example is now the best-sourced comment
+  in the file). Title rewritten: Peter could not tell what the task was from the
+  old one.
 
 Moved here 2026-08-26 from `docs/grounding-inventory.md` §13, under the
 `pending-work-in-roadmap` house rule: the inventory is an *index* of the 75
@@ -13,34 +34,52 @@ resolve — they now point here.
 ## Which read does this sharpen?
 
 None — this is tooling, not a surface. It sharpens the *gate* that protects every
-read: [.claude/skills/ground/SKILL.md](../../.claude/skills/ground/SKILL.md),
+read: [.claude/skills/ground/SKILL.md](../../../.claude/skills/ground/SKILL.md),
 Step 0. Doctrine §4.5 does not apply (no number claiming physiological meaning is
 written), so no `## Grounding` block is required here.
 
 ## Scope
 
-Edit [.claude/skills/ground/SKILL.md](../../.claude/skills/ground/SKILL.md) only.
+Edit [.claude/skills/ground/SKILL.md](../../../.claude/skills/ground/SKILL.md) only.
 Eight findings, seven of which carry a ready-to-paste wording edit; 13.7's second
-half is a decision (option **a** vs **b**) that must be taken before its edit is
-written. 13.8 is recorded as deliberately-not-fixed and needs no change.
+half is a decision (option **a** vs **b**). 13.8 is recorded as
+deliberately-not-fixed and needs no change.
 
 Apply in any order — they touch different parts of the skill and do not conflict.
 13.1 is the highest-value one: it alone would have caught five of the misses.
 
+**Widened on application (2026-09-08), same file.** Four passages the brief did
+not name had gone stale in the two weeks between writing and applying, and
+pasting the edits around them would have left the skill contradicting the repo.
+They are listed in the Progress log and were fixed in the same pass. This is the
+brief's own §13.1 finding turned on itself: the skill described *locations*, and
+the locations moved.
+
 ## Out of scope
 
 - Any scout run. Applying these edits grounds nothing — the back-fill running
-  order lives in [009-feature-grounding.md](done/009-feature-grounding.md) under pushback #7(b).
+  order lives in [009-feature-grounding.md](009-feature-grounding.md) under pushback #7(b).
 - The three bugs the inventory found in the app itself; all were fixed 2026-08-26.
+- Relabelling the inventory's 11 `†` rows to `n/a — definitional`. The edit that
+  *permits* it is in scope and landed; doing it is a pass over
+  [docs/grounding-inventory.md](../../grounding-inventory.md), which this brief's
+  scope line excludes.
 
 ## Acceptance
 
-- [ ] All seven wording edits are in `SKILL.md`, and 13.7's option is chosen and applied.
-- [ ] A reader who knows only `SKILL.md` would gate `reps <= 5` at
-  `classifyWeightSet` ([lib/adaptations.ts](../../src/lib/adaptations.ts)), the Epley/Brzycki
-  blend, and `ADAPTATION_PRINCIPLE` — the three classes the current spec misses.
-- [ ] The inventory's `†` rows can be marked `n/a — definitional` without inventing a
-  fifth scout verdict.
+- [x] All seven wording edits are in `SKILL.md`. §13.7's fork is not chosen —
+  it is postponed to 3.0.0 as [065](../065-rescale-exemption-unchecked-base.md),
+  and its uncontested half (rescaling never *creates* a verdict) shipped here.
+- [x] A reader who knows only `SKILL.md` would gate the three classes the old
+  spec missed: the rep-range boundaries wherever they live (now `repRange`,
+  read by `classifyWeightSet` — no longer a hardcoded literal), the
+  Epley/Brzycki blend, and `ADAPTATION_PRINCIPLE`. The first is covered by
+  *"the trigger is on the claim, not the file"*, the second by the new
+  *combining estimators* non-exemption, the third by *"a claim does not need a
+  digit"*.
+- [x] The inventory's `†` rows **can** be marked `n/a — definitional` — the
+  vocabulary table carries the state, marked inventory-only so no fifth scout
+  verdict is invented.
 
 ---
 
@@ -69,10 +108,19 @@ are not named.
 
 The sharpest case is rows 2.1–2.5. `repRange` is gated by name and is **dead
 code** — declared, never read. The live rep-range boundaries are `reps <= 5` /
-`reps <= 15` at `classifyWeightSet` ([lib/adaptations.ts](../../src/lib/adaptations.ts)), which
+`reps <= 15` at `classifyWeightSet` ([lib/adaptations.ts](../../../src/lib/adaptations.ts)), which
 the table does not name. Someone changing hypertrophy's rep range by editing the
 gated constant would ship nothing, pass the gate, and believe they had grounded
 the app's classifier.
+
+> **This example expired before the edit was applied** (noted 2026-09-08).
+> [039](039-adaptations-read-grounding.md) S11 grounded the rep bands and
+> made `classifyWeightSet` read `repRange`, so the gated constant and the live
+> boundary are now the same thing and the split is gone. The *finding* is
+> untouched by that — the table was a location list, and the location moved
+> under it, which is the finding restated. The edit lands as written; only this
+> illustration is retired. Two of the five misses it names are still live
+> (`estimate1RM`, the Home readiness bands).
 
 **Proposed edit — reframe the "Gated" table.** Keep it, retitle it *"Where these
 claims live today (non-exhaustive)"*, and add above it:
@@ -118,7 +166,7 @@ in §5 that most needs a run. `r05` is definitional: plates come in 2.5 kg pairs
 Step 0 says the gate fires on *"the default — the constant, the seed row, the
 migration"* and never on a runtime edit. `adaptation_targets` breaks this
 cleanly: its 9 rows are byte-identical to the `adaptations.ts` defaults, they
-**override** them at the `targets` argument of `adaptationCoverage` ([lib/adaptations.ts](../../src/lib/adaptations.ts)),
+**override** them at the `targets` argument of `adaptationCoverage` ([lib/adaptations.ts](../../../src/lib/adaptations.ts)),
 and no column records whether a row is still seeded or has been edited. So "is
 this a default or a runtime edit?" has no answer, and the carve-out cannot be
 applied. Row 7.6 (179 exercise→muscle links) is the same shape at scale.
@@ -155,6 +203,15 @@ This is the edit I am least sure about, because it widens the gate and *"a gate
 that fires on everything is a gate nobody reads"* is the skill's own rule. The
 prescribe/classify vs. label split is the narrowing that keeps it honest; if it
 does not hold in practice, drop the edit rather than blunt the rule.
+
+> **Applied 2026-09-08, anchored to the two live cases** (Peter's call). The
+> brief's own test — *does it hold in practice?* — was answered in the two weeks
+> after it was written: [039](039-adaptations-read-grounding.md) S10 and S4
+> grounded `ADAPTATION_PRINCIPLE` and `KEYWORD_ADAPTATION`, both digit-free, and
+> both now carry full source lists. So the rule was already being followed by
+> hand; writing it down pulls nothing new into the queue on day one. Those two
+> are named in `SKILL.md` as the worked examples, and the "if it stops holding,
+> drop it rather than blunt it" caveat travels with them.
 
 ### 13.5 Formulas are not on the enumerated list
 
@@ -217,6 +274,24 @@ out, and they are not equivalent:
 I lean **(a)**: it is one extra scout run, on the number the whole grounding
 brief was written around, and it closes the hole rather than routing around it.
 Recorded here rather than acted on — it is a change to the spec, not to the app.
+
+> **Split out and postponed 2026-09-08 → [065](../065-rescale-exemption-unchecked-base.md),
+> release 3.0.0** (Peter's call). Neither option can be judged any more: the
+> worked example both rows argue over is gone. `RECOVERY_WEIGHTS` was **retired**
+> on 2026-08-31, not reweighted — dropped with the whole constant rather than
+> out of it — so the trap never sprang and (a) would now force zero runs. The
+> Food Recovery Score, the other candidate shape, was discarded 2026-09-01. The
+> nearest live thing, `LEVEL_WEIGHT`, already carries a `convention` verdict, so
+> (a) would wave it through. Peter's reason for waiting: the question *"should
+> relate with how we measure recovery"*, and weighted blends were removed for
+> clarity during the Home redesign — they come back with it, and the decision is
+> better taken with a real set of weights in front of us.
+>
+> **The uncontested half shipped here.** It is not part of the fork: exemption 1
+> now states that rescaling preserves a claim but never creates one — `unknown`
+> before means `unknown` after, and the inventory row does not clear. That alone
+> stops a rescaled row being ticked off as handled, which was the immediate
+> harm. What 065 still owes is only whether the gate should *fire*.
 
 ### 13.8 Ambiguous, left ambiguous
 

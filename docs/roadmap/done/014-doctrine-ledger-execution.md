@@ -147,7 +147,7 @@ Worse, because the reweight is exempt by construction, `RECOVERY_WEIGHTS` can be
 edited indefinitely without ever firing the gate — pushback #7's "forward-only"
 complaint reappearing inside an exemption. The proposed fix (exemption 1 applies
 only to a `grounded` / `convention` base) is
-[015-ground-trigger-spec-fixes.md](../015-ground-trigger-spec-fixes.md) §13.7 and is a
+[015-ground-trigger-spec-fixes.md](015-ground-trigger-spec-fixes.md) §13.7 and is a
 prerequisite if you want the reweight to actually pull the run in.
 
 ## Also resolved by the same decision
