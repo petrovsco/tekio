@@ -75,7 +75,7 @@ dedupes A2 + A3 + A10 + A11. That set is about −430 lines at low risk.
 - **Change:** delete; inline `loadProgramRows` into `loadActivePrograms`;
   `weekdayOf` reads `DAYS_OF_WEEK`; rewrite the `classifyCardio` test as
   `classifyCardioAdaptations(c)[0]` or drop it.
-- **Risk:** low. Overlaps [023](023-mechanical-code-quality-tooling.md), whose `knip`
+- **Risk:** low. Overlaps [023](done/023-mechanical-code-quality-tooling.md), whose `knip`
   run would find the same exports; doing it by hand now costs little and 023
   then confirms zero.
 

@@ -57,8 +57,11 @@ In running order:
 8. [049](049-app-version-display.md), [050](050-release-procedure.md),
    [038](038-favicon-and-app-icon.md) — the version on screen, the written
    release ritual, the icon.
-9. [023](023-mechanical-code-quality-tooling.md) — code quality tooling,
-   starting with the chart-bundle code split.
+9. [023](done/023-mechanical-code-quality-tooling.md) — code quality tooling.
+   **Done 2026-09-08** (v2.0.58–v2.0.62): ESLint, knip, a conventions file for
+   `/code-review`, and a perf budget with its first committed numbers. Its
+   chart-bundle item turned out to be already shipped, so it hunted the real
+   first-paint weight instead — 552 kB → 324 kB.
 10. [048](048-simplification-candidates.md) and
     [015](done/015-ground-trigger-spec-fixes.md) — spare-time units. 015 closed
     2026-09-08: the eight holes in the grounding gate are shut, except the one

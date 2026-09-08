@@ -87,6 +87,9 @@ npm run build        # TypeScript check + Vite build
 npm run typecheck    # Type-check only (no emit)
 npm run lint         # ESLint (flat config in eslint.config.js)
 npm run knip         # Dead files, exports and dependencies (knip.jsonc)
+npm run perf         # First-paint bundle size vs the committed baseline (needs a build)
+npm run perf:update  # Re-baseline, deliberately
+npm run perf:startup # Time the production build in a real browser
 npm run test         # Run all tests once (Vitest)
 npm run test:watch   # Vitest in watch mode
 npm run preview      # Preview production build locally
@@ -104,6 +107,17 @@ judgement about whether code is *good* stays with `/simplify` and
 findings are triaged by hand into candidate A1 of
 [roadmap/048](docs/roadmap/048-simplification-candidates.md), which is the brief
 that does the deleting — so `knip` reporting zero is what says A1 is finished.
+
+`perf` measures only what `dist/index.html` fetches before it can draw — the
+entry chunk plus the stylesheet, not the lazy chunks, because a chart bundle
+that loads when you open a chart costs the first paint nothing. It fails at
+baseline + 5 %. Run `npm run build` first; re-baseline with `perf:update` in the
+same commit as the change that moved the number, and say why.
+[scripts/perf-baseline.json](scripts/perf-baseline.json) is the committed
+record: **352.66 kB first paint, 1490 ms to the Home read** (2026-09-08). That
+second number is the one doctrine §6 cares about — it is measured after
+`bootstrap()` has returned, not at DOMContentLoaded — and it is wall-clock
+against the live database, so read the trend, not the digit.
 
 ## Environment Setup
 

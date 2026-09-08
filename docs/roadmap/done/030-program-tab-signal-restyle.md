@@ -34,7 +34,7 @@ ink weight or an uppercase label.
 ## Out of scope
 
 - Splitting the 840-line component — that is refactoring, tracked by the
-  tooling in [023](../023-mechanical-code-quality-tooling.md)'s output, not by
+  tooling in [023](023-mechanical-code-quality-tooling.md)'s output, not by
   a restyle.
 - Any change to cycle math, auto-advance, or program data.
 - Whether the template picker earns its screen — parked in

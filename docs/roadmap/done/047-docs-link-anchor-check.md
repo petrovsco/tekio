@@ -47,7 +47,7 @@ rebuild it again, or skip it. Skipping it is how 036 found **25 dead links and
 None — this is tooling, not a surface. Doctrine §4.5 does not apply: no number
 claiming physiological meaning is written, so no `## Grounding` block is
 needed. It is deliberately **not** folded into
-[023](../023-mechanical-code-quality-tooling.md): 023 is about code (ESLint,
+[023](023-mechanical-code-quality-tooling.md): 023 is about code (ESLint,
 dead code, a perf budget) and is already four items long; this is about docs,
 is one afternoon of work, and can close on its own.
 

@@ -1,0 +1,38 @@
+{
+  "bundle": {
+    "firstPaintBytes": 352656,
+    "firstPaintGzip": 106895,
+    "files": [
+      {
+        "ref": "/assets/index-BkB2fcjH.js",
+        "bytes": 323886
+      },
+      {
+        "ref": "/assets/index-Cq9bqLfG.css",
+        "bytes": 28770
+      }
+    ],
+    "measuredAt": "2026-09-08"
+  },
+  "startup": {
+    "domContentLoadedMs": 93,
+    "firstReadMs": 1490,
+    "runs": 3,
+    "samples": [
+      {
+        "domContentLoaded": 107,
+        "firstRead": 2037
+      },
+      {
+        "domContentLoaded": 93,
+        "firstRead": 1490
+      },
+      {
+        "domContentLoaded": 81,
+        "firstRead": 1468
+      }
+    ],
+    "measuredAt": "2026-09-08",
+    "note": "Median of 3 loads of `vite preview` at 390x900. Wall-clock on one machine against the live Supabase project, so it moves with the network — read the trend, not the digit."
+  }
+}

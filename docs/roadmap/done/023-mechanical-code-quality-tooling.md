@@ -1,17 +1,18 @@
 # Roadmap: Mechanical code quality — ESLint, dead-code detection, perf budget
 
 **Label:** infra
-**Status:** in progress — items 0, 1 and 2 landed 2026-09-08: first paint 552 kB
-→ 324 kB with the 500 kB warning gone (v2.0.58), `npm run lint` green on a clean
-tree (v2.0.59), and `npm run knip` triaged with its deletions scheduled into 048
-A1 (v2.0.60). Items 3 and 4 (the conventions file, the perf budget) remain.
-Spun out of
-[009-feature-grounding.md](done/009-feature-grounding.md) on 2026-08-30 so that brief
+**Status:** done — all five scope items landed 2026-09-08, v2.0.58 to v2.0.62:
+first paint 552 kB → 324 kB with the 500 kB warning gone, `npm run lint` and
+`npm run knip` green, [docs/code-review.md](../../code-review.md) written and
+pointed at from `CLAUDE.md`, and `npm run perf` failing on a bundle delta
+against a committed baseline that also holds the first startup number (1490 ms
+to the Home read). Spun out of
+[009-feature-grounding.md](009-feature-grounding.md) on 2026-08-30 so that brief
 holds only the grounding back-fill it still tracks. Committed to 2.1.0 by Peter
 on 2026-09-05.
 **Release:** 2.1.0
 **Origin:** pushbacks #3 and #4 and deliverables 5 and 6 of
-[009-feature-grounding.md](done/009-feature-grounding.md), agreed 2026-08-26 and never
+[009-feature-grounding.md](009-feature-grounding.md), agreed 2026-08-26 and never
 started. The arguments below are carried in full — this brief is kickoff-ready on
 its own and you do not need to read 009 first.
 
@@ -43,8 +44,8 @@ opinion — an agent may *interpret* the number, it must not guess it.
 `/code-review` are live; a third overlapping agent would just yield three
 inconsistent opinions. The genuine gap is mechanical, and mechanical gaps want
 mechanical tools: there is **no ESLint** and **no dead-code detection** in this
-repo, while [src/components/ui/EditModal.tsx](../../src/components/ui/EditModal.tsx)
-and [src/components/tabs/ProgramTab.tsx](../../src/components/tabs/ProgramTab.tsx)
+repo, while [src/components/ui/EditModal.tsx](../../../src/components/ui/EditModal.tsx)
+and [src/components/tabs/ProgramTab.tsx](../../../src/components/tabs/ProgramTab.tsx)
 are both over 800 lines. Mechanize first, judge second.
 
 ## Scope
@@ -57,21 +58,22 @@ are both over 800 lines. Mechanize first, judge second.
    measurement actually found, and what was done about it, is
    [§ Item 0 — measured](#item-0--measured) below.
 1. **ESLint — done 2026-09-08 (v2.0.59).** Flat config in
-   [eslint.config.js](../../eslint.config.js), `npm run lint`. **Not** wired
+   [eslint.config.js](../../../eslint.config.js), `npm run lint`. **Not** wired
    into `npm run build`: lint is ~32 s against the build's ~13 s and Vercel runs
    the build on every push, which is the "slows the build meaningfully" the
    scope line reserved. What its first run found is
    [§ Item 1 — the first run](#item-1--the-first-run) below.
 2. **Dead-code detection — done 2026-09-08 (v2.0.60).** `knip`, configured in
-   [knip.jsonc](../../knip.jsonc), `npm run knip`. It reports and never deletes.
+   [knip.jsonc](../../../knip.jsonc), `npm run knip`. It reports and never deletes.
    The triage is [§ Item 2 — the knip triage](#item-2--the-knip-triage) below.
 3. **A tekiō conventions file — done 2026-09-08 (v2.0.61).**
-   [docs/code-review.md](../code-review.md), pointed at from a *Reviewing code*
+   [docs/code-review.md](../../code-review.md), pointed at from a *Reviewing code*
    section in `CLAUDE.md`. See
    [§ Item 3 — the conventions file](#item-3--the-conventions-file).
-4. **`scripts/perf-budget.mjs`.** Fails on a bundle-size delta against a
-   committed baseline. Plus a Playwright startup / interaction timing run — the
-   Playwright MCP is already wired for this repo.
+4. **`scripts/perf-budget.mjs` — done 2026-09-08 (v2.0.62).** Plus
+   [scripts/perf-startup.mjs](../../../scripts/perf-startup.mjs) and the committed
+   [scripts/perf-baseline.json](../../../scripts/perf-baseline.json). See
+   [§ Item 4 — the budget and the first number](#item-4--the-budget-and-the-first-number).
 
 ## Item 0 — measured
 
@@ -102,9 +104,9 @@ calls `.from(...)` (30 sites) and one `functions.invoke`. Inside `supabase-js`,
 `.from(x)` *is* `this.rest.from(x)` on a `PostgrestClient` — verified in
 `node_modules/@supabase/supabase-js/dist/index.mjs` — built at `rest/v1` with
 `apikey` and `Authorization: Bearer <anon key>` on every request. So
-[src/lib/supabase.ts](../../src/lib/supabase.ts) now constructs that client
+[src/lib/supabase.ts](../../../src/lib/supabase.ts) now constructs that client
 directly and all 30 call sites are unchanged; the one edge-function call is a
-plain `fetch` in [src/lib/assistant/client.ts](../../src/lib/assistant/client.ts),
+plain `fetch` in [src/lib/assistant/client.ts](../../../src/lib/assistant/client.ts),
 which got shorter because it no longer has to unwrap a `FunctionsHttpError` to
 reach the body it wanted.
 
@@ -130,7 +132,7 @@ monday → sunday survived a full page reload, then went back to monday, and
 `user_profiles` was checked in the database afterwards to confirm it is
 `monday` with `hr_max_override` and `birth_date` untouched.
 
-**What this re-opens:** [003 — RLS + auth](003-rls-auth-v1.1.md). When sign-in
+**What this re-opens:** [003 — RLS + auth](../003-rls-auth-v1.1.md). When sign-in
 lands, `@supabase/auth-js` returns; it should return *lazily*, on the sign-in
 path, rather than back into the chunk that paints Home.
 
@@ -160,7 +162,7 @@ The first run found **22 problems: 15 errors, 7 warnings**. Triaged:
   in the render body so the shared modal footer can call the active form's save.
   Mutating a ref during render is precisely what the rule exists to stop, and it
   is **already tracked**: candidate S1 of
-  [048-simplification-candidates.md](048-simplification-candidates.md) replaces
+  [048-simplification-candidates.md](../048-simplification-candidates.md) replaces
   it with a `useSave(saveRef, onClose)` hook. Acting on it is out of scope here
   by name, so ESLint points at S1 rather than duplicating it into a new brief.
 - `AssistantSettings.tsx`, 1× `react-hooks/set-state-in-effect`. Seeds two
@@ -191,7 +193,7 @@ week, so the config came first: `middleware.ts` is an entry point,
 `supabase/functions/` is outside the project rather than ignored inside it, and
 `tailwindcss` is declared used because knip does not follow the `@import` inside
 `src/index.css`. Each of those carries its reason in
-[knip.jsonc](../../knip.jsonc) — a bare ignore list is how a tool quietly stops
+[knip.jsonc](../../../knip.jsonc) — a bare ignore list is how a tool quietly stops
 meaning anything.
 
 With that, the run is **26 findings, and every one of them is real.** Triage:
@@ -204,7 +206,7 @@ With that, the run is **26 findings, and every one of them is real.** Triage:
 
 Nothing was deleted here, which is what the scope line asked for. The deletions
 belong to candidate **A1** of
-[048-simplification-candidates.md](048-simplification-candidates.md), which
+[048-simplification-candidates.md](../048-simplification-candidates.md), which
 predicted this run in writing: *"Overlaps 023, whose `knip` run would find the
 same exports."* It did — and it found **eleven more** that the hand read had
 missed, including a whole orphaned file, two exports whose `export` keyword is
@@ -220,7 +222,7 @@ introduced it, which is the argument for having the tool at all.
 
 ## Item 3 — the conventions file
 
-[docs/code-review.md](../code-review.md), four short sections and nothing that
+[docs/code-review.md](../../code-review.md), four short sections and nothing that
 is written down elsewhere:
 
 1. **Deliberate, so not findings** — the seven things a generic React reviewer
@@ -243,6 +245,62 @@ Deliberately a **link, not an `@import`** like `doctrine.md` — an import is pa
 for by every session in the repo, and this is only wanted during a review. It is
 also added to the reference-only list, so it can never grow a follow-up.
 
+## Item 4 — the budget and the first number
+
+Three commands, one committed baseline:
+
+| Command | What it does |
+|---|---|
+| `npm run perf` | Measures the built `dist/` against the baseline; exits 1 when over. |
+| `npm run perf:update` | Re-baselines, deliberately. Commit the file with the change that moved the number. |
+| `npm run perf:startup` | Loads the production build in a real browser and times it. |
+
+**What "first paint" means here, and why it is not the whole bundle.** The
+budget counts only the files `dist/index.html` references directly — the entry
+chunk, its modulepreloads and the stylesheet. Lazy chunks are excluded on
+purpose: the 387 kB chart bundle costs the first paint nothing because it does
+not load until a chart is opened, and counting it would push the app toward
+keeping charts eager, which is the opposite of doctrine P1. Sizes divide by
+1000, not 1024, so they are the same numbers `vite build` prints — a budget you
+have to mentally convert gets ignored.
+
+**Tolerance is baseline + 5 %** (~17 kB today). Ordinary feature work should not
+trip it; a re-added library should. Going *under* is reported too, with a nudge
+to re-baseline and lock the win in.
+
+**The startup run measures the read, not the load.** DOMContentLoaded is the
+easy number and the useless one — it fires before `bootstrap()` has returned
+from a single table. The number that matters is the one doctrine §6 asks about:
+when the "what is missing" card is actually on screen. So the run waits for that
+card, three loads of `vite preview` (the real build, not the dev server), median
+of the three.
+
+**The first numbers, committed 2026-09-08 at v2.0.62:**
+
+| | |
+|---|---|
+| first paint | **352.66 kB** (106.89 kB gzipped) — 323.89 kB JS + 28.77 kB CSS |
+| DOMContentLoaded | **93 ms** |
+| Home read on screen | **1490 ms** — samples 2037 / 1490 / 1468 ms |
+| doctrine §6's five seconds | inside, by 3.5 s |
+
+That last row is the one to watch: it is wall-clock against the live Supabase
+project on one machine, so it moves with the network. Read the trend, not the
+digit — which is exactly why it is written into a file rather than printed once
+and forgotten. `npm run perf` prints the stored startup number under the bundle
+table so it cannot rot unnoticed.
+
+**Checked, not assumed:** the budget was run against a baseline shrunk 20 % by
+hand — it reported `OVER BUDGET by 56.42 kB`, printed what to do about it, and
+exited 1. The baseline was then restored.
+
+**One deviation from the scope line.** It says "the Playwright MCP is already
+wired for this repo". It is not — the MCP server insists on the branded Chrome
+channel at `/opt/google/chrome/chrome`, and installing that needs sudo with a
+terminal. `perf-startup.mjs` therefore drives `playwright-core` (now a
+devDependency) against the Chromium already in `~/.cache/ms-playwright`, and
+says so with a clear error if either is missing.
+
 ## Out of scope
 
 - Actually splitting `EditModal.tsx` and `ProgramTab.tsx`. The tools are what
@@ -251,7 +309,7 @@ also added to the reference-only list, so it can never grow a follow-up.
 - A performance *reviewer agent*. See the first argument above — that is the
   thing this brief exists to replace.
 - Anything in the grounding track. Those runs stay in
-  [009-feature-grounding.md](done/009-feature-grounding.md).
+  [009-feature-grounding.md](009-feature-grounding.md).
 
 ## Acceptance
 
@@ -265,9 +323,13 @@ also added to the reference-only list, so it can never grow a follow-up.
       deliberately ignored with a reason. Done 2026-09-08 — 26 findings, all
       real; see [§ Item 2 — the knip triage](#item-2--the-knip-triage).
 - [x] A conventions file exists and `/code-review` is pointed at it. Done
-      2026-09-08 — [docs/code-review.md](../code-review.md), pointed at from
+      2026-09-08 — [docs/code-review.md](../../code-review.md), pointed at from
       `CLAUDE.md`; see [§ Item 3](#item-3--the-conventions-file).
-- [ ] `npm run perf` reports bundle size against a committed baseline and exits
-      non-zero when the budget is exceeded.
-- [ ] The startup timing run produces a number, and that number is written down
-      somewhere durable so the next run has something to compare against.
+- [x] `npm run perf` reports bundle size against a committed baseline and exits
+      non-zero when the budget is exceeded. Done 2026-09-08 — verified by
+      shrinking the baseline 20 %: `OVER BUDGET by 56.42 kB`, exit 1.
+- [x] The startup timing run produces a number, and that number is written down
+      somewhere durable so the next run has something to compare against. Done
+      2026-09-08 — 93 ms to DOMContentLoaded, **1490 ms to the Home read**, in
+      [scripts/perf-baseline.json](../../../scripts/perf-baseline.json), and
+      reprinted by every `npm run perf`.
