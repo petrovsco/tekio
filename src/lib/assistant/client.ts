@@ -1,21 +1,20 @@
 // Thin client for the assistant edge functions. All LLM traffic and the API key
 // live server-side; the browser only ever sees masked status + model output.
-import { supabase } from '../supabase'
+import { functionsUrl, supabaseHeaders } from '../supabase'
 import type { AssistantStatus, GeminiContent, ToolCall } from './types'
 
 /** Invoke an edge function, surfacing the function's own `{ error }` body when it
- *  returns a non-2xx status (supabase-js otherwise hides it behind FunctionsHttpError). */
+ *  returns a non-2xx status. A plain `fetch` since roadmap 023 dropped the full
+ *  supabase-js client: `functions.invoke` buried that body behind a
+ *  FunctionsHttpError the code below had to unwrap by hand anyway. */
 async function invokeFn<T>(name: string, body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke(name, { body })
-  if (error) {
-    // FunctionsHttpError carries the original Response in `context`.
-    const ctx = (error as { context?: Response }).context
-    if (ctx && typeof ctx.json === 'function') {
-      const parsed = await ctx.json().catch(() => null)
-      if (parsed?.error) throw new Error(parsed.error)
-    }
-    throw error
-  }
+  const res = await fetch(functionsUrl + name, {
+    method: 'POST',
+    headers: { ...supabaseHeaders, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  const data = await res.json().catch(() => null)
+  if (!res.ok) throw new Error(data?.error ?? `${name} failed (${res.status})`)
   if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error)
   return data as T
 }

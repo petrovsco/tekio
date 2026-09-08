@@ -1,5 +1,4 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
-import { Routes, Route } from 'react-router-dom'
 import { useAppStore } from './store/app'
 import { AppShell } from './components/layout/AppShell'
 import { HomeTab } from './components/tabs/home/HomeTab'
@@ -66,13 +65,15 @@ export default function App() {
       {loading ? (
         <HomeSkeleton />
       ) : (
-        <Routes>
-          <Route path="*" element={
-            <Suspense fallback={<HomeSkeleton />}>
-              <TabContent tab={tab} setTab={go} focusMuscle={focusMuscle} />
-            </Suspense>
-          } />
-        </Routes>
+        // No router (roadmap 023). Navigation is `tab` state and always has
+        // been: the single `path="*"` route this replaced rendered the same
+        // thing for every address, and nothing ever called a navigation API.
+        // React Router was 37 kB on first paint doing nothing. Real web
+        // addresses — a link that opens on Adaptations, back between tabs —
+        // would bring it back; that is ten lines here, not a rewrite.
+        <Suspense fallback={<HomeSkeleton />}>
+          <TabContent tab={tab} setTab={go} focusMuscle={focusMuscle} />
+        </Suspense>
       )}
     </AppShell>
   )

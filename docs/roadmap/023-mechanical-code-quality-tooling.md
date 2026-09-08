@@ -1,11 +1,13 @@
 # Roadmap: Mechanical code quality — ESLint, dead-code detection, perf budget
 
 **Label:** infra
-**Status:** planned — kickoff-ready. Nothing built. Spun out of
+**Status:** in progress — Scope item 0 landed 2026-09-08 (v2.0.58): first paint
+552 kB → 324 kB and the 500 kB warning is gone, which gives item 4 its committed
+baseline. Items 1–4 (ESLint, knip, the conventions file, the perf budget) remain.
+Spun out of
 [009-feature-grounding.md](done/009-feature-grounding.md) on 2026-08-30 so that brief
 holds only the grounding back-fill it still tracks. Committed to 2.1.0 by Peter
-on 2026-09-05 with the chart-bundle code split (Scope item 0) as its first,
-measurable unit.
+on 2026-09-05.
 **Release:** 2.1.0
 **Origin:** pushbacks #3 and #4 and deliverables 5 and 6 of
 [009-feature-grounding.md](done/009-feature-grounding.md), agreed 2026-08-26 and never
@@ -46,16 +48,13 @@ are both over 800 lines. Mechanize first, judge second.
 
 ## Scope
 
-0. **Code-split the chart bundle — the first unit, and the perf budget's first
-   number.** Added 2026-09-05: the 2.0.0 build warns on every run — the main
-   chunk is 543 kB and the Recharts chunk 387 kB (minified), both loaded on
-   first paint whether or not a chart is on screen. Doctrine P1's performance
-   face says what isn't needed now isn't loaded now. Lazy-load the
-   chart-bearing components (`React.lazy` around the Recharts users, one
-   suspense fallback in the SIGNAL skeleton style) so Home and the capture
-   tabs open without the chart chunk. Record the before/after sizes here;
-   they become the baseline item 4 measures against. Verify in the browser
-   that Weights, Cardio and Mobility charts still render after the split.
+0. **Get the 500 kB warning off first paint — done 2026-09-08 (v2.0.58).**
+   Written 2026-09-05 as "code-split the chart bundle", on a premise that was
+   already stale: the chart chunk had been lazy since 2026-08-31 (018 unit 5,
+   commit `4ac665f`), so it did *not* load on first paint and never had to be
+   split again. The 500 kB warning came from the **other** chunk. What the
+   measurement actually found, and what was done about it, is
+   [§ Item 0 — measured](#item-0--measured) below.
 1. **ESLint.** Flat config, TypeScript + React rules, wired into `npm run lint`
    and into `npm run build` only if it does not slow the build meaningfully.
    Start permissive: the goal is a baseline that passes, not a week of cleanup.
@@ -70,6 +69,67 @@ are both over 800 lines. Mechanize first, judge second.
    committed baseline. Plus a Playwright startup / interaction timing run — the
    Playwright MCP is already wired for this repo.
 
+## Item 0 — measured
+
+The brief guessed at where the weight was; a sourcemap read said where it
+actually was. That read is the method item 4 inherits: **measure the chunk, do
+not reason about it.**
+
+The first-paint chunk was 552 kB minified. Its contents:
+
+| What | Size | Called by the app? |
+|---|---|---|
+| `react-dom` | 177 kB | yes — irreducible |
+| `@supabase/auth-js` + `realtime-js` + `phoenix` + `storage-js` | **177 kB** | **no** |
+| `react-router` | **37 kB** | **no** |
+| app code — Home, stores, the `db/` layer | ~100 kB | yes |
+| `react`, `scheduler`, `postgrest-js`, `supabase-js` core | ~35 kB | yes |
+
+So 214 kB of the 552 kB was libraries with no call site anywhere in `src/`.
+
+**React Router did nothing.** One route, `path="*"`, rendering the same thing
+for every address; no `useNavigate`, no `<Link>`, no URL parameters. Tabs are
+and always were `tab` state in `App.tsx`. Removed. Real web addresses would
+bring it back — that is ten lines in `App.tsx`, not a rewrite.
+
+**Four of the five Supabase clients were never reached.** `createClient` builds
+auth, realtime, storage, functions and PostgREST, and ships all of them. Tekiō
+calls `.from(...)` (30 sites) and one `functions.invoke`. Inside `supabase-js`,
+`.from(x)` *is* `this.rest.from(x)` on a `PostgrestClient` — verified in
+`node_modules/@supabase/supabase-js/dist/index.mjs` — built at `rest/v1` with
+`apikey` and `Authorization: Bearer <anon key>` on every request. So
+[src/lib/supabase.ts](../../src/lib/supabase.ts) now constructs that client
+directly and all 30 call sites are unchanged; the one edge-function call is a
+plain `fetch` in [src/lib/assistant/client.ts](../../src/lib/assistant/client.ts),
+which got shorter because it no longer has to unwrap a `FunctionsHttpError` to
+reach the body it wanted.
+
+**Result — the perf budget's committed baseline (item 4 measures against this):**
+
+| Chunk | Before (2.0.57) | After (2.0.58) | |
+|---|---|---|---|
+| first paint, minified | 551.99 kB | **323.88 kB** | −228 kB, −41% |
+| first paint, gzipped | 161.70 kB | **100.45 kB** | −61 kB, −38% |
+| `chart` (lazy, not on first paint) | 387.16 kB | 387.16 kB | unchanged |
+| modules transformed | 798 | 747 | |
+
+The build no longer prints the 500 kB warning.
+
+**Verified in the browser** (dev server, 390×900), not just built: Home,
+Adaptations, Weights, Cardio, Mobility, Program and Profile all render real
+live data — readiness 71, 16 lifting sets over 14 days, the exercise
+autocomplete list, the Hero Pose Recharts chart, the paused Volleyball
+program, HRmax 196. **Zero console errors and zero failed requests** across
+the whole walk, and Recharts is absent from first paint. Writes were proven
+too, with a reversible round trip rather than new live rows: `week_start_day`
+monday → sunday survived a full page reload, then went back to monday, and
+`user_profiles` was checked in the database afterwards to confirm it is
+`monday` with `hr_max_override` and `birth_date` untouched.
+
+**What this re-opens:** [003 — RLS + auth](003-rls-auth-v1.1.md). When sign-in
+lands, `@supabase/auth-js` returns; it should return *lazily*, on the sign-in
+path, rather than back into the chunk that paints Home.
+
 ## Out of scope
 
 - Actually splitting `EditModal.tsx` and `ProgramTab.tsx`. The tools are what
@@ -82,8 +142,9 @@ are both over 800 lines. Mechanize first, judge second.
 
 ## Acceptance
 
-- [ ] The chart chunk no longer loads on first paint; the build's 500 kB
+- [x] The chart chunk no longer loads on first paint; the build's 500 kB
       warning is gone, and the before/after sizes are written into this brief.
+      Done 2026-09-08 — 552 kB → 324 kB. See [§ Item 0 — measured](#item-0--measured).
 - [ ] `npm run lint` exists, passes on a clean tree, and fails on a deliberate
       violation.
 - [ ] `npx knip` runs and its findings are triaged in a list — kept, deleted, or
