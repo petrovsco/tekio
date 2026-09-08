@@ -3,7 +3,8 @@
 **Label:** infra
 **Status:** done — folded into v2.0.82 ([048](../048-simplification-candidates.md)
 candidate A9), the next commit that moved the number, exactly as this brief
-asked. Baseline now 348.69 kB.
+asked, which took the baseline 352.47 kB → 348.69 kB. A7 moved it again the
+same day; the committed figure is 346.98 kB (v2.0.83).
 
 ## Goal
 
