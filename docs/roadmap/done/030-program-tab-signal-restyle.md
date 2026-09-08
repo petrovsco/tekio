@@ -50,7 +50,7 @@ R1 untouched.
 - [x] No old-token classes remain in `ProgramTab` and its children.
 - [x] All three states browser-verified with screenshots; console clean apart
       from the browser's automatic `/favicon.ico` 404, which predates this work
-      ([038](../038-favicon-and-app-icon.md)). The empty state, the editor (day →
+      ([038](038-favicon-and-app-icon.md)). The empty state, the editor (day →
       block → exercise → superset pairing → JSON-import error) and the history
       cards were driven on live data without writing; the active day view came
       from resuming the paused Volleyball program, screenshotting, then pausing

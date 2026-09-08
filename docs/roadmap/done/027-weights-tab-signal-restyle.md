@@ -52,7 +52,7 @@ doctrine §1).
       the line's draw animation finishes, so an early screenshot shows none.
 - [x] Both program states browser-verified with screenshots; console clean apart
       from the browser's automatic `/favicon.ico` 404, which predates this work
-      ([038](../038-favicon-and-app-icon.md)).
+      ([038](038-favicon-and-app-icon.md)).
 - [x] Logging one exercise end-to-end still works (capture → recent → edit) —
       logged, read back, opened in EditModal, then deleted, and the orphan
       `exercises` row it created was removed too. Nothing was left in the

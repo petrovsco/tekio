@@ -55,7 +55,7 @@ In running order:
 7. [044](done/044-exercise-name-aliases.md) — exercise aliases, the first step
    toward other users.
 8. [049](049-app-version-display.md), [050](050-release-procedure.md),
-   [038](038-favicon-and-app-icon.md) — the version on screen, the written
+   [038](done/038-favicon-and-app-icon.md) — the version on screen, the written
    release ritual, the icon.
 9. [023](done/023-mechanical-code-quality-tooling.md) — code quality tooling.
    **Done 2026-09-08** (v2.0.58–v2.0.62): ESLint, knip, a conventions file for

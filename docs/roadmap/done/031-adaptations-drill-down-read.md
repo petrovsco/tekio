@@ -199,7 +199,7 @@ Whether it survives as a hero or shrinks to a header line is a build decision.
       Home's map fill for fill; toggles, both sheets, a band tap and a
       list-row tap into the muscle sheet all exercised). The one console error
       is the `/favicon.ico` 404 on Home load, which predates this brief and is
-      [038](../038-favicon-and-app-icon.md)'s.
+      [038](038-favicon-and-app-icon.md)'s.
 
 ## 7. Where it left off — 2026-09-03
 

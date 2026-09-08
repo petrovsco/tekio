@@ -1,7 +1,7 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** in progress — the live mark is 7e's **G4** turned to half past one (v2.0.54): the octopus arm written as the Ō, with the brushed macron. v2.0.52 shipped a band ring in its place and was corrected. The drawing bench is deleted again. One box is left and it is Peter's: seeing the tab icon on staging, and on production at the 2.1.0 release.
+**Status:** done — the live mark is 7e's **G4** turned to half past one (v2.0.54): the octopus arm written as the Ō, with the brushed macron. Closed 2026-09-08 on Peter's call — the mark is showing on staging, which is the build he uses daily; production carries the same two files and is opened by step 5 of the release ritual at 2.1.0, so nothing is left here to do.
 **Release:** 2.1.0
 
 ## Progress log
@@ -35,8 +35,10 @@
 - **2026-09-08 (v2.0.54)** — Peter took the turn one hour further: round 7g's
   **T4**, the root at half past one. No new round; the row was already drawn and
   is in the commit history at `475207b`. Re-emitted at −45° and re-measured.
+- **2026-09-08, closed** — Peter called the brief finished. The last box was his to
+  tick and he ticked it; see *Acceptance*.
 
-[index.html](../../index.html) declares no icon and there is no `public/`
+[index.html](../../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for
 `/favicon.ico` returning 404. It is the only console error the app produces.
 
@@ -51,7 +53,7 @@ Two consequences, one cosmetic and one practical:
 ## Scope
 
 Ship an icon that matches the SIGNAL language
-([design-system.md](../design-system.md) §7 — stroke SVG on a 24 viewBox, no
+([design-system.md](../../design-system.md) §7 — stroke SVG on a 24 viewBox, no
 emoji), reference it from `index.html`, and confirm the 404 is gone in both
 environments. An SVG favicon plus an `apple-touch-icon` PNG covers the phone,
 which is where the app is actually used.
@@ -116,7 +118,7 @@ left 10.83, top 5.83, right 89.17, bottom 95 — clear of all four edges, centre
 in x, sitting 0.41 low in y. Unchanged by the turn: the outer edge is a circle,
 so rotating it moves nothing.
 
-**Files:** [public/favicon.svg](../../public/favicon.svg) (inverts to white on
+**Files:** [public/favicon.svg](../../../public/favicon.svg) (inverts to white on
 a dark tab bar via `prefers-color-scheme`, so it never vanishes into chrome)
 and `public/apple-touch-icon.png` (180×180, paper ground, ink mark, artwork
 inset to 140 of 180 so the iOS squircle mask cannot clip it).
@@ -629,8 +631,10 @@ still holes at 32px.
       of scaffolding that costs one command to restore. The last commit that
       carries the whole bench, round 7g included, is `475207b`:
       `git checkout 475207b -- scripts/mark`.
-- [ ] The tab icon is visible on staging and production. **Peter's to tick** —
-      both sites sit behind the cookie gate whose credentials are Vercel
-      Secrets, so no session here can open them. Staging shows it on the next
-      preview deploy; production at the 2.1.0 release, where step 5 of the
-      release checklist already opens the site.
+- [x] The tab icon is visible where it can be checked. **Peter's box, ticked by
+      him on 2026-09-08.** Both sites sit behind the cookie gate whose
+      credentials are Vercel Secrets, so no session here can open them — he
+      confirmed it on staging, the build he uses daily. Production serves the
+      same two files from the same commit once `develop` fast-forwards onto
+      `master`, and step 5 of the release ritual already opens the site at
+      2.1.0, so that check belongs to the release rather than to this brief.
