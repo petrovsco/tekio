@@ -342,7 +342,7 @@ export interface AppState {
 
 export type EditModalTarget =
   | { type: 'weight'; record: WeightEntry }
-  | { type: 'weight-superset'; records: [WeightEntry, WeightEntry] }
+  | { type: 'weight-superset'; record: [WeightEntry, WeightEntry] }
   | { type: 'bodyweight'; record: BodyweightEntry }
   | { type: 'cardio'; record: CardioEntry }
   | { type: 'mobility'; record: MobilityEntry }

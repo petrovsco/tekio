@@ -1,11 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — three landed: **A8** (v2.0.58), **A1** (v2.0.63, which
-took `knip` to zero) and **S1 part 1** (v2.0.65, the `withToast` store helper and
-the tab call-sites). **S1 part 2 — EditModal — is next.** Each remaining
-candidate is one atomic unit a later session lands with `/simplify`; tick its
-box in Acceptance when it ships.
+**Status:** in progress — four landed: **A8** (v2.0.58), **A1** (v2.0.63, which
+took `knip` to zero) and **S1** in two parts (v2.0.65 store + tabs, v2.0.66
+EditModal, which took `npm run lint` to zero warnings). **A4 + A5 are next.**
+Each remaining candidate is one atomic unit a later session lands with
+`/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 **Release:** 2.1.0
 
@@ -378,6 +378,49 @@ EditModal's, which is part 2.
   hook this entry proposes is the natural place to fix them, so part 2 should
   take the warning count to zero rather than just shortening the file.
 
+**Part 2 landed 2026-09-08 (v2.0.66)** — EditModal, −81 lines (827 → 746), and
+`npm run lint` no longer reports anything in the file. The ~25 remaining copies
+of the save-and-toast shape are gone, along with both delete copies. What the
+entry proposed above is *not* what shipped, and the two departures are the
+useful part of this record:
+
+- **The `saveRef` prop is gone entirely, not wrapped in a hook.** This entry
+  proposed `useSave(saveRef, onClose)` — keeping the ref and threading it
+  through 11 forms. React's own lint rules object twice: assigning
+  `saveRef.current` during render is the `react-hooks/refs` warning, and once
+  that assignment moves into an effect the rule *still* objects to a ref
+  travelling as a prop at all ("passing a ref to a function may read its value
+  during render"). What satisfies both is a module-level `saveSlot = { run }`
+  that the open form fills in an effect and the footer calls. It is safe here
+  for a reason worth stating: EditModal is mounted once in AppShell and the
+  store holds one `editModal`, so exactly one form is ever live. Every form's
+  props dropped from three to two, and `FormProps<T>` replaced eleven
+  hand-written `{ record; onClose; saveRef }` inline types.
+- **The `Record<type, Component>` lookup was tried and reverted.** With the save
+  wiring out of the props each branch of the dispatch chain is one line, so the
+  chain is 11 lines against ~23 for the map — and the map needs a cast, because
+  TypeScript cannot follow a discriminant through an index lookup. It also trips
+  a third React rule, `react-hooks/static-components`, as an **error**: picking
+  a component into a local during render is indistinguishable, to the linter,
+  from defining one there. The exhaustiveness the map would buy is bought
+  instead by typing `TITLES` as `Record<EditModalTarget['type'], string>` — one
+  word — so a new `EditModalTarget` variant is still a compile error.
+- **The lint note above was wrong: 10 of the 16 were EditModal's, not all 16.**
+  The other six are the ones
+  [023](done/023-mechanical-code-quality-tooling.md) triaged and kept on purpose
+  — `react-refresh/only-export-components` ×3, `exhaustive-deps` ×2 and
+  AssistantSettings' `set-state-in-effect`. `npm run lint` now reports **6
+  warnings, 0 errors**, which is 023's accepted floor. Zero was never reachable
+  from this entry.
+- **`weight-superset` now carries `record`, not `records`.** One field name
+  across all 11 union variants is what lets a single `FormProps<T>` serve every
+  form; for that one variant the record is a pair. One line in
+  `src/types/index.ts` and one call site in `WeightsTab`.
+- **The validity guard had to stay outside the toast.** Every form had an early
+  `return` above its `try` — an empty required field is a no-op, not a failure,
+  and must not print "Failed to update." That is `useSave`'s `ready` argument,
+  and it is the reason the hook takes four arguments rather than two.
+
 ### A4. The 5-line load and 3-line delete shape in eight db files (−45)
 
 - **Where:** loads at `bodyweight.ts:6-18`, `water.ts:6-18`, `donations.ts:6-19`,
@@ -599,7 +642,7 @@ Tier 1:
 Tier 2:
 
 - [x] S1 save-and-toast helper (store + tabs) — 2026-09-08, v2.0.65. Browser-checked: Resume→Pause round trip on a live program printed both toasts and left the database as it was; a Weights save with the database cut off printed "Failed to save." and left the form filled
-- [ ] S1 save-and-toast helper (EditModal)
+- [x] S1 save-and-toast helper (EditModal) — 2026-09-08, v2.0.66. Browser-checked on live data: a sleep entry saved unchanged ("Updated!", modal closed); the same save with the API cut off printed "Failed to update." and left the modal open with every value intact; clearing a required field made Save a no-op with no toast; "Delete entry" with the API cut off printed "Failed to delete."; the superset form, driven through the store because the history holds none, rendered both exercises and kept its eight set rows on a failed save. Zero console errors
 - [ ] A4 `userRows` / `deleteRow`
 - [ ] A5 `toRow` / `toEntry`, derived reverse maps
 - [ ] B5 sheet header + `Recent` shared

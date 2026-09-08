@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { parseDurationMins, formatDurationMins, calcPace } from '../../lib/utils'
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
@@ -13,6 +13,7 @@ import { SmartInput } from './SmartInput'
 import { ChipListInput } from './ChipListInput'
 import { CARDIO_TYPES, CARDIO_FORMATS, DONATION_TYPES } from '../../constants/app'
 import type {
+  EditModalTarget,
   WeightEntry,
   BodyweightEntry,
   CardioEntry,
@@ -31,6 +32,51 @@ import type {
   MatchResult,
   NewSportFlags,
 } from '../../types'
+
+// ── Form plumbing ─────────────────────────────────────────────────────────────
+
+/**
+ * Where the open form publishes its save handler for the footer's Save button.
+ *
+ * A plain module-level box rather than a React ref threaded through props:
+ * EditModal is mounted once in AppShell and the store holds one `editModal` at a
+ * time, so exactly one form is ever live. Passing a ref down as a prop is the
+ * thing React's own rules tell you not to build (`react-hooks/refs`), and it
+ * cost every form an extra prop.
+ */
+const saveSlot = { run: () => {} }
+
+/** Every form takes the record it edits and the modal's close. */
+type FormProps<T> = { record: T; onClose: () => void }
+
+/**
+ * Publishes a form's save handler to the footer and runs it through the store's
+ * `withToast`. Every form says the same two things, so the strings live here.
+ *
+ * `write` carries the *whole* success path: the write and the close that follows
+ * it both run inside `withToast`, which is what keeps a failed save from
+ * dismissing a modal full of typed-in data.
+ *
+ * `ready` is the form's own validity guard. False means the Save button does
+ * nothing at all — no write, no toast — which is what each form did with an
+ * early `return` above its `try`.
+ *
+ * The slot is filled in an effect rather than during render. The effect has no
+ * dependency array, so it re-publishes after every commit and the footer can
+ * never hold a stale closure.
+ */
+function useSave(onClose: () => void, ready: boolean, write: () => Promise<void>) {
+  const withToast = useAppStore(s => s.withToast)
+  useEffect(() => {
+    saveSlot.run = () => {
+      if (!ready) return
+      void withToast(async () => {
+        await write()
+        onClose()
+      }, 'Updated!', 'Failed to update.')
+    }
+  })
+}
 
 // ── Internal helpers ──────────────────────────────────────────────────────────
 
@@ -80,23 +126,13 @@ function Footer({ onCancel, onSave }: { onCancel: () => void; onSave: () => void
 
 // ── WeightForm ────────────────────────────────────────────────────────────────
 
-function WeightForm({ record, onClose, saveRef }: { record: WeightEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function WeightForm({ record, onClose }: FormProps<WeightEntry>) {
   const editWeightEntry = useAppStore(s => s.editWeightEntry)
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const s = useSets(record.sets)
 
-  const save = async () => {
-    if (!s.parsed.length) return
-    try {
-      await editWeightEntry(record.id, { sets: s.parsed, date })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  useSave(onClose, s.parsed.length > 0, () =>
+    editWeightEntry(record.id, { sets: s.parsed, date }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -112,34 +148,26 @@ function WeightForm({ record, onClose, saveRef }: { record: WeightEntry; onClose
 
 // ── SupersetForm ──────────────────────────────────────────────────────────────
 
-function SupersetForm({ records, onClose, saveRef }: { records: [WeightEntry, WeightEntry]; onClose: () => void; saveRef: { current: () => void } }) {
+function SupersetForm({ record, onClose }: FormProps<[WeightEntry, WeightEntry]>) {
   const editWeightEntry = useAppStore(s => s.editWeightEntry)
-  const setToast = useAppStore(s => s.setToast)
-  const [date, setDate] = useState(records[0].date)
-  const s0 = useSets(records[0].sets)
-  const s1 = useSets(records[1].sets)
+  const [first, second] = record
+  const [date, setDate] = useState(first.date)
+  const s0 = useSets(first.sets)
+  const s1 = useSets(second.sets)
 
-  const save = async () => {
-    if (!s0.parsed.length || !s1.parsed.length) return
-    try {
-      await Promise.all([
-        editWeightEntry(records[0].id, { sets: s0.parsed, date }),
-        editWeightEntry(records[1].id, { sets: s1.parsed, date }),
-      ])
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  useSave(onClose, s0.parsed.length > 0 && s1.parsed.length > 0, async () => {
+    await Promise.all([
+      editWeightEntry(first.id, { sets: s0.parsed, date }),
+      editWeightEntry(second.id, { sets: s1.parsed, date }),
+    ])
+  })
 
   return (
     <div className="flex flex-col gap-4">
       <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
 
       <div className="border border-line rounded-[3px] p-2.5 bg-hairline">
-        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{records[0].exercise}</p>
+        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{first.exercise}</p>
         <SetsGrid
           sets={s0.sets} revealed={s0.revealed}
           onUpdate={s0.update} onRemove={s0.remove} onRevealNext={s0.revealNext}
@@ -147,7 +175,7 @@ function SupersetForm({ records, onClose, saveRef }: { records: [WeightEntry, We
       </div>
 
       <div className="border border-line rounded-[3px] p-2.5 bg-hairline">
-        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{records[1].exercise}</p>
+        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{second.exercise}</p>
         <SetsGrid
           sets={s1.sets} revealed={s1.revealed}
           onUpdate={s1.update} onRemove={s1.remove} onRevealNext={s1.revealNext}
@@ -159,23 +187,13 @@ function SupersetForm({ records, onClose, saveRef }: { records: [WeightEntry, We
 
 // ── BodyweightForm ────────────────────────────────────────────────────────────
 
-function BodyweightForm({ record, onClose, saveRef }: { record: BodyweightEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function BodyweightForm({ record, onClose }: FormProps<BodyweightEntry>) {
   const editBodyweightEntry = useAppStore(s => s.editBodyweightEntry)
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const [weight, setWeight] = useState(String(record.weight))
 
-  const save = async () => {
-    if (!weight) return
-    try {
-      await editBodyweightEntry(record.id, { date, weight: +weight })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  useSave(onClose, !!weight, () =>
+    editBodyweightEntry(record.id, { date, weight: +weight }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -197,9 +215,8 @@ function BodyweightForm({ record, onClose, saveRef }: { record: BodyweightEntry;
 
 // ── CardioForm ────────────────────────────────────────────────────────────────
 
-function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function CardioForm({ record, onClose }: FormProps<CardioEntry>) {
   const editCardioEntry = useAppStore(s => s.editCardioEntry)
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const [type, setType] = useState(record.type)
   const [duration, setDuration] = useState(formatDurationMins(record.duration))
@@ -214,26 +231,17 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
   const livePace = calcPace(durationMins, distKm)
   const boutSeconds = format === 'intervals' ? Math.round(parseDurationMins(bout) * 60) || undefined : undefined
 
-  const save = async () => {
-    if (!durationMins) return
-    try {
-      await editCardioEntry(record.id, {
-        date,
-        type,
-        duration: durationMins,
-        distance: distKm || undefined,
-        avgHr: avgHr ? +avgHr : undefined,
-        format: format || undefined,
-        boutSeconds,
-        notes: notes || undefined,
-      })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  useSave(onClose, !!durationMins, () =>
+    editCardioEntry(record.id, {
+      date,
+      type,
+      duration: durationMins,
+      distance: distKm || undefined,
+      avgHr: avgHr ? +avgHr : undefined,
+      format: format || undefined,
+      boutSeconds,
+      notes: notes || undefined,
+    }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -305,9 +313,8 @@ function CardioForm({ record, onClose, saveRef }: { record: CardioEntry; onClose
 
 function emptyEx(): MobilityExercise { return { name: '', duration: 0, notes: '' } }
 
-function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function MobilityForm({ record, onClose }: FormProps<MobilityEntry>) {
   const editMobilityEntry = useAppStore(s => s.editMobilityEntry)
-  const setToast = useAppStore(s => s.setToast)
   const mobility = useAppStore(s => s.mobility)
   const exerciseAliases = useAppStore(s => s.exerciseAliases)
   const allExNames = useMemo(
@@ -324,22 +331,14 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
   const addEx = () => setExercises(p => [...p, emptyEx()])
   const removeEx = (i: number) => setExercises(p => p.filter((_, j) => j !== i))
 
-  const save = async () => {
-    const valid = exercises.filter(e => e.name.trim() && e.duration > 0)
-    if (!valid.length) return
-    try {
-      await editMobilityEntry(record.id, {
-        date,
-        exercises: valid,
-        duration: valid.reduce((s, e) => s + e.duration, 0),
-      })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  const valid = exercises.filter(e => e.name.trim() && e.duration > 0)
+
+  useSave(onClose, valid.length > 0, () =>
+    editMobilityEntry(record.id, {
+      date,
+      exercises: valid,
+      duration: valid.reduce((s, e) => s + e.duration, 0),
+    }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -384,9 +383,8 @@ function MobilityForm({ record, onClose, saveRef }: { record: MobilityEntry; onC
 
 // ── SportForm ─────────────────────────────────────────────────────────────────
 
-function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function SportForm({ record, onClose }: FormProps<SportEntry>) {
   const editSportEntry = useAppStore(s => s.editSportEntry)
-  const setToast = useAppStore(s => s.setToast)
   const sports = useAppStore(s => s.sports)
   const sportTypes = useAppStore(s => s.sportTypes)
   const allSports = useMemo(() => [...new Set(sports.map(d => d.sport))].sort(), [sports])
@@ -415,32 +413,23 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
   const isNewSport = sport.trim() !== '' && !existingType
   const hasCompetitor = existingType ? existingType.hasCompetitor : (isNewSport && newSportHasCompetitor)
   const hasTeammate = existingType ? existingType.hasTeammate : (isNewSport && newSportHasTeammate)
+  const newSportFlags: NewSportFlags | undefined = isNewSport
+    ? { hasCompetitor: newSportHasCompetitor, hasTeammate: newSportHasTeammate }
+    : undefined
 
-  const save = async () => {
-    if (!sport.trim()) return
-    const newSportFlags: NewSportFlags | undefined = isNewSport
-      ? { hasCompetitor: newSportHasCompetitor, hasTeammate: newSportHasTeammate }
-      : undefined
-    try {
-      await editSportEntry(record.id, {
-        date,
-        sport: sport as SportEntry['sport'],
-        withTrainer,
-        quality: quality as QualityRating,
-        duration: parseDurationMins(duration) || undefined,
-        avgHr: avgHr ? +avgHr : undefined,
-        notes,
-        competitorNames: hasCompetitor ? (competitorNames.length ? competitorNames : undefined) : undefined,
-        result: hasCompetitor ? (result || undefined) : undefined,
-        teammateNames: hasTeammate ? teammates : undefined,
-      }, newSportFlags)
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  useSave(onClose, sport.trim() !== '', () =>
+    editSportEntry(record.id, {
+      date,
+      sport: sport as SportEntry['sport'],
+      withTrainer,
+      quality: quality as QualityRating,
+      duration: parseDurationMins(duration) || undefined,
+      avgHr: avgHr ? +avgHr : undefined,
+      notes,
+      competitorNames: hasCompetitor ? (competitorNames.length ? competitorNames : undefined) : undefined,
+      result: hasCompetitor ? (result || undefined) : undefined,
+      teammateNames: hasTeammate ? teammates : undefined,
+    }, newSportFlags))
 
   return (
     <div className="flex flex-col gap-3">
@@ -538,23 +527,15 @@ function SportForm({ record, onClose, saveRef }: { record: SportEntry; onClose: 
 
 // ── DonationForm ──────────────────────────────────────────────────────────────
 
-function DonationForm({ record, onClose, saveRef }: { record: DonationEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function DonationForm({ record, onClose }: FormProps<DonationEntry>) {
   const editDonationEntry = useAppStore(s => s.editDonationEntry)
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const [type, setType] = useState(record.type)
   const [notes, setNotes] = useState(record.notes ?? '')
 
-  const save = async () => {
-    try {
-      await editDonationEntry(record.id, { date, type, notes })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  // No validity guard: a date and a type are always present.
+  useSave(onClose, true, () =>
+    editDonationEntry(record.id, { date, type, notes }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -579,23 +560,13 @@ function DonationForm({ record, onClose, saveRef }: { record: DonationEntry; onC
 
 // ── WaterForm ─────────────────────────────────────────────────────────────────
 
-function WaterForm({ record, onClose, saveRef }: { record: WaterEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function WaterForm({ record, onClose }: FormProps<WaterEntry>) {
   const editWaterEntry = useAppStore(s => s.editWaterEntry)
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const [amount, setAmount] = useState(String(record.amountMl))
 
-  const save = async () => {
-    if (!amount) return
-    try {
-      await editWaterEntry(record.id, { date, amountMl: +amount })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
+  useSave(onClose, !!amount, () =>
+    editWaterEntry(record.id, { date, amountMl: +amount }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -616,12 +587,20 @@ function WaterForm({ record, onClose, saveRef }: { record: WaterEntry; onClose: 
 }
 
 // ── Recovery: delete affordance ─────────────────────────────────────────────
-// Recovery modalities have no history tab, so their edit modals carry their own
-// delete button.
 
-function DeleteRow({ onDelete }: { onDelete: () => void }) {
+/**
+ * Recovery modalities have no history tab, so their edit modals carry their own
+ * delete button. It owns the whole delete — the write, the toast and the close.
+ */
+function DeleteRow({ id, onClose, remove }: { id: string; onClose: () => void; remove: (id: string) => Promise<void> }) {
+  const withToast = useAppStore(s => s.withToast)
+  const del = () => withToast(async () => {
+    await remove(id)
+    onClose()
+  }, 'Deleted', 'Failed to delete.')
+
   return (
-    <Btn variant="danger" small onClick={onDelete} className="self-start mt-1 inline-flex items-center gap-1.5">
+    <Btn variant="danger" small onClick={del} className="self-start mt-1 inline-flex items-center gap-1.5">
       <Icon name="trash" size={13} />
       Delete entry
     </Btn>
@@ -630,36 +609,16 @@ function DeleteRow({ onDelete }: { onDelete: () => void }) {
 
 // ── SleepForm ─────────────────────────────────────────────────────────────────
 
-function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function SleepForm({ record, onClose }: FormProps<SleepEntry>) {
   const editSleepEntry = useAppStore(s => s.editSleepEntry)
   const removeSleepEntry = useAppStore(s => s.removeSleepEntry)
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const [hours, setHours] = useState(String(record.hours))
   const [quality, setQuality] = useState<SleepQuality | 0>(record.quality ?? 0)
   const [notes, setNotes] = useState(record.notes ?? '')
 
-  const save = async () => {
-    if (!hours) return
-    try {
-      await editSleepEntry(record.id, { date, hours: +hours, quality: quality || undefined, notes: notes || undefined })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
-
-  const del = async () => {
-    try {
-      await removeSleepEntry(record.id)
-      setToast('Deleted')
-      onClose()
-    } catch {
-      setToast('Failed to delete.')
-    }
-  }
+  useSave(onClose, !!hours, () =>
+    editSleepEntry(record.id, { date, hours: +hours, quality: quality || undefined, notes: notes || undefined }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -676,7 +635,7 @@ function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: 
       )}
       <Rating label="Quality (opt.)" value={quality} onPick={v => setQuality(v as SleepQuality | 0)} />
       <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. woke up once" />
-      <DeleteRow onDelete={del} />
+      <DeleteRow id={record.id} onClose={onClose} remove={removeSleepEntry} />
     </div>
   )
 }
@@ -684,42 +643,19 @@ function SleepForm({ record, onClose, saveRef }: { record: SleepEntry; onClose: 
 // ── SaunaForm / ColdForm (shared session shape) ─────────────────────────────
 
 function SessionEditForm({
-  record, onClose, saveRef, tempPlaceholder, onEdit, onRemove,
-}: {
-  record: SaunaEntry | ColdEntry
-  onClose: () => void
-  saveRef: { current: () => void }
+  record, onClose, tempPlaceholder, onEdit, onRemove,
+}: FormProps<SaunaEntry | ColdEntry> & {
   tempPlaceholder: string
   onEdit: (id: string, patch: { date: string; duration: number; tempC?: number; notes?: string }) => Promise<void>
   onRemove: (id: string) => Promise<void>
 }) {
-  const setToast = useAppStore(s => s.setToast)
   const [date, setDate] = useState(record.date)
   const [duration, setDuration] = useState(String(record.duration))
   const [temp, setTemp] = useState(record.tempC != null ? String(record.tempC) : '')
   const [notes, setNotes] = useState(record.notes ?? '')
 
-  const save = async () => {
-    if (!duration) return
-    try {
-      await onEdit(record.id, { date, duration: +duration, tempC: temp ? +temp : undefined, notes: notes || undefined })
-      setToast('Updated!')
-      onClose()
-    } catch {
-      setToast('Failed to update.')
-    }
-  }
-  saveRef.current = save
-
-  const del = async () => {
-    try {
-      await onRemove(record.id)
-      setToast('Deleted')
-      onClose()
-    } catch {
-      setToast('Failed to delete.')
-    }
-  }
+  useSave(onClose, !!duration, () =>
+    onEdit(record.id, { date, duration: +duration, tempC: temp ? +temp : undefined, notes: notes || undefined }))
 
   return (
     <div className="flex flex-col gap-3">
@@ -729,28 +665,28 @@ function SessionEditForm({
         <Inp label="°C (opt.)" type="number" value={temp} onChange={e => setTemp(e.target.value)} step="1" placeholder={tempPlaceholder} />
       </div>
       <Inp label="Notes (opt.)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes" />
-      <DeleteRow onDelete={del} />
+      <DeleteRow id={record.id} onClose={onClose} remove={onRemove} />
     </div>
   )
 }
 
-function SaunaForm({ record, onClose, saveRef }: { record: SaunaEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function SaunaForm({ record, onClose }: FormProps<SaunaEntry>) {
   const editSaunaEntry = useAppStore(s => s.editSaunaEntry)
   const removeSaunaEntry = useAppStore(s => s.removeSaunaEntry)
   return (
     <SessionEditForm
-      record={record} onClose={onClose} saveRef={saveRef} tempPlaceholder="80"
+      record={record} onClose={onClose} tempPlaceholder="80"
       onEdit={editSaunaEntry} onRemove={removeSaunaEntry}
     />
   )
 }
 
-function ColdForm({ record, onClose, saveRef }: { record: ColdEntry; onClose: () => void; saveRef: { current: () => void } }) {
+function ColdForm({ record, onClose }: FormProps<ColdEntry>) {
   const editColdEntry = useAppStore(s => s.editColdEntry)
   const removeColdEntry = useAppStore(s => s.removeColdEntry)
   return (
     <SessionEditForm
-      record={record} onClose={onClose} saveRef={saveRef} tempPlaceholder="10"
+      record={record} onClose={onClose} tempPlaceholder="10"
       onEdit={editColdEntry} onRemove={removeColdEntry}
     />
   )
@@ -758,7 +694,9 @@ function ColdForm({ record, onClose, saveRef }: { record: ColdEntry; onClose: ()
 
 // ── Main EditModal ────────────────────────────────────────────────────────────
 
-const TITLES: Record<string, string> = {
+// Typed as a full Record over the union, so a new EditModalTarget variant is a
+// compile error here rather than a modal that opens with a blank header.
+const TITLES: Record<EditModalTarget['type'], string> = {
   weight: 'Edit Exercise',
   'weight-superset': 'Edit Superset',
   bodyweight: 'Edit Body Weight',
@@ -775,53 +713,34 @@ const TITLES: Record<string, string> = {
 /**
  * Global edit modal — mounted once in AppShell, driven by store.editModal.
  * Each tab opens it via openEditModal(target).
+ *
+ * The branches stay a chain rather than a `Record<type, Component>` lookup: with
+ * the save slot carrying the wiring, each branch is one line, and a lookup would
+ * cost a cast (TypeScript cannot follow a discriminant through an index) for an
+ * exhaustiveness check TITLES above already performs.
  */
 export function EditModal() {
   const editModal = useAppStore(s => s.editModal)
   const closeEditModal = useAppStore(s => s.closeEditModal)
-  // Each form writes its save fn here on every render; Footer calls it.
-  const saveRef = useRef<() => void>(() => {})
 
   return (
     <Modal
       open={!!editModal}
       onClose={closeEditModal}
       title={editModal ? TITLES[editModal.type] : ''}
-      footer={<Footer onCancel={closeEditModal} onSave={() => saveRef.current()} />}
+      footer={<Footer onCancel={closeEditModal} onSave={() => saveSlot.run()} />}
     >
-      {editModal?.type === 'weight' && (
-        <WeightForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'weight-superset' && (
-        <SupersetForm records={editModal.records} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'bodyweight' && (
-        <BodyweightForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'cardio' && (
-        <CardioForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'mobility' && (
-        <MobilityForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'sport' && (
-        <SportForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'donation' && (
-        <DonationForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'water' && (
-        <WaterForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'sleep' && (
-        <SleepForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'sauna' && (
-        <SaunaForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
-      {editModal?.type === 'cold' && (
-        <ColdForm record={editModal.record} onClose={closeEditModal} saveRef={saveRef} />
-      )}
+      {editModal?.type === 'weight' && <WeightForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'weight-superset' && <SupersetForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'bodyweight' && <BodyweightForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'cardio' && <CardioForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'mobility' && <MobilityForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'sport' && <SportForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'donation' && <DonationForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'water' && <WaterForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'sleep' && <SleepForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'sauna' && <SaunaForm record={editModal.record} onClose={closeEditModal} />}
+      {editModal?.type === 'cold' && <ColdForm record={editModal.record} onClose={closeEditModal} />}
     </Modal>
   )
 }

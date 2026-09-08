@@ -318,7 +318,7 @@ export function WeightsTab() {
                     <SSBadge />
                     <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
                     <span className="text-[11px] text-ink-3 ml-auto tabular-nums">{g.entries[0].date}</span>
-                    <EditBtn onClick={() => openEditModal({ type: 'weight-superset', records: [g.entries[0], g.entries[1]] })} />
+                    <EditBtn onClick={() => openEditModal({ type: 'weight-superset', record: [g.entries[0], g.entries[1]] })} />
                     <DelBtn onClick={() => {
                       g.entries.forEach(e => removeWeightEntry(e.id))
                     }} />
