@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { lastPerformance, uid } from '../../../lib/utils'
+import { useAppStore } from '../../../store/app'
 import { Card, SecTitle } from '../../ui/Card'
 import { Btn } from '../../ui/Button'
 import { SSBadge, DeloadBadge } from '../../ui/Badges'
@@ -15,7 +16,6 @@ function padArr(arr: SetStr[], n: number): SetStr[] {
 
 interface SupersetLoggerProps {
   exercises: [string, string]
-  weights: WeightEntry[]
   date: string
   programStartDate?: string
   isDeload: boolean
@@ -25,7 +25,9 @@ interface SupersetLoggerProps {
   onCancel: () => void
 }
 
-export function SupersetLogger({ exercises, weights, date, programStartDate, isDeload, initialSets0, initialSets1, onSave, onCancel }: SupersetLoggerProps) {
+export function SupersetLogger({ exercises, date, programStartDate, isDeload, initialSets0, initialSets1, onSave, onCancel }: SupersetLoggerProps) {
+  // The history is read here rather than handed down (roadmap 048 B8).
+  const weights = useAppStore(s => s.weights)
   const lastPerf = (n: string) => lastPerformance(weights, n, [programStartDate])
 
   const lp0 = lastPerf(exercises[0])

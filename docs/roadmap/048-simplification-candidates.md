@@ -1,11 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tier 1 is finished** and Tier 2 is half done
-(v2.0.58 → v2.0.77; the progress log below has the units). What is left is B7,
-B8, B9, B14 of Tier 2 and A7, A9, C2 of Tier 3; each is one atomic unit a later
-session lands with `/simplify`, ticking its box in Acceptance when it ships.
-Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Status:** in progress — **Tier 1 is finished** and Tier 2 is down to two
+entries (v2.0.58 → v2.0.78; the progress log below has the units). What is left
+is B9 and B14 of Tier 2 and A7, A9, C2 of Tier 3; each is one atomic unit a
+later session lands with `/simplify`, ticking its box in Acceptance when it
+ships. Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 
 ## Progress log
 
@@ -23,6 +23,10 @@ Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 - **2026-09-08, v2.0.77 — Tier 2 continues: B5 + B6**, one unit, because both
   rebuild the same two Home sheets. One `SheetHeader`, `CaptureLabel`, `Recent`
   and `StepperCapture` in `BottomSheet.tsx`; five sheets read them.
+- **2026-09-08, v2.0.78 — Tier 2 continues: B7 + B8**, one unit, because both
+  rewire the same weights and program files. WeightsTab memoises the four values
+  it derives from the history; the history itself and this week's variant choice
+  are read from the store by the five components that need them, not threaded.
 **Release:** 2.1.0
 
 ## What this is
@@ -1201,6 +1205,42 @@ upserts CLAUDE.md documents as deliberate on every bootstrap.
   supersets through a `Map<supersetId, WeightEntry[]>`.
 - **Risk:** low.
 
+**Landed 2026-09-08 (v2.0.78), with B8.** All four are behind `useMemo` and the
+pairing is an index instead of a `find` per entry. This entry claims a cost, so
+the cost was measured rather than asserted — the same WeightsTab render was
+driven before and after with a counting `Proxy` in place of `store.weights`, and
+three characters typed into the exercise field:
+
+| whole-list passes per 3 keystrokes | `map` | `filter` | iterate |
+|---|---|---|---|
+| before | 12 | 12 | 12 |
+| after | **0** | 6 | 6 |
+
+React runs every render twice in development (`StrictMode`), so that is **six
+full passes over the 212-entry history per character, down to two**. Four notes:
+
+- **The two that remain are the two that cannot be memoised.** `historical1RM`
+  filters the history by the name being typed and `lastPerformance` scans it for
+  the same name — both change with the character, so `[weights]` is the wrong
+  key for them and leaving them alone is the honest answer. Everything keyed on
+  the history alone now recomputes only when the history changes.
+- **`sort` reads 0 in both columns, and that is not a null result.** Both sorts
+  run on a *copy* (`[...weights].sort(…)`, `weights.filter(…).sort(…)`), so the
+  proxy never sees them — the copy-sort of all 212 entries shows up as one of
+  the four `iterate` hits in the *before* row, and it is gone from the *after*
+  row.
+- **The index is the existing `groupBy` (A10), keyed `e.supersetId ?? ''`.**
+  Entries with no superset land in one bucket that is never read, which is what
+  buys a single pass with no cast and no non-null assertion. Over the real
+  history — 212 entries, 38 of them carrying a `supersetId` — the old loop made
+  **2805** partner comparisons and the index makes **38**, for the same 193
+  groups, identical group for group (checked by running both in the page).
+- **One behavioural difference, unreachable in this data.** The old search gave
+  up when the first same-superset match was already paired; the new one skips to
+  the next unpaired member. Every superset the logger writes has exactly two
+  members, so the two agree on every row; they could only differ for a group of
+  four or more.
+
 ### B8. `weights` and the variant toggle threaded past the store (−20)
 
 - **Where:** `weights/TodaysPlan.tsx:24, 67-70, 142-147, 172-176, 233` (`weights`
@@ -1212,6 +1252,82 @@ upserts CLAUDE.md documents as deliberate on every bootstrap.
   `activeVariantWeekdays(weekOverrides, id)` behind a store selector. The four
   `PickHandlers` stay: they set WeightsTab's local form state.
 - **Risk:** low.
+
+**Landed 2026-09-08 (v2.0.78), with B7.** Five components read the history
+themselves — `WeightGroups`, `WeeklyChecklist` and `TodaysPlan` itself in the
+weights plan, `SupersetLogger`, and both program cards — so the `weights` prop
+is gone from all of them and `DayLog` stops forwarding a value it never used.
+`useVariantWeek(userProgramId)` in `store/app.ts` returns
+`{ variantWeekdays, setVariant }` and replaces the two hand-wired pairs. The
+four `PickHandlers` stay, as this entry says. Four departures:
+
+- **The `Set` is *not* built inside the selector**, which is what "behind a
+  store selector" would normally mean. A Zustand selector that returns a fresh
+  object has a new identity on every comparison, and the component re-renders
+  forever. The two selectors return stored references — the `weekOverrides`
+  array and the action — and the `Set` is derived in the caller's render, which
+  is exactly where it was built before. There is a comment on the hook saying
+  so, because the obvious-looking tidy-up is the bug.
+- **`TodaysPlan` takes an `ActiveProgram` now, not a `Program`.** The enrolment
+  id is the one thing the variant state needs from above, and every caller
+  already passed one. `variantWeekdays` also stops being optional, so
+  `variantWeekdays?.has(wd) ?? false` is one `.has()`.
+- **The duplicated `Chip` pair became `VariantChips` in `ui/Chip.tsx`.** This
+  entry lists it under *Where* but not under *Change*; it is the same shape B10
+  found in `ACT_CHIP` — the two chips are identical, the rows around them are
+  not (ProgramTab's is a weekday row in a nest, TodaysPlan's is a bordered strip
+  with a `MICRO_LABEL`), so only the pair is shared and each caller keeps its
+  own wrapper and leading label.
+- **B14 is not done by this.** WeightsTab, ProgramTab and the rest still
+  subscribe to the whole store; what changed is that five components stopped
+  taking a value as a prop that the store already holds. The new reads are
+  per-field selectors, which is the direction B14 sets.
+
+**Measured, for B7 + B8 together (v2.0.78):** **+32 lines** across six files, of
+which **+34 are comment** — so **−2 lines of code**, the closest any unit in this
+brief has come to the arithmetic its entries predicted (+6 and −20). First paint
+**349.20 kB**, **up 0.14 kB**: the hook lives in `store/app.ts`, which is in the
+entry chunk, while most of the prop threading it replaced was in the lazy
+WeightsTab and ProgramTab chunks — the same trade B10 recorded. It is 3.27 kB
+under the committed baseline, so no re-baseline. `npm run lint` 6 warnings /
+0 errors (023's floor), `npm run knip` clean, 227 tests pass.
+
+**Browser-checked on live data** (house rule `verify-in-browser`; five
+components change how they get their data, so both tabs were walked). Zero
+console errors, and **the database is exactly as it was found** — the only
+non-GET requests in a clean run were the two seed upserts CLAUDE.md documents as
+deliberate on every bootstrap (four, because `StrictMode` runs bootstrap twice).
+
+- **The history read, on the real 212 rows.** The Recent card drew 19 superset
+  blocks and 174 single rows — 193 groups, the number both pairing algorithms
+  return — leading with Bench Press `≈143kg 1RM · S1: 40kg×30 …` and the
+  2026-05-15 Calf Raises / Reverse Fly superset, and the exercise filter listed
+  all 34 names.
+- **The plan and both program cards, which is where the props were removed.**
+  There is still no active program, so a weekday-mode `defaultProgram()` went
+  into the store with `setState` — memory only, no write — with today (Tuesday)
+  carrying both a base and a variant day. `TodaysPlan` printed
+  *Last (2026-07-28): 100kg×6 · 90kg×8 · 80kg×10* for Back Squat and the real
+  last sessions for the Bench Press / Bicep Curls superset, so `WeightGroups`
+  reads the store correctly; the superset logger opened with
+  *Last: 40×30 · 60×16 · 70×4 · 50×16* above its 16 inputs, so does it.
+  `ProgramCard` drew 15 session dates under *Full schedule* (`sessionDates`
+  over `weights`) and `ProgramHistoryCard` drew six exercises with their
+  MiniCharts for the paused Volleyball cycle — *Face Pulls 10kg → 15kg (+5kg),
+  Peak 15kg* — which is `cycleExerciseProgress` over the same list.
+- **`VariantChips` renders the same two tones in both places**, checked by
+  computed style rather than by eye: selected `11px/600 white on rgb(26,26,26)`,
+  unselected `11px/600 rgb(107,107,107) on white, border rgb(226,226,224)`,
+  both `3px` radius and `5px/10px` padding — `Chip`'s own two tones, unchanged.
+- **The toggle's arguments were read with the action stubbed**, so nothing was
+  written: clicking the variant chip and then the base chip called
+  `toggleWeekVariant` with `('in-memory-verify', 'Tuesday', true)` and
+  `(…, false)` — the enrolment id the hook closes over, today's weekday, and the
+  direction of the click. `program_week_overrides` still holds its single
+  2026-06-22 row. A first attempt at this check clicked before React had picked
+  the stub up and the real action fired: PostgREST rejected it 400 on the
+  foreign key, because the programme id only exists in memory. Confirmed at
+  source, and the next run guarded the route as well as the action.
 
 ### B9. Three copies of the Recharts line-chart scaffold (−35)
 
@@ -1369,8 +1485,8 @@ Tier 2:
 - [x] A5 `toRow` / `toEntry`, derived reverse maps — 2026-09-08, v2.0.68. The forward fallbacks are gone and the maps are now total by type; the reverse fallbacks stay, because the `activity_type` constraint is wider than `CARDIO_TYPES`
 - [x] B5 sheet header + `Recent` shared — 2026-09-08, v2.0.77. `SheetHeader` picks its own alignment (a one-line header centres against the close target, a stacked one tops), `title`/`sub` sit on it rather than on `BottomSheet`, `SheetClose` stopped being exported, and a third copy fell out as `CaptureLabel`. `MuscleSheet`'s title is now the same `h3` as the other two: 28.5 px → 23.8 px tall, 4.7 px up the sheet
 - [x] B6 `StepperCapture` — 2026-09-08, v2.0.77. `round` is derived from the smallest step, so `roundHalf`/`roundTenth` are gone; bodyweight now clamps at 0 like sleep already did. Both steppers stepped in the browser and every value stayed on its own grid
-- [ ] B7 WeightsTab memoised
-- [ ] B8 `weights` read from the store in the leaves
+- [x] B7 WeightsTab memoised — 2026-09-08, v2.0.78. Measured with a counting proxy over `store.weights`: three keystrokes went from 12 `map` / 12 `filter` / 12 iterations of the 212-entry history to **0 / 6 / 6**, and the superset pairing from 2805 comparisons to 38 for the same 193 groups. The two passes left are keyed on the name being typed, not on the history
+- [x] B8 `weights` read from the store in the leaves — 2026-09-08, v2.0.78. Five components read it; `useVariantWeek(userProgramId)` replaces both hand-wired variant pairs, deriving its `Set` in the caller's render rather than inside a selector (a selector returning a fresh object never stops re-rendering); the duplicated chip pair is `VariantChips`
 - [ ] B9 `TrendChart`
 - [ ] B14 selectors in the 17 components
 

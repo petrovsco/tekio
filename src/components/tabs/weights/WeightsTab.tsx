@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, cycleInfo, deloadSets, isDeloadDate, isTodayDone, lastPerformance, programMode, activeVariantWeekdays, best1RM, weightsPickerNames, uniqSorted } from '../../../lib/utils'
+import { today, cycleInfo, deloadSets, groupBy, isDeloadDate, isTodayDone, lastPerformance, programMode, best1RM, weightsPickerNames, uniqSorted } from '../../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions } from '../../ui/Button'
@@ -27,7 +27,7 @@ export function WeightsTab() {
   const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
   const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
 
-  const { weights, exerciseMuscles, exerciseAliases, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, withToast } = useAppStore()
+  const { weights, exerciseMuscles, exerciseAliases, programs, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, withToast } = useAppStore()
 
   // Auto-advance sequential (legacy index-mode) programs when today's day is done.
   // Weekday-pinned and flexible programs derive their day from the calendar/checklist
@@ -45,8 +45,11 @@ export function WeightsTab() {
     }
   }, [weights])
 
-  const exercises = uniqSorted(weights.map(d => d.exercise))
-  const pickerNames = weightsPickerNames(weights, exerciseMuscles)
+  // This component holds the log form's state as well as the history read, so
+  // every keystroke re-renders it. Everything derived from `weights` is memoised
+  // on `weights` so a keystroke recomputes none of it (roadmap 048 B7).
+  const exercises = useMemo(() => uniqSorted(weights.map(d => d.exercise)), [weights])
+  const pickerNames = useMemo(() => weightsPickerNames(weights, exerciseMuscles), [weights, exerciseMuscles])
 
   const isAnyDeload = programs.some(ap => isDeloadDate(ap.startDate, today()))
 
@@ -117,7 +120,7 @@ export function WeightsTab() {
   const chartEx = selEx || exercises[0] || ''
   // For chart, find the program that tracks the chart exercise (or first program)
   const chartProgram = programs.find(ap => ap.days.some(d => d.exercises.includes(chartEx))) ?? programs[0]
-  const chartData = weights
+  const chartData = useMemo(() => weights
     .filter(d => d.exercise === chartEx)
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(d => ({
@@ -125,24 +128,31 @@ export function WeightsTab() {
       maxWeight: Math.max(...d.sets.map(s => s.weight)),
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
       deload: chartProgram ? isDeloadDate(chartProgram.startDate, d.date) : false,
-    }))
+    })), [weights, chartEx, chartProgram])
 
-  const allWeightsSorted = [...weights].sort((a, b) => b.date.localeCompare(a.date))
-
-  const recentGrouped: Array<{ type: 'single' | 'superset'; entries: WeightEntry[] }> = []
-  const usedIds = new Set<string>()
-  for (const entry of allWeightsSorted) {
-    if (usedIds.has(entry.id)) continue
-    if (entry.supersetId) {
-      const partner = allWeightsSorted.find(e => e.supersetId === entry.supersetId && e.id !== entry.id)
-      if (partner && !usedIds.has(partner.id)) {
-        recentGrouped.push({ type: 'superset', entries: [entry, partner] })
-        usedIds.add(entry.id); usedIds.add(partner.id); continue
+  const recentGrouped = useMemo(() => {
+    const sorted = [...weights].sort((a, b) => b.date.localeCompare(a.date))
+    // Index the supersets once. The pairing used to `find` a partner in the
+    // whole list per entry, which is O(n²) — and it ran on every keystroke.
+    // Entries with no superset all land in the '' bucket, which is never read.
+    const bySuperset = groupBy(sorted, e => e.supersetId ?? '')
+    const groups: Array<{ type: 'single' | 'superset'; entries: WeightEntry[] }> = []
+    const used = new Set<string>()
+    for (const entry of sorted) {
+      if (used.has(entry.id)) continue
+      const partner = entry.supersetId
+        ? bySuperset.get(entry.supersetId)?.find(e => e.id !== entry.id && !used.has(e.id))
+        : undefined
+      if (partner) {
+        groups.push({ type: 'superset', entries: [entry, partner] })
+        used.add(entry.id); used.add(partner.id)
+        continue
       }
+      groups.push({ type: 'single', entries: [entry] })
+      used.add(entry.id)
     }
-    recentGrouped.push({ type: 'single', entries: [entry] })
-    usedIds.add(entry.id)
-  }
+    return groups
+  }, [weights])
 
   return (
     <div className="flex flex-col gap-4">
@@ -152,9 +162,6 @@ export function WeightsTab() {
           <TodaysPlan
             key={ap.userProgramId}
             program={ap}
-            weights={weights}
-            variantWeekdays={activeVariantWeekdays(weekOverrides, ap.userProgramId)}
-            onToggleVariant={(dow, active) => toggleWeekVariant(ap.userProgramId, dow, active)}
             onPickSingle={n => { setSsExercises(null); handleSelectEx(n); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50) }}
             onPickSingleWithSets={handlePickWithSets}
             onPickSuperset={exArr => { setSsInitialSets(null); setSsExercises(exArr); setEx(''); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50) }}
@@ -175,7 +182,6 @@ export function WeightsTab() {
       {ssExercises && (
         <SupersetLogger
           exercises={ssExercises}
-          weights={weights}
           date={date}
           programStartDate={chartProgram?.startDate}
           isDeload={isAnyDeload}

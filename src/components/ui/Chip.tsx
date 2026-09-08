@@ -1,4 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { VariantGroup } from '../../lib/utils'
+import type { DayOfWeek } from '../../types'
 
 interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean
@@ -25,5 +27,32 @@ export function Chip({ active, children, small, className = '', ...props }: Chip
     >
       {children}
     </button>
+  )
+}
+
+interface VariantChipsProps {
+  group: VariantGroup
+  /** Whether the variant (not the base) is the active day this week. */
+  on: boolean
+  onToggle: (dayOfWeek: DayOfWeek, variantActive: boolean) => void
+}
+
+/**
+ * The base ⇄ variant choice for one weekday: two chips, exactly one selected.
+ *
+ * ProgramTab lists a row per weekday that has a variant, TodaysPlan shows only
+ * today's, and the two rows differ in their wrapper and leading label — so each
+ * caller keeps those and shares this pair (roadmap 048 B8).
+ */
+export function VariantChips({ group, on, onToggle }: VariantChipsProps) {
+  return (
+    <>
+      <Chip active={!on} onClick={() => onToggle(group.weekday, false)} className="flex-1 truncate">
+        {group.base?.name ?? 'Base'}
+      </Chip>
+      <Chip active={on} onClick={() => onToggle(group.weekday, true)} className="flex-1 truncate">
+        {group.variant.name}
+      </Chip>
+    </>
   )
 }

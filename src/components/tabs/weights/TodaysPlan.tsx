@@ -5,13 +5,14 @@ import {
 } from '../../../lib/utils'
 import type { GroupedExercise } from '../../../lib/utils'
 import { BLOCK_META } from '../../../constants/program'
+import { useAppStore, useVariantWeek } from '../../../store/app'
 import { ExPlan } from './ExPlan'
 import { SSBadge, DeloadBadge, MICRO, MICRO_LABEL } from '../../ui/Badges'
 import { ACT_CHIP } from '../../ui/Button'
-import { Chip } from '../../ui/Chip'
+import { VariantChips } from '../../ui/Chip'
 import { Icon } from '../../ui/Icon'
 import { FIELD_LABEL } from '../../ui/Input'
-import type { Program, ProgramDay, ProgramDayBlock, WeightEntry, LiftSet, BlockType, DayOfWeek } from '../../../types'
+import type { ActiveProgram, Program, ProgramDay, ProgramDayBlock, LiftSet, BlockType } from '../../../types'
 
 interface PickHandlers {
   onPickSingle: (ex: string) => void
@@ -20,11 +21,12 @@ interface PickHandlers {
   onPickSupersetDeload: (exercises: [string, string]) => void
 }
 
+// `weights` and this week's variant state used to be threaded in from
+// WeightsTab and re-wired identically in ProgramTab (roadmap 048 B8). The
+// leaves that need them read the store; the enrolment id is what they need
+// from above, which is why this takes an ActiveProgram, not a Program.
 interface TodaysPlanProps extends PickHandlers {
-  program: Program
-  weights: WeightEntry[]
-  variantWeekdays?: Set<DayOfWeek>
-  onToggleVariant?: (dayOfWeek: DayOfWeek, variantActive: boolean) => void
+  program: ActiveProgram
 }
 
 const LOG_IN_TAB: Partial<Record<BlockType, string>> = {
@@ -63,12 +65,12 @@ function infoBlocksFor(day: ProgramDay): ProgramDayBlock[] {
 
 // ── Weight groups (the loggable part) ─────────────────────────────────────────
 
-function WeightGroups({ groups, program, weights, isDeload, ...h }: {
+function WeightGroups({ groups, program, isDeload, ...h }: {
   groups: GroupedExercise[]
   program: Program
-  weights: WeightEntry[]
   isDeload: boolean
 } & PickHandlers) {
+  const weights = useAppStore(s => s.weights)
   const lastPerf = (n: string) => lastPerformance(weights, n, [program.startDate])
 
   return (
@@ -135,10 +137,9 @@ function BlockInfo({ block }: { block: ProgramDayBlock }) {
 
 // ── A single day's full plan (weight sections + info blocks) ───────────────────
 
-function DayLog({ day, program, weights, isDeload, ...h }: {
+function DayLog({ day, program, isDeload, ...h }: {
   day: ProgramDay
   program: Program
-  weights: WeightEntry[]
   isDeload: boolean
 } & PickHandlers) {
   const sections = weightSectionsFor(day)
@@ -152,7 +153,7 @@ function DayLog({ day, program, weights, isDeload, ...h }: {
           {showSectionNames && sec.name && (
             <p className={`${FIELD_LABEL} mt-3 first:mt-0`}>{sec.name}</p>
           )}
-          <WeightGroups groups={sec.groups} program={program} weights={weights} isDeload={isDeload} {...h} />
+          <WeightGroups groups={sec.groups} program={program} isDeload={isDeload} {...h} />
         </div>
       ))}
       {info.map((b, bi) => <BlockInfo key={bi} block={b} />)}
@@ -165,11 +166,11 @@ function DayLog({ day, program, weights, isDeload, ...h }: {
 
 // ── Weekly checklist (flexible / adjustment mode) ─────────────────────────────
 
-function WeeklyChecklist({ program, weights, isDeload, ...h }: {
+function WeeklyChecklist({ program, isDeload, ...h }: {
   program: Program
-  weights: WeightEntry[]
   isDeload: boolean
 } & PickHandlers) {
+  const weights = useAppStore(s => s.weights)
   const weekStart = startOfWeek(today())
   const days = program.days
   const doneFlags = days.map(d => isDayDoneInWeek(weights, d, weekStart))
@@ -214,7 +215,7 @@ function WeeklyChecklist({ program, weights, isDeload, ...h }: {
                 <Icon name={isSel ? 'chevronUp' : 'chevronDown'} size={13} className="text-ink-3 shrink-0" />
               </button>
               {isSel && (
-                <DayLog day={d} program={program} weights={weights} isDeload={isDeload} {...h} />
+                <DayLog day={d} program={program} isDeload={isDeload} {...h} />
               )}
             </div>
           )
@@ -226,29 +227,26 @@ function WeeklyChecklist({ program, weights, isDeload, ...h }: {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-export function TodaysPlan({ program, weights, variantWeekdays, onToggleVariant, ...h }: TodaysPlanProps) {
+export function TodaysPlan({ program, ...h }: TodaysPlanProps) {
   const [open, setOpen] = useState(true)
+  const weights = useAppStore(s => s.weights)
+  const { variantWeekdays, setVariant } = useVariantWeek(program.userProgramId)
   const { week, isDeload } = cycleInfo(program)
   const mode = programMode(program)
 
   if (mode === 'flexible') {
-    return <WeeklyChecklist program={program} weights={weights} isDeload={isDeload} {...h} />
+    return <WeeklyChecklist program={program} isDeload={isDeload} {...h} />
   }
 
   const wd = weekdayOf()
   const day = resolveTodayDay(program, today(), variantWeekdays)
   const todaysVariant = mode === 'weekday' ? variantGroups(program).find(g => g.weekday === wd) : undefined
-  const variantOn = variantWeekdays?.has(wd) ?? false
+  const variantOn = variantWeekdays.has(wd)
 
-  const variantToggle = todaysVariant && onToggleVariant && (
+  const variantToggle = todaysVariant && (
     <div className="flex items-center gap-1.5 px-3 py-2 bg-white border-b border-hairline">
       <span className={`${MICRO_LABEL} shrink-0`}>This {wd}</span>
-      <Chip active={!variantOn} onClick={() => onToggleVariant(wd, false)} className="flex-1 truncate">
-        {todaysVariant.base?.name ?? 'Base'}
-      </Chip>
-      <Chip active={variantOn} onClick={() => onToggleVariant(wd, true)} className="flex-1 truncate">
-        {todaysVariant.variant.name}
-      </Chip>
+      <VariantChips group={todaysVariant} on={variantOn} onToggle={setVariant} />
     </div>
   )
 
@@ -279,7 +277,7 @@ export function TodaysPlan({ program, weights, variantWeekdays, onToggleVariant,
         <Icon name={open ? 'chevronUp' : 'chevronDown'} size={13} className="text-ink-3 shrink-0" />
       </button>
       {variantToggle}
-      {open && <DayLog day={day} program={program} weights={weights} isDeload={isDeload} {...h} />}
+      {open && <DayLog day={day} program={program} isDeload={isDeload} {...h} />}
     </div>
   )
 }

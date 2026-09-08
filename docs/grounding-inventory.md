@@ -370,7 +370,7 @@ Listed so the boundary is visible, not because they need anything.
 | Value | Where | Why not |
 |---|---|---|
 | `PREVIEW = 3`, `FILTER_AT = 30` | [HistoryList.tsx:7-9](../src/components/ui/HistoryList.tsx#L7) | List pagination |
-| `revealed < 8` / `revealedEx < 8` | [SupersetLogger.tsx:120](../src/components/tabs/weights/SupersetLogger.tsx#L120), [MobilityTab.tsx:166](../src/components/tabs/MobilityTab.tsx#L166) | Progressive disclosure |
+| `revealed < 8` / `revealedEx < 8` | [SupersetLogger.tsx:122](../src/components/tabs/weights/SupersetLogger.tsx#L122), [MobilityTab.tsx:166](../src/components/tabs/MobilityTab.tsx#L166) | Progressive disclosure |
 | quality `1–5` stars | Sleep, sport and mobility forms | A subjective rating scale, not a dose |
 | `SYNC_DAYS` 7 / 3 | [sync_activities.py](../scripts/garmin-sync/sync_activities.py), [sync_sleep.py](../scripts/garmin-sync/sync_sleep.py) | Backfill window |
 | `/60`, `/1000`, `/3600` | garmin-sync, [utils.ts:259-284](../src/lib/utils.ts#L259) | Unit conversion |

@@ -39,7 +39,7 @@ import {
   loadWeekOverrides,
   setWeekOverride,
 } from '../lib/db/program'
-import { startOfWeek, today } from '../lib/utils'
+import { activeVariantWeekdays, startOfWeek, today } from '../lib/utils'
 import { loadBodyweight, saveBodyweightEntry, deleteBodyweightEntry, updateBodyweightEntry } from '../lib/db/bodyweight'
 import { loadCardio, saveCardioEntry, deleteCardioEntry, updateCardioEntry } from '../lib/db/cardio'
 import { loadMobility, saveMobilityEntry, deleteMobilityEntry, updateMobilityEntry } from '../lib/db/mobility'
@@ -558,3 +558,28 @@ export const useAppStore = create<AppStore>((set, get) => ({
     })
   },
 }))
+
+
+// ── Derived store hooks ───────────────────────────────────────────────────────
+
+/**
+ * This week's base ⇄ variant choice for one enrolment.
+ *
+ * WeightsTab and ProgramTab each used to wire this by hand — read
+ * `weekOverrides`, filter it for the programme, close a `toggleWeekVariant`
+ * over the same id — and then thread the pair down as props (roadmap 048 B8).
+ *
+ * Both selectors return a *stored* reference. The derived `Set` is built in the
+ * caller's render, never inside a selector: a selector that returns a fresh
+ * object on every call has a new identity every time Zustand compares it, which
+ * is an endless re-render.
+ */
+export function useVariantWeek(userProgramId: string) {
+  const weekOverrides = useAppStore(s => s.weekOverrides)
+  const toggleWeekVariant = useAppStore(s => s.toggleWeekVariant)
+  return {
+    variantWeekdays: activeVariantWeekdays(weekOverrides, userProgramId),
+    setVariant: (dayOfWeek: DayOfWeek, variantActive: boolean) =>
+      toggleWeekVariant(userProgramId, dayOfWeek, variantActive),
+  }
+}

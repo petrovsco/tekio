@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useAppStore } from '../../store/app'
-import { cycleInfo, getGrouped, sessionDates, defaultProgram, today, cycleExerciseProgress, programMode, resolveTodayDay, weekdayOf, startOfWeek, isDayDoneInWeek, activeVariantWeekdays, variantGroups, deriveFlat } from '../../lib/utils'
+import { useAppStore, useVariantWeek } from '../../store/app'
+import { cycleInfo, getGrouped, sessionDates, defaultProgram, today, cycleExerciseProgress, programMode, resolveTodayDay, weekdayOf, startOfWeek, isDayDoneInWeek, variantGroups, deriveFlat } from '../../lib/utils'
 import { CYCLE } from '../../constants/app'
 import { BLOCK_TYPES, BLOCK_META, TRAINING_TAGS, DEFAULT_TAG } from '../../constants/program'
 import { DAYS_OF_WEEK } from '../../constants/app'
@@ -8,13 +8,13 @@ import { parseProgramJson } from '../../lib/programImport'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Btn, DelBtn } from '../ui/Button'
 import { SSBadge, DeloadBadge, MicroLabel, MICRO } from '../ui/Badges'
-import { Chip } from '../ui/Chip'
+import { Chip, VariantChips } from '../ui/Chip'
 import { Icon } from '../ui/Icon'
 import { FIELD, FIELD_LABEL } from '../ui/Input'
 import { MiniChart } from '../ui/MiniChart'
 import type {
-  Program, ProgramDay, ProgramDayBlock, BlockType, TrainingTag, DayOfWeek,
-  ActiveProgram, ProgramCycle, WeightEntry,
+  Program, ProgramDay, ProgramDayBlock, BlockType, TrainingTag,
+  ActiveProgram, ProgramCycle,
 } from '../../types'
 
 // `MICRO` (imported above) is inline meta on a row — a stated fact, never an
@@ -451,21 +451,13 @@ function BlockTypeStrip({ day }: { day: ProgramDay }) {
 
 // ── Program Card (one per active program) ─────────────────────────────────────
 
-function ProgramCard({
-  ap,
-  weights,
-  onEdit,
-  variantWeekdays,
-  onToggleVariant,
-}: {
-  ap: ActiveProgram
-  weights: WeightEntry[]
-  onEdit: () => void
-  variantWeekdays: Set<DayOfWeek>
-  onToggleVariant: (dayOfWeek: DayOfWeek, variantActive: boolean) => void
-}) {
+function ProgramCard({ ap, onEdit }: { ap: ActiveProgram; onEdit: () => void }) {
   // The four card actions touch no ProgramTab state, so they are read here
   // rather than threaded down. Only onEdit stays a prop — it opens the editor.
+  // The history and this week's variant state are read the same way, and were
+  // wired identically in WeightsTab before roadmap 048 B8.
+  const weights = useAppStore(s => s.weights)
+  const { variantWeekdays, setVariant } = useVariantWeek(ap.userProgramId)
   const advance = useAppStore(s => s.advanceActiveProgram)
   const restart = useAppStore(s => s.restartActiveProgram)
   const pause = useAppStore(s => s.pauseActiveProgram)
@@ -570,12 +562,7 @@ function ProgramCard({
               return (
                 <div key={g.weekday} className="flex items-center gap-1.5">
                   <span className="text-[11px] text-ink w-20 shrink-0 truncate">{g.weekday}</span>
-                  <Chip active={!on} onClick={() => onToggleVariant(g.weekday, false)} className="flex-1 truncate">
-                    {g.base?.name ?? 'Base'}
-                  </Chip>
-                  <Chip active={on} onClick={() => onToggleVariant(g.weekday, true)} className="flex-1 truncate">
-                    {g.variant.name}
-                  </Chip>
+                  <VariantChips group={g} on={on} onToggle={setVariant} />
                 </div>
               )
             })}
@@ -652,13 +639,8 @@ const STATUS_LABEL: Record<ProgramCycle['status'], string> = {
   abandoned: 'Stopped early',
 }
 
-function ProgramHistoryCard({
-  cycle,
-  weights,
-}: {
-  cycle: ProgramCycle
-  weights: WeightEntry[]
-}) {
+function ProgramHistoryCard({ cycle }: { cycle: ProgramCycle }) {
+  const weights = useAppStore(s => s.weights)
   const resume = useAppStore(s => s.resumeActiveProgram)
   const remove = useAppStore(s => s.removeProgram)
   const withToast = useAppStore(s => s.withToast)
@@ -747,10 +729,7 @@ export function ProgramTab() {
   const {
     programs,
     programHistory,
-    weights,
-    weekOverrides,
     saveActiveProgram,
-    toggleWeekVariant,
     withToast,
   } = useAppStore()
 
@@ -835,9 +814,6 @@ export function ProgramTab() {
         <ProgramCard
           key={ap.userProgramId}
           ap={ap}
-          weights={weights}
-          variantWeekdays={activeVariantWeekdays(weekOverrides, ap.userProgramId)}
-          onToggleVariant={(dow, active) => toggleWeekVariant(ap.userProgramId, dow, active)}
           onEdit={() => setEditing({ programId: ap.programId, userProgramId: ap.userProgramId, draft: ap })}
         />
       ))}
@@ -846,11 +822,7 @@ export function ProgramTab() {
         <div className="flex flex-col gap-3">
           <SecTitle className="mb-0">Program history</SecTitle>
           {pastCycles.map(cycle => (
-            <ProgramHistoryCard
-              key={cycle.id}
-              cycle={cycle}
-              weights={weights}
-            />
+            <ProgramHistoryCard key={cycle.id} cycle={cycle} />
           ))}
         </div>
       )}
