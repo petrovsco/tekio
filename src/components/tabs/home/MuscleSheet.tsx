@@ -8,6 +8,7 @@ import {
 import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
 import { today, fmtSets, fmtAgo } from '../../../lib/utils'
 import { BottomSheet, SheetClose } from './BottomSheet'
+import { Icon } from '../../ui/Icon'
 import { GAP_CUTOFF, weeklyMuscleTarget } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
@@ -275,9 +276,7 @@ export default function MuscleSheet({
           <span className="text-[10px] text-ink-2">
             Why this gap — see {muscle} across the four qualities
           </span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden>
-            <path d="M5 12h14M13 6l6 6-6 6" />
-          </svg>
+          <Icon name="arrowRight" size={12} className="text-ink-2 shrink-0" />
         </button>
       )}
 
@@ -288,9 +287,7 @@ export default function MuscleSheet({
             onClick={() => setLogOpen(true)}
             className="w-full flex items-center justify-center gap-[7px] min-h-[46px] border border-ink rounded-[3px] bg-ink text-white cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2" strokeLinecap="round" aria-hidden>
-              <path d="M12 5v14M5 12h14" />
-            </svg>
+            <Icon name="plus" size={16} />
             <span className="text-[13px] font-bold tracking-[0.02em]">Log sets for {muscle}</span>
           </button>
         ) : (
@@ -303,9 +300,7 @@ export default function MuscleSheet({
                 aria-label="Close log flow"
                 className="min-w-[44px] min-h-[30px] flex items-center justify-end cursor-pointer"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                  <path d="M6 6l12 12M18 6L6 18" />
-                </svg>
+                <Icon name="close" size={14} className="text-ink-2" />
               </button>
             </div>
 
@@ -340,9 +335,7 @@ export default function MuscleSheet({
               onClick={onSearchExercises}
               className="w-full flex items-center gap-1.5 min-h-[40px] mt-[5px] px-2.5 border border-chrome rounded-[3px] text-ink-2 cursor-pointer"
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                <circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" />
-              </svg>
+              <Icon name="search" size={13} className="text-ink-2" />
               <span className="text-[11px]">Something else — search the exercise list</span>
             </button>
 
@@ -383,9 +376,7 @@ export default function MuscleSheet({
                     onClick={() => setRows(rs => [...rs, { ...rs[rs.length - 1] }])}
                     className="grow flex items-center justify-center gap-[5px] min-h-[44px] border border-ink rounded-[3px] text-[12px] font-bold cursor-pointer"
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" aria-hidden>
-                      <path d="M12 5v14M5 12h14" />
-                    </svg>
+                    <Icon name="plus" size={13} className="text-ink" />
                     Same again
                   </button>
                   <button

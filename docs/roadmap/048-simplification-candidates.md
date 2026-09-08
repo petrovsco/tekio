@@ -8,8 +8,9 @@ warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer),
 **B2 + B3** together (v2.0.69, the weights plan), the small `lib` dedupes
 **A2 + A3 + A10 + A11** together (v2.0.70), the last three A entries
 **A12 + A13 + A14** together (v2.0.71) and the shared UI helpers
-**B4 + B12 + B15** together (v2.0.72).
-**The remaining Tier 1 entries are next** — B10, B11, B13, C1.
+**B4 + B12 + B15** together (v2.0.72) and the last three Tier-1 UI entries
+**B10 + B11 + B13** together (v2.0.74).
+**C1** — the two Python Garmin scripts — is the last Tier-1 entry left.
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -569,6 +570,48 @@ screen moved. Two notes:
   replace the literals with `FIELD_LABEL` / `FieldLabel`.
 - **Risk:** low.
 
+**Landed 2026-09-08 (v2.0.74), with B11 + B13.** Four constants now, in two
+files: `MICRO_LABEL` and `MICRO` in `ui/Badges.tsx`, `ACT_TONE` and `ACT_CHIP`
+in `ui/Button.tsx`. Fourteen sites across eleven files read them. Four
+departures, and the first two are the useful part:
+
+- **`MICRO` and "the 0.10em micro-label literal" are one string, so they are
+  one constant.** This entry lists them as separate findings; they are the same
+  60 characters, and `MICRO` is that plus `inline-flex items-center gap-1` for
+  the two spans that lead with an 11px `Icon`. So `MICRO = \`inline-flex
+  items-center gap-1 ${MICRO_LABEL}\``, six sites take the bare label and two
+  take the row.
+- **`ACT_CHIP` had to split into a tone and a box, because `VolumeRow`'s "Use"
+  button is not the same box.** The entry calls the three identical; two are
+  `inline-flex … px-2.5 py-[3px]` chips and the third is `py-1 flex
+  justify-center` filling a grid cell. Tailwind gives no order guarantee when
+  two utilities set the same property, so appending overrides would have been a
+  gamble. `ACT_TONE` is what they actually share — 11px/600 ink on white, a
+  `line` border going ink on hover, 3px radius — and each site keeps its own
+  display and padding. Verified on screen: all three "Use" buttons and all four
+  chips compute exactly the values they did before.
+- **`ui/Button.tsx`, not `ui/Fields.tsx`.** `Fields.tsx` is form controls
+  (`FieldLabel`, `Toggle`, `Rating`); `Button.tsx` already holds `variantClasses`
+  and the comment explaining the three control tones, so the fourth belongs
+  beside them. `Badges.tsx` did take `MICRO`, as this entry asks, but its header
+  comment claimed only §5's 7–8px band — it now names both bands, because the
+  9px section label is the other one. Neither export costs a lint warning:
+  `eslint.config.js` sets `allowConstantExport: true`, so a `const` beside a
+  component is fine — it was a *function* that cost B2 two warnings.
+- **One of the six `FIELD_LABEL` sites was wrong and a seventh was missing.**
+  `AdminTab.tsx:17` is `text-ink`, not `text-ink-3` — a deliberately darker
+  heading, left alone. `ui/Card.tsx`'s own `SecTitle` was re-typing the string
+  two files from where it is exported, and now imports it.
+
+**Eight more copies were left on purpose.** `text-[9px] font-bold
+tracking-[0.14em] text-ink-3` — `FIELD_LABEL` *without* `uppercase` — appears in
+`AdaptationsTab` ×2, `RxSheet`, `MuscleListSheet`, `FoldSheet`, `HomeTab` ×2 and
+`RecoverySheet`. It is a different role (the sheet or section *eyebrow*, whose
+text is already uppercase in the source), and five of the eight are B5's scope:
+that entry hoists the header into `BottomSheet`, so converting them now is work
+B5 deletes. Also skipped: `BottomNav`'s copy, which drops `text-ink-3` because
+its colour is the selected state, and `AppShell`'s, which is `text-xs`.
+
 ### B11. Inline SVGs for glyphs `ui/Icon` already has (−15)
 
 - **Where:** `home/MuscleSheet.tsx:243-245, 338-340` (plus), `:258-260` (close),
@@ -579,6 +622,31 @@ screen moved. Two notes:
   1.8 vs 2 is the only difference); add `search`/`pause`/`heart` paths if
   `Icon.tsx` is to remain "the whole set" as its header says.
 - **Risk:** low. **Visual**, tiny.
+
+**Landed 2026-09-08 (v2.0.74), with B10 + B13.** Seven inline `<svg>` blocks
+became one `<Icon>` line each, and `Icon.tsx` grew four paths — `search`,
+`heart`, `pause` and `arrowRight`. Three notes:
+
+- **`arrowRight` is not in this entry, and it was the most-copied glyph.**
+  Roadmap 064 added the Home → Adaptations door after this brief was written,
+  and `MuscleSheet`'s "Why this gap" button carries the same arrow. Two sites,
+  identical geometry, both inline.
+- **The colours had to be re-derived, not copied.** These SVGs hardcode
+  `stroke="#6b6b6b"`, and `#6b6b6b` is `--color-ink-2`, **not** the `ink-3`
+  (`#8a8a8a`) that a label of that grey would suggest. Four of the seven
+  therefore carry `className="text-ink-2"` so `currentColor` lands on the same
+  value; the two inside inverted surfaces (`bg-ink text-white`) needed no class
+  at all, because `currentColor` was already what their `stroke="#ffffff"` was
+  spelling out by hand — and that is why the readiness heart still flips to
+  white when the card gates. Stroke width goes 2 → 1.8 at five sites, which is
+  what design-system §7 says the set is.
+- **`MuscleSheet`'s verdict icon stays inline, and a census will look like it
+  did not.** Its `d` comes from the verdict data, so it cannot be name-keyed —
+  and for "Train it." that `d` happens to be the same two strokes as `plus`, at
+  15px and stroke 1.9. A search for the plus geometry finds it; it is not a
+  missed site. The `<rect>` swatches in `HomeTab`'s quality tiles and `GapMap`'s
+  legend are not glyphs either, and the two real diagrams (`GapMap`,
+  `EffortSpectrum`) never were.
 
 ### B12. `RowActions` exists but two lists hand-write it (−8)
 
@@ -621,6 +689,25 @@ Three notes:
 - **Change:** inline, compute `pastCycles` once, hoist `inSS`, map the two
   buttons the way `ProfileTab.tsx:203-215` does.
 - **Risk:** low.
+
+**Landed 2026-09-08 (v2.0.74), with B10 + B11.** All four checked out as
+written — the `useState` never had a setter, the two `programHistory` filters
+ran the same predicate over the same array, `supersets.some` ran twice per tile,
+and the two template buttons differed only in icon, title, subtitle and handler.
+Two notes:
+
+- **The `weeklyPrinciples` state was hiding a fact, not just a line.** It was
+  `useState(draft.weeklyPrinciples)` with no setter because the editor has *no
+  control* for weekly principles — the field is carried through the save
+  untouched. Reading `draft.weeklyPrinciples` at the save site says that out
+  loud, and the comment there now does too.
+- **The two starters are a two-entry list, and its wrapper is
+  `className="contents"`.** Each entry pairs a `FIELD_LABEL` group heading with
+  its button, and the pair has to stay *direct* children of the
+  `flex flex-col gap-2` or the 8px rhythm breaks. `display: contents` is what
+  keeps that so, and it is the idiom `VolumeRow` already uses for the same
+  reason inside a grid. On screen the two rows sit at y=200 and y=288, both
+  55px tall, with the second's `mt-1` intact.
 
 ### B15. `[...new Set(xs)].sort()` nine times (−8)
 
@@ -674,6 +761,65 @@ written.
   `RowActions`, leading with `2026-09-01`, `2026-09-04` and `10 min total`
   respectively; the superset header kept its hard-right group; the Weights
   exercise chips and the five cardio type chips are the `uniqSorted` lists.
+
+**Measured, for B10 + B11 + B13 together (v2.0.74):** **+38 lines** in `src/`
+across 18 files — +22 of which are comment, so **+16 code**. The three entries
+predicted −45. The arithmetic that keeps being wrong is the same one B12 already
+recorded: an entry counts the duplicated lines it deletes and not what replaces
+them, and here the replacement is eleven new `import` lines plus four
+declarations with the doc comments that explain them. B11 is the one of the
+three that genuinely shrinks (seven three-line `<svg>` blocks become seven
+one-line `<Icon>` calls). What is actually bought: one definition of each class
+string instead of fourteen, one place to change a glyph instead of seven, and
+`Icon.tsx` is again "the whole set" its header claims to be.
+
+First paint **349.06 kB**, **up 0.41 kB** — a dedupe that costs first paint,
+which is the trap this brief has hit before from the other direction. Four icon
+paths and four class constants land in the eagerly-loaded entry chunk while
+several of the literals they replace were in lazy chunks (`MuscleSheet`,
+`ProgramTab`, `MobilityTab`). It is 3.41 kB under the committed baseline, so no
+re-baseline. `npm run lint` 6 warnings / 0 errors (023's floor), `npm run knip`
+clean, 227 tests pass.
+
+**Browser-checked on live data** (house rule `verify-in-browser`; this unit
+touches nine surfaces, so a walk of all of them). Zero console errors throughout,
+and **nothing was written to the database** — the two states live data cannot
+produce were reached with an in-memory `setState` only.
+
+- **The substitutions were checked by computed style, not by eye**, because
+  "the class string moved" is exactly the change a screenshot cannot prove.
+  Every `MICRO_LABEL` site reads `9px / 700 / letter-spacing 0.9px / uppercase /
+  rgb(138,138,138)` — SetsGrid's `#`, `Weight kg`, `Reps`, Mobility's
+  `Exercise`, `Min`, `Notes`, SportProgress's `WIN`, `LOSS`, `TIE` (with its
+  `mt-0.5` intact) and TodaysPlan's `SUPERSET`. Every `FIELD_LABEL` site reads
+  the same but at `1.26px` — Program's `TEMPLATES` / `OR START BLANK` /
+  `PROGRAM HISTORY`, Weights' `EXERCISE`, ExPlan's `VOLUME GOAL`, the drawer's
+  `LOG` and `ACCOUNT` (keeping `px-4 pt-4`) and the assistant's `TRY`. 0.9px and
+  1.26px are 0.10em and 0.14em at 9px, which is the two tracking values §5
+  allows for this label.
+- **The seven glyphs were checked by their path `d`**, then by the rendered
+  size, stroke width and computed stroke colour: `close` 18px and 14px at
+  `rgb(107,107,107)`, `search` 13px the same, `arrowRight` 12px the same,
+  `plus` 16px white inside the ink button, `heart` 13px `rgb(26,26,26)` on the
+  ungated readiness card and `rgb(255,255,255)` when it gates, `pause` 13px
+  white in the hold banner. All at stroke 1.8, from `currentColor`.
+- **Two states were forced in memory.** The blood-donation hold banner (the only
+  `pause` site) needed a full-blood donation inside 48 h, so one went into
+  `store.donations` with `setState` — it printed *Full blood donation 1 d ago —
+  the 48 h acute window (PLACEHOLDER) holds today*, with the white pause beside
+  it and the readiness card inverted. And there is still no active program, so
+  the weights plan came from the same in-memory `defaultProgram()` the B2 + B3
+  record describes: the targets table read `100×7 / 102.5×7 / 105×7`, its three
+  `Use ⌄` buttons computed `flex / 11px 600 / white / 1px rgb(226,226,224) /
+  radius 3px / padding 4px 0` and the `Log together ⌄` and `Last ⌄` chips
+  `inline-flex / 11px 600 / padding 3px 10px` — the tone shared, the boxes not,
+  which is the whole point of splitting `ACT_TONE` from `ACT_CHIP`.
+- **Home, the muscle sheet and the Program tab all read as before.** Home:
+  *Push. Erectors and hip flex are the gap.* · readiness 71 · the same three
+  whole-body tiles. The muscle sheet (Upper Back / Traps) opened, drew its week
+  bars `1.5 · 4.5 · 10 · 3 · 0 · 0`, and its log flow showed the three repeat
+  sources with the new close and search glyphs. Program listed both starters and
+  both paused cycles under `PROGRAM HISTORY`.
 
 ### C1. The two Garmin scripts share two helpers by copy (−20)
 
@@ -1063,10 +1209,10 @@ Tier 1:
 - [x] B2 `lastPerformance` + `toSetStr` shared — 2026-09-08, v2.0.69. Browser-checked at week 1 and week 6; the third argument is a list of program start dates, and the converters live in a new `lib/sets.ts` so the lint floor stays at 6
 - [x] B3 dead deload branch gone, `DELOAD_REP_FACTOR` used in WeightsTab — 2026-09-08, v2.0.69. Each tier computed once and read by both the table and its Use button; the numbers on screen are unchanged, as predicted
 - [x] B4 `fmtSets`/`fmtAgo` shared, `QUALITY_SHORT` reused — 2026-09-08, v2.0.72. Both in `lib/utils.ts` with tests; only 6 of the 10 inline "N d ago" expressions are actually `fmtAgo`, and the two that now print `today` instead of `0 d ago` / a hardcoded `1 d ago` are the one deliberate string change
-- [ ] B10 tone constants exported once
-- [ ] B11 inline SVGs replaced by `Icon`
+- [x] B10 tone constants exported once — 2026-09-08, v2.0.74. `MICRO_LABEL`/`MICRO` in `ui/Badges.tsx`, `ACT_TONE`/`ACT_CHIP` in `ui/Button.tsx` (not `Fields.tsx`); `ACT_CHIP` splits in two because `VolumeRow`'s Use button is a grid cell, not a chip. `AdminTab`'s label is `text-ink` and stays; the eight `uppercase`-less eyebrows are B5's scope
+- [x] B11 inline SVGs replaced by `Icon` — 2026-09-08, v2.0.74. Seven sites, four new paths including `arrowRight`, which roadmap 064 added after this entry was written. `#6b6b6b` is `ink-2`, not `ink-3` — the swap had to re-derive the colours, not copy them
 - [x] B12 `RowActions` in `ui/` — 2026-09-08, v2.0.72. Four sites, not three; it *grew* the file by ~12 lines rather than saving 8, and `EditBtn` stopped being exported because `RowActions` absorbed every caller
-- [ ] B13 ProgramTab small bits
+- [x] B13 ProgramTab small bits — 2026-09-08, v2.0.74. All four checked out as written; the setter-less `useState` was hiding the fact that the editor has no control for `weeklyPrinciples`, and the two starters are now one shape over a two-entry list wrapped in `display: contents` so the 8px rhythm survives
 - [x] B15 `uniqSorted` — 2026-09-08, v2.0.72. Twelve sites, not nine; the store selector was deliberately not built (B14 fixes the re-render cost for all of them at once)
 - [ ] C1 Garmin helpers shared
 

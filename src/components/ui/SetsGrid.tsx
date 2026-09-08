@@ -1,3 +1,4 @@
+import { MICRO_LABEL } from './Badges'
 import { DelBtn } from './Button'
 import { FIELD } from './Input'
 import type { SetStr } from '../../lib/sets'
@@ -20,7 +21,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
     <div>
       <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
         {['#', 'Weight kg', 'Reps', ''].map((h, i) => (
-          <p key={i} className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">{h}</p>
+          <p key={i} className={MICRO_LABEL}>{h}</p>
         ))}
       </div>
 

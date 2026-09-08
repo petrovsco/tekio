@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { SecTitle } from '../../ui/Card'
 import { Btn, DelBtn } from '../../ui/Button'
-import { Inp, SelEl } from '../../ui/Input'
+import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Icon } from '../../ui/Icon'
 import { MicroLabel } from '../../ui/Badges'
 import {
@@ -217,7 +217,7 @@ export function ExerciseMuscleEditor() {
                     {isOpen && (
                       <div className="px-2.5 pb-2.5 pt-1.5 flex flex-col gap-2 bg-hairline">
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 flex-1">Adaptation</span>
+                          <span className={`${FIELD_LABEL} flex-1`}>Adaptation</span>
                           <SelEl
                             options={ADAPTATION_OPTS}
                             value={adaptation ?? ''}

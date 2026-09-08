@@ -6,7 +6,7 @@ import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
-import { SSBadge } from '../../ui/Badges'
+import { SSBadge, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
@@ -312,7 +312,7 @@ export function WeightsTab() {
                 <div key={gi} className="mb-3 border border-line rounded-[3px] p-2.5 bg-paper">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <SSBadge />
-                    <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
+                    <span className={MICRO_LABEL}>Superset</span>
                     <RowActions
                       label={g.entries[0].date}
                       className="ml-auto"

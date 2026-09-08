@@ -1,5 +1,6 @@
 import { usePrefs } from '../../store/prefs'
 import { Icon, type IconName } from '../ui/Icon'
+import { FIELD_LABEL } from '../ui/Input'
 
 // Only sections that still have a destination. Body Weight, Donations, Water
 // and Recovery folded onto Home (doctrine §5) and Habits was deleted (roadmap
@@ -20,7 +21,7 @@ interface DrawerProps {
 
 function GroupLabel({ children }: { children: string }) {
   return (
-    <p className="px-4 pt-4 pb-1.5 text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3">
+    <p className={`px-4 pt-4 pb-1.5 ${FIELD_LABEL}`}>
       {children}
     </p>
   )

@@ -7,7 +7,7 @@ import { DAYS_OF_WEEK } from '../../constants/app'
 import { parseProgramJson } from '../../lib/programImport'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Btn, DelBtn } from '../ui/Button'
-import { SSBadge, DeloadBadge, MicroLabel } from '../ui/Badges'
+import { SSBadge, DeloadBadge, MicroLabel, MICRO } from '../ui/Badges'
 import { Chip } from '../ui/Chip'
 import { Icon } from '../ui/Icon'
 import { FIELD, FIELD_LABEL } from '../ui/Input'
@@ -17,9 +17,8 @@ import type {
   ActiveProgram, ProgramCycle, WeightEntry,
 } from '../../types'
 
-// Inline meta on a row — a stated fact, never an urgency, so it never takes
-// the accent (design-system §1).
-const MICRO = 'inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3'
+// `MICRO` (imported above) is inline meta on a row — a stated fact, never an
+// urgency, so it never takes the accent (design-system §1).
 
 /** A reveal or a quiet addition: the ghost tone (§8), never the accent. */
 const GHOST = 'inline-flex items-center gap-1 text-[11px] font-semibold text-ink-2 hover:text-ink cursor-pointer transition-colors'
@@ -71,7 +70,6 @@ function ProgramEditor({ draft, onSave, onCancel }: {
   const [name, setName] = useState(draft.name)
   const [startDate, setStartDate] = useState(draft.startDate)
   const [days, setDays] = useState<ProgramDay[]>(() => normalizeDays(draft))
-  const [weeklyPrinciples] = useState(draft.weeklyPrinciples)
   const [newExName, setNewExName] = useState('')
   const [newExTag, setNewExTag] = useState<TrainingTag | ''>('')
   const [addingAt, setAddingAt] = useState<{ di: number; bi: number } | null>(null)
@@ -156,7 +154,9 @@ function ProgramEditor({ draft, onSave, onCancel }: {
       startDate,
       currentDayIndex: draft.currentDayIndex ?? 0,
       lastAdvancedDate: draft.lastAdvancedDate ?? startDate,
-      weeklyPrinciples,
+      // Carried through untouched — the editor has no control for it, which is
+      // why it was never state.
+      weeklyPrinciples: draft.weeklyPrinciples,
       days: finalDays,
       phases: [{ name: 'Main', sortOrder: 0, durationWeeks: CYCLE, goal: 'general', days: finalDays }],
     })
@@ -397,12 +397,15 @@ function DayBlocks({ day }: { day: ProgramDay }) {
               {block.durationMinutes && <span className="text-[10px] text-ink-3 tabular-nums">· {block.durationMinutes}m</span>}
             </div>
             <div className="flex flex-wrap gap-1 pl-5">
-              {block.exercises.map((ex, ei) => (
-                <ExTile key={ei} inSS={block.supersets.some(p => p.includes(ex.exercise))}>
-                  {block.supersets.some(p => p.includes(ex.exercise)) && <SSBadge />}
-                  {ex.exercise}
-                </ExTile>
-              ))}
+              {block.exercises.map((ex, ei) => {
+                const inSS = block.supersets.some(p => p.includes(ex.exercise))
+                return (
+                  <ExTile key={ei} inSS={inSS}>
+                    {inSS && <SSBadge />}
+                    {ex.exercise}
+                  </ExTile>
+                )
+              })}
               {block.exercises.length === 0 && <span className="text-[11px] text-ink-3">—</span>}
             </div>
           </div>
@@ -779,6 +782,27 @@ export function ProgramTab() {
     draft: { name: 'New Program', days: [], startDate: today(), currentDayIndex: 0, lastAdvancedDate: today() },
   })
 
+  const pastCycles = programHistory.filter(c => c.status !== 'active')
+
+  // The two ways in when nothing is running. Same row, so one shape and a list:
+  // an icon, a name, a line of what you get, and what the tap does.
+  const starters = [
+    {
+      group: 'Templates',
+      icon: 'weights',
+      title: '5-Day High Efficiency Split',
+      sub: 'Squat/bench/deadlift-based split with supersets',
+      onClick: () => setEditing({ draft: defaultProgram() }),
+    },
+    {
+      group: 'Or start blank',
+      icon: 'plus',
+      title: 'Create from scratch',
+      sub: 'Build your own days, blocks and exercises',
+      onClick: startFromScratch,
+    },
+  ] as const
+
   return (
     <div className="flex flex-col gap-4">
       {programs.length === 0 && (
@@ -788,28 +812,21 @@ export function ProgramTab() {
             Pick a ready-made template to customize, or build your own from scratch.
           </p>
           <div className="flex flex-col gap-2">
-            <p className={FIELD_LABEL}>Templates</p>
-            <button
-              onClick={() => setEditing({ draft: defaultProgram() })}
-              className="w-full flex items-center gap-2.5 text-left rounded-[3px] border border-line bg-white p-2.5 hover:border-ink cursor-pointer transition-colors"
-            >
-              <Icon name="weights" size={18} className="text-ink-2 shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-ink">5-Day High Efficiency Split</p>
-                <p className="text-[11px] text-ink-3">Squat/bench/deadlift-based split with supersets</p>
+            {starters.map((s, i) => (
+              <div key={s.title} className="contents">
+                <p className={`${FIELD_LABEL} ${i > 0 ? 'mt-1' : ''}`}>{s.group}</p>
+                <button
+                  onClick={s.onClick}
+                  className="w-full flex items-center gap-2.5 text-left rounded-[3px] border border-line bg-white p-2.5 hover:border-ink cursor-pointer transition-colors"
+                >
+                  <Icon name={s.icon} size={18} className="text-ink-2 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-ink">{s.title}</p>
+                    <p className="text-[11px] text-ink-3">{s.sub}</p>
+                  </div>
+                </button>
               </div>
-            </button>
-            <p className={`${FIELD_LABEL} mt-1`}>Or start blank</p>
-            <button
-              onClick={startFromScratch}
-              className="w-full flex items-center gap-2.5 text-left rounded-[3px] border border-line bg-white p-2.5 hover:border-ink cursor-pointer transition-colors"
-            >
-              <Icon name="plus" size={18} className="text-ink-2 shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-ink">Create from scratch</p>
-                <p className="text-[11px] text-ink-3">Build your own days, blocks and exercises</p>
-              </div>
-            </button>
+            ))}
           </div>
         </Card>
       )}
@@ -825,10 +842,10 @@ export function ProgramTab() {
         />
       ))}
 
-      {programHistory.filter(c => c.status !== 'active').length > 0 && (
+      {pastCycles.length > 0 && (
         <div className="flex flex-col gap-3">
           <SecTitle className="mb-0">Program history</SecTitle>
-          {programHistory.filter(c => c.status !== 'active').map(cycle => (
+          {pastCycles.map(cycle => (
             <ProgramHistoryCard
               key={cycle.id}
               cycle={cycle}

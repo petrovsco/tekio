@@ -12,6 +12,7 @@ import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { coverageLine } from '../adaptations/labels'
+import { Icon } from '../../ui/Icon'
 import type { FoldKind } from './FoldSheet'
 
 // The fused Home read (roadmap 010/018, design-system.md, language SIGNAL).
@@ -279,9 +280,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         className={`mt-3 block w-full text-left rounded-[3px] border border-ink cursor-pointer ${gated ? 'bg-ink text-white' : 'bg-white'}`}
       >
         <div className={`flex items-center gap-1.5 px-2.5 pt-[7px] pb-[5px] border-b ${gated ? 'border-invert-line' : 'border-line'}`}>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10z" />
-          </svg>
+          <Icon name="heart" size={13} />
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
           <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
@@ -313,9 +312,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       {/* Gate banner — held days only */}
       {banner && (
         <div className="mt-2 px-2.5 py-[7px] bg-ink text-white rounded-[3px] flex items-center gap-[7px]">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="1.8" strokeLinecap="round" className="shrink-0" aria-hidden>
-            <path d="M9 6v12M15 6v12" />
-          </svg>
+          <Icon name="pause" size={13} className="shrink-0" />
           <span className="text-[11px] leading-[1.3] text-pretty">{banner}</span>
         </div>
       )}
@@ -345,9 +342,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <span className="text-[10px] text-ink-2">What to do about it</span>
           <span className="flex items-center gap-1 text-[9px] font-bold tracking-[0.06em] text-ink-3">
             ADAPTATIONS
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-              <path d="M5 12h14M13 6l6 6-6 6" />
-            </svg>
+            <Icon name="arrowRight" size={12} className="text-ink-2" />
           </span>
         </button>
       </div>

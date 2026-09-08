@@ -3,6 +3,7 @@ import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, L
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { today, startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN } from '../../lib/utils'
+import { MICRO_LABEL } from '../ui/Badges'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Inp, SelEl } from '../ui/Input'
 import { Btn, RowActions } from '../ui/Button'
@@ -105,7 +106,7 @@ export function MobilityTab() {
 
         <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: EX_COLS }}>
           {['Exercise', 'Min', 'Notes'].map(h => (
-            <p key={h} className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">{h}</p>
+            <p key={h} className={MICRO_LABEL}>{h}</p>
           ))}
         </div>
 

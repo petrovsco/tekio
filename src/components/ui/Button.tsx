@@ -16,6 +16,17 @@ const variantClasses: Record<Variant, string> = {
   ghost: 'border border-transparent text-ink-3 hover:text-ink',
 }
 
+/** The reversible tone (§8) at chip size, without a box. The weights plan is
+ *  built out of controls that only *prefill* the log form, so they all read
+ *  this way; each site adds its own padding and display, because they are not
+ *  the same box — a grid cell is not an inline chip, and Tailwind gives no
+ *  order guarantee when two utilities set the same property. */
+export const ACT_TONE =
+  'text-[11px] font-semibold text-ink bg-white border border-line rounded-[3px] hover:border-ink cursor-pointer transition-colors'
+
+/** `ACT_TONE` in the inline chip box that three of its four sites want. */
+export const ACT_CHIP = `inline-flex items-center gap-0.5 px-2.5 py-[3px] ${ACT_TONE}`
+
 interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
   children: ReactNode

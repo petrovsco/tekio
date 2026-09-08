@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAssistant } from '../../store/assistant'
 import { Modal } from '../ui/Modal'
-import { FIELD } from '../ui/Input'
+import { FIELD, FIELD_LABEL } from '../ui/Input'
 import { ProposalCard } from './ProposalCard'
 
 const SUGGESTIONS = [
@@ -66,7 +66,7 @@ export function AssistantPanel() {
               I can add or change exercise↔muscle mappings and your program. I'll always show you
               exactly what I'll do before anything is saved.
             </p>
-            <p className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 mb-1.5">Try</p>
+            <p className={`${FIELD_LABEL} mb-1.5`}>Try</p>
             <div className="flex flex-col gap-1.5">
               {SUGGESTIONS.map(s => (
                 <button

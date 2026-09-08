@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { deloadSets } from '../../../lib/utils'
 import { VolumeRow } from './VolumeRow'
+import { ACT_CHIP } from '../../ui/Button'
 import { Icon } from '../../ui/Icon'
+import { FIELD_LABEL } from '../../ui/Input'
 import type { WeightEntry, LiftSet } from '../../../types'
 
 const totalVol = (sets: LiftSet[]) => sets.reduce((s, x) => s + x.weight * x.reps, 0)
 
 // Nothing here commits an entry — every button just prefills the log form — so
-// they are all the reversible tone (design-system §8): outline for the act on
+// they are all the reversible tone (design-system §8): `ACT_CHIP` for the act on
 // the row, ghost for the quieter disclosure beside it.
-const ACT_CHIP =
-  'inline-flex items-center gap-0.5 px-2.5 py-[3px] text-[11px] font-semibold text-ink bg-white border border-line rounded-[3px] hover:border-ink cursor-pointer transition-colors'
 const GHOST_CHIP =
   'px-2 py-[3px] text-[11px] font-semibold text-ink-3 hover:text-ink cursor-pointer transition-colors'
 
@@ -72,7 +72,7 @@ export function ExPlan({ ex, last, isDeload, onPick, onPickWithSets }: ExPlanPro
       {expanded && last && (
         <div className="bg-white rounded-[3px] p-2.5 border border-line mt-1">
           <div className="flex items-center gap-2.5 mb-3">
-            <span className="text-[9px] font-bold uppercase tracking-[0.14em] text-ink-3 whitespace-nowrap">Volume goal</span>
+            <span className={`${FIELD_LABEL} whitespace-nowrap`}>Volume goal</span>
             <input
               type="range" min="5" max="10" step="0.5" value={volPct}
               onChange={e => setVolPct(+e.target.value)}

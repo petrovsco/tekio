@@ -11,7 +11,7 @@ export type IconName =
   | 'adaptations' | 'profile' | 'admin' | 'assistant'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
   | 'warmup' | 'sport' | 'recovery' | 'drag' | 'export' | 'import'
-  | 'info' | 'list'
+  | 'info' | 'list' | 'search' | 'heart' | 'pause' | 'arrowRight'
 
 /** Path geometry only — the wrapper below carries every shared stroke rule. */
 const PATHS: Record<IconName, string> = {
@@ -55,6 +55,16 @@ const PATHS: Record<IconName, string> = {
   info: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17M12 11v5M12 7.6h.01',
   // Three ruled rows with a leading dot each — the ranked list.
   list: 'M8.5 7h11.5M8.5 12H20M8.5 17H20M4.5 7h.01M4.5 12h.01M4.5 17h.01',
+  // A lens and its handle. The circle is written as an arc so every glyph in
+  // this set stays one `d` string.
+  search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M20 20l-4-4',
+  // Readiness. The one drawn shape in the set — everything else here is a
+  // diagram, but "can I push today?" is the one question that is felt.
+  heart: 'M12 21s-7-4.6-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.4-7 10-7 10z',
+  // Two bars — a hold, not a stop: the donation gate lifts on its own.
+  pause: 'M9 6v12M15 6v12',
+  // The door out of a read and into what to do about it (roadmap 064).
+  arrowRight: 'M5 12h14M13 6l6 6-6 6',
 }
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {

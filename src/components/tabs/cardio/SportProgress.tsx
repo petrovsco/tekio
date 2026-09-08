@@ -3,6 +3,7 @@ import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Ba
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { weekKey, TIME_FRAMES, withinTimeFrame, uniqSorted, type TimeFrame } from '../../../lib/utils'
+import { MICRO_LABEL } from '../../ui/Badges'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { SelEl } from '../../ui/Input'
 import { CHART, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
@@ -13,7 +14,7 @@ function RecordStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="text-center">
       <p className="text-[17px] font-bold text-ink tabular-nums leading-tight">{value}</p>
-      <p className="text-[9px] font-bold text-ink-3 uppercase tracking-[0.10em] mt-0.5">{label}</p>
+      <p className={`${MICRO_LABEL} mt-0.5`}>{label}</p>
     </div>
   )
 }

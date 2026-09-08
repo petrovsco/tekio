@@ -1,4 +1,5 @@
 import { r05 } from '../../../lib/utils'
+import { ACT_TONE } from '../../ui/Button'
 import { Icon } from '../../ui/Icon'
 import type { LiftSet } from '../../../types'
 
@@ -57,7 +58,7 @@ export function VolumeRow({ pct, lastSets, onUse }: VolumeRowProps) {
           <button
             key={ti}
             onClick={() => onUse(t.sets.map(s => ({ weight: s.weight, reps: typeof s.reps === 'number' ? s.reps : 0 })))}
-            className="py-1 flex items-center justify-center gap-0.5 rounded-[3px] text-[11px] font-semibold text-ink bg-white border border-line hover:border-ink cursor-pointer transition-colors"
+            className={`py-1 flex items-center justify-center gap-0.5 ${ACT_TONE}`}
           >
             Use <Icon name="chevronDown" size={11} />
           </button>

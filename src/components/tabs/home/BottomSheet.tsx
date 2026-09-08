@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
+import { Icon } from '../../ui/Icon'
 
 // The SIGNAL bottom sheet (design-system §§2, 8): T2 capture and drill-ins
 // open over a scrim so the T1 read never reflows (P1). The old ui/Modal stays
@@ -49,9 +50,7 @@ export function SheetClose({ onClose }: { onClose: () => void }) {
       aria-label="Close"
       className="min-w-[44px] min-h-[44px] -my-3 -mr-2 flex items-center justify-end cursor-pointer"
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b6b6b" strokeWidth="2" strokeLinecap="round" aria-hidden>
-        <path d="M6 6l12 12M18 6L6 18" />
-      </svg>
+      <Icon name="close" size={18} className="text-ink-2" />
     </button>
   )
 }

@@ -6,9 +6,11 @@ import {
 import type { GroupedExercise } from '../../../lib/utils'
 import { BLOCK_META } from '../../../constants/program'
 import { ExPlan } from './ExPlan'
-import { SSBadge, DeloadBadge } from '../../ui/Badges'
+import { SSBadge, DeloadBadge, MICRO, MICRO_LABEL } from '../../ui/Badges'
+import { ACT_CHIP } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
 import { Icon } from '../../ui/Icon'
+import { FIELD_LABEL } from '../../ui/Input'
 import type { Program, ProgramDay, ProgramDayBlock, WeightEntry, LiftSet, BlockType, DayOfWeek } from '../../../types'
 
 interface PickHandlers {
@@ -35,11 +37,9 @@ const LOG_IN_TAB: Partial<Record<BlockType, string>> = {
 // recolour itself — amber on a deload week, green when done. Neither is a
 // meaning colour is allowed to carry (§1), so the surface stays paper-white and
 // the state is stated in a micro label instead.
+// Nothing on this page commits an entry — every control prefills the log form —
+// which is why they are all `ACT_CHIP`, the reversible tone.
 const BANNER = 'rounded-[3px] overflow-hidden border border-line bg-white mb-1'
-const MICRO = 'inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3'
-/** Nothing on this page commits an entry — every control prefills the log form. */
-const ACT_CHIP =
-  'inline-flex items-center gap-0.5 px-2.5 py-[3px] text-[11px] font-semibold text-ink bg-white border border-line rounded-[3px] hover:border-ink cursor-pointer transition-colors'
 
 /** Weight-logging sections of a day (one per weight block; whole day if legacy). */
 function weightSectionsFor(day: ProgramDay): { name?: string; groups: GroupedExercise[] }[] {
@@ -80,7 +80,7 @@ function WeightGroups({ groups, program, weights, isDeload, ...h }: {
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-1.5">
                   <SSBadge />
-                  <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
+                  <span className={MICRO_LABEL}>Superset</span>
                 </div>
                 {isDeload ? (
                   <button onClick={() => h.onPickSupersetDeload(g.exercises)} className={ACT_CHIP}>
@@ -150,7 +150,7 @@ function DayLog({ day, program, weights, isDeload, ...h }: {
       {sections.map((sec, si) => (
         <div key={si}>
           {showSectionNames && sec.name && (
-            <p className="text-[9px] font-bold text-ink-3 uppercase tracking-[0.14em] mt-3 first:mt-0">{sec.name}</p>
+            <p className={`${FIELD_LABEL} mt-3 first:mt-0`}>{sec.name}</p>
           )}
           <WeightGroups groups={sec.groups} program={program} weights={weights} isDeload={isDeload} {...h} />
         </div>
@@ -242,7 +242,7 @@ export function TodaysPlan({ program, weights, variantWeekdays, onToggleVariant,
 
   const variantToggle = todaysVariant && onToggleVariant && (
     <div className="flex items-center gap-1.5 px-3 py-2 bg-white border-b border-hairline">
-      <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3 shrink-0">This {wd}</span>
+      <span className={`${MICRO_LABEL} shrink-0`}>This {wd}</span>
       <Chip active={!variantOn} onClick={() => onToggleVariant(wd, false)} className="flex-1 truncate">
         {todaysVariant.base?.name ?? 'Base'}
       </Chip>
