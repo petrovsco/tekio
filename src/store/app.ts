@@ -28,15 +28,13 @@ import {
   updateWeightEntry,
 } from '../lib/db/weights'
 import {
-  loadActivePrograms,
-  loadProgramCycles,
+  loadProgramData,
   saveProgram,
   advanceProgram,
   pauseProgram,
   hardDeleteProgram,
   restartProgram,
   resumeProgram,
-  loadWeekOverrides,
   setWeekOverride,
 } from '../lib/db/program'
 import { activeVariantWeekdays, startOfWeek, today } from '../lib/utils'
@@ -243,11 +241,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, activePrograms, programHistory, weekOverrides, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
+      const [weights, programData, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
         loadWeights(),
-        loadActivePrograms(),
-        loadProgramCycles(),
-        loadWeekOverrides(),
+        loadProgramData(),
         loadBodyweight(),
         loadCardio(),
         loadMobility(),
@@ -281,9 +277,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
         sleep,
         sauna,
         cold,
-        programs: activePrograms,
-        programHistory,
-        weekOverrides,
+        programs: programData.active,
+        programHistory: programData.cycles,
+        weekOverrides: programData.overrides,
         adaptationTargets,
         exerciseAliases,
       })
@@ -337,7 +333,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   restartActiveProgram: async (userProgramId, startDate) => {
     await restartProgram(userProgramId, startDate)
-    const programHistory = await loadProgramCycles()
+    const { cycles: programHistory } = await loadProgramData()
     set(s => ({
       programs: s.programs.map(p =>
         p.userProgramId === userProgramId
@@ -349,13 +345,13 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   pauseActiveProgram: async (userProgramId) => {
     await pauseProgram(userProgramId)
-    const programHistory = await loadProgramCycles()
+    const { cycles: programHistory } = await loadProgramData()
     set(s => ({ programs: s.programs.filter(p => p.userProgramId !== userProgramId), programHistory }))
   },
   resumeActiveProgram: async (userProgramId) => {
     await resumeProgram(userProgramId)
-    const [programs, programHistory] = await Promise.all([loadActivePrograms(), loadProgramCycles()])
-    set({ programs, programHistory })
+    const { active, cycles } = await loadProgramData()
+    set({ programs: active, programHistory: cycles })
   },
   removeProgram: async (programId, userProgramId) => {
     await hardDeleteProgram(programId, userProgramId)

@@ -1,7 +1,8 @@
 import { supabase } from '../supabase'
 import { USER_ID, CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../../constants/app'
-import { startOfWeek, today, groupBy, daysBetween, deriveFlat } from '../utils'
+import { startOfWeek, today, groupBy, daysBetween, deriveFlat, uniqSorted } from '../utils'
 import { withOrigin } from '../env'
+import { userRows } from './_rows'
 import type {
   Program, ProgramDay, ProgramPhase, ProgramDayBlock, ProgramDayExercisePrescription,
   ActiveProgram, ProgramCycle, ProgramWeekOverride, DayOfWeek, TrainingTag,
@@ -12,6 +13,15 @@ import type {
 // the other one is fixed (roadmap 044).
 import { getOrCreateExercise } from './exercises'
 
+/** The rows of a PostgREST query, or a throw. Every read in this file answered
+ *  its error the same way, and the ones that do not depend on each other are
+ *  easier to run together as expressions than as statement pairs. */
+async function rows<T>(q: PromiseLike<{ data: T[] | null; error: unknown }>): Promise<T[]> {
+  const { data, error } = await q
+  if (error) throw error
+  return data ?? []
+}
+
 interface ProgramShape {
   phases: ProgramPhase[]
   days: ProgramDay[]
@@ -21,33 +31,30 @@ interface ProgramShape {
  *  grouped by day. Extracted so the three row shapes are inferred from their
  *  own selects — declaring the maps up front meant re-typing all three by hand. */
 async function fetchDayDetails(dayIds: string[]) {
-  const { data: blocks, error: blockErr } = await supabase
-    .from('program_day_blocks')
-    .select('id, program_day_id, name, block_type, scheduled_time, duration_minutes, notes, sort_order')
-    .in('program_day_id', dayIds)
-    .order('sort_order')
-  if (blockErr) throw blockErr
-
-  const { data: exercises, error: exErr } = await supabase
-    .from('program_day_exercises')
-    .select('id, program_day_id, block_id, sort_order, notes, training_tag, duration_text, tempo, sets_text, reps_text, weight_text, exercises(name)')
-    .in('program_day_id', dayIds)
-    .order('sort_order')
-  if (exErr) throw exErr
-
-  const { data: supersets, error: ssErr } = await supabase
-    .from('program_supersets')
-    .select('program_day_id, exercise_a_id, exercise_b_id')
-    .in('program_day_id', dayIds)
-  if (ssErr) throw ssErr
+  const [blocks, exercises, supersets] = await Promise.all([
+    rows(supabase
+      .from('program_day_blocks')
+      .select('id, program_day_id, name, block_type, scheduled_time, duration_minutes, notes, sort_order')
+      .in('program_day_id', dayIds)
+      .order('sort_order')),
+    rows(supabase
+      .from('program_day_exercises')
+      .select('id, program_day_id, block_id, sort_order, notes, training_tag, duration_text, tempo, sets_text, reps_text, weight_text, exercises(name)')
+      .in('program_day_id', dayIds)
+      .order('sort_order')),
+    rows(supabase
+      .from('program_supersets')
+      .select('program_day_id, exercise_a_id, exercise_b_id')
+      .in('program_day_id', dayIds)),
+  ])
 
   return {
-    blockRowsByDay: groupBy(blocks ?? [], b => b.program_day_id),
+    blockRowsByDay: groupBy(blocks, b => b.program_day_id),
     exRowsByDay: groupBy(
-      (exercises ?? []).map(e => ({ ...e, name: (e.exercises as unknown as { name: string } | null)?.name ?? '' })),
+      exercises.map(e => ({ ...e, name: (e.exercises as unknown as { name: string } | null)?.name ?? '' })),
       e => e.program_day_id,
     ),
-    ssRowsByDay: groupBy(supersets ?? [], ss => ss.program_day_id),
+    ssRowsByDay: groupBy(supersets, ss => ss.program_day_id),
   }
 }
 
@@ -59,21 +66,20 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
   const result = new Map<string, ProgramShape>()
   if (programIds.length === 0) return result
 
-  const { data: phaseRows, error: phaseErr } = await supabase
-    .from('program_phases')
-    .select('id, program_id, name, sort_order, duration_weeks, goal')
-    .in('program_id', programIds)
-    .order('sort_order')
-  if (phaseErr) throw phaseErr
+  const [phaseRows, dayRows] = await Promise.all([
+    rows(supabase
+      .from('program_phases')
+      .select('id, program_id, name, sort_order, duration_weeks, goal')
+      .in('program_id', programIds)
+      .order('sort_order')),
+    rows(supabase
+      .from('program_days')
+      .select('id, program_id, phase_id, name, sort_order, day_of_week, queue_order, is_variant, variant_group_key')
+      .in('program_id', programIds)
+      .order('sort_order')),
+  ])
 
-  const { data: dayRows, error: dayErr } = await supabase
-    .from('program_days')
-    .select('id, program_id, phase_id, name, sort_order, day_of_week, queue_order, is_variant, variant_group_key')
-    .in('program_id', programIds)
-    .order('sort_order')
-  if (dayErr) throw dayErr
-
-  const dayIds = (dayRows ?? []).map(d => d.id)
+  const dayIds = dayRows.map(d => d.id)
   const { blockRowsByDay, exRowsByDay, ssRowsByDay } =
     dayIds.length > 0 ? await fetchDayDetails(dayIds) : noDayDetails()
 
@@ -82,8 +88,8 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
       .filter(ss => exIds.has(ss.exercise_a_id) && exIds.has(ss.exercise_b_id))
       .map(ss => [exById.get(ss.exercise_a_id) ?? '', exById.get(ss.exercise_b_id) ?? ''] as [string, string])
 
-  const daysByProgram = groupBy(dayRows ?? [], d => d.program_id)
-  const phasesByProgram = groupBy(phaseRows ?? [], p => p.program_id)
+  const daysByProgram = groupBy(dayRows, d => d.program_id)
+  const phasesByProgram = groupBy(phaseRows, p => p.program_id)
 
   for (const programId of programIds) {
     const days = daysByProgram.get(programId) ?? []
@@ -166,29 +172,67 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
   return result
 }
 
-export async function loadActivePrograms(): Promise<ActiveProgram[]> {
-  const { data: ups, error: upErr } = await supabase
-    .from('user_programs')
-    .select('id, start_date, current_day_index, last_advanced_date, program_id, current_phase_id, deload_committed_date')
-    .eq('user_id', USER_ID)
-    .eq('status', 'active')
-  if (upErr) throw upErr
-  if (!ups || ups.length === 0) return []
+export interface ProgramData {
+  active: ActiveProgram[]
+  cycles: ProgramCycle[]
+  overrides: ProgramWeekOverride[]
+}
 
-  const programIds = ups.map(u => u.program_id)
+/**
+ * Every program read the app makes, in one pass.
+ *
+ * Three loaders used to do this — the active programs, the cycle history, and
+ * this week's variant toggles — and each one began by selecting `user_programs`
+ * while two of them ended by rebuilding the same phase → day → block → exercise
+ * tree. Bootstrap therefore asked for `user_programs` three times and built that
+ * tree twice over overlapping ids. One select and one build now serve all three,
+ * and the reads that do not depend on each other run together (roadmap 048
+ * candidate A9).
+ *
+ * The tree is built only for the programs something will read it for: the active
+ * ones, plus any paused one that still has a cycle in the history.
+ */
+export async function loadProgramData(
+  weekStartDate: string = startOfWeek(today()),
+): Promise<ProgramData> {
+  const ups = await userRows(
+    'user_programs',
+    'id, status, program_id, start_date, current_day_index, last_advanced_date, current_phase_id, deload_committed_date',
+  )
+  if (ups.length === 0) return { active: [], cycles: [], overrides: [] }
 
-  const { data: progs, error: progErr } = await supabase
-    .from('programs')
-    .select('id, name, weekly_principles')
-    .in('id', programIds)
-  if (progErr) throw progErr
+  const upIds = ups.map(u => u.id)
+  const [progRows, cycleRows, overrideRows] = await Promise.all([
+    rows(supabase
+      .from('programs')
+      .select('id, name, weekly_principles')
+      .in('id', uniqSorted(ups.map(u => u.program_id)))),
+    rows(supabase
+      .from('program_cycles')
+      .select('id, user_program_id, cycle_number, start_date, end_date, status')
+      .in('user_program_id', upIds)
+      .order('cycle_number', { ascending: false })),
+    rows(supabase
+      .from('program_week_overrides')
+      .select('user_program_id, week_start_date, day_of_week, variant_active')
+      .in('user_program_id', upIds)
+      .eq('week_start_date', weekStartDate)),
+  ])
 
-  const shapeByProgram = await loadPhasesForPrograms(programIds)
-  const progMap = new Map((progs ?? []).map(p => [p.id, p]))
+  const upById = new Map(ups.map(u => [u.id, u]))
+  const activeUps = ups.filter(u => u.status === 'active')
+  const programOf = (userProgramId: string) => upById.get(userProgramId)!.program_id
 
-  return ups.map(up => {
+  const shapeByProgram = await loadPhasesForPrograms(uniqSorted([
+    ...activeUps.map(u => u.program_id),
+    ...cycleRows.map(c => programOf(c.user_program_id)),
+  ]))
+  const progMap = new Map(progRows.map(p => [p.id, p]))
+  const shapeOf = (programId: string) => shapeByProgram.get(programId) ?? { phases: [], days: [] }
+
+  const active: ActiveProgram[] = activeUps.map(up => {
     const prog = progMap.get(up.program_id)!
-    const shape = shapeByProgram.get(up.program_id) ?? { phases: [], days: [] }
+    const shape = shapeOf(up.program_id)
     return {
       programId: prog.id,
       userProgramId: up.id,
@@ -203,6 +247,32 @@ export async function loadActivePrograms(): Promise<ActiveProgram[]> {
       deloadCommittedDate: up.deload_committed_date,
     }
   })
+
+  const cycles: ProgramCycle[] = cycleRows
+    .map(c => {
+      const programId = programOf(c.user_program_id)
+      return {
+        id: c.id,
+        userProgramId: c.user_program_id,
+        programId,
+        programName: progMap.get(programId)!.name,
+        cycleNumber: c.cycle_number,
+        startDate: c.start_date,
+        endDate: c.end_date,
+        status: c.status as ProgramCycle['status'],
+        days: shapeOf(programId).days,
+      }
+    })
+    .sort((a, b) => b.startDate.localeCompare(a.startDate))
+
+  const overrides: ProgramWeekOverride[] = overrideRows.map(o => ({
+    userProgramId: o.user_program_id,
+    weekStartDate: o.week_start_date,
+    dayOfWeek: o.day_of_week as DayOfWeek,
+    variantActive: o.variant_active,
+  }))
+
+  return { active, cycles, overrides }
 }
 
 export async function saveProgram(
@@ -413,32 +483,6 @@ async function saveBlock(dayId: string, block: ProgramDayBlock, blockSortOrder: 
 
 // ── Per-week variant overrides ────────────────────────────────────────────────
 
-/** Loads variant toggles for the given week (defaults to the current week). */
-export async function loadWeekOverrides(
-  weekStartDate: string = startOfWeek(today()),
-): Promise<ProgramWeekOverride[]> {
-  const { data: ups, error: upErr } = await supabase
-    .from('user_programs')
-    .select('id')
-    .eq('user_id', USER_ID)
-  if (upErr) throw upErr
-  if (!ups || ups.length === 0) return []
-
-  const { data, error } = await supabase
-    .from('program_week_overrides')
-    .select('user_program_id, week_start_date, day_of_week, variant_active')
-    .in('user_program_id', ups.map(u => u.id))
-    .eq('week_start_date', weekStartDate)
-  if (error) throw error
-
-  return (data ?? []).map(o => ({
-    userProgramId: o.user_program_id,
-    weekStartDate: o.week_start_date,
-    dayOfWeek: o.day_of_week as DayOfWeek,
-    variantActive: o.variant_active,
-  }))
-}
-
 /** Upserts a single weekday's variant toggle for a given week. */
 export async function setWeekOverride(
   userProgramId: string,
@@ -541,52 +585,4 @@ export async function resumeProgram(userProgramId: string): Promise<void> {
   if (openCycle) {
     await supabase.from('program_cycles').update({ status: 'active' }).eq('id', openCycle.id)
   }
-}
-
-export async function loadProgramCycles(): Promise<ProgramCycle[]> {
-  const { data: ups, error: upErr } = await supabase
-    .from('user_programs')
-    .select('id, program_id')
-    .eq('user_id', USER_ID)
-  if (upErr) throw upErr
-  if (!ups || ups.length === 0) return []
-
-  const userProgramIds = ups.map(u => u.id)
-  const programIds = [...new Set(ups.map(u => u.program_id))]
-
-  const { data: cycles, error: cycErr } = await supabase
-    .from('program_cycles')
-    .select('id, user_program_id, cycle_number, start_date, end_date, status')
-    .in('user_program_id', userProgramIds)
-    .order('cycle_number', { ascending: false })
-  if (cycErr) throw cycErr
-  if (!cycles || cycles.length === 0) return []
-
-  const { data: progs, error: progErr } = await supabase
-    .from('programs')
-    .select('id, name')
-    .in('id', programIds)
-  if (progErr) throw progErr
-
-  const shapeByProgram = await loadPhasesForPrograms(programIds)
-  const progMap = new Map((progs ?? []).map(p => [p.id, p]))
-  const upToProgram = new Map(ups.map(u => [u.id, u.program_id]))
-
-  return cycles
-    .map(c => {
-      const programId = upToProgram.get(c.user_program_id)!
-      const prog = progMap.get(programId)!
-      return {
-        id: c.id,
-        userProgramId: c.user_program_id,
-        programId,
-        programName: prog.name,
-        cycleNumber: c.cycle_number,
-        startDate: c.start_date,
-        endDate: c.end_date,
-        status: c.status as ProgramCycle['status'],
-        days: shapeByProgram.get(programId)?.days ?? [],
-      }
-    })
-    .sort((a, b) => b.startDate.localeCompare(a.startDate))
 }

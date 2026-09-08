@@ -1,9 +1,9 @@
 # Roadmap: The first-paint baseline is 3 kB stale
 
 **Label:** infra
-**Status:** planned — the committed baseline has been beaten and never updated;
-the fix is one `npm run perf:update` folded into the next commit that actually
-moves the number, not a commit of its own.
+**Status:** done — folded into v2.0.82 ([048](../048-simplification-candidates.md)
+candidate A9), the next commit that moved the number, exactly as this brief
+asked. Baseline now 348.69 kB.
 
 ## Goal
 
@@ -17,7 +17,7 @@ stale-high baseline quietly buys 3 kB of headroom nobody voted for, and a
 standing "consider re-baselining" line trains the reader to skip the perf
 output — which is the one check that catches a
 cleanup that quietly grows the bundle — see
-[048 A1](048-simplification-candidates.md), where sharing a constant across two
+[048 A1](../048-simplification-candidates.md), where sharing a constant across two
 modules cost +0.38 kB and only `npm run perf` said so.
 
 ## Why there is no commit to attach it to
@@ -59,8 +59,18 @@ same thing there.
 
 ## Acceptance
 
-- [ ] `scripts/perf-baseline.json` matches a measured build, re-baselined in a
-      commit that also changed the number (or in the 2.1.0 pre-flight)
-- [ ] That commit's message says the baseline had drifted and where the drop
-      came from
-- [ ] `npm run perf` no longer prints "Under baseline. Consider re-baselining"
+- [x] `scripts/perf-baseline.json` matches a measured build, re-baselined in a
+      commit that also changed the number (or in the 2.1.0 pre-flight) —
+      2026-09-08, v2.0.82. 352.47 kB → **348.69 kB**. A9 deleted two loaders and
+      their bodies, which took the build from 349.32 kB to 348.69 kB; the other
+      3.2 kB is the drift this brief was filed for
+- [x] That commit's message says the baseline had drifted and where the drop
+      came from — names v2.0.78 (048 B7 + B8)
+- [x] `npm run perf` no longer prints "Under baseline. Consider re-baselining" —
+      it reads `now 348.69 kB +0.00 kB (+0.0 %) · Within budget`
+
+The `startup` half moved in the same commit and for the same reason: A9 made the
+program read twice as fast, so the Home read went **1490 ms → 1039 ms** (median
+of three). This brief called that figure out of scope because nothing on the
+roadmap was going to move it; A9 did, so the commit that moved it records it,
+per CLAUDE.md's rule about re-baselining beside the change.

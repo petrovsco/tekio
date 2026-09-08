@@ -1,10 +1,10 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tiers 1 and 2 are both finished** (v2.0.58 →
-v2.0.80; the progress log below has the units). What is left is Tier 3 — A7, A9
-and C2 — plus the two housekeeping boxes; each is one atomic unit a later
-session lands with `/simplify`, ticking its box in Acceptance when it ships.
+**Status:** in progress — **Tiers 1 and 2 are finished and Tier 3 has started**
+(v2.0.58 → v2.0.82; the progress log below has the units). What is left is A7
+and C2 plus the two housekeeping boxes; each is one atomic unit a later session
+lands with `/simplify`, ticking its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 
 ## Progress log
@@ -32,6 +32,12 @@ Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 - **2026-09-08, v2.0.80 — Tier 2 closed: B14**, one unit. Per-field selectors
   at 20 subscription sites; a store write now wakes the components that read
   what changed instead of all four of App, AppShell, Toast and the open tab.
+- **2026-09-08, v2.0.82 — Tier 3 opens: A9**, one unit. One `loadProgramData()`
+  replaces the three program loaders, and the reads that do not depend on each
+  other now run together instead of one after the next. The program read is
+  **2× faster against the live database** and the Home read fell 1490 ms →
+  1039 ms, which is the number doctrine §6 watches. Carried
+  [068](done/068-perf-baseline-drift.md)'s re-baseline, as that brief asked.
 **Release:** 2.1.0
 
 ## What this is
@@ -1519,7 +1525,26 @@ Tier 2:
 Tier 3:
 
 - [ ] A7 store `listActions`
-- [ ] A9 one `loadProgramData`
+- [x] A9 one `loadProgramData` — 2026-09-08, v2.0.82. The entry named a
+      `loadProgramRows` that does not exist (it is `loadActivePrograms`) and
+      predicted ~7 fewer round-trips; on the live database, which currently has
+      **no active program**, the old code short-circuited after one select, so
+      bootstrap's program requests fell 11 → **9**. The real win is depth, not
+      count: the old cycle load was 8 requests one after the other and the new
+      one is 4 deep, measured at **726 ms → 354 ms** (median of 7 runs each,
+      same live database, old tree parked with `git apply` and Vite restarted
+      between them). `npm run perf:startup` fell **1490 ms → 1039 ms** to the
+      Home read. With a program actually active the saving is bigger: resuming
+      one made 17 requests before and makes 9 now, counted in the browser. Two
+      things came along because they are the same read path — the phase/day and
+      the block/exercise/superset selects now run concurrently (a local `rows()`
+      helper made that an expression rather than a statement pair), and the tree
+      is built only for the programs something will read it for, so a paused
+      program with no cycle no longer loads one. Browser-checked by resuming
+      "Volleyball Performance & Healthspan" from the Program tab — 9 days, 1
+      phase, 32 blocks, 78 exercises, this week's variant rows, 0 console errors
+      — and pausing it back, which returned both `user_programs` and
+      `program_cycles` to `paused`
 - [ ] C2 edge-function `_shared/`, both redeployed
 
 Housekeeping:

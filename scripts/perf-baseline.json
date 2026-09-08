@@ -1,11 +1,11 @@
 {
   "bundle": {
-    "firstPaintBytes": 352474,
-    "firstPaintGzip": 106841,
+    "firstPaintBytes": 348690,
+    "firstPaintGzip": 106804,
     "files": [
       {
-        "ref": "/assets/index-CntQ4GVU.js",
-        "bytes": 323704
+        "ref": "/assets/index-C1ushgpe.js",
+        "bytes": 319920
       },
       {
         "ref": "/assets/index-Cq9bqLfG.css",
@@ -15,21 +15,21 @@
     "measuredAt": "2026-09-08"
   },
   "startup": {
-    "domContentLoadedMs": 93,
-    "firstReadMs": 1490,
+    "domContentLoadedMs": 118,
+    "firstReadMs": 1039,
     "runs": 3,
     "samples": [
       {
-        "domContentLoaded": 107,
-        "firstRead": 2037
+        "domContentLoaded": 153,
+        "firstRead": 1044
       },
       {
-        "domContentLoaded": 93,
-        "firstRead": 1490
+        "domContentLoaded": 118,
+        "firstRead": 1039
       },
       {
-        "domContentLoaded": 81,
-        "firstRead": 1468
+        "domContentLoaded": 84,
+        "firstRead": 949
       }
     ],
     "measuredAt": "2026-09-08",
