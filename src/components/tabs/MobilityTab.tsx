@@ -27,7 +27,7 @@ export function MobilityTab() {
   const [revealedEx, setRevealedEx] = useState(1)
   const [muscleOpen, setMuscleOpen] = useState<number | null>(null)
   const [selEx, setSelEx] = useState('')
-  const { mobility, muscleGroups, exerciseAliases, addMobilityEntry, removeMobilityEntry, openEditModal, setToast } = useAppStore()
+  const { mobility, muscleGroups, exerciseAliases, addMobilityEntry, removeMobilityEntry, openEditModal, withToast } = useAppStore()
   const { weekStartDay } = usePrefs()
 
   const allExNames = [...new Set(mobility.flatMap(m => m.exercises.map(e => e.name)))].sort()
@@ -64,15 +64,12 @@ export function MobilityTab() {
   const add = async () => {
     const valid = exercises.filter(e => e.name.trim() && e.duration > 0)
     if (valid.length === 0) return
-    try {
+    await withToast(async () => {
       await addMobilityEntry({ date, exercises: valid, duration: valid.reduce((s, e) => s + e.duration, 0) })
       setExercises([emptyExercise()])
       setRevealedEx(1)
       setMuscleOpen(null)
-      setToast('Session logged!')
-    } catch {
-      setToast('Failed to save.')
-    }
+    }, 'Session logged!')
   }
 
   const chartEx = selEx || allExNames[0] || ''

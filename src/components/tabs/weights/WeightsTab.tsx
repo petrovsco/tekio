@@ -26,7 +26,7 @@ export function WeightsTab() {
   const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
   const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
 
-  const { weights, exerciseMuscles, exerciseAliases, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, setToast } = useAppStore()
+  const { weights, exerciseMuscles, exerciseAliases, programs, weekOverrides, addWeightEntry, removeWeightEntry, openEditModal, advanceActiveProgram, toggleWeekVariant, withToast } = useAppStore()
 
   // Auto-advance sequential (legacy index-mode) programs when today's day is done.
   // Weekday-pinned and flexible programs derive their day from the calendar/checklist
@@ -109,23 +109,17 @@ export function WeightsTab() {
     if (!ex.trim()) return
     const vs: LiftSet[] = sets.slice(0, revealed).filter(s => s.weight && s.reps).map(s => ({ weight: +s.weight, reps: +s.reps }))
     if (!vs.length) return
-    try {
+    await withToast(async () => {
       await addWeightEntry({ date, exercise: ex.trim(), sets: vs })
       setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1)
-      setToast('Exercise saved!')
-    } catch {
-      setToast('Failed to save.')
-    }
+    }, 'Exercise saved!')
   }
 
   const saveSS = async (entries: Array<Omit<WeightEntry, 'id'>>) => {
-    try {
+    await withToast(async () => {
       await Promise.all(entries.map(e => addWeightEntry(e)))
       setSsExercises(null); setSsInitialSets(null)
-      setToast('Superset saved!')
-    } catch {
-      setToast('Failed to save.')
-    }
+    }, 'Superset saved!')
   }
 
   const chartEx = selEx || exercises[0] || ''

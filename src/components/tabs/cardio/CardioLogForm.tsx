@@ -18,7 +18,7 @@ export function CardioLogForm() {
   const [format, setFormat] = useState<CardioFormat | ''>('')
   const [bout, setBout] = useState('')
   const [notes, setNotes] = useState('')
-  const { addCardioEntry, setToast } = useAppStore()
+  const { addCardioEntry, withToast } = useAppStore()
 
   const durationMins = parseDurationMins(duration)
   const distKm = distance ? +distance : 0
@@ -28,7 +28,7 @@ export function CardioLogForm() {
 
   const add = async () => {
     if (!durationMins) return
-    try {
+    await withToast(async () => {
       await addCardioEntry({
         date, type, duration: durationMins,
         distance: distKm || undefined,
@@ -38,10 +38,7 @@ export function CardioLogForm() {
         notes: notes || undefined,
       })
       setDuration(''); setDistance(''); setAvgHr(''); setFormat(''); setBout(''); setNotes('')
-      setToast('Session logged!')
-    } catch {
-      setToast('Failed to save.')
-    }
+    }, 'Session logged!')
   }
 
   return (

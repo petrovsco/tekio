@@ -1,10 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — two candidates have landed: **A8** (2026-09-08,
-v2.0.58, via roadmap 023 item 0) and **A1** (2026-09-08, v2.0.63), which took
-`knip` to zero findings. Each remaining candidate is one atomic unit a later
-session lands with `/simplify`; tick its box in Acceptance when it ships.
+**Status:** in progress — three landed: **A8** (v2.0.58), **A1** (v2.0.63, which
+took `knip` to zero) and **S1 part 1** (v2.0.65, the `withToast` store helper and
+the tab call-sites). **S1 part 2 — EditModal — is next.** Each remaining
+candidate is one atomic unit a later session lands with `/simplify`; tick its
+box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 **Release:** 2.1.0
 
@@ -348,6 +349,35 @@ the corrections are the useful part of this record:
 - **Risk:** low but wide. **Visual:** one edit form per entry kind, one program
   action.
 
+**Part 1 landed 2026-09-08 (v2.0.65)** — the store helper and the five tab
+files. −53 lines across six files; first paint +0.12 kB (the helper itself),
+well inside budget. Twelve of the ~37 copies are gone; the other ~25 are
+EditModal's, which is part 2.
+
+- **`withToast(fn, ok, fail?)` puts the *whole* success path inside `fn`** — the
+  write and the form reset that follows it — rather than only the write. That is
+  what keeps a failed save from clearing the form, and it is the one behavioural
+  question the refactor had to answer. Verified in the browser by cutting the
+  database off mid-save (see below). `fail` defaults to `'Failed to save.'`,
+  which is what nine of the twelve call-sites passed by hand. It never throws;
+  it returns `true` when `fn` completed, so a caller that owns extra state can
+  still branch on the result.
+- **The two Program cards now read their own actions.** `ProgramCard` and
+  `ProgramHistoryCard` take `advance`/`restart`/`pause`/`remove`/`resume` and
+  `withToast` from `useAppStore` with per-action selectors and build their own
+  handlers; only `onEdit` stays a prop, because it opens ProgramTab's editor.
+  Six of ProgramTab's seven wrappers went with them, and the tab's own
+  destructure dropped five store fields. Selectors rather than a bare
+  `useAppStore()` on purpose — that is the direction B14 sets, and these are
+  stable action references.
+- **A small dedupe fell out.** `ProgramCard` computed
+  `(currentDayIndex + 1) % days.length` twice — once for the "up next" line and
+  once inside the advance handler that moved in. One `nextIndex` now serves both.
+- **Note for part 2:** all 16 remaining `npm run lint` warnings are EditModal's
+  `saveRef.current = save` during render (`react-hooks/refs`). The `useSave`
+  hook this entry proposes is the natural place to fix them, so part 2 should
+  take the warning count to zero rather than just shortening the file.
+
 ### A4. The 5-line load and 3-line delete shape in eight db files (−45)
 
 - **Where:** loads at `bodyweight.ts:6-18`, `water.ts:6-18`, `donations.ts:6-19`,
@@ -568,7 +598,7 @@ Tier 1:
 
 Tier 2:
 
-- [ ] S1 save-and-toast helper (store + tabs)
+- [x] S1 save-and-toast helper (store + tabs) — 2026-09-08, v2.0.65. Browser-checked: Resume→Pause round trip on a live program printed both toasts and left the database as it was; a Weights save with the database cut off printed "Failed to save." and left the form filled
 - [ ] S1 save-and-toast helper (EditModal)
 - [ ] A4 `userRows` / `deleteRow`
 - [ ] A5 `toRow` / `toEntry`, derived reverse maps

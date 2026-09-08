@@ -459,30 +459,41 @@ function ProgramCard({
   ap,
   weights,
   onEdit,
-  onAdvance,
-  onRestart,
-  onPause,
-  onDelete,
   variantWeekdays,
   onToggleVariant,
 }: {
   ap: ActiveProgram
   weights: WeightEntry[]
   onEdit: () => void
-  onAdvance: () => void
-  onRestart: () => void
-  onPause: () => void
-  onDelete: () => void
   variantWeekdays: Set<DayOfWeek>
   onToggleVariant: (dayOfWeek: DayOfWeek, variantActive: boolean) => void
 }) {
+  // The four card actions touch no ProgramTab state, so they are read here
+  // rather than threaded down. Only onEdit stays a prop — it opens the editor.
+  const advance = useAppStore(s => s.advanceActiveProgram)
+  const restart = useAppStore(s => s.restartActiveProgram)
+  const pause = useAppStore(s => s.pauseActiveProgram)
+  const remove = useAppStore(s => s.removeProgram)
+  const withToast = useAppStore(s => s.withToast)
+
+  const nextIndex = (ap.currentDayIndex + 1) % ap.days.length
+  const onAdvance = () => withToast(
+    () => advance(ap.userProgramId, nextIndex, today()),
+    `Advanced to ${ap.days[nextIndex].name}`, 'Failed to advance.')
+  const onRestart = () => withToast(
+    () => restart(ap.userProgramId, today()), 'Program restarted!', 'Failed to restart.')
+  const onPause = () => withToast(
+    () => pause(ap.userProgramId), `${ap.name} paused`, 'Failed to pause.')
+  const onDelete = () => withToast(
+    () => remove(ap.programId, ap.userProgramId), `${ap.name} deleted`, 'Failed to delete.')
+
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const { week, isDeload, isComplete } = cycleInfo(ap)
   const mode = programMode(ap)
   const dayIndex = ap.currentDayIndex % ap.days.length
   const day = mode === 'flexible' ? null : resolveTodayDay(ap, today(), variantWeekdays)
   const activeDay = mode === 'index' ? ap.days[dayIndex] : day
-  const nextDay = ap.days[(ap.currentDayIndex + 1) % ap.days.length]
+  const nextDay = ap.days[nextIndex]
   const variants = variantGroups(ap)
 
   const weekStart = startOfWeek(today())
@@ -648,14 +659,19 @@ const STATUS_LABEL: Record<ProgramCycle['status'], string> = {
 function ProgramHistoryCard({
   cycle,
   weights,
-  onResume,
-  onDelete,
 }: {
   cycle: ProgramCycle
   weights: WeightEntry[]
-  onResume: () => void
-  onDelete: () => void
 }) {
+  const resume = useAppStore(s => s.resumeActiveProgram)
+  const remove = useAppStore(s => s.removeProgram)
+  const withToast = useAppStore(s => s.withToast)
+
+  const onResume = () => withToast(
+    () => resume(cycle.userProgramId), `${cycle.programName} resumed`, 'Failed to resume.')
+  const onDelete = () => withToast(
+    () => remove(cycle.programId, cycle.userProgramId), `${cycle.programName} deleted`, 'Failed to delete.')
+
   const [open, setOpen] = useState(false)
   const [metric, setMetric] = useState<'maxWeight' | 'volume'>('maxWeight')
   const progress = cycleExerciseProgress(weights, cycle)
@@ -738,81 +754,18 @@ export function ProgramTab() {
     weights,
     weekOverrides,
     saveActiveProgram,
-    advanceActiveProgram,
-    restartActiveProgram,
-    pauseActiveProgram,
-    resumeActiveProgram,
-    removeProgram,
     toggleWeekVariant,
-    setToast,
+    withToast,
   } = useAppStore()
 
+  // The one handler that stays here: it owns ProgramTab's editor state.
   const handleSave = async (p: Program, programId?: string, userProgramId?: string) => {
     setSaving(true)
-    try {
+    await withToast(async () => {
       await saveActiveProgram(p, programId, userProgramId)
       setEditing(null)
-      setToast('Program saved!')
-    } catch {
-      setToast('Failed to save program.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  const handleAdvance = async (ap: ActiveProgram) => {
-    const newIndex = (ap.currentDayIndex + 1) % ap.days.length
-    try {
-      await advanceActiveProgram(ap.userProgramId, newIndex, today())
-      setToast(`Advanced to ${ap.days[newIndex].name}`)
-    } catch {
-      setToast('Failed to advance.')
-    }
-  }
-
-  const handleRestart = async (ap: ActiveProgram) => {
-    try {
-      await restartActiveProgram(ap.userProgramId, today())
-      setToast('Program restarted!')
-    } catch {
-      setToast('Failed to restart.')
-    }
-  }
-
-  const handlePause = async (ap: ActiveProgram) => {
-    try {
-      await pauseActiveProgram(ap.userProgramId)
-      setToast(`${ap.name} paused`)
-    } catch {
-      setToast('Failed to pause.')
-    }
-  }
-
-  const handleDelete = async (ap: ActiveProgram) => {
-    try {
-      await removeProgram(ap.programId, ap.userProgramId)
-      setToast(`${ap.name} deleted`)
-    } catch {
-      setToast('Failed to delete.')
-    }
-  }
-
-  const handleResume = async (cycle: ProgramCycle) => {
-    try {
-      await resumeActiveProgram(cycle.userProgramId)
-      setToast(`${cycle.programName} resumed`)
-    } catch {
-      setToast('Failed to resume.')
-    }
-  }
-
-  const handleDeleteHistory = async (cycle: ProgramCycle) => {
-    try {
-      await removeProgram(cycle.programId, cycle.userProgramId)
-      setToast(`${cycle.programName} deleted`)
-    } catch {
-      setToast('Failed to delete.')
-    }
+    }, 'Program saved!', 'Failed to save program.')
+    setSaving(false)
   }
 
   if (saving) {
@@ -876,10 +829,6 @@ export function ProgramTab() {
           variantWeekdays={activeVariantWeekdays(weekOverrides, ap.userProgramId)}
           onToggleVariant={(dow, active) => toggleWeekVariant(ap.userProgramId, dow, active)}
           onEdit={() => setEditing({ programId: ap.programId, userProgramId: ap.userProgramId, draft: ap })}
-          onAdvance={() => handleAdvance(ap)}
-          onRestart={() => handleRestart(ap)}
-          onPause={() => handlePause(ap)}
-          onDelete={() => handleDelete(ap)}
         />
       ))}
 
@@ -891,8 +840,6 @@ export function ProgramTab() {
               key={cycle.id}
               cycle={cycle}
               weights={weights}
-              onResume={() => handleResume(cycle)}
-              onDelete={() => handleDeleteHistory(cycle)}
             />
           ))}
         </div>

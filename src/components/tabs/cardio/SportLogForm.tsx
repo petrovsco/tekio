@@ -33,7 +33,7 @@ export function SportLogForm() {
   const [teammates, setTeammates] = useState<string[]>([])
   const [newSportHasCompetitor, setNewSportHasCompetitor] = useState(false)
   const [newSportHasTeammate, setNewSportHasTeammate] = useState(false)
-  const { sports, sportTypes, addSportEntry, setToast } = useAppStore()
+  const { sports, sportTypes, addSportEntry, withToast } = useAppStore()
 
   const allSports = [...new Set(sports.map(d => d.sport))].sort()
   const allCompetitors = [...new Set(sports.flatMap(d => d.competitorNames ?? []))].sort()
@@ -55,7 +55,7 @@ export function SportLogForm() {
     const newSportFlags: NewSportFlags | undefined = isNewSport
       ? { hasCompetitor: newSportHasCompetitor, hasTeammate: newSportHasTeammate }
       : undefined
-    try {
+    await withToast(async () => {
       await addSportEntry({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sport: sport.trim() as any,
@@ -73,10 +73,7 @@ export function SportLogForm() {
       setDuration(''); setAvgHr('')
       setCompetitorNames([]); setResult(''); setTeammates([])
       setNewSportHasCompetitor(false); setNewSportHasTeammate(false)
-      setToast('Session logged!')
-    } catch {
-      setToast('Failed to save.')
-    }
+    }, 'Session logged!')
   }
 
   return (

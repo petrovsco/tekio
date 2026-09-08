@@ -74,6 +74,7 @@ interface AppStore extends AppState {
   setSauna: (sauna: AppState['sauna']) => void
   setCold: (cold: AppState['cold']) => void
   setToast: (msg: string) => void
+  withToast: (fn: () => Promise<void>, ok: string, fail?: string) => Promise<boolean>
 
   bootstrap: () => Promise<void>
 
@@ -221,6 +222,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setToast: (toast) => {
     set({ toast })
     if (toast) setTimeout(() => set({ toast: '' }), 3000)
+  },
+  // The store's actions throw; every caller answered with the same try/catch and
+  // two toasts. Put the whole success path — the write and the form reset that
+  // follows it — inside `fn`, so a failed write leaves the form untouched.
+  // Never throws: returns true when `fn` completed.
+  withToast: async (fn, ok, fail = 'Failed to save.') => {
+    try {
+      await fn()
+      get().setToast(ok)
+      return true
+    } catch {
+      get().setToast(fail)
+      return false
+    }
   },
 
   // ── Bootstrap ────────────────────────────────────────────────────────────────
