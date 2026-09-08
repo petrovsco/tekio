@@ -1,20 +1,25 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — eighteen landed: **A8** (v2.0.58), **A1** (v2.0.63,
-which took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
-EditModal, after which the repo sits at 023's accepted floor of 6 lint
-warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer),
-**B2 + B3** together (v2.0.69, the weights plan), the small `lib` dedupes
-**A2 + A3 + A10 + A11** together (v2.0.70), the last three A entries
-**A12 + A13 + A14** together (v2.0.71) and the shared UI helpers
-**B4 + B12 + B15** together (v2.0.72) and the last three Tier-1 UI entries
-**B10 + B11 + B13** together (v2.0.74) and **C1** (v2.0.75).
-**Tier 1 is finished.** What is left is Tier 2 — B5, B6, B7, B8, B9, B14 — and
-Tier 3 — A7, A9, C2.
-Each remaining candidate is one atomic unit a later session lands with
-`/simplify`; tick its box in Acceptance when it ships.
+**Status:** in progress — **Tier 1 is finished** (twenty-two candidates, v2.0.58
+→ v2.0.75; the progress log below has the units). What is left is Tier 2 — B5,
+B6, B7, B8, B9, B14 — and Tier 3 — A7, A9, C2; each is one atomic unit a later
+session lands with `/simplify`, ticking its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
+
+## Progress log
+
+- **2026-09-08, v2.0.58 → v2.0.75 — Tier 1 landed, in nine units.** **A8**
+  (v2.0.58, via 023 item 0) · **A1** (v2.0.63, which took `knip` to zero) ·
+  **S1** in two parts (v2.0.65 store + tabs, v2.0.66 EditModal, after which the
+  repo sits at 023's accepted floor of 6 lint warnings) · **A4 + A5** (v2.0.68,
+  the whole `lib/db` layer) · **B2 + B3** (v2.0.69, the weights plan) ·
+  **A2 + A3 + A10 + A11** (v2.0.70, the small `lib` dedupes) ·
+  **A12 + A13 + A14** (v2.0.71, the last three A entries) ·
+  **B4 + B12 + B15** (v2.0.72, the shared UI helpers) ·
+  **B10 + B11 + B13** (v2.0.74, the last three Tier-1 UI entries) ·
+  **C1** (v2.0.75, the Garmin scripts). Each entry below carries its own record
+  of what shipped and where the entry was wrong.
 **Release:** 2.1.0
 
 ## What this is
