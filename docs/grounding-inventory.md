@@ -16,7 +16,10 @@ an index must not.
 ## How to read it
 
 **State** uses the `/ground` Step 3 verdict vocabulary: `grounded` /
-`convention` / `unknown`.
+`convention` / `unknown`, plus **`n/a — definitional`** — an *inventory* state,
+not a fifth verdict the scout can return. It says the number fixes a unit, a
+period or a guard rather than asserting a dose, so no search could settle it and
+it never enters Mode B's 6-week clock.
 
 **Updated 2026-08-26 by the first scout runs** (#7(b), run 1): the adaptation
 targets in §1 are no longer `unknown` — four are `grounded`, four are
@@ -95,8 +98,21 @@ the Habits section (035), and 10.4 is fixed by the same fold; rows 1.12 and
 4.15–4.17 index the readiness numbers that had sat in §12 as "not in the app
 yet"; every `#L<n>` anchor was re-read against its target line.
 
-Rows marked **†** are ones I would *not* spend a scout run on — see
+**Updated 2026-09-08 by [066](roadmap/done/066-inventory-definitional-rows.md)**: the
+nine rows that read `unknown †` were judged one at a time against
 [§13.2](roadmap/done/015-ground-trigger-spec-fixes.md#132-a-fourth-inventory-state).
+Five are now **`n/a — definitional`** — 1.10 (the sentinel `0`), 8.3 (Brzycki's
+pole), 9.3 and 9.4 (plate granularity, twice) and 10.5 (the water chips) — and
+each says in one line why no research could settle it. Four keep `unknown`: 4.14
+(a temperature written into the row, and heat exposure has a dose literature),
+7.2 (a classification, which §13.4 now gates), and 5.7 / 5.8 (deload dose, the
+boundary §13.2 draws itself). No value in the app moved.
+
+Rows still marked **†** are ones I would *not* spend a scout run *of their own*
+on — either nothing reads the number (4.14, 7.2) or the run that settles it lands
+on another row (5.7 and 5.8 derive from 5.1 and 5.3, which
+[013](roadmap/013-cycle-deload-grounding.md) owns). A row that resolved to
+`n/a — definitional` drops the dagger: its state now says what the marker said.
 
 **Step 0** records whether the trigger spec in
 [.claude/skills/ground/SKILL.md](../.claude/skills/ground/SKILL.md) catches the
@@ -195,7 +211,7 @@ weights").
 | 1.7 | `1` | [adaptations.ts:243](../src/constants/adaptations.ts#L243) | Anaerobic capacity needs 1 session/week | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) §5 (open question: should it have a standing target at all?) |
 | 1.8 | `1` | [adaptations.ts:282](../src/constants/adaptations.ts#L282) | VO₂max needs 1 session/week | named | **grounded** | adaptation-weekly-targets |
 | 1.9 | `2` | [adaptations.ts:322](../src/constants/adaptations.ts#L322) | Endurance needs 2 sessions/week — **unit known wrong**, should be weekly minutes | named | **convention** | adaptation-weekly-targets · **shape:** [adaptation-target-shapes](roadmap/012-adaptation-target-shapes.md) (carries the Attia/Galpin fork) |
-| 1.10 | `0` ×7 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:385](../src/lib/adaptations.ts#L385) | ? | unknown † | — |
+| 1.10 | `0` ×7 | `weeklyMuscleTarget` / `weeklySessionTarget` sentinels throughout [adaptations.ts](../src/constants/adaptations.ts) | *Nothing.* `0` means "this axis does not apply to this adaptation" — a stand-in for `null`, read as a flag at [lib/adaptations.ts:385](../src/lib/adaptations.ts#L385). **Definitional** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): a flag carries no dose to test. §13.8 left the *gating* question open, not this one — the real fix is a proper `null`, which is a code change | ? | **n/a — definitional** | — |
 | 1.11 | all 14, duplicated | `adaptation_targets` (DB), 9 rows — 7 live, plus dead `speed` / `skill` rows nothing reads since 2026-09-01 | Identical values to 1.2–1.5 and 1.7–1.9, and **they win** — [lib/adaptations.ts:385-386](../src/lib/adaptations.ts#L385) prefers the DB row (`targets?.[meta.key]`) over the constant | named | **grounded** | adaptation-weekly-targets |
 | 1.12 | `14` / `14` / `28` d | [app.ts:90-94](../src/constants/app.ts#L90) | `QUALITY_STALENESS_DAYS` — a cardio quality untouched for longer than this is flagged stale: VO₂max 14 d, endurance 14 d, anaerobic 28 d. The flag means "you are now losing it" (detraining onset), not "you missed the weekly cadence" (D9). Sat in §12 as not-yet-built until 2026-09-05; it shipped with the fused Home (018 unit 4) | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 
@@ -258,7 +274,7 @@ the sharpest debt in the app because they read as settled fact.
 | 4.11 | `(sleep + hrv) / 2` | [fusedRead.ts:431](../src/lib/fusedRead.ts#L431) | Systemic readiness is last night's Garmin sleep score blended 50/50 with the HRV sub-score (row 4.17); it degrades to sleep-only or HRV-only when one side is missing and is `null` when both are — a missing input never scores zero. The 0–100 shape and the 50/50 blend are convention: no manufacturer composite is validated as a training-decision threshold. Replaced the old card's `score / 100` sub-score, which silently switched sleep models per night | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | 4.12 | `PUSH_THRESHOLD = 33` | [app.ts:85](../src/constants/app.ts#L85), applied at [fusedRead.ts:500](../src/lib/fusedRead.ts#L500) | Readiness below 33 flips the verdict to Hold (was the old card's 80 / 50 green–amber–red bands). **This is the app's answer to "am I recovered enough to push today?"** — and Hold means modify, not rest (D7) | named | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — any fixed cutoff on a 0–100 composite is convention; grounded method is baseline-relative HRV (D8) |
 | 4.13 | ~~`sub >= 1`~~ | — | **Retired 2026-08-31** with RecoveryCard: no modality is scored against a weekly target any more ([014 §readiness comparison](roadmap/done/014-doctrine-ledger-execution.md#the-readiness-comparison-acceptance-item-4)) | — | — | — |
-| 4.14 | `80` °C / `10` °C | [RecoverySheet.tsx:42](../src/components/tabs/home/RecoverySheet.tsx#L42), [:50](../src/components/tabs/home/RecoverySheet.tsx#L50) (quick-log defaults); [EditModal.tsx:742](../src/components/ui/EditModal.tsx#L742), [:753](../src/components/ui/EditModal.tsx#L753) (placeholders) | Default temperatures for a sauna / cold session. Stored, never scored | ? | unknown † | — |
+| 4.14 | `80` °C / `10` °C | [RecoverySheet.tsx:42](../src/components/tabs/home/RecoverySheet.tsx#L42), [:50](../src/components/tabs/home/RecoverySheet.tsx#L50) (quick-log defaults); [EditModal.tsx:742](../src/components/ui/EditModal.tsx#L742), [:753](../src/components/ui/EditModal.tsx#L753) (placeholders) | Default temperatures for a sauna / cold session. Stored, never scored — but the quick-log *writes* 80 / 10 into the row, so they become data rather than a hint. **Left `unknown`** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): an assumed fact about a real session, not a unit or a guard, and heat / cold exposure has a dose literature of its own. Arguable, so §13.2's "keep it small" rule keeps it here | ? | unknown † | — |
 | 4.15 | `RECOVER_DAYS = 2` | [app.ts:79](../src/constants/app.ts#L79) | 48 h since a muscle's last hard set is the local recovery flag — the floor of the 48–72 h band, dose-blind by design; dose modulation is the named upgrade path (D6). Sat in §12 as not-yet-built until 2026-09-05; it shipped with the fused Home (018 unit 4) | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | 4.16 | `48` h / `21` d | [app.ts:125](../src/constants/app.ts#L125), read at [fusedRead.ts:462-463](../src/lib/fusedRead.ts#L462) | `DONATION_SUPPRESSION`: a full-blood donation gates a Hold for 48 h and dims the two aerobic reads for 21 d; strength and anaerobic never dim; plasma gets nothing (D11). Shipped with the fused Home, indexed here since 2026-09-05 | named | **grounded** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
 | 4.17 | `7` d rolling / `60` d baseline / `50 + 50 × z` | [fusedRead.ts:372-373](../src/lib/fusedRead.ts#L372), [:428](../src/lib/fusedRead.ts#L420) | The HRV sub-score is baseline-relative: the 7-day rolling mean of overnight HRV placed against a 60-day baseline in SD units — 50 at baseline, 0 one SD below, 100 one SD above. A rolling window against the individual's own baseline is the method every trial used (Vesterinen 2016; Buchheit 2014); the 60-day baseline and the SD-to-0–100 scale are conventions (practitioners say 21–30 d). `MIN_HRV_BASELINE_SAMPLES = 7` and `HRV_SD_FLOOR = 0.05` are guards, not claims | unnamed | method **grounded**, scale **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) |
@@ -279,8 +295,8 @@ created to carry it.
 | 5.4 | `DELOAD_REP_FACTOR = 0.7` | [app.ts:18](../src/constants/app.ts#L18), applied by `deloadSets` at [utils.ts:89](../src/lib/utils.ts#L89) | Deload = 70% of last reps, load unchanged. **Fixed 2026-08-26** — was three implementations, two of which disagreed | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.5 | ~~`× 0.7`~~ ×2 | — | **Fixed 2026-08-26.** `VolumeRow` previewed a deload scaling *weight and reps* that the app could never apply — `ExPlan`'s button, `ExPlan`'s exported helper and `programs.deload_strategy` all say reps-only. The preview was the outlier and now calls `deloadSets` | — | — | — |
 | 5.6 | `Deload` badge + `70% reps` | [VolumeRow.tsx:32-33](../src/components/tabs/weights/VolumeRow.tsx#L32) | The label the user reads — the percentage is computed from 5.4 (`DELOAD_REP_FACTOR × 100`) and says *what* is at 70%; the ⚠️ went with the chrome emoji (033) | named | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
-| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:252](../src/lib/db/program.ts#L252) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
-| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:253](../src/lib/db/program.ts#L253) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.7 | `cycle_length_weeks: CYCLE` | [db/program.ts:252](../src/lib/db/program.ts#L252) + `programs` column default `6` | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.1. Still write-only. **Stays `unknown`** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): §13.2 names this exact boundary — "a block is 6 weeks" is a dose claim, not a definition. The run that settles it lands on 5.1 | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
+| 5.8 | `deload_week: DELOAD_WEEK` | [db/program.ts:253](../src/lib/db/program.ts#L253) | **Fixed 2026-08-26** — was hardcoded `6`; now derives from 5.3. Still write-only. **Stays `unknown`** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): deload *placement* is the dose claim §13.2 draws the line against; the run lands on 5.3 | named | unknown † | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.9 | `factor: DELOAD_REP_FACTOR` | [db/program.ts:254](../src/lib/db/program.ts#L254) + `programs.deload_strategy` column default | **Fixed 2026-08-26** — the write now derives from 5.4. The **jsonb column default** still carries a literal `0.7`, and nothing reads either | unnamed | unknown | [cycle-deload-grounding](roadmap/013-cycle-deload-grounding.md) |
 | 5.10 | ~~`4`~~ | — | **Fixed 2026-08-26** (migration `20260826144439`). The `program_phases.duration_weeks` default asserted a 4-week phase against `CYCLE = 6`; default dropped, so a missing value is now `NULL` — which the type already allowed. No number replaced it | — | — | — |
 
@@ -308,7 +324,7 @@ created to carry it.
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
 | 7.1 | `{1: 1, 2: 0.5, 3: 0}` | [utils.ts:415](../src/lib/utils.ts#L415) | A level-2 muscle receives half a set's stimulus; level 3 receives none — after the 042 audit it holds stabilisers and bystanders only. **Every muscle-coverage number and the whole BodyMap is denominated in this** | unnamed | grounded (level 2 supported; level 3 grounded at 0, 2026-09-03) | [039 S1](grounding/039-adaptations-read.md#grounding) + [done/042](roadmap/done/042-level-3-link-audit.md) |
-| 7.2 | `level === 1 → primary` | [db/muscles.ts:78](../src/lib/db/muscles.ts#L78) | Level 1 is a primary mover; 2 and 3 are both "secondary" — collapses 7.1's three tiers into two on write | unnamed | unknown † | home-fused-reads |
+| 7.2 | `level === 1 → primary` | [db/muscles.ts:78](../src/lib/db/muscles.ts#L78) | Level 1 is a primary mover; 2 and 3 are both "secondary" — collapses 7.1's three tiers into two on write. **Stays `unknown`** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): a classification, and §13.4 now gates those on the same terms as a coefficient. Write-only, though — nothing reads `role` back — so no run of its own | unnamed | unknown † | home-fused-reads |
 | 7.3 | ~~`1` per bout~~ | — | **Retired 2026-09-05.** `habitCompletionSets` was deleted with the Habits section ([done/035](roadmap/done/035-habits-expiry-deletion.md)); the muscle read counts logged sets only, which 014 called the more honest answer ([014 §Also resolved](roadmap/done/014-doctrine-ledger-execution.md#also-resolved-by-the-same-decision)). Never grounded | — | — | — |
 | 7.4 | `WEEKLY_STRETCH_TARGET_MIN = 5` | [utils.ts:366](../src/lib/utils.ts#L366), read on the Mobility tab at [MobilityTab.tsx:187](../src/components/tabs/MobilityTab.tsx#L187) | 5 mobility min per muscle group per week is the target | unnamed | unknown | home-fused-reads **(due)** |
 | 7.5 | `GAP_CUTOFF = 0.70` — `statusFor`'s on-track line, the map's callout line and the "on target" counter | [lib/adaptations.ts:282](../src/lib/adaptations.ts#L282) | One line for one question (045, 2026-09-04): a muscle at ≥ 0.70 of its window target is "on track", draws no callout and counts toward its quality being on target; anything > 0 below it is "needs work"; 0 is "untouched". Three labels over a continuous fill (sets ÷ floor): stimulus is graded from the first set, only 0 and the floor carry physiological meaning. The counter judges the leaves the map draws, inside the tracked groups. The 0.70 line is a display convention sitting just above the maintenance zone; the counter's old 100 %-of-every-muscle bar was an unnamed convention of the same kind and is gone | unnamed | grounded (the ramp supported; 0.70 convention — 2026-09-02; counter moved onto it — 2026-09-04) | [039 S2](grounding/039-adaptations-read.md#grounding), [045](roadmap/done/045-adaptations-on-target-threshold.md) |
@@ -322,7 +338,7 @@ created to carry it.
 |---|---|---|---|---|---|---|
 | 8.1 | `1 + reps/30` | [utils.ts:151](../src/lib/utils.ts#L151) | Epley: published estimator | ? | unknown | **(no brief)** |
 | 8.2 | `36/(37 − reps)` | [utils.ts:156](../src/lib/utils.ts#L156) | Brzycki: published estimator | ? | unknown | **(no brief)** |
-| 8.3 | `reps >= 37 → 0` | [utils.ts:157](../src/lib/utils.ts#L157) | Guard at Brzycki's pole — mathematical, not physiological | no | unknown † | — |
+| 8.3 | `reps >= 37 → 0` | [utils.ts:157](../src/lib/utils.ts#L157) | Guard at Brzycki's pole — mathematical, not physiological. **Definitional** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): the denominator `37 − reps` is zero at 37 reps and negative beyond, so the guard patches a hole in the formula and asserts nothing about a body | no | **n/a — definitional** | — |
 | 8.4 | `(e + b) / 2` | [utils.ts:171](../src/lib/utils.ts#L171) | **Tekiō's own estimator**: the unweighted mean of Epley and Brzycki. Not a published formula; the comment says only "they diverge at the extremes" | ? | unknown | **(no brief)** |
 
 ## 9. Progression
@@ -331,8 +347,8 @@ created to carry it.
 |---|---|---|---|---|---|---|
 | 9.1 | `7.5` | [ExPlan.tsx:28](../src/components/tabs/weights/ExPlan.tsx#L28) | Default weekly volume increase is +7.5% | unnamed | unknown | **(no brief)** |
 | 9.2 | `min 5 / max 10` | [ExPlan.tsx:79](../src/components/tabs/weights/ExPlan.tsx#L79) | The defensible weekly-progression band is 5–10% | unnamed | unknown | **(no brief)** |
-| 9.3 | `0 / +2.5 / +5 kg` | [VolumeRow.tsx:14-18](../src/components/tabs/weights/VolumeRow.tsx#L14) | The three load-jump options offered | unnamed | unknown † | — |
-| 9.4 | `r05` — round to `0.5` | [utils.ts:50](../src/lib/utils.ts#L50) | Plate granularity | no | unknown † | — |
+| 9.3 | `0 / +2.5 / +5 kg` | [VolumeRow.tsx:14-18](../src/components/tabs/weights/VolumeRow.tsx#L14) | The three load-jump options offered. **Definitional** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): plate granularity again — 2.5 kg is the smallest whole pair on the rack and 5 kg the next. Three columns to compare, none recommended and none highlighted; the progression dose is 9.1 / 9.2, which stay `unknown` | unnamed | **n/a — definitional** | — |
+| 9.4 | `r05` — round to `0.5` | [utils.ts:50](../src/lib/utils.ts#L50) | Plate granularity. **Definitional** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): rounding a computed weight to the nearest 0.5 kg fixes the unit the app prints — the canonical case in §13.2's own text | no | **n/a — definitional** | — |
 
 ## 10. Hydration & blood donation
 
@@ -345,7 +361,7 @@ fold.
 | 10.2 | `56` days | [app.ts:66](../src/constants/app.ts#L66) | Full-blood donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
 | 10.3 | `14` days | [app.ts:67](../src/constants/app.ts#L67) | Plasma donation interval | unnamed | **convention** | [010 §Grounding](roadmap/done/010-home-fused-reads.md#grounding) — service rule, not physiology; calendar only |
 | 10.4 | ~~`56 * 86400000`~~ | — | **Fixed 2026-08-31.** The literal went with OverviewTab when the fused Home shipped (018 unit 4); `donationStatus` reads `DONATION_ELIGIBILITY_DAYS` ([fusedRead.ts:456](../src/lib/fusedRead.ts#L456)), so 10.2 is the one copy | — | — | — |
-| 10.5 | `[100, 250, 500]` | [FoldSheet.tsx:47](../src/components/tabs/home/FoldSheet.tsx#L47) | Quick-add water increments — UI affordance | no | unknown † | — |
+| 10.5 | `[100, 250, 500]` | [FoldSheet.tsx:47](../src/components/tabs/home/FoldSheet.tsx#L47) | Quick-add water increments — UI affordance. **Definitional** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): three cup and bottle sizes to tap, chosen so any total is reachable in a few taps. The hydration dose is 10.1, which stays `unknown` | no | **n/a — definitional** | — |
 
 ## 11. Correctly not gated
 
@@ -394,9 +410,10 @@ deliberately left alone; §13.7's fork was postponed to 3.0.0 as
 its uncontested half shipping with the rest. Two consequences land on this file:
 the trigger now fires on claims with no digit in them (§13.4) and on formulas
 (§13.5), and `/ground`'s vocabulary table carries an **`n/a — definitional`**
-inventory state (§13.2). Applying that state to the `†` rows is
-[roadmap/066-inventory-definitional-rows.md](roadmap/066-inventory-definitional-rows.md);
-until it runs they read `unknown †` as before.
+inventory state (§13.2). That state was applied to the `†` rows the same day by
+[roadmap/done/066-inventory-definitional-rows.md](roadmap/done/066-inventory-definitional-rows.md) —
+five of the nine took it, four kept `unknown`; the run-down is in *How to read
+it* above.
 
 The back-fill running order that was §13.9 now lives in
 [roadmap/done/009-feature-grounding.md](roadmap/done/009-feature-grounding.md) beside pushback #7,
