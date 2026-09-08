@@ -21,15 +21,15 @@ The decision record for the mark itself is
 ## Running a round
 
 ```bash
-node scripts/mark/rounds/r7c.mjs /tmp/r7c.html /tmp/r7c-dash.html
-node scripts/mark/shoot.mjs /tmp/r7c.html /tmp/top.png --rows 0,5
-node scripts/mark/shoot.mjs /tmp/r7c.html /tmp/bot.png --rows 6,10
+node scripts/mark/rounds/r7f.mjs /tmp/r7f.html /tmp/r7f-tabs.html /tmp/r7f-big.html
+node scripts/mark/shoot.mjs /tmp/r7f.html /tmp/top.png --rows 0,2
+node scripts/mark/shoot.mjs /tmp/r7f.html /tmp/bot.png --rows 3,4
 node scripts/mark/bbox.mjs public/favicon.svg
 ```
 
 A round is one `.mjs` file that builds an array of `{ id, name, note, body }`
 and hands it to `sheet()`. `body` is a string of SVG elements on a 0–100 grid.
-Copy `rounds/r7c.mjs` and edit it.
+Copy `rounds/r7f.mjs` and edit it.
 
 No web server is needed — `shoot.mjs` reads the file and uses `setContent`.
 It drives the Chromium that Playwright downloaded into `~/.cache`; the
@@ -134,3 +134,23 @@ These are findings, not opinions — each one killed at least one concept.
 - **Measure the ink bounds before shipping.** `bbox.mjs`. A shape rotated
   inside its viewBox does not fit at its own width, and the clipping is
   invisible at 16px and obvious at 180px.
+- **On a locked circle, pressure lands in the counter.** 7f. The counter is the
+  bowl of the letter, so a brush *rhythm* — thin, thicken, release — does not
+  read as handwriting there, it reads as a lumpy hole. Over a locked outer edge
+  the width law has to be one slow swell and one slow thinning; what makes it
+  calligraphic is where the weight sits, not how fast it changes.
+- **A chisel head becomes an arrowhead.** 7f. The flat cut a landing brush
+  leaves turns into the browser reload icon the moment it sits on a ring, at
+  every size. A brush head on a circle has to be round.
+- **A lap reads as a bite.** 7f. Ink cannot show one stroke crossing another —
+  they merge — so all that survives of a tail lapping its own head is the step,
+  and a step in the counter is a defect. Swell the tail back into the head over
+  ~46° instead of crossing it over ~5°.
+- **Two hairlines are what say "written".** 7f. A taper alone does not: G2
+  tapered 15 → 5.2 and still read as generated. A broad-nib law — width
+  following the direction of travel, so the stroke thins to a hairline twice
+  per turn — is the cheapest thing that reads as calligraphy, and making its two
+  lobes unequal is what a hand does and a machine does not.
+- **`offBand()` when the silhouette must wander.** A closed band whose outer
+  edge is not a circle, so a hand-drawn outline keeps the no-caps, no-seam,
+  no-cusp property `band()` has and a wrapped ribbon never can.

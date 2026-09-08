@@ -1,7 +1,7 @@
 # Roadmap: Favicon and app icon
 
 **Label:** infra
-**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7e is drawn and answers 7d's trade — G8 wins both sizes; waiting on Peter to pick a mark or keep the vessel.
+**Status:** in progress — the vessel mark and the 404 fix shipped 2026-09-07 (v2.0.46) and are live on `develop`; reopened the same evening because Peter wants a different mark. Round 7f draws the calligraphic circle he asked for on top of 7e's G4; L2 is the recommendation, waiting on Peter to pick one.
 **Release:** 2.1.0
 
 ## Progress log
@@ -21,7 +21,11 @@
   app's accent tried on it. Fifteen concepts. It resolves the trade 7d called
   unescapable — see *Round 7e*. Nothing shipped; the vessel is still the live
   icon.
-- **Next** — Peter picks from 7e, or says the vessel stays.
+- **2026-09-08** — round 7f. Peter kept two rows off 7e — G2 and G4, the same
+  ring with the brushed macron — and asked for the *circle* to be written with
+  the same brush as the dash. Five proposals, deliberately not a library.
+  Findings under *Round 7f*. Nothing shipped; the vessel is still the live icon.
+- **Next** — Peter picks from 7f, or says the vessel stays.
 
 [index.html](../../index.html) declares no icon and there is no `public/`
 directory, so every page load ends with the browser's automatic request for
@@ -380,6 +384,77 @@ dark orange on near-black. The sheet shows the accent rows at `#e2703f` on
 dark, which the shipped SVG can switch to under `prefers-color-scheme` exactly
 as the current favicon already switches its ink.
 
+## Round 7f — the circle written with the same brush as the dash
+
+`scripts/mark/rounds/r7f.mjs`, five concepts. Peter's direction, 2026-09-08: of
+7e's sheet he kept **G2** (the locked outer circle with punched suckers) and
+**G4** (the same ring with the brushed macron), and asked for the part that
+makes G4 different to spread — if the *dash* is written with a brush, the
+*circle* should be written with the same tool. Five proposals only, on purpose:
+the size ladder gets drawn once a direction is picked.
+
+The macron is frozen at G4's exact dash on every row, so the only variable on
+the sheet is what the circle is drawn with.
+
+### The finding the round is built on
+
+The obvious move is to give the ring a brush **rhythm** — land loaded, open and
+thin, drive through the bottom, release — because that changing rate is what
+separates a written stroke from a generated one. It was drawn first, and it
+fails, for a reason that is worth more than the rows it cost:
+
+> With the outer edge locked to a circle, every change of pressure lands in the
+> **counter**. The counter is the bowl of the letter, so the eye reads it as the
+> shape itself, not as evidence of a hand. A rhythm there is not handwriting, it
+> is a lumpy hole — the two rows read as a potato and as a leaf.
+
+So over a locked circle the width law has to be as smooth as the bowl needs to
+be: one slow swell, one slow thinning, no second thought. What makes it
+*calligraphic* is then not the rate of change but **where the weight sits** and
+**how the two edges relate** — which is exactly what separates a pen from a
+brush, and gives the sheet its two families.
+
+### The five
+
+| | Reads as | Reads at 16px |
+|---|---|---|
+| **L1** broad nib, diagonal stress | a written O — weight at 2 and 8 o'clock, hairline at 11 and 5 | clean Ō, dot texture on one side |
+| **L2** uneven nib — the pen in a hand | **the recommendation**: L1 with the 8 o'clock lobe loaded heavier, so the letter has a near side and the suckers have a root | clean Ō, the arm still shows |
+| **L3** brush, loaded under the writing hand | one heavy zone at 8 o'clock releasing to 1 — an ensō | cleanest ring of the five |
+| **L4** brush, off-round outer edge | L3 with the silhouette wandering 1.5%, the way a drawn one does | holds, marginally softer |
+| **L5** the same letter, leaning | L2 sheared 6°, dash and all — an O written at speed | holds as an oval |
+
+**L2 is the recommendation.** It is the only row that is calligraphic and a
+creature at the same time. The two hairlines are what makes a circle read as
+*written* rather than as *tapered* — G2 already tapered, and nobody reads a
+taper as handwriting — and making the two lobes unequal is what a hand does and
+a machine does not, which gives the sucker run the root and the direction 7e
+established it needs. L3 is the safest and the most serene; pick it if the
+octopus matters less than the ring.
+
+Two mechanical notes: the thin floor is **5.4 units, not a dry hairline**,
+because a 5-unit stroke is 0.8 device pixels at 16px — grey but still a stroke,
+and under that the ring breaks, which 7d proved stops it being a letter. And
+`offBand()` (L4) is new: a closed band whose outer edge is not a circle, so a
+drawn silhouette keeps the no-caps, no-seam, no-cusp property that a wrapped
+ribbon can never have.
+
+### Three shapes this round drew, looked at, and cut
+
+Each one costs a full round to rediscover, so they are recorded here rather than
+only in the bench:
+
+- **A chisel head becomes an arrowhead.** The flat cut a real brush leaves when
+  it lands turns into the browser **reload icon** the moment it sits on a ring —
+  at every size, in two separate rows. A brush head on a circle has to be round,
+  however untrue that is to the reference.
+- **A short lap reads as a bite, not as an overlap.** Ink cannot show one stroke
+  crossing another — they merge — so all that survives of a dry tail crossing
+  its own loaded head is the *step*, and a step in the counter is a defect. The
+  tail has to swell back into its own head over a long arc (~46°) instead.
+- **The open ensō confirms 7d at 16px.** The gap stops being a gap and becomes a
+  gauge with a needle. It is the honest reference and it is not a letter.
+
 ## Doctrine check (§4)
 
 1. **Which read does this sharpen?** None directly — it is chrome, and R1 does
@@ -397,7 +472,7 @@ as the current favicon already switches its ink.
       errors and zero responses ≥ 400 on a fresh load. That 404 was the app's
       only console error, so the console is now clean.
 - [x] The staging/production question is answered: one icon everywhere.
-- [ ] Round 7e is drawn and Peter has picked a mark, or said the vessel stays.
+- [ ] Round 7f is drawn and Peter has picked a mark, or said the vessel stays.
 - [ ] If a new mark wins: its ink bounds measured with
       `node scripts/mark/bbox.mjs public/favicon.svg` before it ships, both
       `public/favicon.svg` and `public/apple-touch-icon.png` replaced, and
