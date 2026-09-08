@@ -20,6 +20,10 @@ export const CHART = {
 
 export const CHART_LINE = { strokeWidth: 1.5, dot: false, type: 'monotone' } as const
 
+/** The marker under the pointer: one radius and no ring, whatever the series
+ *  colour (§9). Every line passes its own stroke so the dot matches its line. */
+export const hoverDot = (fill: string) => ({ r: 3, fill, stroke: 'none' })
+
 export const CHART_AXIS = {
   tick: { fontSize: 11, fill: CHART.axis },
   axisLine: false,

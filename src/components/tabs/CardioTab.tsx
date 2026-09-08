@@ -1,16 +1,17 @@
 import { useState } from 'react'
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
+import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { CARDIO_TYPES } from '../../constants/app'
 import {
   TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePace, type TimeFrame, type CardioBucket,
 } from '../../lib/utils'
-import { Card, SecTitle, EmptyMsg } from '../ui/Card'
+import { Card, SecTitle } from '../ui/Card'
 import { Chip } from '../ui/Chip'
 import { Toggle } from '../ui/Fields'
 import { SelEl } from '../ui/Input'
-import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP } from '../ui/chart'
+import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../ui/chart'
+import { ChartFrame } from '../ui/ChartFrame'
 import { CardioLogForm } from './cardio/CardioLogForm'
 import { SportLogForm } from './cardio/SportLogForm'
 import { SportProgress } from './cardio/SportProgress'
@@ -125,46 +126,39 @@ export function CardioTab() {
             </div>
           </div>
         </div>
-        {chartData.length > 1 ? (
-          <ResponsiveContainer width="100%" height={170}>
-            <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
-              <CartesianGrid vertical={false} stroke={CHART.grid} />
-              <XAxis dataKey="key" tickFormatter={labelOf} {...CHART_AXIS} />
-              <YAxis yAxisId="duration" width={durationAxisWidth} {...CHART_AXIS} />
-              {/* Pace gets its own axis: minutes and min/km are two scales, and
-                  one frame drawn on the wrong one is the pretty lie P2 forbids. */}
-              {hasPace && (
-                <YAxis yAxisId="pace" orientation="right" width={30} domain={['auto', 'auto']} {...CHART_AXIS} />
-              )}
-              <Tooltip {...CHART_TOOLTIP} labelFormatter={tooltipLabel} />
-              <Line
-                {...CHART_LINE}
-                yAxisId="duration"
-                dataKey="duration"
-                stroke={CHART.line}
-                name="Duration (min)"
-                activeDot={{ r: 3, fill: CHART.line, stroke: 'none' }}
-              />
-              {/* Pace is the second series, so it is the pale ink (§9) — solid,
-                  because a dash means "not data" and is spent on reference lines. */}
-              {hasPace && (
-                <Line
-                  {...CHART_LINE}
-                  yAxisId="pace"
-                  dataKey="pace"
-                  stroke={CHART.line2}
-                  name="Pace (min/km)"
-                  // Rolled up, a bucket with no paced neighbour has no line
-                  // to sit on; per session every point has one.
-                  dot={grain === 'session' ? false : <LoneDot buckets={chartData} />}
-                  activeDot={{ r: 3, fill: CHART.line2, stroke: 'none' }}
-                />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        ) : (
-          <EmptyMsg>{emptyMsg}</EmptyMsg>
-        )}
+        <ChartFrame data={chartData} empty={emptyMsg}>
+          <XAxis dataKey="key" tickFormatter={labelOf} {...CHART_AXIS} />
+          <YAxis yAxisId="duration" width={durationAxisWidth} {...CHART_AXIS} />
+          {/* Pace gets its own axis: minutes and min/km are two scales, and
+              one frame drawn on the wrong one is the pretty lie P2 forbids. */}
+          {hasPace && (
+            <YAxis yAxisId="pace" orientation="right" width={30} domain={['auto', 'auto']} {...CHART_AXIS} />
+          )}
+          <Tooltip {...CHART_TOOLTIP} labelFormatter={tooltipLabel} />
+          <Line
+            {...CHART_LINE}
+            yAxisId="duration"
+            dataKey="duration"
+            stroke={CHART.line}
+            name="Duration (min)"
+            activeDot={hoverDot(CHART.line)}
+          />
+          {/* Pace is the second series, so it is the pale ink (§9) — solid,
+              because a dash means "not data" and is spent on reference lines. */}
+          {hasPace && (
+            <Line
+              {...CHART_LINE}
+              yAxisId="pace"
+              dataKey="pace"
+              stroke={CHART.line2}
+              name="Pace (min/km)"
+              // Rolled up, a bucket with no paced neighbour has no line
+              // to sit on; per session every point has one.
+              dot={grain === 'session' ? false : <LoneDot buckets={chartData} />}
+              activeDot={hoverDot(CHART.line2)}
+            />
+          )}
+        </ChartFrame>
         {hasPace && (
           <div className="flex items-center gap-3 mt-2">
             <span className="flex items-center gap-1.5 text-[10px] text-ink-3">

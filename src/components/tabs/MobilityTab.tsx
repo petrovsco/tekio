@@ -1,17 +1,18 @@
 import { useState } from 'react'
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
+import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { today, startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN } from '../../lib/utils'
 import { MICRO_LABEL } from '../ui/Badges'
-import { Card, SecTitle, EmptyMsg } from '../ui/Card'
+import { Card, SecTitle } from '../ui/Card'
 import { Inp, SelEl } from '../ui/Input'
 import { Btn, RowActions } from '../ui/Button'
 import { Chip } from '../ui/Chip'
 import { Icon } from '../ui/Icon'
 import { SmartInput } from '../ui/SmartInput'
 import { HistoryList } from '../ui/HistoryList'
-import { CHART, CHART_AXIS, CHART_LINE, CHART_TOOLTIP } from '../ui/chart'
+import { CHART, CHART_AXIS, CHART_LINE, CHART_TOOLTIP, hoverDot } from '../ui/chart'
+import { ChartFrame } from '../ui/ChartFrame'
 import type { MobilityExercise } from '../../types'
 
 /** One header row of labels over the repeating exercise rows, the same shape
@@ -225,24 +226,17 @@ export function MobilityTab() {
               options={allExNames.map(n => ({ value: n, label: n }))}
             />
           </div>
-          {chartData.length > 1 ? (
-            <ResponsiveContainer width="100%" height={170}>
-              <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
-                <CartesianGrid vertical={false} stroke={CHART.grid} />
-                <XAxis dataKey="date" {...CHART_AXIS} />
-                <YAxis width={28} {...CHART_AXIS} />
-                <Tooltip {...CHART_TOOLTIP} formatter={(v: number) => [`${v} min`, 'Duration']} />
-                <Line
-                  {...CHART_LINE}
-                  dataKey="duration"
-                  stroke={CHART.line}
-                  activeDot={{ r: 3, fill: CHART.line, stroke: 'none' }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <EmptyMsg>Not enough data to chart</EmptyMsg>
-          )}
+          <ChartFrame data={chartData}>
+            <XAxis dataKey="date" {...CHART_AXIS} />
+            <YAxis width={28} {...CHART_AXIS} />
+            <Tooltip {...CHART_TOOLTIP} formatter={(v: number) => [`${v} min`, 'Duration']} />
+            <Line
+              {...CHART_LINE}
+              dataKey="duration"
+              stroke={CHART.line}
+              activeDot={hoverDot(CHART.line)}
+            />
+          </ChartFrame>
         </Card>
       )}
 

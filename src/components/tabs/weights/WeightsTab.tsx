@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
-import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
+import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { today, cycleInfo, deloadSets, groupBy, isDeloadDate, isTodayDone, lastPerformance, programMode, best1RM, weightsPickerNames, uniqSorted } from '../../../lib/utils'
-import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
+import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
@@ -12,7 +12,8 @@ import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
 import { toSetStr, parseSets } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
-import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
+import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
+import { ChartFrame } from '../../ui/ChartFrame'
 import { TodaysPlan } from './TodaysPlan'
 import { SupersetLogger } from './SupersetLogger'
 import type { WeightEntry, LiftSet } from '../../../types'
@@ -270,36 +271,29 @@ export function WeightsTab() {
               options={exercises.map(e => ({ value: e, label: e }))}
             />
           </div>
-          {chartData.length > 1 ? (
-            <ResponsiveContainer width="100%" height={170}>
-              <LineChart data={chartData} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
-                <CartesianGrid vertical={false} stroke={CHART.grid} />
-                <XAxis dataKey="date" {...CHART_AXIS} />
-                <YAxis domain={['auto', 'auto']} width={38} {...CHART_AXIS} />
-                <Tooltip
-                  {...CHART_TOOLTIP}
-                  formatter={(v: number) => chartMetric === 'maxWeight'
-                    ? [`${v} kg`, 'Max weight']
-                    : [`${v} kg·reps`, 'Volume']}
-                />
-                <Line
-                  {...CHART_LINE}
-                  dataKey={chartMetric}
-                  stroke={CHART.line}
-                  activeDot={{ r: 3, fill: CHART.line, stroke: 'none' }}
-                  // No resting dots (§9) — the only marked points are the deload
-                  // sessions, and a single point is exactly what the accent is for.
-                  dot={(props: { cx?: number; cy?: number; payload?: { deload?: boolean }; index?: number }) => {
-                    const { cx, cy, payload, index } = props
-                    if (cx == null || cy == null || !payload?.deload) return <g key={index} />
-                    return <circle key={index} cx={cx} cy={cy} r={3.5} fill={CHART.accent} />
-                  }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <EmptyMsg>Not enough data to chart</EmptyMsg>
-          )}
+          <ChartFrame data={chartData}>
+            <XAxis dataKey="date" {...CHART_AXIS} />
+            <YAxis domain={['auto', 'auto']} width={38} {...CHART_AXIS} />
+            <Tooltip
+              {...CHART_TOOLTIP}
+              formatter={(v: number) => chartMetric === 'maxWeight'
+                ? [`${v} kg`, 'Max weight']
+                : [`${v} kg·reps`, 'Volume']}
+            />
+            <Line
+              {...CHART_LINE}
+              dataKey={chartMetric}
+              stroke={CHART.line}
+              activeDot={hoverDot(CHART.line)}
+              // No resting dots (§9) — the only marked points are the deload
+              // sessions, and a single point is exactly what the accent is for.
+              dot={(props: { cx?: number; cy?: number; payload?: { deload?: boolean }; index?: number }) => {
+                const { cx, cy, payload, index } = props
+                if (cx == null || cy == null || !payload?.deload) return <g key={index} />
+                return <circle key={index} cx={cx} cy={cy} r={3.5} fill={CHART.accent} />
+              }}
+            />
+          </ChartFrame>
         </Card>
       )}
 

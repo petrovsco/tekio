@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
+import { XAxis, YAxis, Tooltip, Bar } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { weekKey, TIME_FRAMES, withinTimeFrame, uniqSorted, type TimeFrame } from '../../../lib/utils'
 import { MICRO_LABEL } from '../../ui/Badges'
-import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
+import { Card, SecTitle } from '../../ui/Card'
 import { SelEl } from '../../ui/Input'
 import { CHART, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
+import { ChartFrame } from '../../ui/ChartFrame'
 
 /** One column of the win/loss/tie record. The label names the outcome, so the
  *  number needs no colour of its own (design-system §1). */
@@ -93,20 +94,13 @@ export function SportProgress() {
           </div>
         </div>
       )}
-      {chartData.length > 1 ? (
-        <ResponsiveContainer width="100%" height={170}>
-          <BarChart data={chartData} margin={{ top: 6, right: 6, bottom: 0, left: 0 }}>
-            <CartesianGrid vertical={false} stroke={CHART.grid} />
-            <XAxis dataKey="week" angle={-25} textAnchor="end" height={38} {...CHART_AXIS} />
-            <YAxis allowDecimals={false} width={22} {...CHART_AXIS} />
-            <Tooltip {...CHART_TOOLTIP} formatter={(v: number) => [v, 'Sessions']} />
-            {/* The ramp's mid step, so a bar never reads as a filled muscle (§9). */}
-            <Bar dataKey="sessions" fill={CHART.bar} radius={[2, 2, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      ) : (
-        <EmptyMsg>Not enough data to chart</EmptyMsg>
-      )}
+      <ChartFrame data={chartData} bar>
+        <XAxis dataKey="week" angle={-25} textAnchor="end" height={38} {...CHART_AXIS} />
+        <YAxis allowDecimals={false} width={22} {...CHART_AXIS} />
+        <Tooltip {...CHART_TOOLTIP} formatter={(v: number) => [v, 'Sessions']} />
+        {/* The ramp's mid step, so a bar never reads as a filled muscle (§9). */}
+        <Bar dataKey="sessions" fill={CHART.bar} radius={[2, 2, 0, 0]} />
+      </ChartFrame>
     </Card>
   )
 }

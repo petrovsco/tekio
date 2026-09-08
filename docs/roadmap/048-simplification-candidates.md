@@ -1,11 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tier 1 is finished** and Tier 2 is down to two
-entries (v2.0.58 → v2.0.78; the progress log below has the units). What is left
-is B9 and B14 of Tier 2 and A7, A9, C2 of Tier 3; each is one atomic unit a
-later session lands with `/simplify`, ticking its box in Acceptance when it
-ships. Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Status:** in progress — **Tier 1 is finished** and Tier 2 is down to one
+entry (v2.0.58 → v2.0.79; the progress log below has the units). What is left is
+B14 of Tier 2 and A7, A9, C2 of Tier 3; each is one atomic unit a later session
+lands with `/simplify`, ticking its box in Acceptance when it ships. Committed
+to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 
 ## Progress log
 
@@ -27,6 +27,8 @@ ships. Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
   rewire the same weights and program files. WeightsTab memoises the four values
   it derives from the history; the history itself and this week's variant choice
   are read from the store by the five components that need them, not threaded.
+- **2026-09-08, v2.0.79 — Tier 2 continues: B9**, one unit. One `ChartFrame` in
+  `ui/`; four charts read it, including the two the entry expected to leave out.
 **Release:** 2.1.0
 
 ## What this is
@@ -1340,6 +1342,16 @@ deliberate on every bootstrap (four, because `StrictMode` runs bootstrap twice).
 - **Risk:** medium. **Visual:** Recharts needs a few seconds before a screenshot
   is trustworthy.
 
+**Landed as `ChartFrame`, not `TrendChart` (v2.0.79).** The proposed shape does
+not survive contact with Recharts: it finds its children by element type, so a
+`<Line>` returned from a component of ours is invisible to it and the series
+cannot move behind a prop. What is genuinely written four times is the *frame* —
+the `length > 1` guard, the 170 px container, the margin and the grid — so that
+is what moved, and the axes and series stayed with each caller. Two consequences:
+Cardio's dual-axis chart came along after all (the entry expected to skip it),
+and the bar chart did too, which makes it four sites rather than three. `hoverDot(fill)`
+in `ui/chart.ts` takes the fourth repeat, the `r: 3, stroke: 'none'` hover marker.
+
 ### B14. Whole-store subscriptions in 17 components (perf, no line delta)
 
 - **Where:** `useAppStore()` with no selector in ProgramTab, WeightsTab,
@@ -1487,7 +1499,7 @@ Tier 2:
 - [x] B6 `StepperCapture` — 2026-09-08, v2.0.77. `round` is derived from the smallest step, so `roundHalf`/`roundTenth` are gone; bodyweight now clamps at 0 like sleep already did. Both steppers stepped in the browser and every value stayed on its own grid
 - [x] B7 WeightsTab memoised — 2026-09-08, v2.0.78. Measured with a counting proxy over `store.weights`: three keystrokes went from 12 `map` / 12 `filter` / 12 iterations of the 212-entry history to **0 / 6 / 6**, and the superset pairing from 2805 comparisons to 38 for the same 193 groups. The two passes left are keyed on the name being typed, not on the history
 - [x] B8 `weights` read from the store in the leaves — 2026-09-08, v2.0.78. Five components read it; `useVariantWeek(userProgramId)` replaces both hand-wired variant pairs, deriving its `Set` in the caller's render rather than inside a selector (a selector returning a fresh object never stops re-rendering); the duplicated chip pair is `VariantChips`
-- [ ] B9 `TrendChart`
+- [x] B9 chart frame shared — 2026-09-08, v2.0.79. `ChartFrame`, not `TrendChart`, and four sites rather than three: Recharts identifies its children by element type, so the series had to stay with the caller and only the frame could move — which is why Cardio's dual axis and the Sports bar chart came along too. Proved by an A/B census: the old and new code render a byte-identical reading of all four charts (container height, grid count and computed stroke, every axis tick, the line/bar path geometry, the tooltip text and the hover dot's r/fill/stroke, and the empty-message branch), 0 console errors both ways. It grew the code by 16 lines rather than saving 35 — the four call sites lost 20, the new file costs 36 (over half of it the comment explaining why the series stay with the caller) — and first paint did not move: 349.20 kB with the change and without it, measured by stashing it
 - [ ] B14 selectors in the 17 components
 
 Tier 3:
