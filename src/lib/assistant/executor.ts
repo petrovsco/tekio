@@ -110,19 +110,42 @@ function editExerciseInDay(day: ProgramDay, oldName: string, newName: string | n
   return hit
 }
 
+/** The three program-day cases share this prelude: resolve the program, clone it,
+ *  find the named day, then hand the day to `mutate`. `mutate` returns the success
+ *  summary, or a failure `ToolResult` when the exercise it wanted is not in the day.
+ *  Only a summary reaches the save, so a failed edit never writes. */
+async function withProgramDay(
+  a: Args,
+  callName: string,
+  dayName: string,
+  mutate: (day: ProgramDay) => string | ToolResult,
+): Promise<ToolResult> {
+  const { program, error } = findProgram(a)
+  if (error || !program) return fail(callName, error!)
+  const clone = structuredClone(program)
+  const day = dayByName(clone, dayName)
+  if (!day) return fail(callName, `Day "${dayName}" not found in ${program.name}.`)
+  const outcome = mutate(day)
+  if (typeof outcome !== 'string') return outcome
+  await useAppStore.getState().saveActiveProgram(clone, clone.programId, clone.userProgramId)
+  return ok(callName, outcome)
+}
+
 // ── describe (for the confirmation card; uses args only, no writes) ──────────
 export function describeToolCall(call: ToolCall): string {
   const a = call.args
   const q = (k: string) => str(a, k) ?? '?'
+  const program = str(a, 'program')
+  const prefix = program ? `${program} / ` : ''
   switch (call.name) {
     case 'create_exercise': return `Add exercise "${q('name')}"`
     case 'map_exercise_to_muscle':
       return `Map ${q('exercise')} → ${q('muscleGroup')} (L${num(a, 'level') ?? 1}, ${str(a, 'contribution') ?? 'stimulus'})`
     case 'unmap_exercise_from_muscle': return `Unmap ${q('exercise')} from ${q('muscleGroup')}`
     case 'create_muscle_group': return `Add muscle group "${q('name')}" (${q('bodyRegion')}${str(a, 'parent') ? `, under ${str(a, 'parent')}` : ''})`
-    case 'add_program_exercise': return `${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: add ${q('exercise')}`
-    case 'replace_program_exercise': return `${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: replace ${q('oldExercise')} with ${q('newExercise')}`
-    case 'remove_program_exercise': return `${str(a, 'program') ? str(a, 'program') + ' / ' : ''}${q('day')}: remove ${q('exercise')}`
+    case 'add_program_exercise': return `${prefix}${q('day')}: add ${q('exercise')}`
+    case 'replace_program_exercise': return `${prefix}${q('day')}: replace ${q('oldExercise')} with ${q('newExercise')}`
+    case 'remove_program_exercise': return `${prefix}${q('day')}: remove ${q('exercise')}`
     default: return `${call.name}`
   }
 }
@@ -187,45 +210,35 @@ export async function executeToolCall(call: ToolCall): Promise<ToolResult> {
         return ok(call.name, `Created muscle group "${name}".`)
       }
 
+      // `return await`, not `return`: a bare `return promise` inside `try` settles
+      // after the block, so the catch below would never see a failed save.
       case 'add_program_exercise': {
-        const { program, error } = findProgram(a)
-        if (error || !program) return fail(call.name, error!)
         const dayName = str(a, 'day'); const exName = str(a, 'exercise')
         if (!dayName || !exName) return fail(call.name, 'day and exercise are required.')
-        const clone = structuredClone(program)
-        const day = dayByName(clone, dayName)
-        if (!day) return fail(call.name, `Day "${dayName}" not found in ${program.name}.`)
-        addExerciseToDay(day, exName, num(a, 'position'), {
-          setsText: str(a, 'setsText'), repsText: str(a, 'repsText'), weightText: str(a, 'weightText'), notes: str(a, 'notes'),
+        return await withProgramDay(a, call.name, dayName, day => {
+          addExerciseToDay(day, exName, num(a, 'position'), {
+            setsText: str(a, 'setsText'), repsText: str(a, 'repsText'), weightText: str(a, 'weightText'), notes: str(a, 'notes'),
+          })
+          return `Added ${exName} to ${day.name}.`
         })
-        await store.saveActiveProgram(clone, clone.programId, clone.userProgramId)
-        return ok(call.name, `Added ${exName} to ${day.name}.`)
       }
 
       case 'replace_program_exercise': {
-        const { program, error } = findProgram(a)
-        if (error || !program) return fail(call.name, error!)
         const dayName = str(a, 'day'); const oldEx = str(a, 'oldExercise'); const newEx = str(a, 'newExercise')
         if (!dayName || !oldEx || !newEx) return fail(call.name, 'day, oldExercise and newExercise are required.')
-        const clone = structuredClone(program)
-        const day = dayByName(clone, dayName)
-        if (!day) return fail(call.name, `Day "${dayName}" not found in ${program.name}.`)
-        if (!editExerciseInDay(day, oldEx, newEx)) return fail(call.name, `"${oldEx}" not found in ${day.name}.`)
-        await store.saveActiveProgram(clone, clone.programId, clone.userProgramId)
-        return ok(call.name, `Replaced ${oldEx} with ${newEx} in ${day.name}.`)
+        return await withProgramDay(a, call.name, dayName, day =>
+          editExerciseInDay(day, oldEx, newEx)
+            ? `Replaced ${oldEx} with ${newEx} in ${day.name}.`
+            : fail(call.name, `"${oldEx}" not found in ${day.name}.`))
       }
 
       case 'remove_program_exercise': {
-        const { program, error } = findProgram(a)
-        if (error || !program) return fail(call.name, error!)
         const dayName = str(a, 'day'); const exName = str(a, 'exercise')
         if (!dayName || !exName) return fail(call.name, 'day and exercise are required.')
-        const clone = structuredClone(program)
-        const day = dayByName(clone, dayName)
-        if (!day) return fail(call.name, `Day "${dayName}" not found in ${program.name}.`)
-        if (!editExerciseInDay(day, exName, null)) return fail(call.name, `"${exName}" not found in ${day.name}.`)
-        await store.saveActiveProgram(clone, clone.programId, clone.userProgramId)
-        return ok(call.name, `Removed ${exName} from ${day.name}.`)
+        return await withProgramDay(a, call.name, dayName, day =>
+          editExerciseInDay(day, exName, null)
+            ? `Removed ${exName} from ${day.name}.`
+            : fail(call.name, `"${exName}" not found in ${day.name}.`))
       }
 
       default:

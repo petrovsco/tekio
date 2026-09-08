@@ -2,8 +2,7 @@ import { create } from 'zustand'
 import type { SectionConfig } from '../lib/db/sectionConfig'
 import { loadSectionConfig, updateSectionField, saveSectionConfig } from '../lib/db/sectionConfig'
 import {
-  getWeekStartDay, updateWeekStartDay, getTrackedMuscleGroupIds, updateTrackedMuscleGroupIds,
-  getHrMaxProfile, updateHrMax, updateBirthDate,
+  loadProfile, updateWeekStartDay, updateTrackedMuscleGroupIds, updateHrMax, updateBirthDate,
 } from '../lib/db/user'
 import type { WeekStartDay } from '../lib/utils'
 import type { HrMaxSource } from '../lib/hrMax'
@@ -36,10 +35,8 @@ export const usePrefs = create<PrefsStore>((set, get) => ({
   birthDate: null,
 
   loadPrefs: async () => {
-    const [sections, weekStartDay, trackedMuscleGroupIds, hrMaxProfile] = await Promise.all([
-      loadSectionConfig(), getWeekStartDay(), getTrackedMuscleGroupIds(), getHrMaxProfile(),
-    ])
-    set({ sections, weekStartDay, trackedMuscleGroupIds, ...hrMaxProfile })
+    const [sections, profile] = await Promise.all([loadSectionConfig(), loadProfile()])
+    set({ sections, ...profile })
   },
 
   setSection: async (key, patch) => {

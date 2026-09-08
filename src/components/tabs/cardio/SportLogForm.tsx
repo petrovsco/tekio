@@ -57,8 +57,7 @@ export function SportLogForm() {
       : undefined
     await withToast(async () => {
       await addSportEntry({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        sport: sport.trim() as any,
+        sport: sport.trim(),
         date,
         withTrainer,
         quality: quality as QualityRating,

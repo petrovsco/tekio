@@ -1,3 +1,8 @@
+// `import type` of two value bindings, used only under `typeof`. It is erased at
+// build, so this does not close a runtime cycle with `constants/app.ts`, which
+// type-imports `CardioFormat` and `DayOfWeek` back from here.
+import type { CARDIO_TYPES, DONATION_TYPES } from '../constants/app'
+
 export interface LiftSet {
   weight: number
   reps: number
@@ -18,8 +23,9 @@ export interface BodyweightEntry {
 }
 
 /** The modality. `Custom` is conditioning with no modality among the four
- *  (EMOM, slam/jump circuits); its notes say what it was (roadmap 054). */
-export type CardioType = 'Running' | 'Cycling' | 'Swimming' | 'Indoor Rowing' | 'Custom'
+ *  (EMOM, slam/jump circuits); its notes say what it was (roadmap 054).
+ *  Derived from the list the pickers render, so the two cannot drift apart. */
+export type CardioType = typeof CARDIO_TYPES[number]
 
 /** How the session was run. Any modality can be done as intervals, so this is
  *  a second column, never a fifth type (roadmap 054). Absent = not stated. */
@@ -129,14 +135,14 @@ export interface MobilityEntry {
   duration: number
 }
 
-type SportType = 'Tennis' | 'Swimming' | 'Volleyball'
 export type QualityRating = 1 | 2 | 3 | 4 | 5
 export type MatchResult = 'win' | 'loss' | 'tie'
 
 export interface SportEntry extends GarminIntensity {
   id: string
   date: string
-  sport: SportType
+  /** Free text: sports are rows in `sport_types`, added by typing a new name. */
+  sport: string
   withTrainer: boolean
   quality: QualityRating
   notes: string
@@ -159,10 +165,8 @@ export interface SportTypeInfo {
   hasTeammate: boolean
 }
 
-export interface NewSportFlags {
-  hasCompetitor: boolean
-  hasTeammate: boolean
-}
+/** What a brand-new sport needs beyond its name — the rest of {@link SportTypeInfo}. */
+export type NewSportFlags = Omit<SportTypeInfo, 'name'>
 
 export interface WaterEntry {
   id: string
@@ -174,7 +178,7 @@ export interface WaterEntry {
 // Modalities that sit *parallel* to the seven Galpin adaptations (recovery is
 // deliberately not an eighth adaptation). Each is a simple user-scoped log.
 
-export type SleepQuality = 1 | 2 | 3 | 4 | 5
+export type SleepQuality = QualityRating
 
 /** One night's sleep. `date` is the wake-up (log) date. */
 export interface SleepEntry {
@@ -197,8 +201,10 @@ export interface SleepEntry {
   notes?: string
 }
 
-/** A single sauna bout. */
-export interface SaunaEntry {
+/** One timed heat- or cold-exposure bout. Sauna and cold plunge are the same
+ *  shape; the table a row came from is what tells them apart, and the two names
+ *  below are what the store, the edit modal and the db layer read. */
+interface ExposureBout {
   id: string
   date: string
   duration: number
@@ -206,18 +212,15 @@ export interface SaunaEntry {
   tempC?: number
   notes?: string
 }
+
+/** A single sauna bout. */
+export type SaunaEntry = ExposureBout
 
 /** A single cold-exposure / plunge bout. */
-export interface ColdEntry {
-  id: string
-  date: string
-  duration: number
-  /** Temperature in °C, if tracked. */
-  tempC?: number
-  notes?: string
-}
+export type ColdEntry = ExposureBout
 
-type DonationType = 'Full Blood' | 'Plasma'
+/** Derived from the list the pickers render, so the two cannot drift apart. */
+type DonationType = typeof DONATION_TYPES[number]
 
 export interface DonationEntry {
   id: string

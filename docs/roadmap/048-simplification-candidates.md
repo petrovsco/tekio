@@ -1,14 +1,14 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — twelve landed: **A8** (v2.0.58), **A1** (v2.0.63, which
+**Status:** in progress — fifteen landed: **A8** (v2.0.58), **A1** (v2.0.63, which
 took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
 EditModal, after which the repo sits at 023's accepted floor of 6 lint
 warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer),
-**B2 + B3** together (v2.0.69, the weights plan) and the small `lib` dedupes
-**A2 + A3 + A10 + A11** together (v2.0.70).
-**The remaining Tier 1 entries are next** — A12, A13, A14, B4, B10, B11, B12,
-B13, B15, C1.
+**B2 + B3** together (v2.0.69, the weights plan), the small `lib` dedupes
+**A2 + A3 + A10 + A11** together (v2.0.70) and the last three A entries
+**A12 + A13 + A14** together (v2.0.71).
+**The remaining Tier 1 entries are next** — B4, B10, B11, B12, B13, B15, C1.
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -301,11 +301,41 @@ errors throughout, and the database is exactly as it was found.
 - **Change:** `withProgramDay(a, callName, (clone, day) => …)`; one `prefix` const.
 - **Risk:** low.
 
-### A13. `user.ts` selects the profile row twice (−12, one round-trip)
+**Landed 2026-09-08 (v2.0.71), with A13 + A14.** `withProgramDay` takes the day
+name the case has already validated and a `mutate(day)` callback returning either
+the success summary or a failure `ToolResult` — only a summary reaches the save,
+so a failed edit still cannot write. The three cases are 6–8 lines each. Two
+notes:
 
-- **Where:** `src/lib/db/user.ts:15-23` and `:34-43`; `src/store/prefs.ts:27-29`.
-- **Change:** one `loadProfile()` returning `weekStartDay` and the tracked ids.
+- **The callback shape kept the error messages identical.** Splitting the
+  `day and exercise are required.` check into a separate "day is required" would
+  have changed a user-facing string for no gain, so the argument check stays in
+  the case and the helper takes `dayName`. The `"X" not found in <day>.` message
+  is the same sentence in both cases that have one, so it is what the callback
+  returns.
+- **`return await`, not `return`.** A bare `return somePromise` inside a `try`
+  hands the promise back *before* it settles, so the `catch` at the bottom of
+  `executeToolCall` would never see a failed save — the one real trap in this
+  extraction, since the three cases used to `await` inline. There is a comment
+  above the first case saying so, and the browser check exercises it.
+
+### A13. `user.ts` selects the profile row three times (−12, two round-trips)
+
+- **Where:** `src/lib/db/user.ts` `getWeekStartDay`, `getTrackedMuscleGroupIds`
+  and — added since this entry was written — `getHrMaxProfile` (roadmap 059/060);
+  all three fired together from `loadPrefs` in `src/store/prefs.ts`.
+- **Change:** one `loadProfile()` returning all five fields.
 - **Risk:** low.
+
+**Landed 2026-09-08 (v2.0.71), with A12 + A14.** `loadProfile()` returns
+`weekStartDay`, `trackedMuscleGroupIds`, `hrMaxStored`, `hrMaxSource` and
+`birthDate` from one select, and because the five names already match the prefs
+store's fields, `loadPrefs` is two lines: `Promise.all([loadSectionConfig(),
+loadProfile()])` then `set({ sections, ...profile })`. The `HrMaxProfile`
+interface folded into `UserProfile`. **The entry said twice; it was three by the
+time it was picked up** — 059 and 060 added the HRmax read to the same row —
+so the saving is two round-trips at bootstrap, not one. Writes are untouched:
+still one column at a time, because that is what each setting's own control does.
 
 ### A14. Type names that say the same thing (−20, three casts)
 
@@ -324,6 +354,66 @@ errors throughout, and the database is exactly as it was found.
   (nothing outside `types/index.ts` imports them), so this entry now edits one
   file.
 - **Risk:** low.
+
+**Landed 2026-09-08 (v2.0.71), with A12 + A13.** Two files: `types/index.ts` and
+the one `as any`. `SportEntry.sport` is `string`; `CardioType` and `DonationType`
+derive from `CARDIO_TYPES` / `DONATION_TYPES`; `SleepQuality = QualityRating`;
+`NewSportFlags = Omit<SportTypeInfo, 'name'>`; and the two identical bout shapes
+share one unexported `ExposureBout` that `SaunaEntry` and `ColdEntry` alias.
+Three notes:
+
+- **"constants/app has no type import, so no cycle" is wrong today** — its first
+  line is `import type { CardioFormat, DayOfWeek } from '../types'`. It does not
+  matter, because a value binding used only under `typeof` can be brought in with
+  `import type` and is erased at build, so `types/index.ts` closes no runtime
+  edge. The import carries a comment saying that, since the obvious-looking fix
+  (a plain `import`) would close one.
+- **The bout shapes keep both names.** TypeScript is structural, so `SaunaEntry`
+  and `ColdEntry` were already mutually assignable — the alias loses no safety
+  and one shared declaration is the point. Both names stay because the store, the
+  db layer and `EditModalTarget` read them, and `ExposureBout` is not exported,
+  which is the treatment A1 gave every other name used only in its own file.
+- **`CardioLogForm`'s `as CardioType` stays.** It narrows an HTML `select`'s
+  `string` value; it is not a restatement of anything. The only cast this entry
+  removes is the `as any` and its `eslint-disable` line.
+
+**Measured, for the three together (v2.0.71):** −19 code lines and +19 lines of
+comment, so **net zero** — the third unit running to a smaller line saving than
+its entries predicted (−50 here), for the same reason: an entry counts the copies
+it deletes and not the doc comment the shared thing needs. The wins that are real
+are the two round-trips off bootstrap, one definition instead of two or three,
+and one `as any` gone. First paint **348.87 kB**, down 0.66 kB from
+A2 + A3 + A10 + A11. `npm run lint` 6 warnings / 0 errors (023's floor),
+`npm run knip` clean, 223 tests pass.
+
+**Browser-checked on live data** (house rule `verify-in-browser`). Zero console
+errors; **nothing was written to the database.**
+
+- **A13, at source and on screen.** One `loadPrefs()` now issues exactly one
+  `user_profiles` request — `GET …?select=week_start_day,tracked_muscle_group_ids,
+  hr_max_override,hr_max_source,birth_date` — where it used to issue three, and
+  the prefs store came back `monday`, `[]`, `196`, `tracker`, `1991-01-23`.
+  Profile renders all of it: *Using 196 bpm from your tracker (Indoor Rowing,
+  2024-10-25)*, birth date 01/23/1991, and all six Adaptation-tracking chips
+  unselected, which is the empty tracked list. Home was unchanged — *Push.
+  Erectors and hip flex are the gap*, readiness 71 — and bootstrap loaded the
+  same eleven lists as the previous unit (212 weights, 220 cardio, 53 sports, 3
+  mobility, 11 bodyweight, 38 water, 1 donation, 19 sleep, 0 sauna, 0 cold).
+- **A12, every branch, with the save stubbed.** There is no active program, so a
+  `defaultProgram()` went into the store in memory and `saveActiveProgram` was
+  replaced with a stub that captures its argument and writes nothing. All three
+  cases produced the right payload — add appended Nordic Curl, replace turned
+  Back Squat into Front Squat, remove dropped Bicep Curls *and* the
+  Bench Press/Bicep Curls superset pair with it — and all six failure branches
+  (unknown day, exercise not in the day, missing argument, unknown program name,
+  no active program, and a save that throws) returned `ok: false` with the
+  expected sentence and **zero** save attempts between them. The last of those is
+  the `return await` check: with a bare `return` the rejection escapes the catch.
+  The store was put back afterwards and reads 0 programs, as it did before.
+- **A14 is types only** — every construct it touches is erased at build, and the
+  one runtime line it changed drops a cast that did nothing at runtime. The
+  reads above are the check that nothing downstream of `SportEntry.sport`
+  regressed.
 
 ### A8. React Router carries zero routes (−8, −1 dependency)
 
@@ -876,9 +966,9 @@ Tier 1:
 - [x] A3 one `daysBetween` — 2026-09-08, v2.0.70. In `lib/utils.ts` and imported directly; no forwarding re-export, and its test moved to `utils.test.ts` with a DST case
 - [x] A10 one `groupBy` — 2026-09-08, v2.0.70. Optional `value` mapper for the three sites that group a transformed value; ImportPane's copy deleted outright (it only reordered a sequential loop) and program.ts's three moved into `fetchDayDetails`, which drops three hand-written row types
 - [x] A11 one `deriveFlat` — 2026-09-08, v2.0.70. In `lib/utils.ts`, not `programImport.ts`: the loader is a bootstrap module and would have dragged the parser into the first-paint chunk
-- [ ] A12 executor prelude
-- [ ] A13 one profile select
-- [ ] A14 type aliases, casts gone
+- [x] A12 executor prelude — 2026-09-08, v2.0.71. `withProgramDay` + a `mutate` callback; `return await` inside the try, or the catch never sees a failed save. All three cases and six failure branches exercised in the browser with the save stubbed
+- [x] A13 one profile select — 2026-09-08, v2.0.71. Three selects, not two: 059/060 had added the HRmax read. One `GET user_profiles` per `loadPrefs()`, verified in the network log
+- [x] A14 type aliases, casts gone — 2026-09-08, v2.0.71. `sport: string`, `CardioType`/`DonationType` derived from the const arrays, `SleepQuality = QualityRating`, `NewSportFlags = Omit<SportTypeInfo,'name'>`, one `ExposureBout` behind `SaunaEntry`/`ColdEntry`; the `import type` under `typeof` closes no runtime cycle
 - [x] A8 react-router removed, CLAUDE.md routing paragraph updated — 2026-09-08, v2.0.58 (via roadmap 023 item 0)
 - [x] B2 `lastPerformance` + `toSetStr` shared — 2026-09-08, v2.0.69. Browser-checked at week 1 and week 6; the third argument is a list of program start dates, and the converters live in a new `lib/sets.ts` so the lint floor stays at 6
 - [x] B3 dead deload branch gone, `DELOAD_REP_FACTOR` used in WeightsTab — 2026-09-08, v2.0.69. Each tier computed once and read by both the table and its Use button; the numbers on screen are unchanged, as predicted
