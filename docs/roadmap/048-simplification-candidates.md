@@ -1440,19 +1440,37 @@ pressed, not as it was when the pane rendered.
 Each is a fact, recorded so it is not lost. None is committed work; a brief or a
 decision is the next step.
 
-- **`saveSleepEntry` skips the origin tag.** `src/lib/db/recovery.ts:52-61`
-  upserts without `withOrigin(...)`, while the insert at `:111` in the same file
-  has it. A night that Garmin already created keeps its origin (the trigger is
-  write-once), but a night logged first from dev or staging lands untagged, i.e.
-  as production — a gap in 037's "every user-write root row" guarantee. One-line
-  fix; needs a bug brief or Peter's OK to just do it.
-- **`weekStartDay` is ignored** at `store/app.ts:348`, `lib/db/program.ts:449`,
-  `ProgramTab.tsx:487`, `TodaysPlan.tsx:177`. A behaviour decision, not a cleanup.
-- **The flat-`exercises` fallbacks look dead but are not** (`ProgramTab.tsx:374-392,
-  424-438`, `TodaysPlan.tsx:48-50`, `normalizeDays`/`flatToBlock`):
-  `lib/db/program.ts:148-153` still builds days from `block_id === null` rows and
-  `defaultProgram()` (`lib/utils.ts:114-131`) ships no `blocks`. Removing them
-  needs a backfill migration — its own brief, near [025](done/025-release-blocked-schema-drops.md).
+- **`saveSleepEntry` skips the origin tag.** Its upsert in
+  `src/lib/db/recovery.ts` does not call `withOrigin(...)`, while the sauna /
+  cold insert below it in the same file does. A night logged first from dev or
+  staging lands untagged, i.e. as production — a gap in 037's "every user-write
+  root row" guarantee. **Now filed as
+  [069](069-sleep-logs-row-origin.md)**, which corrects this entry: it is *not*
+  the "one-line fix" written here. `sleep_logs` has no `origin` column at all
+  (checked against the live database, 2026-09-08 — fourteen tables have one and
+  it is not among them), so `withOrigin` alone would send an unknown column and
+  PostgREST would reject every sleep save from dev and staging. It needs the
+  column, the write-once trigger and the line.
+- **`weekStartDay` is ignored** by the four sites that decide the program week
+  (`toggleWeekVariant` in the store, the `weekStartDate` default in
+  `lib/db/program.ts`, and the `weekStart` in `ProgramTab` and `TodaysPlan`),
+  while four other screens honour it. A behaviour decision, not a cleanup.
+  **Now filed as [070](070-week-start-day-program-week.md)** (backlog — it needs
+  Peter's choice between two shapes), which adds the thing this entry had not
+  spotted: `week_start_date` is half of a stored upsert key, so simply threading
+  the preference through would make an existing week's variant choices
+  disappear the moment the preference flipped.
+- **The flat-`exercises` fallbacks look dead but are not**
+  (`normalizeDays` / `flatToBlock` in `ProgramTab`, the `day.exercises` branch
+  in `TodaysPlan`, the `block_id === null` branch in `fetchDayDetails`), because
+  `defaultProgram()` still ships days with no `blocks`. **Now filed as
+  [071](071-retire-flat-exercises-fallback.md)**, which drops this entry's
+  prediction that removing them "needs a backfill migration": the live database
+  holds 95 `program_day_exercises` rows and **every one has a `block_id`**
+  (checked 2026-09-08), and `saveBlock` wraps a flat day into a synthetic block
+  before writing, so no write path can create one. The work is `defaultProgram()`
+  plus a required `blocks` field — no migration, and nothing to do with
+  [025](done/025-release-blocked-schema-drops.md).
 - **CLAUDE.md said `CYCLE` was defined twice.** It is not: `utils.ts:5` imports
   it from `constants/app.ts`. Corrected in the commit that filed this brief.
 - **The 1RM estimator ships ungrounded and has no brief.** Found while landing
@@ -1583,5 +1601,14 @@ Tier 3:
 
 Housekeeping:
 
-- [ ] The four "found on the way" items each have a brief or a recorded decision
+- [x] The four "found on the way" items each have a brief or a recorded
+      decision — 2026-09-08, v2.0.86. Five items, not four: sleep origin →
+      [069](069-sleep-logs-row-origin.md), `weekStartDay` →
+      [070](070-week-start-day-program-week.md), flat `exercises` →
+      [071](071-retire-flat-exercises-fallback.md), the 1RM estimator →
+      [067](067-ground-1rm-estimator.md) (filed earlier), and the `CYCLE`
+      correction, which was a decision recorded in CLAUDE.md at the time. Two of
+      the three new briefs correct the entry that spawned them: the sleep fix is
+      not one line (the column does not exist) and the flat-`exercises` removal
+      needs no migration (there is nothing left to backfill)
 - [ ] `npm run check:docs` passes before this brief moves to `done/`
