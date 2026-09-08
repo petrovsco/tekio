@@ -73,7 +73,7 @@ export function ageAt(birthDate: string | null | undefined, date: string = today
   const b = new Date(`${birthDate}T00:00:00Z`)
   const d = new Date(`${date}T00:00:00Z`)
   if (Number.isNaN(b.getTime()) || Number.isNaN(d.getTime())) return null
-  let age = d.getUTCFullYear() - b.getUTCFullYear()
+  const age = d.getUTCFullYear() - b.getUTCFullYear()
   const beforeBirthday =
     d.getUTCMonth() < b.getUTCMonth() || (d.getUTCMonth() === b.getUTCMonth() && d.getUTCDate() < b.getUTCDate())
   return beforeBirthday ? age - 1 : age

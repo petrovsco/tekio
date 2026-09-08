@@ -74,12 +74,19 @@ that pays them, are
 npm run dev          # Start Vite dev server
 npm run build        # TypeScript check + Vite build
 npm run typecheck    # Type-check only (no emit)
+npm run lint         # ESLint (flat config in eslint.config.js)
 npm run test         # Run all tests once (Vitest)
 npm run test:watch   # Vitest in watch mode
 npm run preview      # Preview production build locally
 ```
 
 To run a single test file: `npx vitest run src/test/utils.test.ts`
+
+`lint` is **deliberately not part of `build`** — it takes ~32 s against the
+build's ~13 s, and Vercel runs the build on every push. Run it before a commit
+that changes `src/`. It is mechanical checks only (roadmap 023 item 1);
+judgement about whether code is *good* stays with `/simplify` and
+`/code-review`.
 
 ## Environment Setup
 
@@ -91,7 +98,7 @@ VITE_SUPABASE_ANON_KEY=...
 
 ## Architecture
 
-**Stack**: React 19, TypeScript 5.8, Vite 6, Tailwind CSS v4 (via `@tailwindcss/vite` plugin — no `tailwind.config.js`), Zustand 5, Supabase JS v2, React Router DOM 7, Recharts, dnd-kit.
+**Stack**: React 19, TypeScript 5.8, Vite 6, Tailwind CSS v4 (via `@tailwindcss/vite` plugin — no `tailwind.config.js`), Zustand 5, `@supabase/postgrest-js`, Recharts, dnd-kit. No router — see *Routing and navigation* below.
 
 ### Single-user design
 
@@ -124,7 +131,7 @@ When all of today's exercises are logged, `WeightsTab` auto-advances the program
 
 ### Routing and navigation
 
-React Router is set up but has only a single catch-all route (`path="*"`). Navigation is purely state-based: `tab` state in `App.tsx` determines which tab component renders. The `AppShell` wraps all tabs with a sticky header, a slide-in `Drawer` (hamburger menu), and a `BottomNav`.
+There is no router. Navigation is purely state-based: `tab` state in `App.tsx` determines which tab component renders. The `AppShell` wraps all tabs with a sticky header, a slide-in `Drawer` (hamburger menu), and a `BottomNav`. React Router was removed in 2.0.58 (roadmap 023 item 0, candidate A8 of 048) because it carried a single catch-all route and no navigation API was ever called — 37 kB on first paint doing nothing. Real web addresses would bring it back; that is about ten lines in `App.tsx`.
 
 ### UI components
 

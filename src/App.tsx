@@ -20,8 +20,7 @@ const AdminTab = lazy(() => import('./components/tabs/AdminTab').then(m => ({ de
 // roadmap 014): capture and correction moved into the T2 sheets, the
 // destinations went. Habits, shelved by the same ledger, was deleted 2026-09-05
 // (roadmap 035) — three sections, one slot of R1 headroom.
-const DRAWER_TABS = ['Weights', 'Cardio', 'Mobility'] as const
-type DrawerTab = typeof DRAWER_TABS[number]
+type DrawerTab = 'Weights' | 'Cardio' | 'Mobility'
 type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
 
 function TabContent(

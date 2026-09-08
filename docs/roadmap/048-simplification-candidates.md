@@ -1,10 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** planned — the review is done (2026-09-05, v1.18.4, commit 00b90b7)
-and no code has changed. Each candidate below is one atomic unit a later session
-lands with `/simplify`; tick its box in Acceptance when it ships. Committed to
-2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Status:** in progress — the review is done (2026-09-05, v1.18.4, commit
+00b90b7) and one candidate has landed: **A8** (react-router removed) shipped
+2026-09-08 in v2.0.58 via roadmap 023 item 0. Each remaining candidate is one
+atomic unit a later session lands with `/simplify`; tick its box in Acceptance
+when it ships. Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 **Release:** 2.1.0
 
 ## What this is
@@ -147,6 +148,9 @@ dedupes A2 + A3 + A10 + A11. That set is about −430 lines at low risk.
 - **Change:** drop the wrapper and the package; render `<Suspense>` directly.
   Update the "Routing and navigation" paragraph in `CLAUDE.md`.
 - **Risk:** low. Bundle shrinks.
+- **Landed 2026-09-08 (v2.0.58)** as part of roadmap 023 item 0, which was
+  hunting first-paint weight and found this from the other end. Both files, the
+  package and both `CLAUDE.md` paragraphs are done; the bundle shrank 37 kB.
 
 ### B2. `lastPerf` written three times, then re-filtered a fourth (−25)
 
@@ -467,7 +471,7 @@ Tier 1:
 - [ ] A12 executor prelude
 - [ ] A13 one profile select
 - [ ] A14 type aliases, casts gone
-- [ ] A8 react-router removed, CLAUDE.md routing paragraph updated
+- [x] A8 react-router removed, CLAUDE.md routing paragraph updated — 2026-09-08, v2.0.58 (via roadmap 023 item 0)
 - [ ] B2 `lastPerformance` + `toSetStr` shared
 - [ ] B3 dead deload branch gone, `DELOAD_REP_FACTOR` used in WeightsTab
 - [ ] B4 `fmtSets`/`fmtAgo` shared, `QUALITY_SHORT` reused

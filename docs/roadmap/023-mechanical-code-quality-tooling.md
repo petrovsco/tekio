@@ -1,10 +1,10 @@
 # Roadmap: Mechanical code quality — ESLint, dead-code detection, perf budget
 
 **Label:** infra
-**Status:** in progress — Scope item 0 landed 2026-09-08 (v2.0.58): first paint
-552 kB → 324 kB and the 500 kB warning is gone, which gives item 4 its committed
-baseline. Items 1–4 (ESLint, knip, the conventions file, the perf budget) remain.
-Spun out of
+**Status:** in progress — items 0 and 1 landed 2026-09-08: first paint 552 kB →
+324 kB with the 500 kB warning gone (v2.0.58), and `npm run lint` green on a
+clean tree (v2.0.59). Items 2–4 (knip, the conventions file, the perf budget)
+remain. Spun out of
 [009-feature-grounding.md](done/009-feature-grounding.md) on 2026-08-30 so that brief
 holds only the grounding back-fill it still tracks. Committed to 2.1.0 by Peter
 on 2026-09-05.
@@ -55,9 +55,12 @@ are both over 800 lines. Mechanize first, judge second.
    split again. The 500 kB warning came from the **other** chunk. What the
    measurement actually found, and what was done about it, is
    [§ Item 0 — measured](#item-0--measured) below.
-1. **ESLint.** Flat config, TypeScript + React rules, wired into `npm run lint`
-   and into `npm run build` only if it does not slow the build meaningfully.
-   Start permissive: the goal is a baseline that passes, not a week of cleanup.
+1. **ESLint — done 2026-09-08 (v2.0.59).** Flat config in
+   [eslint.config.js](../../eslint.config.js), `npm run lint`. **Not** wired
+   into `npm run build`: lint is ~32 s against the build's ~13 s and Vercel runs
+   the build on every push, which is the "slows the build meaningfully" the
+   scope line reserved. What its first run found is
+   [§ Item 1 — the first run](#item-1--the-first-run) below.
 2. **Dead-code detection.** `knip` (unused files, exports, dependencies). Its
    first run on a repo this age will find real things; triage them, do not
    auto-delete.
@@ -130,6 +133,53 @@ monday → sunday survived a full page reload, then went back to monday, and
 lands, `@supabase/auth-js` returns; it should return *lazily*, on the sign-in
 path, rather than back into the chunk that paints Home.
 
+## Item 1 — the first run
+
+ESLint 10 flat config: `@eslint/js` recommended, `typescript-eslint` recommended
+(not the type-checked variant — it needs a full program per run and this is
+already the slowest command in the repo), `eslint-plugin-react-hooks` v7 and
+`react-refresh`. Ignores `dist`, `node_modules`, `supabase/functions` (Deno) and
+`scripts/garmin-sync` (Python).
+
+The first run found **22 problems: 15 errors, 7 warnings**. Triaged:
+
+**Fixed — four real, all trivial, none behavioural:**
+
+- `hrMax.ts` `ageAt` — `let age` never reassigned, now `const`.
+- `ProfileTab.tsx` and `admin/ExerciseMuscleEditor.tsx` — `next.has(id) ?
+  next.delete(id) : next.add(id)`, a ternary used as a statement in both, now an
+  `if`/`else`.
+- `App.tsx` — `DRAWER_TABS` was an `as const` array read only by
+  `typeof DRAWER_TABS[number]`. Nothing iterated it, so it is now just the union
+  type it was standing in for.
+
+**Quarantined per file, not weakened globally — the rule still guards new code:**
+
+- `EditModal.tsx`, 10× `react-hooks/refs`. Ten forms do `saveRef.current = save`
+  in the render body so the shared modal footer can call the active form's save.
+  Mutating a ref during render is precisely what the rule exists to stop, and it
+  is **already tracked**: candidate S1 of
+  [048-simplification-candidates.md](048-simplification-candidates.md) replaces
+  it with a `useSave(saveRef, onClose)` hook. Acting on it is out of scope here
+  by name, so ESLint points at S1 rather than duplicating it into a new brief.
+- `AssistantSettings.tsx`, 1× `react-hooks/set-state-in-effect`. Seeds two
+  editable fields from async-loaded status — the ordinary way to do that; the
+  alternatives (a `key`, or the adjust-during-render dance) are not clearer.
+
+**Left as warnings (18):** `react-refresh/only-export-components` ×5 (files that
+deliberately export a component beside its constants) and
+`react-hooks/exhaustive-deps` ×2, plus the two quarantined above. Warnings do
+not fail the run.
+
+`npm run lint` exits 0 on a clean tree and 1 on a deliberate violation — checked
+with a throwaway file carrying an unused binding and a `let` that should be
+`const`; both were caught, and the file was deleted.
+
+**A note for item 4:** this was also candidate **A8** of 048 arriving from the
+other direction — 048 found react-router by reading the code, item 0 found it by
+measuring the bundle, and neither knew about the other until the roadmap was
+grepped. A8's box is now ticked.
+
 ## Out of scope
 
 - Actually splitting `EditModal.tsx` and `ProgramTab.tsx`. The tools are what
@@ -145,8 +195,9 @@ path, rather than back into the chunk that paints Home.
 - [x] The chart chunk no longer loads on first paint; the build's 500 kB
       warning is gone, and the before/after sizes are written into this brief.
       Done 2026-09-08 — 552 kB → 324 kB. See [§ Item 0 — measured](#item-0--measured).
-- [ ] `npm run lint` exists, passes on a clean tree, and fails on a deliberate
-      violation.
+- [x] `npm run lint` exists, passes on a clean tree, and fails on a deliberate
+      violation. Done 2026-09-08 — exit 0 clean, exit 1 on a probe file. See
+      [§ Item 1 — the first run](#item-1--the-first-run).
 - [ ] `npx knip` runs and its findings are triaged in a list — kept, deleted, or
       deliberately ignored with a reason.
 - [ ] A conventions file exists and `/code-review` is pointed at it.

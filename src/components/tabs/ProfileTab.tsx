@@ -135,7 +135,8 @@ export function ProfileTab() {
   const tracked = new Set(trackedMuscleGroupIds)
   const toggleMuscle = (id: string) => {
     const next = new Set(tracked)
-    next.has(id) ? next.delete(id) : next.add(id)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
     setTrackedMuscleGroupIds([...next])
   }
 
