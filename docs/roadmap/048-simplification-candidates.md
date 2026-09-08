@@ -513,10 +513,11 @@ decision is the next step.
   already carries it — 8.1 Epley, 8.2 Brzycki, 8.4 the unweighted mean — all
   `unknown`, all marked **(no brief)**, and 8.4 notes the averaging step is
   Tekiō's own invention rather than a published estimator. The inventory is
-  reference, so "(no brief)" is the tracking gap: nothing in `docs/roadmap/`
-  lists this, which means `/roadmap` cannot see it. Needs a `/ground` run
-  against 8.1/8.2/8.4 under its own ID, or Peter's decision that an estimate
-  labelled "≈" makes no claim worth grounding.
+  reference, so "(no brief)" was the tracking gap: nothing in `docs/roadmap/`
+  listed it, which meant `/roadmap` could not see it. **Now filed as
+  [067](067-ground-1rm-estimator.md)** (backlog — it needs Peter's decision
+  first: ground the three formulas, or delete a number nothing reads back), and
+  the three inventory rows point at it instead of saying "(no brief)".
 
 ## Skipped on purpose
 

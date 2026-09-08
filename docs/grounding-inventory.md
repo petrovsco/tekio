@@ -336,10 +336,10 @@ created to carry it.
 
 | # | Value | Where | Claim | Step 0 | State | Grounding brief |
 |---|---|---|---|---|---|---|
-| 8.1 | `1 + reps/30` | [utils.ts:151](../src/lib/utils.ts#L151) | Epley: published estimator | ? | unknown | **(no brief)** |
-| 8.2 | `36/(37 − reps)` | [utils.ts:156](../src/lib/utils.ts#L156) | Brzycki: published estimator | ? | unknown | **(no brief)** |
+| 8.1 | `1 + reps/30` | [utils.ts:151](../src/lib/utils.ts#L151) | Epley: published estimator | ? | unknown | [ground-1rm-estimator](roadmap/067-ground-1rm-estimator.md) |
+| 8.2 | `36/(37 − reps)` | [utils.ts:156](../src/lib/utils.ts#L156) | Brzycki: published estimator | ? | unknown | [ground-1rm-estimator](roadmap/067-ground-1rm-estimator.md) |
 | 8.3 | `reps >= 37 → 0` | [utils.ts:157](../src/lib/utils.ts#L157) | Guard at Brzycki's pole — mathematical, not physiological. **Definitional** (2026-09-08, [066](roadmap/done/066-inventory-definitional-rows.md)): the denominator `37 − reps` is zero at 37 reps and negative beyond, so the guard patches a hole in the formula and asserts nothing about a body | no | **n/a — definitional** | — |
-| 8.4 | `(e + b) / 2` | [utils.ts:171](../src/lib/utils.ts#L171) | **Tekiō's own estimator**: the unweighted mean of Epley and Brzycki. Not a published formula; the comment says only "they diverge at the extremes" | ? | unknown | **(no brief)** |
+| 8.4 | `(e + b) / 2` | [utils.ts:171](../src/lib/utils.ts#L171) | **Tekiō's own estimator**: the unweighted mean of Epley and Brzycki. Not a published formula; the comment says only "they diverge at the extremes" | ? | unknown | [ground-1rm-estimator](roadmap/067-ground-1rm-estimator.md) |
 
 ## 9. Progression
 
