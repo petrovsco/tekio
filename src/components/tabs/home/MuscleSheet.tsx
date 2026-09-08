@@ -6,16 +6,15 @@ import {
   HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource,
 } from '../../../lib/fusedRead'
 import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
-import { today } from '../../../lib/utils'
+import { today, fmtSets, fmtAgo } from '../../../lib/utils'
 import { BottomSheet, SheetClose } from './BottomSheet'
 import { GAP_CUTOFF, weeklyMuscleTarget } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
+import { QUALITY_SHORT } from '../adaptations/labels'
 
 // The muscle drill-in (T2, roadmap 018 unit 3): what a tap on the map reveals.
 // Logging goes through an exercise on purpose — sets classify into adaptations
 // by rep range, so a bare set count would write data no read can use.
-
-const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
 const fmtDay = (date: string): string =>
   new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
@@ -30,13 +29,6 @@ function schemeLabel(sets: LiftSet[]): string {
   if (uniform) return `${sets.length}×${first.reps} @ ${fmtKg(first.weight)}`
   const last = sets[sets.length - 1]
   return `${sets.length} sets · last ${last.reps} @ ${fmtKg(last.weight)}`
-}
-
-const QUALITY_LABELS: Record<(typeof MUSCLE_QUALITIES)[number], string> = {
-  strength: 'STRENGTH',
-  hypertrophy: 'HYPERTROPHY',
-  muscular_endurance: 'MUSC. END',
-  power: 'POWER',
 }
 
 interface MuscleSheetProps {
@@ -103,7 +95,7 @@ export default function MuscleSheet({
     : recovering
       ? {
           text: 'Recently hit — leave it.', invert: false, icon: 'M9 6v12M15 6v12',
-          sub: `Last stimulus ${daysSince === 0 ? 'today' : `${daysSince} d ago`} — inside the ${RECOVER_DAYS * 24} h recovery window (PLACEHOLDER).`,
+          sub: `Last stimulus ${fmtAgo(daysSince)} — inside the ${RECOVER_DAYS * 24} h recovery window (PLACEHOLDER).`,
         }
       : fill >= 1
         ? {
@@ -264,7 +256,7 @@ export default function MuscleSheet({
                       }}
                     />
                   </div>
-                  <div className="text-[7px] text-ink-3 tracking-[0.04em] mt-1">{QUALITY_LABELS[q]}</div>
+                  <div className="text-[7px] text-ink-3 tracking-[0.04em] mt-1">{QUALITY_SHORT[q]}</div>
                 </div>
               )
             })}

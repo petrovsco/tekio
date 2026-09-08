@@ -2,7 +2,8 @@ import { rankMuscleGaps, type MuscleQuality, type MuscleState } from '../../../l
 import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { BottomSheet, SheetClose } from '../home/BottomSheet'
 import { RAMP, rampStep } from '../home/GapMap'
-import { QUALITY_SHORT, fmtAgo, fmtSets } from './labels'
+import { QUALITY_SHORT } from './labels'
+import { fmtAgo, fmtSets } from '../../../lib/utils'
 
 // The per-muscle detail for the selected quality (roadmap 031 §3a, §7 decision
 // 5): every leaf muscle, ranked worst first — the same order the map's callouts

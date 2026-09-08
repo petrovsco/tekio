@@ -74,7 +74,10 @@ export function DelBtn({ label = 'Delete', onClick, noConfirm = false, className
   )
 }
 
-export function EditBtn({ label = 'Edit', className = '', ...props }: DelBtnProps) {
+// Not exported: `RowActions` below is the only caller left, because an edit
+// control never appears in this app except beside a delete control in a history
+// row. `DelBtn` still stands alone in six places, so it keeps its keyword.
+function EditBtn({ label = 'Edit', className = '', ...props }: DelBtnProps) {
   return (
     <button
       aria-label={label}
@@ -83,5 +86,23 @@ export function EditBtn({ label = 'Edit', className = '', ...props }: DelBtnProp
     >
       <Icon name="edit" size={13} />
     </button>
+  )
+}
+
+/** A history row's right-hand column: one small grey label — the row's date, or
+ *  whatever else that row leads with — then edit and delete. Four lists drew
+ *  this by hand; `className` is where a caller puts its own spacing. */
+export function RowActions({ label, className = '', onEdit, onDelete }: {
+  label: string
+  className?: string
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  return (
+    <div className={`flex items-center gap-1 shrink-0 ${className}`}>
+      <span className="text-[11px] text-ink-3 tabular-nums">{label}</span>
+      <EditBtn onClick={onEdit} />
+      <DelBtn onClick={onDelete} />
+    </div>
   )
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { today, parseDurationMins } from '../../../lib/utils'
+import { today, parseDurationMins, uniqSorted } from '../../../lib/utils'
 import { Inp, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { FieldLabel, Toggle, Rating } from '../../ui/Fields'
@@ -35,9 +35,9 @@ export function SportLogForm() {
   const [newSportHasTeammate, setNewSportHasTeammate] = useState(false)
   const { sports, sportTypes, addSportEntry, withToast } = useAppStore()
 
-  const allSports = [...new Set(sports.map(d => d.sport))].sort()
-  const allCompetitors = [...new Set(sports.flatMap(d => d.competitorNames ?? []))].sort()
-  const allTeammates = [...new Set(sports.flatMap(d => d.teammateNames ?? []))].sort()
+  const allSports = uniqSorted(sports.map(d => d.sport))
+  const allCompetitors = uniqSorted(sports.flatMap(d => d.competitorNames ?? []))
+  const allTeammates = uniqSorted(sports.flatMap(d => d.teammateNames ?? []))
   const existingType = sportTypes.find(t => t.name.toLowerCase() === sport.trim().toLowerCase())
   const isNewSport = sport.trim() !== '' && !existingType
   const hasCompetitor = existingType ? existingType.hasCompetitor : (isNewSport && newSportHasCompetitor)

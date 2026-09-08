@@ -1,6 +1,7 @@
 import type { WholeBodyQuality } from '../../../lib/fusedRead'
 import { RAMP, NO_DATA, rampStep } from '../home/GapMap'
-import { QUALITY_SHORT, SPECTRUM_QUALITIES, fmtAgo } from './labels'
+import { QUALITY_SHORT, SPECTRUM_QUALITIES } from './labels'
+import { fmtAgo } from '../../../lib/utils'
 
 // The whole-body read of the Adaptations drill-down (roadmap 031 §3b): the
 // three cardio qualities are three regions of one continuum ordered by how long

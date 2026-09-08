@@ -1,10 +1,10 @@
 import { useAppStore } from '../../../store/app'
-import { formatDurationMins, calcPace } from '../../../lib/utils'
+import { formatDurationMins, calcPace, uniqSorted } from '../../../lib/utils'
 import { isThresholdCardio, isThresholdSport } from '../../../lib/adaptations'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { CARDIO_TYPES } from '../../../constants/app'
 import { Card, SecTitle } from '../../ui/Card'
-import { DelBtn, EditBtn } from '../../ui/Button'
+import { RowActions } from '../../ui/Button'
 import { HistoryList } from '../../ui/HistoryList'
 import { Icon } from '../../ui/Icon'
 import { MicroLabel } from '../../ui/Badges'
@@ -38,18 +38,6 @@ function sessionLabel(s: Session): string {
   return s.kind === 'cardio' ? s.entry.type : s.entry.sport
 }
 
-/** The row's right-hand column: date and the two controls, one shape for both
- *  kinds of session. */
-function RowActions({ date, onEdit, onDelete }: { date: string; onEdit: () => void; onDelete: () => void }) {
-  return (
-    <div className="flex items-center gap-1 shrink-0 ml-2">
-      <span className="text-[11px] text-ink-3 tabular-nums">{date}</span>
-      <EditBtn onClick={onEdit} />
-      <DelBtn onClick={onDelete} />
-    </div>
-  )
-}
-
 function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
   const { removeCardioEntry, openEditModal } = useAppStore()
   // The one fact a hard endurance session used to lose on its way to the read
@@ -76,7 +64,8 @@ function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions
-          date={d.date}
+          label={d.date}
+          className="ml-2"
           onEdit={() => openEditModal({ type: 'cardio', record: d })}
           onDelete={() => removeCardioEntry(d.id)}
         />
@@ -114,7 +103,8 @@ function SportRow({ d }: { d: SportEntry }) {
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions
-          date={d.date}
+          label={d.date}
+          className="ml-2"
           onEdit={() => openEditModal({ type: 'sport', record: d })}
           onDelete={() => removeSportEntry(d.id)}
         />
@@ -156,7 +146,7 @@ export function SessionList() {
     ...sports.map(entry => ({ kind: 'sport' as const, entry })),
   ].sort((a, b) => sessionDate(b).localeCompare(sessionDate(a)))
 
-  const sportNames = [...new Set(sports.map(d => d.sport))].sort()
+  const sportNames = uniqSorted(sports.map(d => d.sport))
 
   return (
     <Card>

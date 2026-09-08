@@ -49,7 +49,6 @@ export const MAP_QUALITIES: MuscleQuality[] = ['power', 'strength', 'hypertrophy
 /** The spectrum's order — effort duration left→right: seconds, minutes, hours. */
 export const SPECTRUM_QUALITIES = ['anaerobic_capacity', 'vo2max', 'endurance'] as const
 
-export const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
-
-export const fmtAgo = (daysSince: number | null): string =>
-  daysSince === null ? 'never' : daysSince === 0 ? 'today' : `${daysSince} d ago`
+// `fmtSets` and `fmtAgo` moved to `lib/utils.ts`: Home wrote its own copies of
+// both rather than import them from here, and this file is about the seven
+// qualities, not about formatting.

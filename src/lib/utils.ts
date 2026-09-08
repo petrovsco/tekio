@@ -35,6 +35,20 @@ export function groupBy<T, V = T>(
   return out
 }
 
+/** The distinct values of `xs`, sorted. The picker lists, the type chips and
+ *  every autocomplete are derived this way — nine call sites wrote it inline. */
+export function uniqSorted(xs: string[]): string[] {
+  return [...new Set(xs)].sort()
+}
+
+/** A set count: whole numbers plain, halves to one decimal. A muscle's share of
+ *  a set is fractional (level 2 links weigh 0.5), so "1.5 sets" is a real read. */
+export const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
+
+/** How long ago, for a recency note. `null` means it has never happened. */
+export const fmtAgo = (daysSince: number | null): string =>
+  daysSince === null ? 'never' : daysSince === 0 ? 'today' : `${daysSince} d ago`
+
 const DAY_MS = 86400000
 
 /** Whole days from `from` to `to` (both YYYY-MM-DD; positive when to > from).

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, cycleInfo, deloadSets, isDeloadDate, isTodayDone, lastPerformance, programMode, activeVariantWeekdays, best1RM, weightsPickerNames } from '../../../lib/utils'
+import { today, cycleInfo, deloadSets, isDeloadDate, isTodayDone, lastPerformance, programMode, activeVariantWeekdays, best1RM, weightsPickerNames, uniqSorted } from '../../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
-import { Btn, DelBtn, EditBtn } from '../../ui/Button'
+import { Btn, RowActions } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
 import { SSBadge } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
@@ -45,7 +45,7 @@ export function WeightsTab() {
     }
   }, [weights])
 
-  const exercises = [...new Set(weights.map(d => d.exercise))].sort()
+  const exercises = uniqSorted(weights.map(d => d.exercise))
   const pickerNames = weightsPickerNames(weights, exerciseMuscles)
 
   const isAnyDeload = programs.some(ap => isDeloadDate(ap.startDate, today()))
@@ -313,11 +313,12 @@ export function WeightsTab() {
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <SSBadge />
                     <span className="text-[9px] font-bold uppercase tracking-[0.10em] text-ink-3">Superset</span>
-                    <span className="text-[11px] text-ink-3 ml-auto tabular-nums">{g.entries[0].date}</span>
-                    <EditBtn onClick={() => openEditModal({ type: 'weight-superset', record: [g.entries[0], g.entries[1]] })} />
-                    <DelBtn onClick={() => {
-                      g.entries.forEach(e => removeWeightEntry(e.id))
-                    }} />
+                    <RowActions
+                      label={g.entries[0].date}
+                      className="ml-auto"
+                      onEdit={() => openEditModal({ type: 'weight-superset', record: [g.entries[0], g.entries[1]] })}
+                      onDelete={() => g.entries.forEach(e => removeWeightEntry(e.id))}
+                    />
                   </div>
                   {g.entries.map((e, ei) => (
                     <div key={ei} className={ei === 0 ? 'mb-1.5' : ''}>
@@ -350,11 +351,12 @@ export function WeightsTab() {
                     ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-1 ml-2 mt-0.5 shrink-0">
-                  <span className="text-[11px] text-ink-3 tabular-nums">{entry.date}</span>
-                  <EditBtn onClick={() => openEditModal({ type: 'weight', record: entry })} />
-                  <DelBtn onClick={() => removeWeightEntry(entry.id)} />
-                </div>
+                <RowActions
+                  label={entry.date}
+                  className="ml-2 mt-0.5"
+                  onEdit={() => openEditModal({ type: 'weight', record: entry })}
+                  onDelete={() => removeWeightEntry(entry.id)}
+                />
               </div>
             )
           }}

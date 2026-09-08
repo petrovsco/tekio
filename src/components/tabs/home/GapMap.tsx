@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { MuscleState } from '../../../lib/fusedRead'
 import { GAP_CUTOFF } from '../../../lib/adaptations'
+import { fmtSets } from '../../../lib/utils'
 import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './BodyMap'
 
 // The T1 "what is missing" read (design-system §§1, 4): the anatomical figure
@@ -87,10 +88,6 @@ const FIG = {
   back: { x: 164, y: 12 },
 } as const
 const FIG_SCALE = 0.85
-
-function fmtSets(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(1)
-}
 
 interface PlacedCallout {
   key: string

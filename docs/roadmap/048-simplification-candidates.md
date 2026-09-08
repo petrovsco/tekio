@@ -1,14 +1,15 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — fifteen landed: **A8** (v2.0.58), **A1** (v2.0.63, which
-took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
+**Status:** in progress — eighteen landed: **A8** (v2.0.58), **A1** (v2.0.63,
+which took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
 EditModal, after which the repo sits at 023's accepted floor of 6 lint
 warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer),
 **B2 + B3** together (v2.0.69, the weights plan), the small `lib` dedupes
-**A2 + A3 + A10 + A11** together (v2.0.70) and the last three A entries
-**A12 + A13 + A14** together (v2.0.71).
-**The remaining Tier 1 entries are next** — B4, B10, B11, B12, B13, B15, C1.
+**A2 + A3 + A10 + A11** together (v2.0.70), the last three A entries
+**A12 + A13 + A14** together (v2.0.71) and the shared UI helpers
+**B4 + B12 + B15** together (v2.0.72).
+**The remaining Tier 1 entries are next** — B10, B11, B13, C1.
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -533,6 +534,28 @@ nothing was saved.
   MuscleSheet uses `QUALITY_SHORT`.
 - **Risk:** low.
 
+**Landed 2026-09-08 (v2.0.72), with B12 + B15.** `fmtSets` and `fmtAgo` are in
+`lib/utils.ts` with tests; the four copies of `fmtSets` (labels, HomeTab,
+MuscleSheet, GapMap) are one, and MuscleSheet's `QUALITY_LABELS` is gone in
+favour of `QUALITY_SHORT` — the four strings were identical, so nothing on
+screen moved. Two notes:
+
+- **Only 6 of the 10 inline "N d ago" expressions are `fmtAgo`.** The rest say
+  something else and stay hand-written: the weight tile has a `yesterday` case
+  `fmtAgo` does not have, and three blood/water readings print `N d` with no
+  "ago" because they are tile *values*, not recency notes. Converting those
+  would have changed what is on screen to save a line.
+- **One string did change, on purpose.** The whole-body quality tiles printed
+  `0 d ago` on a day with a session logged, where every other fact on Home says
+  `today`. They now say `today` too. Likewise the acute-donation gate printed a
+  hardcoded `'1 d ago'`, which was right only because the hold window is 48 h;
+  `fmtAgo` prints the real number. Both are in `HomeTab`'s tiles, both were
+  browser-checked, and neither is a physiological claim.
+- **The direction is Home → `lib/utils`, not Home → adaptations**, as this entry
+  asks. It is free either way here — `HomeTab` already imports `coverageLine`
+  from `adaptations/labels`, so that file is in the entry chunk regardless — but
+  `labels.ts` is about the seven qualities, and a number formatter is not.
+
 ### B10. Tone constants duplicated instead of exported once (−10)
 
 - **Where:** `MICRO` at `ProgramTab.tsx:21` = `weights/TodaysPlan.tsx:40`;
@@ -565,6 +588,30 @@ nothing was saved.
   "min total" span as a leading child.
 - **Risk:** low.
 
+**Landed 2026-09-08 (v2.0.72), with B4 + B15 — and it grew the line count.**
+`RowActions({ label, className, onEdit, onDelete })` is in `ui/Button.tsx` and
+serves **four** sites, one more than this entry counted: WeightsTab's superset
+header is the fourth, and it fits because its date span already carried
+`ml-auto`, which is now the wrapper's `className` and pushes the same three
+things to the same edge. MobilityTab needs no leading child after all — its
+"20 min total" is styled exactly like a date, so it is the same `label` prop.
+Three notes:
+
+- **`EditBtn` is no longer exported.** `RowActions` absorbed every one of its
+  callers, which is the finding behind the finding: an edit control never
+  appears in this app except beside a delete control in a history row. `DelBtn`
+  keeps its keyword — it still stands alone in six places (delete a day, a
+  block, a program, a muscle link, a set row). `knip` is what caught it.
+- **It costs about 12 lines rather than saving 8.** Four raw JSX blocks of 4–6
+  lines became four named-prop calls of 5–6 plus a 17-line shared component. The
+  win is that the row's shape is now one thing — and the export that fell out
+  says the consolidation was right — but the arithmetic in this entry was wrong
+  and the honest number is a small growth.
+- **Browser-checked**, because it is the one visual entry in this unit: the
+  Weights superset header still reads `SS · SUPERSET · 2026-05-15 ✎ 🗑` hard
+  right, the plain weight rows still put the date above the two controls, and
+  Mobility still leads with "10 min total".
+
 ### B13. ProgramTab small dead and doubled bits (−20)
 
 - **Where:** `ProgramTab.tsx:80` a `useState` that is never set (read
@@ -584,6 +631,49 @@ nothing was saved.
 - **Change:** `uniqSorted(xs)` in `lib/utils.ts`; optionally a memoised
   `sportNames` selector in the store.
 - **Risk:** low.
+
+**Landed 2026-09-08 (v2.0.72), with B4 + B12.** `uniqSorted` is in
+`lib/utils.ts` with tests and serves **twelve** call sites, not nine — this
+entry counted `allSports` once per component and there are four, plus the two
+sport name lists in `SportLogForm`, `SportProgress`'s per-sport competitor list
+and three more in `EditModal`. The optional store selector was **not** built:
+`sports` is one array of 53 rows and every one of these runs inside a component
+that already re-renders for other reasons, so a memoised selector would be a
+second place for the same fact to live — B14 is the entry that fixes the
+re-render cost, and it fixes it for all of them at once.
+
+The other `new Set(...)` uses are not this shape and stay: `ImportPane`'s ten
+dedupe key sets, `ProfileTab`'s and `ExerciseMuscleEditor`'s membership sets,
+`CardioTab`'s `.size > 1` year test, and the three uniq-without-sort sites in
+`lib/utils.ts`, `lib/db/program.ts` and `MobilityTab` (that last one sorts by a
+computed rank two lines later, so an alphabetical sort first would be work
+thrown away).
+
+**Measured, for the three together (v2.0.72):** +15 lines in `src/` outside the
+tests, and 33 lines of new test. Two of the three shrink; B12 grows, for the
+reason recorded above. First paint **348.65 kB**, down 0.22 kB. `npm run lint` 6
+warnings / 0 errors, `npm run knip` clean once `EditBtn` lost its export, 226
+tests pass.
+
+**Browser-checked on live data** (house rule `verify-in-browser` — this unit
+touches five surfaces, so a walk of all of them). Zero console errors, nothing
+written.
+
+- **Home** read exactly as before: *Push. Erectors and hip flex are the gap.* ·
+  *Nothing is sore — last stimulus 7 d ago.* · readiness 71, and the callouts
+  `0 sets / 116 d`, `0 sets / 54 d`. The whole-body tiles read *222 d ago*,
+  *355 d ago*, *4 d ago* — none is 0 today, so the one deliberate string change
+  is not visible on this data and was checked in the helper's tests instead.
+- **The muscle sheet** (Upper Back / Traps) printed its week bars `1.5 · 4.5 ·
+  10 · 3 · 0 · 0` — `fmtSets`' whole-vs-fraction rule — and its quality-mix
+  labels STRENGTH / HYPERTROPHY / MUSC. END / POWER, which now come from
+  `QUALITY_SHORT`.
+- **Adaptations** drew the same four-quality control from the same constant and
+  printed the same coverage sentence Home prints.
+- **Weights, Cardio, Mobility**: three edit + three delete controls each through
+  `RowActions`, leading with `2026-09-01`, `2026-09-04` and `10 min total`
+  respectively; the superset header kept its hard-right group; the Weights
+  exercise chips and the five cardio type chips are the `uniqSorted` lists.
 
 ### C1. The two Garmin scripts share two helpers by copy (−20)
 
@@ -972,12 +1062,12 @@ Tier 1:
 - [x] A8 react-router removed, CLAUDE.md routing paragraph updated — 2026-09-08, v2.0.58 (via roadmap 023 item 0)
 - [x] B2 `lastPerformance` + `toSetStr` shared — 2026-09-08, v2.0.69. Browser-checked at week 1 and week 6; the third argument is a list of program start dates, and the converters live in a new `lib/sets.ts` so the lint floor stays at 6
 - [x] B3 dead deload branch gone, `DELOAD_REP_FACTOR` used in WeightsTab — 2026-09-08, v2.0.69. Each tier computed once and read by both the table and its Use button; the numbers on screen are unchanged, as predicted
-- [ ] B4 `fmtSets`/`fmtAgo` shared, `QUALITY_SHORT` reused
+- [x] B4 `fmtSets`/`fmtAgo` shared, `QUALITY_SHORT` reused — 2026-09-08, v2.0.72. Both in `lib/utils.ts` with tests; only 6 of the 10 inline "N d ago" expressions are actually `fmtAgo`, and the two that now print `today` instead of `0 d ago` / a hardcoded `1 d ago` are the one deliberate string change
 - [ ] B10 tone constants exported once
 - [ ] B11 inline SVGs replaced by `Icon`
-- [ ] B12 `RowActions` in `ui/`
+- [x] B12 `RowActions` in `ui/` — 2026-09-08, v2.0.72. Four sites, not three; it *grew* the file by ~12 lines rather than saving 8, and `EditBtn` stopped being exported because `RowActions` absorbed every caller
 - [ ] B13 ProgramTab small bits
-- [ ] B15 `uniqSorted`
+- [x] B15 `uniqSorted` — 2026-09-08, v2.0.72. Twelve sites, not nine; the store selector was deliberately not built (B14 fixes the re-render cost for all of them at once)
 - [ ] C1 Garmin helpers shared
 
 Tier 2:

@@ -7,7 +7,7 @@ import {
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
-import { cycleInfo, today, daysBetween } from '../../../lib/utils'
+import { cycleInfo, today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
@@ -24,8 +24,6 @@ const MuscleSheet = lazy(() => import('./MuscleSheet'))
 const RecoverySheet = lazy(() => import('./RecoverySheet'))
 
 type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true }
-
-const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -58,7 +56,7 @@ function verdictCopy(args: {
   if (verdict.mode === 'hold') {
     const text = 'Hold. Walk or mobility only.'
     if (verdict.cause === 'donation') {
-      const when = don.daysSince === 0 ? 'today' : `${don.daysSince} d ago`
+      const when = fmtAgo(don.daysSince)
       return { text, sub: `Full blood donation ${when} — the 48 h acute window (PLACEHOLDER) gates the day.` }
     }
     const parts = []
@@ -88,10 +86,10 @@ function verdictCopy(args: {
     const who = recoveringShorts.length > 3 ? `${recoveringShorts.length} muscles` : joinNames(recoveringShorts)
     facts.push(`${cap(who)} still recovering (PLACEHOLDER: ${RECOVER_DAYS} days).`)
   } else if (minDaysSince !== null) {
-    facts.push(`Nothing is sore — last stimulus ${minDaysSince === 0 ? 'today' : `${minDaysSince} d ago`}.`)
+    facts.push(`Nothing is sore — last stimulus ${fmtAgo(minDaysSince)}.`)
   }
   if (don.aerobicSuppressed && !don.acuteHold) {
-    facts.push(`Blood: full donation ${don.daysSince} d ago — aerobic work is suppressed (PLACEHOLDER: ~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
+    facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (PLACEHOLDER: ~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
   }
   return { text, sub: facts.join(' ') }
 }
@@ -190,15 +188,15 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         ? { label: 'WATER', value: `${wat.daysSince}d old`, pct: 10, tone: 'mid' }
         : { label: 'WATER', value: '—', pct: 0, tone: 'off' },
     don.acuteHold
-      ? { label: 'BLOOD', value: don.daysSince === 0 ? 'today' : '1 d ago', pct: 8, tone: 'accent' }
+      ? { label: 'BLOOD', value: fmtAgo(don.daysSince), pct: 8, tone: 'accent' }
       : don.aerobicSuppressed
-        ? { label: 'BLOOD', value: `${don.daysSince} d ago`, pct: Math.round((100 * (don.daysSince ?? 0)) / DONATION_SUPPRESSION.aerobicTailDays), tone: 'accent' }
+        ? { label: 'BLOOD', value: fmtAgo(don.daysSince), pct: Math.round((100 * (don.daysSince ?? 0)) / DONATION_SUPPRESSION.aerobicTailDays), tone: 'accent' }
         : { label: 'BLOOD', value: 'clear', pct: 100, tone: 'ink' },
   ]
 
   const banner = gated
     ? verdict.cause === 'donation'
-      ? `Full blood donation ${don.daysSince === 0 ? 'today' : `${don.daysSince} d ago`} — the 48 h acute window (PLACEHOLDER) holds today. The gaps below stay open.`
+      ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window (PLACEHOLDER) holds today. The gaps below stay open.`
       : `Readiness ${sys.readiness} is below the push threshold (PLACEHOLDER). The gaps below stay open — today just isn't the day to close them.`
     : null
 
@@ -239,7 +237,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     const q = qualities.find(s => s.key === meta.key)
     if (zeroData || !q) return { ...meta, note: '—', fill: '#ffffff', edge: '#e2e2e0' }
     const c = coverage[meta.key]
-    const note = q.daysSince === null ? 'never' : `${q.daysSince} d ago`
+    const note = fmtAgo(q.daysSince)
     // Same polarity as the map: untouched is white with the accent edge, and
     // work accumulates ink. The word comes from `coverageState`, the same call
     // the line makes, so the ink band means exactly what the line means by "on

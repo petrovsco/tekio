@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { ResponsiveContainer, LineChart, CartesianGrid, XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
-import { today, startOfWeek, weeklyMuscleVolume, WEEKLY_STRETCH_TARGET_MIN } from '../../lib/utils'
+import { today, startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN } from '../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../ui/Card'
 import { Inp, SelEl } from '../ui/Input'
-import { Btn, DelBtn, EditBtn } from '../ui/Button'
+import { Btn, RowActions } from '../ui/Button'
 import { Chip } from '../ui/Chip'
 import { Icon } from '../ui/Icon'
 import { SmartInput } from '../ui/SmartInput'
@@ -30,7 +30,7 @@ export function MobilityTab() {
   const { mobility, muscleGroups, exerciseAliases, addMobilityEntry, removeMobilityEntry, openEditModal, withToast } = useAppStore()
   const { weekStartDay } = usePrefs()
 
-  const allExNames = [...new Set(mobility.flatMap(m => m.exercises.map(e => e.name)))].sort()
+  const allExNames = uniqSorted(mobility.flatMap(m => m.exercises.map(e => e.name)))
 
   // Canonical muscle tags per exercise name (for auto-fill when re-logging).
   const tagsByName = new Map<string, string[]>()
@@ -255,11 +255,11 @@ export function MobilityTab() {
             <div key={m.id} className="py-2 border-b border-hairline last:border-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-bold text-ink tabular-nums">{m.date}</span>
-                <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-[11px] text-ink-3 tabular-nums">{m.duration} min total</span>
-                  <EditBtn onClick={() => openEditModal({ type: 'mobility', record: m })} />
-                  <DelBtn onClick={() => removeMobilityEntry(m.id)} />
-                </div>
+                <RowActions
+                  label={`${m.duration} min total`}
+                  onEdit={() => openEditModal({ type: 'mobility', record: m })}
+                  onDelete={() => removeMobilityEntry(m.id)}
+                />
               </div>
               {m.exercises.map((e, i) => (
                 <p key={i} className="text-[11px] text-ink-2 mt-0.5">

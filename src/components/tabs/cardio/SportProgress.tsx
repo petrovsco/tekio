@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
-import { weekKey, TIME_FRAMES, withinTimeFrame, type TimeFrame } from '../../../lib/utils'
+import { weekKey, TIME_FRAMES, withinTimeFrame, uniqSorted, type TimeFrame } from '../../../lib/utils'
 import { Card, SecTitle, EmptyMsg } from '../../ui/Card'
 import { SelEl } from '../../ui/Input'
 import { CHART, CHART_AXIS, CHART_TOOLTIP } from '../../ui/chart'
@@ -30,7 +30,7 @@ export function SportProgress() {
   const { sports, sportTypes } = useAppStore()
   const { weekStartDay } = usePrefs()
 
-  const allSports = [...new Set(sports.map(d => d.sport))].sort()
+  const allSports = uniqSorted(sports.map(d => d.sport))
   if (allSports.length === 0) return null
 
   const chartSport = selSport || allSports[0]
@@ -45,9 +45,9 @@ export function SportProgress() {
 
   const chartSportType = sportTypes.find(t => t.name.toLowerCase() === chartSport.toLowerCase())
   const chartHasCompetitor = chartSportType?.hasCompetitor ?? false
-  const competitorsForChartSport = [...new Set(
+  const competitorsForChartSport = uniqSorted(
     sports.filter(d => d.sport === chartSport).flatMap(d => d.competitorNames ?? [])
-  )].sort()
+  )
   const statsEntries = sports.filter(d =>
     d.sport === chartSport &&
     d.result &&

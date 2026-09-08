@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace, daysBetween, groupBy, deriveFlat } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -66,6 +66,38 @@ describe('deriveFlat', () => {
 // ---------------------------------------------------------------------------
 // 1RM estimation
 // ---------------------------------------------------------------------------
+
+describe('uniqSorted', () => {
+  it('de-duplicates and sorts', () => {
+    expect(uniqSorted(['Squat', 'Bench', 'Squat', 'Curl'])).toEqual(['Bench', 'Curl', 'Squat'])
+  })
+
+  it('is empty for an empty list, and never mutates its argument', () => {
+    const xs = ['b', 'a']
+    expect(uniqSorted([])).toEqual([])
+    expect(uniqSorted(xs)).toEqual(['a', 'b'])
+    expect(xs).toEqual(['b', 'a'])
+  })
+})
+
+describe('fmtSets', () => {
+  it('prints whole numbers plain and fractions to one decimal', () => {
+    expect(fmtSets(0)).toBe('0')
+    expect(fmtSets(12)).toBe('12')
+    expect(fmtSets(1.5)).toBe('1.5')
+    // A level-2 muscle link weighs 0.5, so thirds of a set never occur; round.
+    expect(fmtSets(2.25)).toBe('2.3')
+  })
+})
+
+describe('fmtAgo', () => {
+  it('says never, today, or N d ago', () => {
+    expect(fmtAgo(null)).toBe('never')
+    expect(fmtAgo(0)).toBe('today')
+    expect(fmtAgo(1)).toBe('1 d ago')
+    expect(fmtAgo(116)).toBe('116 d ago')
+  })
+})
 
 describe('withinTimeFrame', () => {
   const ref = '2026-09-06'

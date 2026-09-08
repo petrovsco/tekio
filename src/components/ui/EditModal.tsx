@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { parseDurationMins, formatDurationMins, calcPace } from '../../lib/utils'
+import { parseDurationMins, formatDurationMins, calcPace, uniqSorted } from '../../lib/utils'
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
@@ -308,7 +308,7 @@ function MobilityForm({ record, onClose }: FormProps<MobilityEntry>) {
   const mobility = useAppStore(s => s.mobility)
   const exerciseAliases = useAppStore(s => s.exerciseAliases)
   const allExNames = useMemo(
-    () => [...new Set(mobility.flatMap(m => m.exercises.map(e => e.name)))].sort(),
+    () => uniqSorted(mobility.flatMap(m => m.exercises.map(e => e.name))),
     [mobility]
   )
   const [date, setDate] = useState(record.date)
@@ -377,13 +377,13 @@ function SportForm({ record, onClose }: FormProps<SportEntry>) {
   const editSportEntry = useAppStore(s => s.editSportEntry)
   const sports = useAppStore(s => s.sports)
   const sportTypes = useAppStore(s => s.sportTypes)
-  const allSports = useMemo(() => [...new Set(sports.map(d => d.sport))].sort(), [sports])
+  const allSports = useMemo(() => uniqSorted(sports.map(d => d.sport)), [sports])
   const allCompetitors = useMemo(
-    () => [...new Set(sports.flatMap(d => d.competitorNames ?? []))].sort(),
+    () => uniqSorted(sports.flatMap(d => d.competitorNames ?? [])),
     [sports]
   )
   const allTeammates = useMemo(
-    () => [...new Set(sports.flatMap(d => d.teammateNames ?? []))].sort(),
+    () => uniqSorted(sports.flatMap(d => d.teammateNames ?? [])),
     [sports]
   )
   const [date, setDate] = useState(record.date)
