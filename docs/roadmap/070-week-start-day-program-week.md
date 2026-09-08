@@ -2,7 +2,7 @@
 
 **Label:** backlog
 **Status:** backlog — needs Peter's decision between the two shapes below.
-Found on the way through [048](048-simplification-candidates.md); filed
+Found on the way through [048](done/048-simplification-candidates.md); filed
 2026-09-08 with the stored-key problem that 048 had not spotted.
 
 ## The failure

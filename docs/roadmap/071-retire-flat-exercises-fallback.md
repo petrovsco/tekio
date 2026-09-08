@@ -2,7 +2,7 @@
 
 **Label:** infra
 **Status:** planned — found on the way through
-[048](048-simplification-candidates.md), which expected this to need a backfill
+[048](done/048-simplification-candidates.md), which expected this to need a backfill
 migration. It does not: the live database has **zero** rows to backfill (see
 *The migration 048 predicted is not needed*). Filed 2026-09-08.
 

@@ -84,3 +84,46 @@ begin
   end loop;
 end $$;
 ```
+
+## Edge functions
+
+Two of them, both in `functions/`: `assistant-chat` (the LLM proxy) and
+`assistant-settings` (the stored API key). Both run with `verify_jwt = false`
+and a hard-coded user id, because there is no auth yet — that flips together
+when [roadmap 003](../docs/roadmap/003-rls-auth-v1.1.md) lands.
+
+**They share `functions/_shared/`** (`http.ts` — CORS and the JSON response;
+`settings.ts` — the user id, the service-role client, the model defaults and
+the `assistant_settings` read). That is one thing to know when deploying:
+**a function must be uploaded together with the shared files it imports**, and
+the paths must keep the `<function>/index.ts` + `_shared/*.ts` shape, because
+the import is `../_shared/…`. Deploying `index.ts` on its own leaves the
+function unable to resolve it.
+
+The Supabase CLI does this by itself:
+
+```bash
+supabase functions deploy assistant-chat --no-verify-jwt
+```
+
+Without the CLI, the Management API takes the same shape — note that the
+entrypoint is the nested path, not `index.ts`:
+
+```bash
+curl -X POST "https://api.supabase.com/v1/projects/snpjfzfqjwkdwzzqfhsz/functions/deploy?slug=assistant-chat" \
+  -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
+  -F 'metadata={"entrypoint_path":"assistant-chat/index.ts","name":"assistant-chat","verify_jwt":false};type=application/json' \
+  -F "file=@supabase/functions/assistant-chat/index.ts;filename=assistant-chat/index.ts" \
+  -F "file=@supabase/functions/_shared/http.ts;filename=_shared/http.ts" \
+  -F "file=@supabase/functions/_shared/settings.ts;filename=_shared/settings.ts"
+```
+
+Smoke-test after either one — `{"action":"status"}` on `assistant-settings`
+returns the masked key, and a one-line conversation on `assistant-chat` returns
+`{"text":…}`:
+
+```bash
+curl -X POST "$VITE_SUPABASE_URL/functions/v1/assistant-settings" \
+  -H "apikey: $VITE_SUPABASE_ANON_KEY" -H "Content-Type: application/json" \
+  -d '{"action":"status"}'
+```

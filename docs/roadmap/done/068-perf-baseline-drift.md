@@ -1,7 +1,7 @@
 # Roadmap: The first-paint baseline is 3 kB stale
 
 **Label:** infra
-**Status:** done — folded into v2.0.82 ([048](../048-simplification-candidates.md)
+**Status:** done — folded into v2.0.82 ([048](048-simplification-candidates.md)
 candidate A9), the next commit that moved the number, exactly as this brief
 asked, which took the baseline 352.47 kB → 348.69 kB. A7 moved it again the
 same day; the committed figure is 346.98 kB (v2.0.83).
@@ -18,7 +18,7 @@ stale-high baseline quietly buys 3 kB of headroom nobody voted for, and a
 standing "consider re-baselining" line trains the reader to skip the perf
 output — which is the one check that catches a
 cleanup that quietly grows the bundle — see
-[048 A1](../048-simplification-candidates.md), where sharing a constant across two
+[048 A1](048-simplification-candidates.md), where sharing a constant across two
 modules cost +0.38 kB and only `npm run perf` said so.
 
 ## Why there is no commit to attach it to

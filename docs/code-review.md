@@ -36,7 +36,7 @@ These look like defects on every first read and are all decisions:
   propose deleting rows by that tag.
 - **`EditModal.tsx` and `ProgramTab.tsx` are long** (800+ lines) and known.
   Splitting them is scheduled in
-  [roadmap 048](roadmap/048-simplification-candidates.md), so "this file is too
+  [roadmap 048](roadmap/done/048-simplification-candidates.md), so "this file is too
   big" is not a new finding.
 
 ## 2. Where the real risk is

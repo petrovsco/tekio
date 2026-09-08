@@ -105,7 +105,7 @@ judgement about whether code is *good* stays with `/simplify` and
 
 `knip` reports dead files, exports and dependencies; it never deletes. Its
 findings are triaged by hand into candidate A1 of
-[roadmap/048](docs/roadmap/048-simplification-candidates.md), which is the brief
+[roadmap/048](docs/roadmap/done/048-simplification-candidates.md), which is the brief
 that does the deleting — so `knip` reporting zero is what says A1 is finished.
 
 `perf` measures only what `dist/index.html` fetches before it can draw — the

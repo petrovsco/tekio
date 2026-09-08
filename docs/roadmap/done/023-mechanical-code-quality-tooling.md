@@ -162,7 +162,7 @@ The first run found **22 problems: 15 errors, 7 warnings**. Triaged:
   in the render body so the shared modal footer can call the active form's save.
   Mutating a ref during render is precisely what the rule exists to stop, and it
   is **already tracked**: candidate S1 of
-  [048-simplification-candidates.md](../048-simplification-candidates.md) replaces
+  [048-simplification-candidates.md](048-simplification-candidates.md) replaces
   it with a `useSave(saveRef, onClose)` hook. Acting on it is out of scope here
   by name, so ESLint points at S1 rather than duplicating it into a new brief.
 - `AssistantSettings.tsx`, 1× `react-hooks/set-state-in-effect`. Seeds two
@@ -206,7 +206,7 @@ With that, the run is **26 findings, and every one of them is real.** Triage:
 
 Nothing was deleted here, which is what the scope line asked for. The deletions
 belong to candidate **A1** of
-[048-simplification-candidates.md](../048-simplification-candidates.md), which
+[048-simplification-candidates.md](048-simplification-candidates.md), which
 predicted this run in writing: *"Overlaps 023, whose `knip` run would find the
 same exports."* It did — and it found **eleven more** that the hand read had
 missed, including a whole orphaned file, two exports whose `export` keyword is

@@ -2,7 +2,7 @@
 
 **Label:** bug
 **Status:** planned — found on the way through
-[048](048-simplification-candidates.md); filed 2026-09-08 with the fact
+[048](done/048-simplification-candidates.md); filed 2026-09-08 with the fact
 corrected (see *048 called this a one-line fix; it is not*).
 
 ## Goal
@@ -40,7 +40,7 @@ disagree with each other.
 
 ## 048 called this a one-line fix; it is not
 
-[048](048-simplification-candidates.md)'s "found on the way" list says
+[048](done/048-simplification-candidates.md)'s "found on the way" list says
 *"One-line fix"* — add `withOrigin(...)` to the upsert. That is wrong, and
 acting on it would break every sleep save from dev and staging:
 

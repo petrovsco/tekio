@@ -1,7 +1,7 @@
 # Roadmap: Ground the 1RM estimate WeightsTab prints
 
 **Label:** backlog
-**Status:** backlog — found 2026-09-08 while landing candidate A1 of [048](048-simplification-candidates.md); needs Peter's decision before any scout run. Inventory rows 8.1, 8.2 and 8.4 have said `unknown` / **(no brief)** since the inventory was written; this file is the brief they were missing, not new work committed to.
+**Status:** backlog — found 2026-09-08 while landing candidate A1 of [048](done/048-simplification-candidates.md); needs Peter's decision before any scout run. Inventory rows 8.1, 8.2 and 8.4 have said `unknown` / **(no brief)** since the inventory was written; this file is the brief they were missing, not new work committed to.
 
 ## Why this exists
 
@@ -82,6 +82,6 @@ series). Nothing else in the app consumes an estimated 1RM.
 - [ ] If deleted: `estimate1RM`, `best1RM`, `epley1RM`, `brzycki1RM` and the
       WeightsTab label and chart series go; rows 8.1–8.4 retire as removed
 - [ ] `docs/grounding-inventory.md` §8 no longer says **(no brief)**
-- [ ] The matching box in [048](048-simplification-candidates.md) Acceptance
+- [ ] The matching box in [048](done/048-simplification-candidates.md) Acceptance
       ("the four found-on-the-way items each have a brief or a recorded
       decision") counts this one as covered

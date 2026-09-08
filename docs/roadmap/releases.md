@@ -62,11 +62,17 @@ In running order:
    `/code-review`, and a perf budget with its first committed numbers. Its
    chart-bundle item turned out to be already shipped, so it hunted the real
    first-paint weight instead — 552 kB → 324 kB.
-10. [048](048-simplification-candidates.md) and
+10. [048](done/048-simplification-candidates.md) and
     [015](done/015-ground-trigger-spec-fixes.md) — spare-time units. 015 closed
     2026-09-08: the eight holes in the grounding gate are shut, except the one
     that cannot be judged without a set of weights to judge it against — that
-    became [065](065-rescale-exemption-unchecked-base.md) in 3.0.0.
+    became [065](065-rescale-exemption-unchecked-base.md) in 3.0.0. **048 closed
+    2026-09-08** (v2.0.58–v2.0.87): all 30 simplification candidates landed in
+    sixteen units, `knip` reports zero, and the three findings it made on the
+    way became [069](069-sleep-logs-row-origin.md),
+    [070](070-week-start-day-program-week.md) and
+    [071](071-retire-flat-exercises-fallback.md), none of them tagged to a
+    release yet.
 
 Left out on purpose: 003, 020 and 022 (stay in backlog — Peter, 2026-09-05),
 013 (cycle grounding — a program property, grounded only if it ships as the

@@ -6,18 +6,13 @@
 //
 // Provider is a switch; adding OpenAI/Anthropic later is one more branch.
 // MVP: single hard-coded user + verify_jwt=false. Swap to JWT-derived user on auth.
+//
+// The user id, the service-role client and the settings read live in
+// `_shared/settings.ts`, which `assistant-settings` reads too. Deploying this
+// function must upload the two `_shared` files with it.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-import { createClient } from 'jsr:@supabase/supabase-js@2'
-
-const USER_ID = 'a0000000-0000-0000-0000-000000000001'
-
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
+import { json, preflight, readJson } from '../_shared/http.ts'
+import { DEFAULT_MODEL, DEFAULT_PROVIDER, readSettings, serviceClient } from '../_shared/settings.ts'
 
 // Gemini part types (subset we care about)
 interface GeminiPart {
@@ -170,31 +165,18 @@ async function callGemini(
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  if (req.method === 'OPTIONS') return preflight()
 
-  let body: { contents?: GeminiContent[]; context?: string; model?: string }
-  try {
-    body = await req.json()
-  } catch {
-    return json({ error: 'invalid_json' }, 400)
-  }
+  const body = await readJson<{ contents?: GeminiContent[]; context?: string; model?: string }>(req)
+  if (!body) return json({ error: 'invalid_json' }, 400)
   const contents = body.contents ?? []
   if (contents.length === 0) return json({ error: 'empty_conversation' }, 400)
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  )
-  const { data: settings } = await supabase
-    .from('assistant_settings')
-    .select('provider, model, api_key')
-    .eq('user_id', USER_ID)
-    .maybeSingle()
-
+  const settings = await readSettings(serviceClient())
   if (!settings?.api_key) return json({ error: 'no_key' }, 400)
 
-  const provider = settings.provider ?? 'gemini'
-  const model = body.model ?? settings.model ?? 'gemini-2.5-flash'
+  const provider = settings.provider ?? DEFAULT_PROVIDER
+  const model = body.model ?? settings.model ?? DEFAULT_MODEL
   const contextBlock = body.context ? `
 
 # Current app data
@@ -202,6 +184,8 @@ ${body.context}` : ''
   const systemText = SYSTEM_PROMPT + contextBlock
 
   try {
+    // The case is the provider's name, not the default — a second provider
+    // added here must not read as "whatever the fallback happens to be".
     switch (provider) {
       case 'gemini': {
         const result = await callGemini(settings.api_key, model, systemText, contents)

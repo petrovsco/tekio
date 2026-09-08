@@ -4,60 +4,48 @@
 // using the service-role key, can touch it. The full key is never returned to
 // the client — `status` only ever exposes the last 4 characters.
 //
-// MVP: single hard-coded user. When auth/registration lands, derive the user id
-// from the request JWT instead of USER_ID and set verify_jwt=true on deploy.
+// The user id, the service-role client and the settings read live in
+// `_shared/settings.ts`, which `assistant-chat` reads too. Deploying this
+// function must upload the two `_shared` files with it.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
-import { createClient } from 'jsr:@supabase/supabase-js@2'
+import { json, preflight, readJson } from '../_shared/http.ts'
+import {
+  DEFAULT_MODEL,
+  DEFAULT_PROVIDER,
+  readSettings,
+  serviceClient,
+  USER_ID,
+  type Settings,
+} from '../_shared/settings.ts'
 
-const USER_ID = 'a0000000-0000-0000-0000-000000000001'
-
-const cors = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } })
-
-interface Settings {
-  provider: string
-  model: string
-  api_key: string | null
-}
-
+/** What the client is allowed to know about the stored key: whether there is
+ *  one, and its last 4 characters. Never the key itself. */
 function statusOf(s: Settings | null) {
   const key = s?.api_key ?? null
   return {
     hasKey: !!key,
     last4: key ? key.slice(-4) : null,
-    provider: s?.provider ?? 'gemini',
-    model: s?.model ?? 'gemini-2.5-flash',
+    provider: s?.provider ?? DEFAULT_PROVIDER,
+    model: s?.model ?? DEFAULT_MODEL,
   }
 }
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
+  if (req.method === 'OPTIONS') return preflight()
 
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  )
+  const supabase = serviceClient()
 
-  let body: { action?: string; provider?: string; apiKey?: string; model?: string }
-  try {
-    body = await req.json()
-  } catch {
-    return json({ error: 'invalid_json' }, 400)
-  }
+  const body = await readJson<{ action?: string; provider?: string; apiKey?: string; model?: string }>(req)
+  if (!body) return json({ error: 'invalid_json' }, 400)
 
-  const read = async (): Promise<Settings | null> => {
-    const { data } = await supabase
-      .from('assistant_settings')
-      .select('provider, model, api_key')
-      .eq('user_id', USER_ID)
-      .maybeSingle()
-    return (data as Settings | null) ?? null
+  const read = () => readSettings(supabase)
+
+  // Every write ends the same way: report the failure, or answer with the
+  // status as it now stands.
+  const mutate = async (op: () => PromiseLike<{ error: { message: string } | null }>) => {
+    const { error } = await op()
+    if (error) return json({ error: error.message }, 500)
+    return json(statusOf(await read()))
   }
 
   try {
@@ -69,34 +57,26 @@ Deno.serve(async (req) => {
         const apiKey = (body.apiKey ?? '').trim()
         if (!apiKey) return json({ error: 'missing_key' }, 400)
         const current = await read()
-        const { error } = await supabase.from('assistant_settings').upsert({
+        return await mutate(() => supabase.from('assistant_settings').upsert({
           user_id: USER_ID,
-          provider: body.provider ?? current?.provider ?? 'gemini',
-          model: body.model ?? current?.model ?? 'gemini-2.5-flash',
+          provider: body.provider ?? current?.provider ?? DEFAULT_PROVIDER,
+          model: body.model ?? current?.model ?? DEFAULT_MODEL,
           api_key: apiKey,
           updated_at: new Date().toISOString(),
-        })
-        if (error) return json({ error: error.message }, 500)
-        return json(statusOf(await read()))
+        }))
       }
 
-      case 'update_model': {
-        const { error } = await supabase
+      case 'update_model':
+        return await mutate(() => supabase
           .from('assistant_settings')
-          .update({ model: body.model ?? 'gemini-2.5-flash', provider: body.provider, updated_at: new Date().toISOString() })
-          .eq('user_id', USER_ID)
-        if (error) return json({ error: error.message }, 500)
-        return json(statusOf(await read()))
-      }
+          .update({ model: body.model ?? DEFAULT_MODEL, provider: body.provider, updated_at: new Date().toISOString() })
+          .eq('user_id', USER_ID))
 
-      case 'clear': {
-        const { error } = await supabase
+      case 'clear':
+        return await mutate(() => supabase
           .from('assistant_settings')
           .update({ api_key: null, updated_at: new Date().toISOString() })
-          .eq('user_id', USER_ID)
-        if (error) return json({ error: error.message }, 500)
-        return json(statusOf(await read()))
-      }
+          .eq('user_id', USER_ID))
 
       default:
         return json({ error: 'unknown_action' }, 400)

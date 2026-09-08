@@ -1,11 +1,9 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tiers 1 and 2 are finished and Tier 3 is nearly
-done** (v2.0.58 → v2.0.83; the progress log below has the units). What is left
-is C2, which the entry itself says to do only when the edge functions are next
-touched, plus the two housekeeping boxes.
-Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Status:** done — all 30 candidates landed across v2.0.58 → v2.0.87, in
+sixteen units; the progress log below has them. Committed to 2.1.0 by Peter on
+2026-09-05 as spare-time units.
 
 ## Progress log
 
@@ -37,13 +35,23 @@ Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
   other now run together instead of one after the next. The program read is
   **2× faster against the live database** and the Home read fell 1490 ms →
   1039 ms, which is the number doctrine §6 watches. Carried
-  [068](done/068-perf-baseline-drift.md)'s re-baseline, as that brief asked.
+  [068](068-perf-baseline-drift.md)'s re-baseline, as that brief asked.
 - **2026-09-08, v2.0.83 — Tier 3 continues: A7**, one unit. One definition of
   what a logged list does — newest first, and a saved entry replaces the row
   carrying its id — read by all ten lists, not the seven the entry named. Seven
   of them are now one `listActions(...)` line each; the three with a rule of
   their own build on the same helpers. Carried the entry's bonus: the ten
   per-domain setters are one `replaceLists`.
+- **2026-09-08, v2.0.86 — the three loose findings get briefs.** The
+  "found on the way" list held three facts with no ticket; each now has one
+  ([069](../069-sleep-logs-row-origin.md),
+  [070](../070-week-start-day-program-week.md),
+  [071](../071-retire-flat-exercises-fallback.md)), and checking them against
+  the code and the live database corrected two of the three claims.
+- **2026-09-08, v2.0.87 — Tier 3 closed, and the brief with it: C2**, one unit.
+  Two `_shared/` modules under `supabase/functions/`, both edge functions
+  redeployed and smoke-tested, and the deployment rule that comes with a shared
+  import written into `supabase/README.md`.
 **Release:** 2.1.0
 
 ## What this is
@@ -114,7 +122,7 @@ five units landed (v2.0.58 → v2.0.70).
 - **Change:** delete; inline `loadProgramRows` into `loadActivePrograms`;
   `weekdayOf` reads `DAYS_OF_WEEK`; rewrite the `classifyCardio` test as
   `classifyCardioAdaptations(c)[0]` or drop it.
-- **Risk:** low. Overlaps [023](done/023-mechanical-code-quality-tooling.md), whose `knip`
+- **Risk:** low. Overlaps [023](023-mechanical-code-quality-tooling.md), whose `knip`
   run would find the same exports; doing it by hand now costs little and 023
   then confirms zero.
 
@@ -137,7 +145,7 @@ is landed; `npm run knip` is the check that A1 is finished:
 - **Two more dead functions:** `epley1RM` and `brzycki1RM` (`utils.ts:151,156`).
   Note for whoever deletes them: they are 1RM estimators, so if they are ever
   revived instead they are formulas and `/ground` applies. Nothing in
-  [grounding-inventory.md](../grounding-inventory.md) cites them today, because
+  [grounding-inventory.md](../../grounding-inventory.md) cites them today, because
   the app does not use them.
 - **`classifyGarminIntensity`** (`adaptations.ts:82`) — this entry says
   `classifyCardio`, which no longer exists under that name.
@@ -983,7 +991,7 @@ useful part of this record:
   word — so a new `EditModalTarget` variant is still a compile error.
 - **The lint note above was wrong: 10 of the 16 were EditModal's, not all 16.**
   The other six are the ones
-  [023](done/023-mechanical-code-quality-tooling.md) triaged and kept on purpose
+  [023](023-mechanical-code-quality-tooling.md) triaged and kept on purpose
   — `react-refresh/only-export-components` ×3, `exhaustive-deps` ×2 and
   AssistantSettings' `set-state-in-effect`. `npm run lint` now reports **6
   warnings, 0 errors**, which is 023's accepted floor. Zero was never reachable
@@ -1434,6 +1442,14 @@ pressed, not as it was when the pane rendered.
   helper in settings.
 - **Risk:** low code-wise, but both functions must be redeployed and smoke-tested
   from the in-app assistant. Do it only when next touching them.
+- **Landed** 2026-09-08, v2.0.87. Four shared pieces, not two: `preflight()` and
+  `readJson()` fell out of the same duplication once `cors` and `json` moved.
+  The defaults appear **eight** times, not nine — five in settings, three in
+  chat — and one of the three is the provider `switch`'s `case 'gemini'`, which
+  is the provider's *name*, not a default, so it stays a literal with a comment
+  saying why. Seven became two constants. The `mutate(fn)` helper landed as
+  written and turned two of the three mutating branches into single
+  expressions.
 
 ## Found on the way — not simplifications
 
@@ -1445,7 +1461,7 @@ decision is the next step.
   cold insert below it in the same file does. A night logged first from dev or
   staging lands untagged, i.e. as production — a gap in 037's "every user-write
   root row" guarantee. **Now filed as
-  [069](069-sleep-logs-row-origin.md)**, which corrects this entry: it is *not*
+  [069](../069-sleep-logs-row-origin.md)**, which corrects this entry: it is *not*
   the "one-line fix" written here. `sleep_logs` has no `origin` column at all
   (checked against the live database, 2026-09-08 — fourteen tables have one and
   it is not among them), so `withOrigin` alone would send an unknown column and
@@ -1455,7 +1471,7 @@ decision is the next step.
   (`toggleWeekVariant` in the store, the `weekStartDate` default in
   `lib/db/program.ts`, and the `weekStart` in `ProgramTab` and `TodaysPlan`),
   while four other screens honour it. A behaviour decision, not a cleanup.
-  **Now filed as [070](070-week-start-day-program-week.md)** (backlog — it needs
+  **Now filed as [070](../070-week-start-day-program-week.md)** (backlog — it needs
   Peter's choice between two shapes), which adds the thing this entry had not
   spotted: `week_start_date` is half of a stored upsert key, so simply threading
   the preference through would make an existing week's variant choices
@@ -1464,25 +1480,25 @@ decision is the next step.
   (`normalizeDays` / `flatToBlock` in `ProgramTab`, the `day.exercises` branch
   in `TodaysPlan`, the `block_id === null` branch in `fetchDayDetails`), because
   `defaultProgram()` still ships days with no `blocks`. **Now filed as
-  [071](071-retire-flat-exercises-fallback.md)**, which drops this entry's
+  [071](../071-retire-flat-exercises-fallback.md)**, which drops this entry's
   prediction that removing them "needs a backfill migration": the live database
   holds 95 `program_day_exercises` rows and **every one has a `block_id`**
   (checked 2026-09-08), and `saveBlock` wraps a flat day into a synthetic block
   before writing, so no write path can create one. The work is `defaultProgram()`
   plus a required `blocks` field — no migration, and nothing to do with
-  [025](done/025-release-blocked-schema-drops.md).
+  [025](025-release-blocked-schema-drops.md).
 - **CLAUDE.md said `CYCLE` was defined twice.** It is not: `utils.ts:5` imports
   it from `constants/app.ts`. Corrected in the commit that filed this brief.
 - **The 1RM estimator ships ungrounded and has no brief.** Found while landing
   A1 (2026-09-08). `estimate1RM` averages Epley and Brzycki and WeightsTab
   prints "≈NNkg 1RM" next to a logged entry, so a number claiming physiological
-  meaning is on screen. [grounding-inventory §8](../grounding-inventory.md)
+  meaning is on screen. [grounding-inventory §8](../../grounding-inventory.md)
   already carries it — 8.1 Epley, 8.2 Brzycki, 8.4 the unweighted mean — all
   `unknown`, all marked **(no brief)**, and 8.4 notes the averaging step is
   Tekiō's own invention rather than a published estimator. The inventory is
   reference, so "(no brief)" was the tracking gap: nothing in `docs/roadmap/`
   listed it, which meant `/roadmap` could not see it. **Now filed as
-  [067](067-ground-1rm-estimator.md)** (backlog — it needs Peter's decision
+  [067](../067-ground-1rm-estimator.md)** (backlog — it needs Peter's decision
   first: ground the three formulas, or delete a number nothing reads back), and
   the three inventory rows point at it instead of saying "(no brief)".
 
@@ -1597,18 +1613,42 @@ Tier 3:
       phase, 32 blocks, 78 exercises, this week's variant rows, 0 console errors
       — and pausing it back, which returned both `user_programs` and
       `program_cycles` to `paused`
-- [ ] C2 edge-function `_shared/`, both redeployed
+- [x] C2 edge-function `_shared/`, both redeployed — 2026-09-08, v2.0.87.
+      **It grew the code, like B9 and B12 before it**: the two function files
+      fell 323 → 287 lines and the two shared files cost 67, so the total is
+      354, up 31 on the −25 the entry predicted. What it bought is the thing
+      the line count cannot show — the user id, the CORS headers, the
+      service-role client, the `assistant_settings` column list and the two
+      model defaults now have one definition each, so changing the model is one
+      edit rather than five in two files. It also bought a **new deployment
+      rule**: a function importing `_shared/` must be uploaded with those files
+      and keep the `<function>/index.ts` + `_shared/*.ts` paths, because the
+      import is `../_shared/…`. That rule is now written down in
+      [supabase/README.md](../../../supabase/README.md) with both the CLI command
+      and the Management-API form, because getting it wrong deploys a function
+      that cannot resolve its own import. Both redeployed (chat v4, settings
+      v3, `verify_jwt` false on both, unchanged) and smoke-tested against the
+      live project: `status`, `unknown_action`, `invalid_json`, `missing_key`,
+      the CORS pre-flight, `empty_conversation`, a real Gemini round trip
+      (`{"text":"ok"}`) and a real tool-call proposal (`create_exercise`, which
+      the client executes, so nothing was written). The `mutate` path was
+      exercised with an `update_model` that writes the values already stored —
+      the row before and after holds the same provider, model and 39-character
+      key. Then checked in the browser end to end: the in-app 🤖 assistant
+      opened, `assistant-settings` and `assistant-chat` both answered 200, the
+      reply rendered, 0 console errors
 
 Housekeeping:
 
 - [x] The four "found on the way" items each have a brief or a recorded
       decision — 2026-09-08, v2.0.86. Five items, not four: sleep origin →
-      [069](069-sleep-logs-row-origin.md), `weekStartDay` →
-      [070](070-week-start-day-program-week.md), flat `exercises` →
-      [071](071-retire-flat-exercises-fallback.md), the 1RM estimator →
-      [067](067-ground-1rm-estimator.md) (filed earlier), and the `CYCLE`
+      [069](../069-sleep-logs-row-origin.md), `weekStartDay` →
+      [070](../070-week-start-day-program-week.md), flat `exercises` →
+      [071](../071-retire-flat-exercises-fallback.md), the 1RM estimator →
+      [067](../067-ground-1rm-estimator.md) (filed earlier), and the `CYCLE`
       correction, which was a decision recorded in CLAUDE.md at the time. Two of
       the three new briefs correct the entry that spawned them: the sleep fix is
       not one line (the column does not exist) and the flat-`exercises` removal
       needs no migration (there is nothing left to backfill)
-- [ ] `npm run check:docs` passes before this brief moves to `done/`
+- [x] `npm run check:docs` passes before this brief moves to `done/` —
+      2026-09-08, 84 files, 0 dead links, 0 failed anchors
