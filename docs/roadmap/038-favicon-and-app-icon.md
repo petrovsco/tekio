@@ -610,9 +610,10 @@ the suckers are still holes at 32px.
       the winner. Every finding worth keeping was written into *Round 7* first,
       the geometry into *What shipped*, and nothing else referenced the folder,
       so the deletion was `git rm -r` and nothing more. It came back once, for
-      round 7g, with `git checkout <sha> -- scripts/mark` off the commit before
-      its deletion, and went away again in the same push — which is the whole
-      point of scaffolding that costs one command to restore.
+      round 7g, and went away again in the same push — which is the whole point
+      of scaffolding that costs one command to restore. The last commit that
+      carries the whole bench, round 7g included, is `475207b`:
+      `git checkout 475207b -- scripts/mark`.
 - [ ] The tab icon is visible on staging and production. **Peter's to tick** —
       both sites sit behind the cookie gate whose credentials are Vercel
       Secrets, so no session here can open them. Staging shows it on the next
