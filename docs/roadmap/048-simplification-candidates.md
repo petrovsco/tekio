@@ -1,10 +1,10 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — **Tiers 1 and 2 are finished and Tier 3 has started**
-(v2.0.58 → v2.0.82; the progress log below has the units). What is left is A7
-and C2 plus the two housekeeping boxes; each is one atomic unit a later session
-lands with `/simplify`, ticking its box in Acceptance when it ships.
+**Status:** in progress — **Tiers 1 and 2 are finished and Tier 3 is nearly
+done** (v2.0.58 → v2.0.83; the progress log below has the units). What is left
+is C2, which the entry itself says to do only when the edge functions are next
+touched, plus the two housekeeping boxes.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 
 ## Progress log
@@ -38,6 +38,12 @@ Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
   **2× faster against the live database** and the Home read fell 1490 ms →
   1039 ms, which is the number doctrine §6 watches. Carried
   [068](done/068-perf-baseline-drift.md)'s re-baseline, as that brief asked.
+- **2026-09-08, v2.0.83 — Tier 3 continues: A7**, one unit. One definition of
+  what a logged list does — newest first, and a saved entry replaces the row
+  carrying its id — read by all ten lists, not the seven the entry named. Seven
+  of them are now one `listActions(...)` line each; the three with a rule of
+  their own build on the same helpers. Carried the entry's bonus: the ten
+  per-domain setters are one `replaceLists`.
 **Release:** 2.1.0
 
 ## What this is
@@ -1524,7 +1530,35 @@ Tier 2:
 
 Tier 3:
 
-- [ ] A7 store `listActions`
+- [x] A7 store `listActions` — 2026-09-08, v2.0.83. **All ten** logged lists
+      share the ordering rule, not the seven the entry named: `insert` /
+      `dropId` / `patchId` are the one definition, `listActions(set, key, Name,
+      db)` spreads the whole triplet into the store for the seven plain ones,
+      and weights, mobility and sports — which have a rule of their own — build
+      their actions from the same three helpers instead of hand-writing them. So
+      the back-dated-entry bug is fixed in mobility and sports too, which the
+      entry did not list. Bodyweight was wrong in the entry as well: its add
+      deduped **by date** because `saveBodyweightEntry` upserts on
+      `(user_id, log_date)`, so a plain prepend would have shown the day twice —
+      `insert` drops any row already carrying the *saved id*, which covers the
+      upsert with no special case and is the more honest rule anyway. The bonus
+      landed: ten setters with one caller between them became one
+      `replaceLists`, which is now **one store write instead of ten** and sorts,
+      because `mergeById` appends and imported entries used to arrive after the
+      existing ones however old they were. **The −80 lines did not
+      materialise** — the helper block costs about what the seven triplets
+      saved, so the file is 18 lines shorter, not 80; over half that block is
+      the comment explaining the rule. First paint fell 348.69 → 346.98 kB and
+      is re-baselined here. Verified in the browser against the live database
+      with every write answered locally by `page.route(...).fulfill(...)`, so
+      nothing was written — checked afterwards in SQL, all three rows unchanged:
+      a back-dated cardio session landed at index 2 between 2026-08-04 and
+      2026-07-12 rather than at the top; re-dating the newest session to
+      2020-01-01 moved it to the end; re-saving an existing bodyweight day kept
+      the list at 11 with one row for that date; a second glass of water on a
+      logged day summed 700 → 950 ml without adding a row; a reversed sleep list
+      through `replaceLists` came back in date order in one store write. All ten
+      lists date-ordered at boot, all six tabs walked, 0 console errors
 - [x] A9 one `loadProgramData` — 2026-09-08, v2.0.82. The entry named a
       `loadProgramRows` that does not exist (it is `loadActivePrograms`) and
       predicted ~7 fewer round-trips; on the live database, which currently has

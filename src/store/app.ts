@@ -61,16 +61,7 @@ interface AppStore extends AppState {
   openEditModal: (target: EditModalTarget) => void
   closeEditModal: () => void
 
-  setWeights: (weights: AppState['weights']) => void
-  setBodyweight: (bodyweight: AppState['bodyweight']) => void
-  setCardio: (cardio: AppState['cardio']) => void
-  setMobility: (mobility: AppState['mobility']) => void
-  setSports: (sports: AppState['sports']) => void
-  setDonations: (donations: AppState['donations']) => void
-  setWater: (water: AppState['water']) => void
-  setSleep: (sleep: AppState['sleep']) => void
-  setSauna: (sauna: AppState['sauna']) => void
-  setCold: (cold: AppState['cold']) => void
+  replaceLists: (lists: Partial<Pick<AppState, ListKey>>) => void
   setToast: (msg: string) => void
   withToast: (fn: () => Promise<void>, ok: string, fail?: string) => Promise<boolean>
 
@@ -177,6 +168,82 @@ function applyMuscleTags(entries: MobilityEntry[], tagged: MobilityEntry['exerci
   }))
 }
 
+// ── Logged lists ──────────────────────────────────────────────────────────────
+// Ten of the store's lists are the same thing: entries the user logs, each with
+// an `id` and a `date`, held newest first. Their add / remove / edit actions were
+// written out ten times, and they had drifted — sleep, sauna, cold and bodyweight
+// re-sorted after a write, cardio, donations, water, sports and mobility did not,
+// so a back-dated cardio session jumped to the top of its history instead of
+// landing on its own date. These four helpers are the one definition of what a
+// logged list does, and every action below is built from them (roadmap 048
+// candidate A7).
+
+/** A user-logged entry: identified by `id`, ordered by `date`. */
+type Dated = { id: string; date: string }
+
+/** Newest first — the order every `HistoryList` and every "last N" read assumes. */
+const byDate = <T extends Dated>(xs: T[]): T[] => [...xs].sort((a, b) => b.date.localeCompare(a.date))
+
+/** A freshly saved entry, in its place. It replaces any row already carrying its
+ *  id, which is what makes an upsert — `saveBodyweightEntry` is one — update the
+ *  day it wrote rather than appear beside it. */
+const insert = <T extends Dated>(xs: T[], saved: T): T[] => byDate([saved, ...xs.filter(x => x.id !== saved.id)])
+
+const dropId = <T extends Dated>(xs: T[], id: string): T[] => xs.filter(x => x.id !== id)
+
+/** The patch merged into one entry. Re-sorted because a patch may move the date. */
+const patchId = <T extends Dated>(xs: T[], id: string, patch: Partial<T>): T[] =>
+  byDate(xs.map(x => (x.id === id ? { ...x, ...patch } : x)))
+
+/** The state keys holding a logged list. */
+type ListKey = { [K in keyof AppState]: AppState[K] extends Dated[] ? K : never }[keyof AppState]
+
+/** The three writes a logged list's domain file exposes. */
+interface ListDb<T extends Dated> {
+  save: (entry: Omit<T, 'id'>) => Promise<T>
+  del: (id: string) => Promise<void>
+  update: (id: string, patch: Omit<T, 'id'>) => Promise<void>
+}
+
+type ListActions<N extends string, T extends Dated> =
+  Record<`add${N}Entry`, (entry: Omit<T, 'id'>) => Promise<void>> &
+  Record<`remove${N}Entry`, (id: string) => Promise<void>> &
+  Record<`edit${N}Entry`, (id: string, patch: Omit<T, 'id'>) => Promise<void>>
+
+/** The `add<Name>Entry` / `remove<Name>Entry` / `edit<Name>Entry` triplet for one
+ *  logged list: write to the database, then put the result in its place. Spread
+ *  into the store; a domain with an extra rule (mobility's tag propagation,
+ *  water's same-day merge) writes that action out after the spread instead. */
+function listActions<K extends ListKey, N extends string>(
+  set: (fn: (s: AppStore) => Partial<AppStore>) => void,
+  key: K,
+  name: N,
+  db: ListDb<AppState[K][number]>,
+): ListActions<N, AppState[K][number]> {
+  type T = AppState[K][number]
+  // A computed key widens an object literal to `{ [x: string]: … }`, and a
+  // template-literal key cannot be inferred from a value at all — so both ends of
+  // this helper are asserted. The call sites are still checked: `AppStore` names
+  // all three actions, so a wrong shape fails where the spread lands.
+  const write = (fn: (xs: T[]) => T[]) =>
+    set(s => ({ [key]: fn(s[key] as T[]) }) as Partial<AppStore>)
+
+  return {
+    [`add${name}Entry`]: async (entry: Omit<T, 'id'>) => {
+      const saved = await db.save(entry)
+      write(xs => insert(xs, saved))
+    },
+    [`remove${name}Entry`]: async (id: string) => {
+      await db.del(id)
+      write(xs => dropId(xs, id))
+    },
+    [`edit${name}Entry`]: async (id: string, patch: Omit<T, 'id'>) => {
+      await db.update(id, patch)
+      write(xs => patchId(xs, id, patch as Partial<T>))
+    },
+  } as ListActions<N, T>
+}
+
 export const useAppStore = create<AppStore>((set, get) => ({
   weights: [],
   bodyweight: [],
@@ -207,16 +274,16 @@ export const useAppStore = create<AppStore>((set, get) => ({
   closeEditModal: () => set({ editModal: null }),
 
   // ── Setters ─────────────────────────────────────────────────────────────────
-  setWeights: (weights) => set({ weights }),
-  setBodyweight: (bodyweight) => set({ bodyweight }),
-  setCardio: (cardio) => set({ cardio }),
-  setMobility: (mobility) => set({ mobility }),
-  setSports: (sports) => set({ sports }),
-  setDonations: (donations) => set({ donations }),
-  setWater: (water) => set({ water }),
-  setSleep: (sleep) => set({ sleep }),
-  setSauna: (sauna) => set({ sauna }),
-  setCold: (cold) => set({ cold }),
+  // Whole logged lists, replaced in one write. Ten per-domain setters did this
+  // and had one caller between them, the JSON importer — ten store writes, so
+  // ten rounds of waking whatever reads each list (roadmap 048 B14). The sort is
+  // not decoration: `mergeById` appends, so imported entries used to arrive after
+  // the existing ones however old they were.
+  replaceLists: (lists) => set(
+    Object.fromEntries(
+      Object.entries(lists).map(([key, xs]) => [key, byDate(xs as Dated[])]),
+    ) as Partial<AppStore>,
+  ),
   setToast: (toast) => {
     set({ toast })
     if (toast) setTimeout(() => set({ toast: '' }), 3000)
@@ -294,22 +361,20 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   // ── Weights ──────────────────────────────────────────────────────────────────
+  // Written out rather than spread: `editWeightEntry` takes sets plus an optional
+  // date, not a whole entry.
   addWeightEntry: async (entry) => {
     const saved = await saveWeightEntry(entry)
-    set(s => ({ weights: [saved, ...s.weights] }))
+    set(s => ({ weights: insert(s.weights, saved) }))
   },
   removeWeightEntry: async (id) => {
     await deleteWeightEntry(id)
-    set(s => ({ weights: s.weights.filter(w => w.id !== id) }))
+    set(s => ({ weights: dropId(s.weights, id) }))
   },
   editWeightEntry: async (id, patch) => {
     await updateWeightEntry(id, patch)
     set(s => ({
-      weights: s.weights.map(w =>
-        w.id === id
-          ? { ...w, sets: patch.sets, ...(patch.date ? { date: patch.date } : {}) }
-          : w
-      ),
+      weights: patchId(s.weights, id, { sets: patch.sets, ...(patch.date ? { date: patch.date } : {}) }),
     }))
   },
 
@@ -373,65 +438,37 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   // ── Bodyweight ───────────────────────────────────────────────────────────────
-  addBodyweightEntry: async (entry) => {
-    const saved = await saveBodyweightEntry(entry)
-    set(s => ({
-      bodyweight: [saved, ...s.bodyweight.filter(b => b.date !== saved.date)].sort(
-        (a, b) => b.date.localeCompare(a.date)
-      ),
-    }))
-  },
-  removeBodyweightEntry: async (id) => {
-    await deleteBodyweightEntry(id)
-    set(s => ({ bodyweight: s.bodyweight.filter(b => b.id !== id) }))
-  },
-  editBodyweightEntry: async (id, patch) => {
-    await updateBodyweightEntry(id, patch)
-    set(s => ({
-      bodyweight: s.bodyweight
-        .map(b => (b.id === id ? { ...b, ...patch } : b))
-        .sort((a, b) => b.date.localeCompare(a.date)),
-    }))
-  },
+  ...listActions(set, 'bodyweight', 'Bodyweight', {
+    save: saveBodyweightEntry, del: deleteBodyweightEntry, update: updateBodyweightEntry,
+  }),
 
   // ── Cardio ───────────────────────────────────────────────────────────────────
-  addCardioEntry: async (entry) => {
-    const saved = await saveCardioEntry(entry)
-    set(s => ({ cardio: [saved, ...s.cardio] }))
-  },
-  removeCardioEntry: async (id) => {
-    await deleteCardioEntry(id)
-    set(s => ({ cardio: s.cardio.filter(c => c.id !== id) }))
-  },
-  editCardioEntry: async (id, patch) => {
-    await updateCardioEntry(id, patch)
-    set(s => ({ cardio: s.cardio.map(c => (c.id === id ? { ...c, ...patch } : c)) }))
-  },
+  ...listActions(set, 'cardio', 'Cardio', {
+    save: saveCardioEntry, del: deleteCardioEntry, update: updateCardioEntry,
+  }),
 
   // ── Mobility ─────────────────────────────────────────────────────────────────
+  // Written out rather than spread: a write propagates the saved muscle tags
+  // across every entry naming the same exercise.
   addMobilityEntry: async (entry) => {
     const saved = await saveMobilityEntry(entry)
-    set(s => ({ mobility: applyMuscleTags([saved, ...s.mobility], saved.exercises) }))
+    set(s => ({ mobility: applyMuscleTags(insert(s.mobility, saved), saved.exercises) }))
   },
   removeMobilityEntry: async (id) => {
     await deleteMobilityEntry(id)
-    set(s => ({ mobility: s.mobility.filter(m => m.id !== id) }))
+    set(s => ({ mobility: dropId(s.mobility, id) }))
   },
   editMobilityEntry: async (id, patch) => {
     await updateMobilityEntry(id, patch)
-    set(s => ({
-      mobility: applyMuscleTags(
-        s.mobility.map(m => (m.id === id ? { ...m, ...patch } : m)),
-        patch.exercises,
-      ),
-    }))
+    set(s => ({ mobility: applyMuscleTags(patchId(s.mobility, id, patch), patch.exercises) }))
   },
 
   // ── Sports ───────────────────────────────────────────────────────────────────
+  // Written out rather than spread: a write can also introduce a sport type.
   addSportEntry: async (entry, newSportFlags) => {
     const saved = await saveSportEntry(entry, newSportFlags)
     set(s => ({
-      sports: [saved, ...s.sports],
+      sports: insert(s.sports, saved),
       sportTypes: newSportFlags
         ? [...s.sportTypes.filter(t => t.name.toLowerCase() !== saved.sport.toLowerCase()), { name: saved.sport, ...newSportFlags }]
         : s.sportTypes,
@@ -439,12 +476,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   removeSportEntry: async (id) => {
     await deleteSportEntry(id)
-    set(s => ({ sports: s.sports.filter(sk => sk.id !== id) }))
+    set(s => ({ sports: dropId(s.sports, id) }))
   },
   editSportEntry: async (id, patch, newSportFlags) => {
     await updateSportEntry(id, patch, newSportFlags)
     set(s => ({
-      sports: s.sports.map(sk => (sk.id === id ? { ...sk, ...patch } : sk)),
+      sports: patchId(s.sports, id, patch),
       sportTypes: newSportFlags
         ? [...s.sportTypes.filter(t => t.name.toLowerCase() !== patch.sport.toLowerCase()), { name: patch.sport, ...newSportFlags }]
         : s.sportTypes,
@@ -452,93 +489,43 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   // ── Donations ────────────────────────────────────────────────────────────────
-  addDonationEntry: async (entry) => {
-    const saved = await saveDonationEntry(entry)
-    set(s => ({ donations: [saved, ...s.donations] }))
-  },
-  removeDonationEntry: async (id) => {
-    await deleteDonationEntry(id)
-    set(s => ({ donations: s.donations.filter(d => d.id !== id) }))
-  },
-  editDonationEntry: async (id, patch) => {
-    await updateDonationEntry(id, patch)
-    set(s => ({ donations: s.donations.map(d => (d.id === id ? { ...d, ...patch } : d)) }))
-  },
+  ...listActions(set, 'donations', 'Donation', {
+    save: saveDonationEntry, del: deleteDonationEntry, update: updateDonationEntry,
+  }),
 
   // ── Water ────────────────────────────────────────────────────────────────────
+  ...listActions(set, 'water', 'Water', {
+    save: saveWaterEntry, del: deleteWaterEntry, update: updateWaterEntry,
+  }),
+  // Replaces the spread's `addWaterEntry`: a second glass on a day already logged
+  // tops that day up rather than starting a second row.
   addWaterEntry: async (entry) => {
     const existing = get().water.find(w => w.date === entry.date)
     if (existing) {
-      const patch = { date: existing.date, amountMl: existing.amountMl + entry.amountMl }
-      await updateWaterEntry(existing.id, patch)
-      set(s => ({ water: s.water.map(w => (w.id === existing.id ? { ...w, ...patch } : w)) }))
+      await get().editWaterEntry(existing.id, {
+        date: existing.date,
+        amountMl: existing.amountMl + entry.amountMl,
+      })
       return
     }
     const saved = await saveWaterEntry(entry)
-    set(s => ({ water: [saved, ...s.water] }))
-  },
-  removeWaterEntry: async (id) => {
-    await deleteWaterEntry(id)
-    set(s => ({ water: s.water.filter(w => w.id !== id) }))
-  },
-  editWaterEntry: async (id, patch) => {
-    await updateWaterEntry(id, patch)
-    set(s => ({ water: s.water.map(w => (w.id === id ? { ...w, ...patch } : w)) }))
+    set(s => ({ water: insert(s.water, saved) }))
   },
 
   // ── Recovery: Sleep ──────────────────────────────────────────────────────────
-  addSleepEntry: async (entry) => {
-    const saved = await saveSleepEntry(entry)
-    set(s => ({ sleep: [saved, ...s.sleep].sort((a, b) => b.date.localeCompare(a.date)) }))
-  },
-  removeSleepEntry: async (id) => {
-    await deleteSleepEntry(id)
-    set(s => ({ sleep: s.sleep.filter(e => e.id !== id) }))
-  },
-  editSleepEntry: async (id, patch) => {
-    await updateSleepEntry(id, patch)
-    set(s => ({
-      sleep: s.sleep
-        .map(e => (e.id === id ? { ...e, ...patch } : e))
-        .sort((a, b) => b.date.localeCompare(a.date)),
-    }))
-  },
+  ...listActions(set, 'sleep', 'Sleep', {
+    save: saveSleepEntry, del: deleteSleepEntry, update: updateSleepEntry,
+  }),
 
   // ── Recovery: Sauna ──────────────────────────────────────────────────────────
-  addSaunaEntry: async (entry) => {
-    const saved = await saveSaunaEntry(entry)
-    set(s => ({ sauna: [saved, ...s.sauna].sort((a, b) => b.date.localeCompare(a.date)) }))
-  },
-  removeSaunaEntry: async (id) => {
-    await deleteSaunaEntry(id)
-    set(s => ({ sauna: s.sauna.filter(e => e.id !== id) }))
-  },
-  editSaunaEntry: async (id, patch) => {
-    await updateSaunaEntry(id, patch)
-    set(s => ({
-      sauna: s.sauna
-        .map(e => (e.id === id ? { ...e, ...patch } : e))
-        .sort((a, b) => b.date.localeCompare(a.date)),
-    }))
-  },
+  ...listActions(set, 'sauna', 'Sauna', {
+    save: saveSaunaEntry, del: deleteSaunaEntry, update: updateSaunaEntry,
+  }),
 
   // ── Recovery: Cold ───────────────────────────────────────────────────────────
-  addColdEntry: async (entry) => {
-    const saved = await saveColdEntry(entry)
-    set(s => ({ cold: [saved, ...s.cold].sort((a, b) => b.date.localeCompare(a.date)) }))
-  },
-  removeColdEntry: async (id) => {
-    await deleteColdEntry(id)
-    set(s => ({ cold: s.cold.filter(e => e.id !== id) }))
-  },
-  editColdEntry: async (id, patch) => {
-    await updateColdEntry(id, patch)
-    set(s => ({
-      cold: s.cold
-        .map(e => (e.id === id ? { ...e, ...patch } : e))
-        .sort((a, b) => b.date.localeCompare(a.date)),
-    }))
-  },
+  ...listActions(set, 'cold', 'Cold', {
+    save: saveColdEntry, del: deleteColdEntry, update: updateColdEntry,
+  }),
 
   reloadMuscleData: async () => {
     const [muscleGroups, exerciseMuscles, exercises] = await Promise.all([

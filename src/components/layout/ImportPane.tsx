@@ -110,16 +110,11 @@ export function ImportPane({ onClose }: ImportPaneProps) {
         ...newInCold.map(c => saveColdEntry(c)),
       ])
 
-      store.setWeights(newWeights)
-      store.setBodyweight(newBodyweight)
-      store.setCardio(newCardio)
-      store.setMobility(newMobility)
-      store.setSports(newSports)
-      store.setDonations(newDonations)
-      store.setWater(newWater)
-      store.setSleep(newSleep)
-      store.setSauna(newSauna)
-      store.setCold(newCold)
+      store.replaceLists({
+        weights: newWeights, bodyweight: newBodyweight, cardio: newCardio,
+        mobility: newMobility, sports: newSports, donations: newDonations,
+        water: newWater, sleep: newSleep, sauna: newSauna, cold: newCold,
+      })
 
       if (p.program && store.programs.length === 0) {
         await store.saveActiveProgram(p.program as Program)
