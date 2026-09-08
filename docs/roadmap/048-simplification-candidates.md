@@ -3,7 +3,8 @@
 **Label:** infra
 **Status:** in progress — four landed: **A8** (v2.0.58), **A1** (v2.0.63, which
 took `knip` to zero) and **S1** in two parts (v2.0.65 store + tabs, v2.0.66
-EditModal, which took `npm run lint` to zero warnings). **A4 + A5 are next.**
+EditModal, after which `npm run lint` reports nothing in that file and the repo
+sits at 023's accepted floor of 6 warnings). **A4 + A5 are next.**
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
