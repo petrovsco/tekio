@@ -1,11 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — the review is done (2026-09-05, v1.18.4, commit
-00b90b7) and one candidate has landed: **A8** (react-router removed) shipped
-2026-09-08 in v2.0.58 via roadmap 023 item 0. Each remaining candidate is one
-atomic unit a later session lands with `/simplify`; tick its box in Acceptance
-when it ships. Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
+**Status:** in progress — two candidates have landed: **A8** (2026-09-08,
+v2.0.58, via roadmap 023 item 0) and **A1** (2026-09-08, v2.0.63), which took
+`knip` to zero findings. Each remaining candidate is one atomic unit a later
+session lands with `/simplify`; tick its box in Acceptance when it ships.
+Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
 **Release:** 2.1.0
 
 ## What this is
@@ -109,13 +109,50 @@ is landed; `npm run knip` is the check that A1 is finished:
   value under two names, which is the "duplicated constants" in this entry's
   own title.
 
+**Landed 2026-09-08 (v2.0.63).** `npm run knip` reports zero and `npm run lint`
+dropped from 18 warnings to 16. 108 lines deleted across 16 files, plus one
+whole file. Four of the claims above were wrong when read against the code, and
+the corrections are the useful part of this record:
+
+- **"Dead" was often only the `export` keyword.** `classifyGarminIntensity`,
+  `epley1RM`, `brzycki1RM`, `MetricSeries`, `MuscleStatus`, `AdaptationModality`,
+  `ProposalStatus`, `Proposal`, `SportType` and `DonationType` are all live
+  inside their own file — knip's "unused export" means nothing *else* imports
+  them, not that nothing calls them. They lost the keyword and kept the code.
+  Only seven things were genuinely dead and deleted outright: `useCountUp.ts`,
+  `currentStreak`, `totalAdaptationVolume`, `loadPausedPrograms`,
+  `SPORT_TYPES_DEFAULT`, `CardioDisplayType` / `DonationDisplayType`,
+  `setSportTypes`, the `ss` button variant and three forwarding re-exports.
+- **`epley1RM` and `brzycki1RM` are not revivable formulas — they ship.**
+  `estimate1RM` averages them and WeightsTab prints the result as "≈NNkg 1RM".
+  The note above says `/ground` would apply "if they are ever revived"; the
+  tense is wrong, a 1RM estimate is on screen today. The inventory already knows
+  — §8 rows 8.1, 8.2 and 8.4 are all `unknown`, and 8.4 flags the averaging step
+  as "Tekiō's own estimator", not a published formula — so what is missing is a
+  brief, not a discovery. Recorded under *Found on the way*.
+- **`DELOAD_WEEK` was kept.** It is grounding-inventory row 5.3 — "week 6 is the
+  deload week", a deload-placement claim still marked `unknown`, and row 5.8
+  writes it to `programs.deload_week`. It shares a *value* with `CYCLE` but not a
+  *meaning*, and deriving it is what keeps the deload on the last week if the
+  cycle length ever moves. Knip's per-export `@knipignore` tag does not reach the
+  `duplicates` issue type (it reports "unused tag"), so `knip.jsonc` excludes
+  that check instead, with the reasoning in the file. Every other knip issue type
+  stays on.
+- **`DRAWER_TABS` was already gone** from `App.tsx` — nothing to delete.
+
 ### A2. `weights.ts` copies `program.ts` and itself (−22)
 
-- **Where:** `src/lib/db/weights.ts:6-18` is `getOrCreateExercise` verbatim from
-  `src/lib/db/program.ts:10-22` (`mobility.ts` already imports program's);
-  `weights.ts:136-144` and `:182-190` both count remaining `session_exercises`
-  and delete the session at zero.
-- **Change:** import from `./program`; extract `deleteSessionIfEmpty(sessionId)`.
+- **Where:** ~~`src/lib/db/weights.ts:6-18` is `getOrCreateExercise` verbatim
+  from `src/lib/db/program.ts:10-22`~~ — **the copy is already gone** (checked
+  2026-09-08 while landing A1). Roadmap 044 moved the resolver to
+  `src/lib/db/exercises.ts`, which every write path now imports; `weights.ts`
+  carries a comment saying why a second copy must not come back. What is left of
+  this entry is the second half: `weights.ts` still counts remaining
+  `session_exercises` and deletes the session at zero in **two** places (search
+  for the `session_exercises` count, near `deleteWeightEntry`).
+- **Change:** extract `deleteSessionIfEmpty(sessionId)`. A1 also deleted
+  `program.ts`'s dead `export { getOrCreateExercise }` forwarder, so nothing
+  reaches the resolver through `program.ts` any more.
 - **Risk:** low; no tests on the DB layer.
 
 ### A3. `daysBetween` written four times (−8)
@@ -159,15 +196,20 @@ is landed; `npm run knip` is the check that A1 is finished:
 
 ### A14. Type names that say the same thing (−20, three casts)
 
-- **Where:** `src/types/index.ts:102` `SportType` is a closed union while sports
-  are dynamic (`sport_types` table, free-text input), so every producer casts
-  (`sport.ts:50`, `EditModal.tsx:377,402`, `ImportPane.tsx:71`,
-  `SportLogForm.tsx:60-61` `as any`); `:20/186` `CardioType`/`DonationType`
-  restate the const arrays in `constants/app.ts:20,36`; `:103/143`
-  `QualityRating` = `SleepQuality`; `:167-184` `SaunaEntry` = `ColdEntry`;
-  `:122-131` `NewSportFlags` = `Omit<SportTypeInfo,'name'>`.
+- **Where:** `SportType` in `src/types/index.ts` is a closed union
+  (`'Tennis' | 'Swimming' | 'Volleyball'`) while sports are dynamic
+  (`sport_types` table, free-text input). **The cast list is stale** (re-grepped
+  2026-09-08): of the five sites this entry named, only one survives —
+  `SportLogForm.tsx:61` `sport: sport.trim() as any`. The finding itself stands,
+  and that one `as any` is the whole evidence for it. `CardioType` /
+  `DonationType` restate the const arrays in `constants/app.ts`; `QualityRating`
+  = `SleepQuality`; `SaunaEntry` = `ColdEntry`; `NewSportFlags` =
+  `Omit<SportTypeInfo,'name'>`.
 - **Change:** `sport: string`; `CardioType = typeof CARDIO_TYPES[number]`
-  (constants/app has no type import, so no cycle); aliases for the rest.
+  (constants/app has no type import, so no cycle); aliases for the rest. A1
+  already dropped the `export` keyword from `SportType` and `DonationType`
+  (nothing outside `types/index.ts` imports them), so this entry now edits one
+  file.
 - **Risk:** low.
 
 ### A8. React Router carries zero routes (−8, −1 dependency)
@@ -464,6 +506,17 @@ decision is the next step.
   needs a backfill migration — its own brief, near [025](done/025-release-blocked-schema-drops.md).
 - **CLAUDE.md said `CYCLE` was defined twice.** It is not: `utils.ts:5` imports
   it from `constants/app.ts`. Corrected in the commit that filed this brief.
+- **The 1RM estimator ships ungrounded and has no brief.** Found while landing
+  A1 (2026-09-08). `estimate1RM` averages Epley and Brzycki and WeightsTab
+  prints "≈NNkg 1RM" next to a logged entry, so a number claiming physiological
+  meaning is on screen. [grounding-inventory §8](../grounding-inventory.md)
+  already carries it — 8.1 Epley, 8.2 Brzycki, 8.4 the unweighted mean — all
+  `unknown`, all marked **(no brief)**, and 8.4 notes the averaging step is
+  Tekiō's own invention rather than a published estimator. The inventory is
+  reference, so "(no brief)" is the tracking gap: nothing in `docs/roadmap/`
+  lists this, which means `/roadmap` cannot see it. Needs a `/ground` run
+  against 8.1/8.2/8.4 under its own ID, or Peter's decision that an estimate
+  labelled "≈" makes no claim worth grounding.
 
 ## Skipped on purpose
 
@@ -493,7 +546,7 @@ decision is the next step.
 
 Tier 1:
 
-- [ ] A1 dead exports and duplicated constants
+- [x] A1 dead exports and duplicated constants — 2026-09-08, v2.0.63. `knip` reports zero; `DELOAD_WEEK` kept and the `duplicates` check excluded with its reasoning in `knip.jsonc`
 - [ ] A2 `weights.ts` imports `getOrCreateExercise`, one `deleteSessionIfEmpty`
 - [ ] A3 one `daysBetween`
 - [ ] A10 one `groupBy`

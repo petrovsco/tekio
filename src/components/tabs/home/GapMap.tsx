@@ -26,7 +26,7 @@ export function rampStep(fraction: number): number {
 }
 
 /** Editorial short labels for map callouts and the verdict sentence. */
-export const MUSCLE_SHORT: Record<string, string> = {
+const MUSCLE_SHORT: Record<string, string> = {
   'Rectus Abdominis': 'CORE',
   'Obliques': 'OBLIQUES',
   'Hip Flexors': 'HIP FLEX',

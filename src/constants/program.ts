@@ -31,6 +31,3 @@ export const DEFAULT_TAG: Record<BlockType, TrainingTag> = {
   recovery: 'RECOVERY',
 }
 
-export const DAYS_OF_WEEK: import('../types').DayOfWeek[] = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
-]

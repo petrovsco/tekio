@@ -1,7 +1,7 @@
 import type { Adaptation } from '../types'
 
 /** Training modality an adaptation is primarily trained through. */
-export type AdaptationModality = 'resistance' | 'cardio'
+type AdaptationModality = 'resistance' | 'cardio'
 
 export interface AdaptationRx {
   /** Load / intensity guidance. */

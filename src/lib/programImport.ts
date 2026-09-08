@@ -2,7 +2,8 @@ import type {
   Program, ProgramPhase, ProgramDay, ProgramDayBlock, ProgramDayExercisePrescription,
   BlockType, TrainingTag, DayOfWeek,
 } from '../types'
-import { BLOCK_TYPES, TRAINING_TAGS, DEFAULT_TAG, DAYS_OF_WEEK } from '../constants/program'
+import { BLOCK_TYPES, TRAINING_TAGS, DEFAULT_TAG } from '../constants/program'
+import { DAYS_OF_WEEK } from '../constants/app'
 import { today } from './utils'
 import { CYCLE } from '../constants/app'
 

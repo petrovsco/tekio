@@ -26,9 +26,9 @@ export interface GeminiContent {
   parts: GeminiPart[]
 }
 
-export type ProposalStatus = 'pending' | 'applied' | 'partial' | 'failed' | 'cancelled'
+type ProposalStatus = 'pending' | 'applied' | 'partial' | 'failed' | 'cancelled'
 
-export interface Proposal {
+interface Proposal {
   calls: ToolCall[]
   status: ProposalStatus
   results?: ToolResult[]

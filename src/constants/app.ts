@@ -1,12 +1,25 @@
-import type { CardioFormat } from '../types'
+import type { CardioFormat, DayOfWeek } from '../types'
 
 export const USER_ID = 'a0000000-0000-0000-0000-000000000001'
+
+/** Monday-first, which is what `weekdayOf` rotates the JS day index into and
+ *  what the program editor pins days against. Lives here rather than in
+ *  `constants/program.ts` so `lib/utils.ts` can read it without pulling the
+ *  program editor's block and tag tables onto the first paint. */
+export const DAYS_OF_WEEK: DayOfWeek[] = [
+  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+]
 
 export const CYCLE = 6
 
 /**
  * Deload week within the cycle (1-based) — the last week of every cycle.
  * Ungrounded; see docs/grounding-inventory.md §5.
+ *
+ * Equal to `CYCLE` in value but not in meaning: one says how long a block is,
+ * the other says where the deload sits inside it, and the inventory tracks them
+ * as two claims (rows 5.1 and 5.3). Deriving it keeps the deload on the last
+ * week if the cycle length ever moves.
  */
 export const DELOAD_WEEK = CYCLE
 
@@ -23,7 +36,6 @@ export const WATER_GOAL_ML = 2500
 // slam/jump conditioning) — the row's notes say what it was. HIIT is never a
 // type here: it is a `format` on any of these (roadmap 054).
 export const CARDIO_TYPES = ['Running', 'Cycling', 'Swimming', 'Indoor Rowing', 'Custom'] as const
-export type CardioDisplayType = typeof CARDIO_TYPES[number]
 
 export const CARDIO_TYPE_MAP: Record<string, string> = {
   Running: 'running',
@@ -48,7 +60,6 @@ export const CARDIO_FORMATS: { value: CardioFormat; label: string }[] = [
 ]
 
 export const DONATION_TYPES = ['Full Blood', 'Plasma'] as const
-export type DonationDisplayType = typeof DONATION_TYPES[number]
 
 export const DONATION_TYPE_MAP: Record<string, string> = {
   'Full Blood': 'full_blood',
@@ -66,8 +77,6 @@ export const DONATION_ELIGIBILITY_DAYS: Record<string, number> = {
   'Full Blood': 56,
   Plasma: 14,
 }
-
-export const SPORT_TYPES_DEFAULT = ['Tennis', 'Swimming', 'Volleyball']
 
 // ── Fused Home read (systemic × local) ──────────────────────────────────────
 // The grounded constants behind src/lib/fusedRead.ts. Each carries its scout

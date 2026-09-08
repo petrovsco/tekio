@@ -129,7 +129,7 @@ export interface MobilityEntry {
   duration: number
 }
 
-export type SportType = 'Tennis' | 'Swimming' | 'Volleyball'
+type SportType = 'Tennis' | 'Swimming' | 'Volleyball'
 export type QualityRating = 1 | 2 | 3 | 4 | 5
 export type MatchResult = 'win' | 'loss' | 'tie'
 
@@ -217,7 +217,7 @@ export interface ColdEntry {
   notes?: string
 }
 
-export type DonationType = 'Full Blood' | 'Plasma'
+type DonationType = 'Full Blood' | 'Plasma'
 
 export interface DonationEntry {
   id: string

@@ -54,13 +54,14 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
   }))
 }
 
+/** Only `showInMenu` is ever patched one field at a time — reordering writes the
+ *  whole list through `saveSectionConfig`. */
 export async function updateSectionField(
   sectionKey: string,
-  patch: Partial<Pick<SectionConfig, 'showInMenu' | 'sortOrder'>>
+  patch: Partial<Pick<SectionConfig, 'showInMenu'>>
 ): Promise<void> {
   const update: Record<string, unknown> = {}
   if (patch.showInMenu !== undefined) update.show_in_menu = patch.showInMenu
-  if (patch.sortOrder  !== undefined) update.sort_order   = patch.sortOrder
 
   const { error } = await supabase
     .from('user_section_config')

@@ -2,7 +2,7 @@ import type {
   WeightEntry, Program, ProgramDay, ProgramWeekOverride, MobilityEntry, DayOfWeek,
   ExerciseMuscleLink, LiftSet, CardioEntry,
 } from '../types'
-import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../constants/app'
+import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR, DAYS_OF_WEEK } from '../constants/app'
 
 export type GroupedExercise =
   | { type: 'single'; exercises: [string] }
@@ -148,12 +148,12 @@ export function defaultProgram(): Program {
 // ── One-rep-max estimation ────────────────────────────────────────────────────
 
 /** Epley estimated 1RM: weight × (1 + reps/30). */
-export function epley1RM(weight: number, reps: number): number {
+function epley1RM(weight: number, reps: number): number {
   return weight * (1 + reps / 30)
 }
 
 /** Brzycki estimated 1RM: weight × 36/(37 − reps). Undefined (→0) at ≥37 reps. */
-export function brzycki1RM(weight: number, reps: number): number {
+function brzycki1RM(weight: number, reps: number): number {
   if (reps >= 37) return 0
   return (weight * 36) / (37 - reps)
 }
@@ -206,21 +206,7 @@ export function calcPace(mins: number, distKm: number): string {
   return `${m}:${String(s).padStart(2, '0')}/km`
 }
 
-/** Counts consecutive days of activity ending today (or yesterday, if today has none yet). */
-export function currentStreak(activeDates: Set<string>): number {
-  const d = new Date(today())
-  if (!activeDates.has(d.toISOString().slice(0, 10))) {
-    d.setDate(d.getDate() - 1)
-  }
-  let streak = 0
-  while (activeDates.has(d.toISOString().slice(0, 10))) {
-    streak++
-    d.setDate(d.getDate() - 1)
-  }
-  return streak
-}
-
-export interface MetricSeries {
+interface MetricSeries {
   series: { x: string; y: number }[]
   first: number
   last: number
@@ -280,14 +266,11 @@ export function isTodayDone(
 
 // ── Day resolution (block-aware programs) ─────────────────────────────────────
 
-export const WEEKDAYS: DayOfWeek[] = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
-]
-
-/** Weekday name for a date string (defaults to today). */
+/** Weekday name for a date string (defaults to today). `DAYS_OF_WEEK` starts on
+ *  Monday, which is why the JS day index is rotated by 6. */
 export function weekdayOf(s: string = today()): DayOfWeek {
   const jsDay = new Date(s).getDay() // 0 = Sunday … 6 = Saturday
-  return WEEKDAYS[(jsDay + 6) % 7]
+  return DAYS_OF_WEEK[(jsDay + 6) % 7]
 }
 
 export type ProgramMode = 'weekday' | 'flexible' | 'index'

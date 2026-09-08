@@ -79,7 +79,7 @@ function z5Minutes(entry: GarminIntensity): number | null {
  * the row carries no Training Effect: the caller says what a row with no
  * intensity data is (a duration floor for cardio, the convention for sport).
  */
-export function classifyGarminIntensity(entry: GarminIntensity): Adaptation[] | null {
+function classifyGarminIntensity(entry: GarminIntensity): Adaptation[] | null {
   const z5 = z5Minutes(entry)
   if (z5 != null && z5 >= VO2MAX_Z5_MIN) return ['vo2max']
   if (entry.aerobicTe == null && entry.anaerobicTe == null) return null
@@ -232,7 +232,7 @@ export function weightSetsIn(weights: WeightEntry[], from: string, to: string): 
 
 // ── Coverage ────────────────────────────────────────────────────────────────────
 
-export type MuscleStatus = 'on_track' | 'needs_work' | 'untouched'
+type MuscleStatus = 'on_track' | 'needs_work' | 'untouched'
 
 export interface MuscleStatusRow {
   id: string
@@ -487,14 +487,6 @@ export function buildMuscleStatusTree(
     })
     .sort((a, b) => b.aggSets - a.aggSets || a.name.localeCompare(b.name))
 }
-
-/** Convenience: > 0 iff anything counted this week. Not a set count — under
- *  overlap one set appears in several adaptations. */
-export function totalAdaptationVolume(cov: Record<Adaptation, AdaptationSummary>): number {
-  return ADAPTATIONS.reduce((s, a) => s + cov[a.key].volume, 0)
-}
-
-export { ADAPTATIONS, ADAPTATION_MAP }
 
 // ── The typed-HR path (roadmap 059) — its rule and two cuts are docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding ──
 

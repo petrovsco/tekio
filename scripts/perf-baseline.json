@@ -1,11 +1,11 @@
 {
   "bundle": {
-    "firstPaintBytes": 352656,
-    "firstPaintGzip": 106895,
+    "firstPaintBytes": 352474,
+    "firstPaintGzip": 106841,
     "files": [
       {
-        "ref": "/assets/index-BkB2fcjH.js",
-        "bytes": 323886
+        "ref": "/assets/index-CntQ4GVU.js",
+        "bytes": 323704
       },
       {
         "ref": "/assets/index-Cq9bqLfG.css",

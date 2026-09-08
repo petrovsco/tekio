@@ -68,7 +68,6 @@ interface AppStore extends AppState {
   setCardio: (cardio: AppState['cardio']) => void
   setMobility: (mobility: AppState['mobility']) => void
   setSports: (sports: AppState['sports']) => void
-  setSportTypes: (sportTypes: AppState['sportTypes']) => void
   setDonations: (donations: AppState['donations']) => void
   setWater: (water: AppState['water']) => void
   setSleep: (sleep: AppState['sleep']) => void
@@ -214,7 +213,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   setCardio: (cardio) => set({ cardio }),
   setMobility: (mobility) => set({ mobility }),
   setSports: (sports) => set({ sports }),
-  setSportTypes: (sportTypes) => set({ sportTypes }),
   setDonations: (donations) => set({ donations }),
   setWater: (water) => set({ water }),
   setSleep: (sleep) => set({ sleep }),

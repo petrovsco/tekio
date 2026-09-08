@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useAppStore } from './app'
+import { uid } from '../lib/utils'
 import { buildContext } from '../lib/assistant/context'
 import { executeToolCall } from '../lib/assistant/executor'
 import {
@@ -7,7 +8,6 @@ import {
 } from '../lib/assistant/client'
 import type { AssistantStatus, ChatMessage, GeminiContent, GeminiPart, ToolResult } from '../lib/assistant/types'
 
-const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Math.random()))
 const context = () => buildContext(useAppStore.getState())
 
 interface AssistantStore {

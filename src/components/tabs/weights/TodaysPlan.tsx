@@ -6,7 +6,6 @@ import {
 import type { GroupedExercise } from '../../../lib/utils'
 import { BLOCK_META } from '../../../constants/program'
 import { ExPlan } from './ExPlan'
-import { deloadSets } from '../../../lib/utils'
 import { SSBadge, DeloadBadge } from '../../ui/Badges'
 import { Chip } from '../../ui/Chip'
 import { Icon } from '../../ui/Icon'
@@ -287,6 +286,3 @@ export function TodaysPlan({ program, weights, variantWeekdays, onToggleVariant,
     </div>
   )
 }
-
-// Export helper so WeightsTab can use it
-export { deloadSets }

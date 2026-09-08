@@ -7,14 +7,12 @@ import { Icon } from './Icon'
 // three tones are solid ink = the commit, outline = the reversible action, and
 // a 2px ink border for the destructive commit — 2px being the weight §6
 // reserves for true emphasis.
-type Variant = 'primary' | 'secondary' | 'danger' | 'ss' | 'ghost'
+type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
 
 const variantClasses: Record<Variant, string> = {
   primary: 'bg-ink text-white border border-ink hover:opacity-90',
   secondary: 'bg-white text-ink border border-ink hover:bg-hairline',
   danger: 'bg-white text-ink border-2 border-ink hover:bg-hairline',
-  // A superset save is still a commit; the old purple dies with 033.
-  ss: 'bg-ink text-white border border-ink hover:opacity-90',
   ghost: 'border border-transparent text-ink-3 hover:text-ink',
 }
 

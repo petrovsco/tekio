@@ -11,7 +11,6 @@ import type {
 // two copies of this function is how one write path keeps making twins after
 // the other one is fixed (roadmap 044).
 import { getOrCreateExercise } from './exercises'
-export { getOrCreateExercise }
 
 interface ProgramShape {
   phases: ProgramPhase[]
@@ -181,12 +180,12 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
   return result
 }
 
-async function loadProgramRows(status: 'active' | 'paused'): Promise<ActiveProgram[]> {
+export async function loadActivePrograms(): Promise<ActiveProgram[]> {
   const { data: ups, error: upErr } = await supabase
     .from('user_programs')
     .select('id, start_date, current_day_index, last_advanced_date, program_id, current_phase_id, deload_committed_date')
     .eq('user_id', USER_ID)
-    .eq('status', status)
+    .eq('status', 'active')
   if (upErr) throw upErr
   if (!ups || ups.length === 0) return []
 
@@ -218,14 +217,6 @@ async function loadProgramRows(status: 'active' | 'paused'): Promise<ActiveProgr
       deloadCommittedDate: up.deload_committed_date,
     }
   })
-}
-
-export async function loadActivePrograms(): Promise<ActiveProgram[]> {
-  return loadProgramRows('active')
-}
-
-export async function loadPausedPrograms(): Promise<ActiveProgram[]> {
-  return loadProgramRows('paused')
 }
 
 export async function saveProgram(

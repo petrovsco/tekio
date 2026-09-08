@@ -16,6 +16,16 @@
   // project rather than ignored inside it.
   "project": ["src/**/*.{ts,tsx}"],
 
+  // "duplicates" reports two exported names resolving to one value. Its only
+  // finding here is `DELOAD_WEEK = CYCLE` in constants/app.ts, and that alias is
+  // correct: the two are one value but two claims the grounding inventory tracks
+  // separately (how long a block is, rows 5.1/5.7; where the deload sits in it,
+  // rows 5.3/5.8), and tying them keeps the deload on the last week if the cycle
+  // length ever moves. Knip's per-export `@knipignore` tag does not reach this
+  // issue type, so the check goes rather than the alias. The rest of knip is
+  // what earns its keep; every other finding it has raised was real.
+  "exclude": ["duplicates"],
+
   "ignoreDependencies": [
     // Reached from `@import "tailwindcss"` in src/index.css. Knip does not
     // follow imports inside compiled extensions, so it cannot see that.

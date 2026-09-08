@@ -18,7 +18,7 @@ export const QUALITY_SHORT: Record<Adaptation, string> = {
 }
 
 /** Lowercase names for running prose ("Untouched: power, anaerobic."). */
-export const QUALITY_PROSE: Record<Adaptation, string> = {
+const QUALITY_PROSE: Record<Adaptation, string> = {
   power: 'power',
   strength: 'strength',
   hypertrophy: 'hypertrophy',
