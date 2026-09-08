@@ -6,7 +6,7 @@ import {
   RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
   MUSCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
 } from '../constants/app'
-import { LEVEL_WEIGHT, today } from './utils'
+import { LEVEL_WEIGHT, today, daysBetween, groupBy } from './utils'
 import {
   classifyCardioAdaptations, classifySportAdaptations,
   classifyWeightSet, resolveExerciseAdaptation, muscleStimulus,
@@ -25,13 +25,6 @@ export type { MuscleQuality }
  *  is judged over MUSCLE_WINDOW_DAYS (roadmap 039 §6.6) and owes nothing to
  *  the program's CYCLE. */
 export const HISTORY_WEEKS = 6
-
-const DAY_MS = 86400000
-
-/** Whole days from `from` to `to` (both YYYY-MM-DD; positive when to > from). */
-export function daysBetween(from: string, to: string): number {
-  return Math.round((new Date(to).getTime() - new Date(from).getTime()) / DAY_MS)
-}
 
 /** YYYY-MM-DD `n` days after `date` (negative = before). */
 function shiftDate(date: string, n: number): string {
@@ -139,12 +132,11 @@ function lastStimulusDates(
   date: string,
   keep: (w: WeightEntry) => boolean = () => true,
 ): Record<string, string> {
-  const groupsByExercise = new Map<string, string[]>()
-  for (const l of exerciseMuscles) {
-    if (l.contribution !== 'stimulus' || !(LEVEL_WEIGHT[l.level] ?? 0)) continue
-    const k = l.exercise.toLowerCase()
-    groupsByExercise.set(k, [...(groupsByExercise.get(k) ?? []), l.group])
-  }
+  const groupsByExercise = groupBy(
+    exerciseMuscles.filter(l => l.contribution === 'stimulus' && (LEVEL_WEIGHT[l.level] ?? 0) > 0),
+    l => l.exercise.toLowerCase(),
+    l => l.group,
+  )
   const lastDate: Record<string, string> = {}
   for (const w of weights) {
     if (w.date > date || !keep(w)) continue

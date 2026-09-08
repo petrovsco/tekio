@@ -1,6 +1,67 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace } from '../lib/utils'
-import type { WeightEntry, Program, ProgramDay, ExerciseMuscleLink } from '../types'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace, daysBetween, groupBy, deriveFlat } from '../lib/utils'
+import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
+
+// ---------------------------------------------------------------------------
+// daysBetween / groupBy / deriveFlat — the shared helpers (roadmap 048 A3/A10/A11)
+// ---------------------------------------------------------------------------
+
+describe('daysBetween', () => {
+  it('counts whole days between date strings', () => {
+    expect(daysBetween('2026-08-28', '2026-08-30')).toBe(2)
+    expect(daysBetween('2026-08-30', '2026-08-30')).toBe(0)
+  })
+
+  it('is negative when `to` is before `from`', () => {
+    expect(daysBetween('2026-08-30', '2026-08-28')).toBe(-2)
+  })
+
+  it('crosses a DST boundary without drifting', () => {
+    // Europe/Sofia moves its clocks on 2026-10-25; both dates parse as UTC
+    // midnight, so the count stays whole whatever the browser's timezone.
+    expect(daysBetween('2026-10-24', '2026-10-26')).toBe(2)
+    expect(daysBetween('2026-03-28', '2026-03-30')).toBe(2)
+  })
+})
+
+describe('groupBy', () => {
+  const rows = [{ k: 'a', n: 1 }, { k: 'b', n: 2 }, { k: 'a', n: 3 }]
+
+  it('keeps first-seen key order and within-group order', () => {
+    const g = groupBy(rows, r => r.k)
+    expect([...g.keys()]).toEqual(['a', 'b'])
+    expect(g.get('a')).toEqual([{ k: 'a', n: 1 }, { k: 'a', n: 3 }])
+  })
+
+  it('maps each row into its group when given a value function', () => {
+    expect(groupBy(rows, r => r.k, r => r.n).get('a')).toEqual([1, 3])
+  })
+
+  it('returns an empty map for no rows', () => {
+    expect(groupBy([], (r: { k: string }) => r.k).size).toBe(0)
+  })
+})
+
+describe('deriveFlat', () => {
+  const block = (blockType: ProgramDayBlock['blockType'], names: string[], supersets: [string, string][] = []): ProgramDayBlock => ({
+    blockType, name: blockType, sortOrder: 0, supersets,
+    exercises: names.map((exercise, sortOrder) => ({ exercise, trainingTag: 'STRENGTH', sortOrder })),
+  })
+
+  it('flattens the weight blocks only', () => {
+    const blocks = [block('weight', ['Squat', 'Bench']), block('conditioning', ['Row'])]
+    expect(deriveFlat(blocks)).toEqual({ exercises: ['Squat', 'Bench'], supersets: [] })
+  })
+
+  it('collects supersets across weight blocks', () => {
+    const blocks = [block('weight', ['A', 'B'], [['A', 'B']]), block('weight', ['C'])]
+    expect(deriveFlat(blocks).supersets).toEqual([['A', 'B']])
+  })
+
+  it('is empty for a day with no blocks', () => {
+    expect(deriveFlat([])).toEqual({ exercises: [], supersets: [] })
+  })
+})
 
 // ---------------------------------------------------------------------------
 // 1RM estimation

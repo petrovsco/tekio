@@ -87,16 +87,11 @@ export function ImportPane({ onClose }: ImportPaneProps) {
       const newSauna: SaunaEntry[] = mergeById(store.sauna, newInSauna)
       const newCold: ColdEntry[] = mergeById(store.cold, newInCold)
 
-      // Weights: process date-by-date to avoid concurrent session creation race condition
-      const byDate = new Map<string, WeightEntry[]>()
-      for (const w of newInWeights) {
-        const arr = byDate.get(w.date) ?? []
-        arr.push(w)
-        byDate.set(w.date, arr)
-      }
-      for (const entries of byDate.values()) {
-        for (const w of entries) await saveWeightEntry(w)
-      }
+      // Weights save one at a time: `saveWeightEntry` creates the day's
+      // training_session if it is missing, and two entries on one date running
+      // concurrently would create two. It is the `await` that prevents that, so
+      // grouping by date first (which this used to do) changed nothing.
+      for (const w of newInWeights) await saveWeightEntry(w)
 
       // Other domains are safe to run in parallel (no shared session concept)
       await Promise.all([

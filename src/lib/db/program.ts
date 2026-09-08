@@ -1,6 +1,6 @@
 import { supabase } from '../supabase'
 import { USER_ID, CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR } from '../../constants/app'
-import { startOfWeek, today } from '../utils'
+import { startOfWeek, today, groupBy, daysBetween, deriveFlat } from '../utils'
 import { withOrigin } from '../env'
 import type {
   Program, ProgramDay, ProgramPhase, ProgramDayBlock, ProgramDayExercisePrescription,
@@ -16,6 +16,44 @@ interface ProgramShape {
   phases: ProgramPhase[]
   days: ProgramDay[]
 }
+
+/** The blocks, exercises and superset pairs of a set of program days, each
+ *  grouped by day. Extracted so the three row shapes are inferred from their
+ *  own selects — declaring the maps up front meant re-typing all three by hand. */
+async function fetchDayDetails(dayIds: string[]) {
+  const { data: blocks, error: blockErr } = await supabase
+    .from('program_day_blocks')
+    .select('id, program_day_id, name, block_type, scheduled_time, duration_minutes, notes, sort_order')
+    .in('program_day_id', dayIds)
+    .order('sort_order')
+  if (blockErr) throw blockErr
+
+  const { data: exercises, error: exErr } = await supabase
+    .from('program_day_exercises')
+    .select('id, program_day_id, block_id, sort_order, notes, training_tag, duration_text, tempo, sets_text, reps_text, weight_text, exercises(name)')
+    .in('program_day_id', dayIds)
+    .order('sort_order')
+  if (exErr) throw exErr
+
+  const { data: supersets, error: ssErr } = await supabase
+    .from('program_supersets')
+    .select('program_day_id, exercise_a_id, exercise_b_id')
+    .in('program_day_id', dayIds)
+  if (ssErr) throw ssErr
+
+  return {
+    blockRowsByDay: groupBy(blocks ?? [], b => b.program_day_id),
+    exRowsByDay: groupBy(
+      (exercises ?? []).map(e => ({ ...e, name: (e.exercises as unknown as { name: string } | null)?.name ?? '' })),
+      e => e.program_day_id,
+    ),
+    ssRowsByDay: groupBy(supersets ?? [], ss => ss.program_day_id),
+  }
+}
+
+/** No days, so nothing to fetch and nothing that will read these. */
+const noDayDetails = (): Awaited<ReturnType<typeof fetchDayDetails>> =>
+  ({ blockRowsByDay: new Map(), exRowsByDay: new Map(), ssRowsByDay: new Map() })
 
 async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, ProgramShape>> {
   const result = new Map<string, ProgramShape>()
@@ -36,71 +74,20 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
   if (dayErr) throw dayErr
 
   const dayIds = (dayRows ?? []).map(d => d.id)
-
-  const blockRowsByDay = new Map<string, { id: string; name: string; block_type: string; scheduled_time: string | null; duration_minutes: number | null; notes: string | null; sort_order: number }[]>()
-  const exRowsByDay = new Map<string, { id: string; block_id: string | null; sort_order: number; notes: string | null; training_tag: string | null; duration_text: string | null; tempo: string | null; sets_text: string | null; reps_text: string | null; weight_text: string | null; name: string }[]>()
-  const ssRowsByDay = new Map<string, { exercise_a_id: string; exercise_b_id: string }[]>()
-
-  if (dayIds.length > 0) {
-    const { data: blocks, error: blockErr } = await supabase
-      .from('program_day_blocks')
-      .select('id, program_day_id, name, block_type, scheduled_time, duration_minutes, notes, sort_order')
-      .in('program_day_id', dayIds)
-      .order('sort_order')
-    if (blockErr) throw blockErr
-    for (const b of blocks ?? []) {
-      const arr = blockRowsByDay.get(b.program_day_id) ?? []
-      arr.push(b)
-      blockRowsByDay.set(b.program_day_id, arr)
-    }
-
-    const { data: exercises, error: exErr } = await supabase
-      .from('program_day_exercises')
-      .select('id, program_day_id, block_id, sort_order, notes, training_tag, duration_text, tempo, sets_text, reps_text, weight_text, exercises(name)')
-      .in('program_day_id', dayIds)
-      .order('sort_order')
-    if (exErr) throw exErr
-    for (const e of exercises ?? []) {
-      const name = (e.exercises as unknown as { name: string } | null)?.name ?? ''
-      const arr = exRowsByDay.get(e.program_day_id) ?? []
-      arr.push({ ...e, name })
-      exRowsByDay.set(e.program_day_id, arr)
-    }
-
-    const { data: supersets, error: ssErr } = await supabase
-      .from('program_supersets')
-      .select('program_day_id, exercise_a_id, exercise_b_id')
-      .in('program_day_id', dayIds)
-    if (ssErr) throw ssErr
-    for (const ss of supersets ?? []) {
-      const arr = ssRowsByDay.get(ss.program_day_id) ?? []
-      arr.push(ss)
-      ssRowsByDay.set(ss.program_day_id, arr)
-    }
-  }
+  const { blockRowsByDay, exRowsByDay, ssRowsByDay } =
+    dayIds.length > 0 ? await fetchDayDetails(dayIds) : noDayDetails()
 
   const namePairsForDay = (dayId: string, exIds: Set<string>, exById: Map<string, string>): [string, string][] =>
     (ssRowsByDay.get(dayId) ?? [])
       .filter(ss => exIds.has(ss.exercise_a_id) && exIds.has(ss.exercise_b_id))
       .map(ss => [exById.get(ss.exercise_a_id) ?? '', exById.get(ss.exercise_b_id) ?? ''] as [string, string])
 
-  const daysByProgram = new Map<string, typeof dayRows>()
-  for (const d of dayRows ?? []) {
-    const arr = daysByProgram.get(d.program_id) ?? []
-    arr.push(d)
-    daysByProgram.set(d.program_id, arr)
-  }
-
-  const phasesByProgram = new Map<string, typeof phaseRows>()
-  for (const p of phaseRows ?? []) {
-    const arr = phasesByProgram.get(p.program_id) ?? []
-    arr.push(p)
-    phasesByProgram.set(p.program_id, arr)
-  }
+  const daysByProgram = groupBy(dayRows ?? [], d => d.program_id)
+  const phasesByProgram = groupBy(phaseRows ?? [], p => p.program_id)
 
   for (const programId of programIds) {
-    const days = (daysByProgram.get(programId) ?? []) as NonNullable<typeof dayRows>
-    const phases = (phasesByProgram.get(programId) ?? []) as NonNullable<typeof phaseRows>
+    const days = daysByProgram.get(programId) ?? []
+    const phases = phasesByProgram.get(programId) ?? []
 
     const builtDays = new Map<string, ProgramDay>()
     for (const d of days) {
@@ -136,23 +123,22 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
         }
       })
 
+      // Days written before blocks existed keep their flat list; every other day
+      // derives it from its weight blocks (the same read the editor and the JSON
+      // importer use). The legacy branch is live — see roadmap 048.
       const legacyExRows = exRows.filter(e => e.block_id === null)
-      let flatExercises: string[]
-      let flatSupersets: [string, string][]
-      if (legacyExRows.length > 0) {
-        flatExercises = legacyExRows.map(e => e.name)
-        flatSupersets = namePairsForDay(d.id, new Set(legacyExRows.map(e => e.id)), exById)
-      } else {
-        const weightBlocks = blocks.filter(b => b.blockType === 'weight')
-        flatExercises = weightBlocks.flatMap(b => b.exercises.map(e => e.exercise))
-        flatSupersets = weightBlocks.flatMap(b => b.supersets)
-      }
+      const flat = legacyExRows.length > 0
+        ? {
+            exercises: legacyExRows.map(e => e.name),
+            supersets: namePairsForDay(d.id, new Set(legacyExRows.map(e => e.id)), exById),
+          }
+        : deriveFlat(blocks)
 
       builtDays.set(d.id, {
         id: d.id,
         name: d.name,
-        exercises: flatExercises,
-        supersets: flatSupersets,
+        exercises: flat.exercises,
+        supersets: flat.supersets,
         dayOfWeek: (d.day_of_week as DayOfWeek | null) ?? null,
         queueOrder: d.queue_order ?? null,
         isVariant: d.is_variant ?? false,
@@ -516,10 +502,7 @@ export async function hardDeleteProgram(programId: string, userProgramId: string
 export async function restartProgram(userProgramId: string, startDate: string): Promise<void> {
   const openCycle = await getOpenCycle(userProgramId)
   if (openCycle) {
-    const elapsedDays = Math.max(
-      0,
-      Math.floor((new Date(startDate).getTime() - new Date(openCycle.startDate).getTime()) / 86400000)
-    )
+    const elapsedDays = Math.max(0, daysBetween(openCycle.startDate, startDate))
     const closingStatus = elapsedDays >= CYCLE * 7 ? 'completed' : 'abandoned'
     await supabase
       .from('program_cycles')

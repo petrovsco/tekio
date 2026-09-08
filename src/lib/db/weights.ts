@@ -25,6 +25,19 @@ async function getOrCreateSession(date: string): Promise<string> {
   return data.id
 }
 
+/** Delete a training session once its last exercise is gone — the row exists
+ *  only to hold them. Not routed through `deleteRow`: this cleanup ignores its
+ *  error on purpose, because a session left behind is tidiness, not data loss. */
+async function deleteSessionIfEmpty(sessionId: string): Promise<void> {
+  const { count } = await supabase
+    .from('session_exercises')
+    .select('id', { count: 'exact', head: true })
+    .eq('session_id', sessionId)
+  if ((count ?? 0) === 0) {
+    await supabase.from('training_sessions').delete().eq('id', sessionId)
+  }
+}
+
 export async function loadWeights(): Promise<WeightEntry[]> {
   const sessions = await userRows(
     'training_sessions',
@@ -116,16 +129,7 @@ export async function deleteWeightEntry(id: string): Promise<void> {
 
   await deleteRow('session_exercises', id)
 
-  // Clean up empty sessions
-  if (se?.session_id) {
-    const { count } = await supabase
-      .from('session_exercises')
-      .select('id', { count: 'exact', head: true })
-      .eq('session_id', se.session_id)
-    if ((count ?? 0) === 0) {
-      await supabase.from('training_sessions').delete().eq('id', se.session_id)
-    }
-  }
+  if (se?.session_id) await deleteSessionIfEmpty(se.session_id)
 }
 
 export async function updateWeightEntry(
@@ -162,15 +166,8 @@ export async function updateWeightEntry(
       .eq('id', id)
     if (error) throw error
 
-    // Clean up the old session if it is now empty
     if (se?.session_id && se.session_id !== newSessionId) {
-      const { count } = await supabase
-        .from('session_exercises')
-        .select('id', { count: 'exact', head: true })
-        .eq('session_id', se.session_id)
-      if ((count ?? 0) === 0) {
-        await supabase.from('training_sessions').delete().eq('id', se.session_id)
-      }
+      await deleteSessionIfEmpty(se.session_id)
     }
   }
 }

@@ -2,7 +2,7 @@ import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, GarminIntensity, ExerciseMuscleLink, MuscleGroup,
 } from '../types'
 import { ADAPTATIONS, ADAPTATION_MAP, defaultAdaptationForExercise } from '../constants/adaptations'
-import { LEVEL_WEIGHT, today } from './utils'
+import { LEVEL_WEIGHT, today, groupBy } from './utils'
 
 // ── Classification ─────────────────────────────────────────────────────────────
 
@@ -187,14 +187,10 @@ export function muscleStimulus(
   window: { from: string; to: string },
   overrides?: Record<string, Adaptation>,
 ): MuscleStimulus {
-  const linksByExercise = new Map<string, ExerciseMuscleLink[]>()
-  for (const l of exerciseMuscles) {
-    if (l.contribution !== 'stimulus') continue
-    const k = l.exercise.toLowerCase()
-    const arr = linksByExercise.get(k) ?? []
-    arr.push(l)
-    linksByExercise.set(k, arr)
-  }
+  const linksByExercise = groupBy(
+    exerciseMuscles.filter(l => l.contribution === 'stimulus'),
+    l => l.exercise.toLowerCase(),
+  )
 
   const total: Record<string, number> = {}
   const byQuality = perQuality<Record<string, number>>(() => ({}))

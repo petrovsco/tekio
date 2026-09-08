@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
-  daysBetween, muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
+  muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, waterStatus, fusedVerdict, HISTORY_WEEKS,
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
@@ -38,17 +38,6 @@ const GROUPS: MuscleGroup[] = [
   { id: 'biceps', name: 'Biceps', bodyRegion: 'upper', parentId: 'arms' },
   { id: 'triceps', name: 'Triceps', bodyRegion: 'upper', parentId: 'arms' },
 ]
-
-// ---------------------------------------------------------------------------
-// daysBetween
-// ---------------------------------------------------------------------------
-
-describe('daysBetween', () => {
-  it('counts whole days between date strings', () => {
-    expect(daysBetween('2026-08-28', TODAY)).toBe(2)
-    expect(daysBetween(TODAY, TODAY)).toBe(0)
-  })
-})
 
 // ---------------------------------------------------------------------------
 // muscleStates

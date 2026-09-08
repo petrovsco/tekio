@@ -4,7 +4,7 @@ import type {
 } from '../types'
 import { BLOCK_TYPES, TRAINING_TAGS, DEFAULT_TAG } from '../constants/program'
 import { DAYS_OF_WEEK } from '../constants/app'
-import { today } from './utils'
+import { today, deriveFlat } from './utils'
 import { CYCLE } from '../constants/app'
 
 export type ImportResult =
@@ -24,14 +24,6 @@ function asText(v: unknown): string | undefined {
     return t === '' ? undefined : t
   }
   return undefined
-}
-
-function deriveFlat(blocks: ProgramDayBlock[]): { exercises: string[]; supersets: [string, string][] } {
-  const weightBlocks = blocks.filter(b => b.blockType === 'weight')
-  return {
-    exercises: weightBlocks.flatMap(b => b.exercises.map(e => e.exercise)),
-    supersets: weightBlocks.flatMap(b => b.supersets),
-  }
 }
 
 function parseExercise(raw: unknown, blockType: BlockType, where: string): ProgramDayExercisePrescription | string {

@@ -1,12 +1,14 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — eight landed: **A8** (v2.0.58), **A1** (v2.0.63, which
+**Status:** in progress — twelve landed: **A8** (v2.0.58), **A1** (v2.0.63, which
 took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
 EditModal, after which the repo sits at 023's accepted floor of 6 lint
-warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer) and
-**B2 + B3** together (v2.0.69, the weights plan).
-**The small `lib` dedupes A2 + A3 + A10 + A11 are next.**
+warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer),
+**B2 + B3** together (v2.0.69, the weights plan) and the small `lib` dedupes
+**A2 + A3 + A10 + A11** together (v2.0.70).
+**The remaining Tier 1 entries are next** — A12, A13, A14, B4, B10, B11, B12,
+B13, B15, C1.
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -45,7 +47,8 @@ listed at the end), style, renaming for taste.
 4. Tick the box below, patch-bump, commit, push. One candidate per commit.
 
 **Start here**, in this order: S1, A1, A4 + A5, B2 + B3, then the small `lib`
-dedupes A2 + A3 + A10 + A11. That set is about −430 lines at low risk.
+dedupes A2 + A3 + A10 + A11. That set is about −430 lines at low risk. ✅ All
+five units landed (v2.0.58 → v2.0.70).
 
 ## Doctrine checklist
 
@@ -159,6 +162,13 @@ the corrections are the useful part of this record:
   reaches the resolver through `program.ts` any more.
 - **Risk:** low; no tests on the DB layer.
 
+**Landed 2026-09-08 (v2.0.70), with A3 + A10 + A11.** `deleteSessionIfEmpty` is
+in `weights.ts` and both callers — `deleteWeightEntry` and the date-move branch
+of `updateWeightEntry` — are one line each. It stays outside `deleteRow`
+deliberately: A4's record lists these two cleanups among the three deletes that
+*ignore* their error, and routing them through `deleteRow` would make them start
+throwing. The comment says so, so the next reader does not "fix" it.
+
 ### A3. `daysBetween` written four times (−8)
 
 - **Where:** `src/lib/fusedRead.ts:29-34` (exported), `src/lib/utils.ts:42-45`
@@ -167,6 +177,22 @@ the corrections are the useful part of this record:
   `fusedRead.ts` for its 9 importers, `Math.max(0, daysBetween(...))` at the
   three inline sites. Floor vs round is the same for `YYYY-MM-DD` inputs.
 - **Risk:** low; `utils.test.ts` and `fusedRead.test.ts` cover it.
+
+**Landed 2026-09-08 (v2.0.70).** One `daysBetween` in `lib/utils.ts`; the three
+inline sites (`cycleInfo`, `isDeloadDate`, `restartProgram`) call it inside their
+existing `Math.max(0, …)`. Two departures:
+
+- **No re-export.** This entry proposed forwarding it from `fusedRead.ts`, but
+  only one file outside the tests ever imported it from there (`HomeTab`), and
+  A1 had just deleted three re-exports that "only forward" — adding a fourth
+  would re-create what that entry cleaned up. `HomeTab` imports it from
+  `lib/utils` like everything else.
+- **Its test moved with it**, from `fusedRead.test.ts` to `utils.test.ts`, and
+  grew two cases the old one did not have: a negative result (`to` before
+  `from`) and a pair spanning Bulgaria's clock change, which is the claim in the
+  comment — both dates parse as UTC midnight, so the quotient is exact and floor
+  and round agree. That equivalence is the whole reason the three `Math.floor`
+  sites could adopt a `Math.round` helper.
 
 ### A10. `groupBy` written eight times (−25)
 
@@ -177,12 +203,95 @@ the corrections are the useful part of this record:
   `utils.ts`.
 - **Risk:** low; two of the sites are under test.
 
+**Landed 2026-09-08 (v2.0.70).** `groupBy` is in `lib/utils.ts` with three tests.
+Six of the nine sites call it; **two disappeared instead of converting**, which
+is the useful part of this record:
+
+- **`groupBy` takes an optional third argument, a `value` mapper.** Three of the
+  sites group a *transformed* value rather than the row (`program.ts` attaches
+  the joined exercise name, `mobility.ts` collects names, `fusedRead.ts` collects
+  `l.group`), and pre-mapping at each call site read worse than one parameter.
+  The default is identity, so the other five call it with two arguments and get
+  `Map<string, T[]>` as this entry proposed.
+- **`ImportPane`'s `byDate` map did nothing at all.** It grouped the incoming
+  weight entries by date and then walked every group and every entry
+  sequentially — a permutation of the same list, saved in the same order within
+  each date. Its comment credited the grouping with preventing a
+  double-`training_session` race; it is the `await` that prevents that, and the
+  grouping was never load-bearing. Nine lines became one `for … await`, with a
+  comment that names the real guard.
+- **`program.ts`'s three per-day maps moved into `fetchDayDetails`.** They were
+  declared before the `if (dayIds.length > 0)` block that fills them, and that
+  declaration was the only reason all three row shapes were re-typed by hand
+  beside the selects that already describe them — three lines of 150+ characters.
+  Grouped inside a helper, every shape is inferred from its own select. The
+  guard survives as a two-line `noDayDetails()` whose empty maps take their types
+  from `Awaited<ReturnType<typeof fetchDayDetails>>`, so nothing is hand-typed
+  and the three queries are still skipped when a program has no days.
+- **One site was quietly O(n²).** `fusedRead.ts` grew its groups with
+  `set(k, [...get(k), v])`, copying the whole array per row. The helper pushes.
+
 ### A11. `deriveFlat` exists three times (−12)
 
 - **Where:** `src/lib/programImport.ts:28-34`, `src/lib/db/program.ts:154-158`,
   `src/components/tabs/ProgramTab.tsx:58-65` (`recomputeFlat`).
 - **Change:** export `deriveFlat` from `programImport.ts`; use it in the other two.
 - **Risk:** low; `programImport.test.ts` covers the source copy.
+
+**Landed 2026-09-08 (v2.0.70) — but in `lib/utils.ts`, not `programImport.ts`.**
+The proposed home would have cost first paint: `lib/db/program.ts` loads at
+bootstrap, so importing from the parser would have pulled all 250 lines of
+`programImport.ts` out of the lazy ProgramTab chunk and into the entry chunk —
+the trap this brief already knows about (see the note under B2 about
+`lib/sets.ts`). `lib/utils.ts` is in the entry chunk anyway and already holds the
+program-shape helpers (`defaultProgram`, `getGrouped`, `variantGroups`), so all
+three callers import it from there, `programImport.ts` included. Three tests in
+`utils.test.ts`. `ProgramTab`'s `recomputeFlat` is now one line
+(`{ ...day, ...deriveFlat(day.blocks ?? []) }`), and the loader's legacy branch —
+days written before blocks existed, which *Found on the way* records as live —
+keeps its own arm of one conditional instead of two `let` declarations.
+
+**Measured, for the four together (v2.0.70):** −16 net lines in `src/` outside
+the tests. The four entries predicted −67, but they counted only the copies
+removed, not the shared helpers and their doc comments that replace them. First
+paint **349.53 kB**, down 0.46 kB from B2 + B3 despite three new helpers landing
+in the eagerly-loaded `lib/utils.ts` — five of the copies they replaced were in
+the entry chunk too. `npm run lint` still reports 6 warnings, 0 errors (023's
+floor) and `npm run knip` still reports nothing.
+
+**Browser-checked on live data** (house rule `verify-in-browser`; the data layer
+and both reads are touched, so a regression pass, not a spot check). Zero console
+errors throughout, and the database is exactly as it was found.
+
+- **The reads.** Bootstrap loaded all eleven store lists unchanged (212 weights,
+  220 cardio, 53 sports, 3 mobility, 11 bodyweight, 38 water, 1 donation, 19
+  sleep, 0 sauna, 0 cold). Home drew its body map with all 57 zones and the same
+  ranking as before — *Push. Erectors and hip flex are the gap*, readiness 71 —
+  and Adaptations drew its four quality maps. Those two surfaces are what the
+  `adaptations.ts` and `fusedRead.ts` grouping feed.
+- **The muscle map, compared against its own old code.** `mobility.ts`'s map is
+  invisible on screen today, because all three logged mobility sessions have a
+  null `exercise_id` and so match nothing in it. Rather than skip it, the old
+  push-loop and the new `groupBy` were both run in the page over the real
+  `exercise_muscle_groups` table: 265 rows, 101 keys each, values **identical**
+  key for key.
+- **The program loader, through a Resume → Pause round trip.** There is no
+  active program, so `loadPhasesForPrograms` runs empty at bootstrap. Resuming
+  "Volleyball Performance & Healthspan" (then pausing it back — `pauseProgram` is
+  the exact inverse, and the DB was re-checked afterwards: both programs
+  `paused`, both cycles `paused`, one cycle each, no end dates) loaded 9 days and
+  32 blocks through `fetchDayDetails`, and every flat list matched its weight
+  block exactly — 5 exercises for the day whose weight block holds 5, `[]` for
+  the four sport/mobility days that have no weight block, and the Back Squat /
+  Face Pulls pair carried through as a superset. On screen the day rendered all
+  three blocks with their times, both `SS` badges, and "CYCLE COMPLETE" — which
+  is `daysBetween` counting 78 days from 2026-06-22 into week 12 of a 6-week
+  cycle. Today's Plan on the Weights tab drew from the same lists.
+- **`deleteSessionIfEmpty`, on a row created for the purpose.** Today had no
+  `training_session`, so logging one Bench Press set through the form created
+  one; deleting that row from the history removed the `session_exercise`, its
+  set, *and* the now-empty session — 65 sessions, 212 `session_exercises`, 821
+  `session_sets` before and after, and the latest session back at 2026-09-01.
 
 ### A12. `executor.ts` program cases share a prelude (−18)
 
@@ -763,10 +872,10 @@ decision is the next step.
 Tier 1:
 
 - [x] A1 dead exports and duplicated constants — 2026-09-08, v2.0.63. `knip` reports zero; `DELOAD_WEEK` kept and the `duplicates` check excluded with its reasoning in `knip.jsonc`
-- [ ] A2 `weights.ts` imports `getOrCreateExercise`, one `deleteSessionIfEmpty`
-- [ ] A3 one `daysBetween`
-- [ ] A10 one `groupBy`
-- [ ] A11 one `deriveFlat`
+- [x] A2 `weights.ts` imports `getOrCreateExercise`, one `deleteSessionIfEmpty` — 2026-09-08, v2.0.70. Kept outside `deleteRow` because both cleanups ignore their error on purpose
+- [x] A3 one `daysBetween` — 2026-09-08, v2.0.70. In `lib/utils.ts` and imported directly; no forwarding re-export, and its test moved to `utils.test.ts` with a DST case
+- [x] A10 one `groupBy` — 2026-09-08, v2.0.70. Optional `value` mapper for the three sites that group a transformed value; ImportPane's copy deleted outright (it only reordered a sequential loop) and program.ts's three moved into `fetchDayDetails`, which drops three hand-written row types
+- [x] A11 one `deriveFlat` — 2026-09-08, v2.0.70. In `lib/utils.ts`, not `programImport.ts`: the loader is a bootstrap module and would have dragged the parser into the first-paint chunk
 - [ ] A12 executor prelude
 - [ ] A13 one profile select
 - [ ] A14 type aliases, casts gone

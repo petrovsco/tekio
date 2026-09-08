@@ -3,11 +3,11 @@ import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, daysBetween,
+  donationStatus, waterStatus, fusedVerdict,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
-import { cycleInfo, today } from '../../../lib/utils'
+import { cycleInfo, today, daysBetween } from '../../../lib/utils'
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'

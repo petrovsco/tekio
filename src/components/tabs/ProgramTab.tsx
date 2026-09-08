@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../../store/app'
-import { cycleInfo, getGrouped, sessionDates, defaultProgram, today, cycleExerciseProgress, programMode, resolveTodayDay, weekdayOf, startOfWeek, isDayDoneInWeek, activeVariantWeekdays, variantGroups } from '../../lib/utils'
+import { cycleInfo, getGrouped, sessionDates, defaultProgram, today, cycleExerciseProgress, programMode, resolveTodayDay, weekdayOf, startOfWeek, isDayDoneInWeek, activeVariantWeekdays, variantGroups, deriveFlat } from '../../lib/utils'
 import { CYCLE } from '../../constants/app'
 import { BLOCK_TYPES, BLOCK_META, TRAINING_TAGS, DEFAULT_TAG } from '../../constants/program'
 import { DAYS_OF_WEEK } from '../../constants/app'
@@ -57,14 +57,7 @@ function normalizeDays(program: Program): ProgramDay[] {
 }
 
 /** Recompute the flat `exercises`/`supersets` view from a day's weight blocks. */
-function recomputeFlat(day: ProgramDay): ProgramDay {
-  const weightBlocks = (day.blocks ?? []).filter(b => b.blockType === 'weight')
-  return {
-    ...day,
-    exercises: weightBlocks.flatMap(b => b.exercises.map(e => e.exercise)),
-    supersets: weightBlocks.flatMap(b => b.supersets),
-  }
-}
+const recomputeFlat = (day: ProgramDay): ProgramDay => ({ ...day, ...deriveFlat(day.blocks ?? []) })
 
 // ── Program Editor ────────────────────────────────────────────────────────────
 

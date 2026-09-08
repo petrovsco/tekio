@@ -4,6 +4,7 @@ import { getOrCreateExerciseRow } from './exercises'
 import type { MobilityEntry } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
+import { groupBy } from '../utils'
 
 /** Map of exercise_id → its muscle-group names (canonical, shared across sessions). */
 async function loadExerciseMuscleMap(): Promise<Map<string, string[]>> {
@@ -11,15 +12,13 @@ async function loadExerciseMuscleMap(): Promise<Map<string, string[]>> {
     .from('exercise_muscle_groups')
     .select('exercise_id, muscle_groups(name)')
   if (error) throw error
-  const map = new Map<string, string[]>()
-  for (const row of data ?? []) {
-    const name = (row.muscle_groups as unknown as { name: string } | null)?.name
-    if (!name) continue
-    const arr = map.get(row.exercise_id) ?? []
-    arr.push(name)
-    map.set(row.exercise_id, arr)
-  }
-  return map
+  const named = (data ?? [])
+    .map(row => ({
+      exerciseId: row.exercise_id,
+      name: (row.muscle_groups as unknown as { name: string } | null)?.name,
+    }))
+    .filter((r): r is { exerciseId: string; name: string } => !!r.name)
+  return groupBy(named, r => r.exerciseId, r => r.name)
 }
 
 export async function loadMobility(): Promise<MobilityEntry[]> {

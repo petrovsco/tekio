@@ -1,6 +1,6 @@
 import type {
-  WeightEntry, Program, ProgramDay, ProgramWeekOverride, MobilityEntry, DayOfWeek,
-  ExerciseMuscleLink, LiftSet, CardioEntry,
+  WeightEntry, Program, ProgramDay, ProgramDayBlock, ProgramWeekOverride, MobilityEntry,
+  DayOfWeek, ExerciseMuscleLink, LiftSet, CardioEntry,
 } from '../types'
 import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR, DAYS_OF_WEEK } from '../constants/app'
 
@@ -13,6 +13,35 @@ export const uid = (): string =>
 
 export const today = (): string =>
   new Date().toISOString().slice(0, 10)
+
+/**
+ * Groups `rows` by `key`, in first-seen key order; `value` maps each row into
+ * its group (identity by default). The one grouping loop — it was written eight
+ * times, and the copies drifted between `set(k, [...get(k), v])` (an O(n²)
+ * copy) and pushing into the array in place.
+ */
+export function groupBy<T, V = T>(
+  rows: Iterable<T>,
+  key: (row: T) => string,
+  value?: (row: T) => V,
+): Map<string, V[]> {
+  const out = new Map<string, V[]>()
+  for (const row of rows) {
+    const v = (value ? value(row) : row) as V
+    const arr = out.get(key(row))
+    if (arr) arr.push(v)
+    else out.set(key(row), [v])
+  }
+  return out
+}
+
+const DAY_MS = 86400000
+
+/** Whole days from `from` to `to` (both YYYY-MM-DD; positive when to > from).
+ *  Both parse as UTC midnight, so the quotient is exact — floor and round agree. */
+export function daysBetween(from: string, to: string): number {
+  return Math.round((new Date(to).getTime() - new Date(from).getTime()) / DAY_MS)
+}
 
 export type WeekStartDay = 'sunday' | 'monday'
 
@@ -57,10 +86,7 @@ export interface CycleInfo {
 
 export function cycleInfo(p: Program | null | undefined): CycleInfo {
   if (!p?.startDate) return { week: 1, isDeload: false, isComplete: false }
-  const days = Math.max(
-    0,
-    Math.floor((new Date(today()).getTime() - new Date(p.startDate).getTime()) / 86400000),
-  )
+  const days = Math.max(0, daysBetween(p.startDate, today()))
   const weekCount = Math.floor(days / 7) // 0-based completed-week count
   // Once all CYCLE weeks (including deload) have elapsed, the program is done
   if (weekCount >= CYCLE) return { week: CYCLE, isDeload: false, isComplete: true }
@@ -70,10 +96,7 @@ export function cycleInfo(p: Program | null | undefined): CycleInfo {
 
 export function isDeloadDate(startDate: string | null | undefined, d: string): boolean {
   if (!startDate) return false
-  const days = Math.max(
-    0,
-    Math.floor((new Date(d).getTime() - new Date(startDate).getTime()) / 86400000),
-  )
+  const days = Math.max(0, daysBetween(startDate, d))
   const wc = (Math.floor(days / 7) % (CYCLE + 1)) + 1
   return wc === DELOAD_WEEK
 }
@@ -120,6 +143,20 @@ export function mergeById<T extends { id: string }>(existing: T[], incoming: T[]
   const m = new Map(existing.map((e) => [e.id, e]))
   incoming.forEach((e) => m.set(e.id, e))
   return [...m.values()]
+}
+
+/**
+ * The flat `exercises` / `supersets` view of a day, read off its weight blocks.
+ * Three surfaces need it — the JSON importer, the loader and the editor — so it
+ * lives here rather than in `programImport.ts`: the loader runs at bootstrap and
+ * importing from the parser would drag it into the first-paint chunk.
+ */
+export function deriveFlat(blocks: ProgramDayBlock[]): { exercises: string[]; supersets: [string, string][] } {
+  const weightBlocks = blocks.filter(b => b.blockType === 'weight')
+  return {
+    exercises: weightBlocks.flatMap(b => b.exercises.map(e => e.exercise)),
+    supersets: weightBlocks.flatMap(b => b.supersets),
+  }
 }
 
 export function getGrouped(day: ProgramDay | null | undefined): GroupedExercise[] {
