@@ -9,8 +9,9 @@ warnings), **A4 + A5** together (v2.0.68, the whole `lib/db` layer),
 **A2 + A3 + A10 + A11** together (v2.0.70), the last three A entries
 **A12 + A13 + A14** together (v2.0.71) and the shared UI helpers
 **B4 + B12 + B15** together (v2.0.72) and the last three Tier-1 UI entries
-**B10 + B11 + B13** together (v2.0.74).
-**C1** — the two Python Garmin scripts — is the last Tier-1 entry left.
+**B10 + B11 + B13** together (v2.0.74) and **C1** (v2.0.75).
+**Tier 1 is finished.** What is left is Tier 2 — B5, B6, B7, B8, B9, B14 — and
+Tier 3 — A7, A9, C2.
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -831,6 +832,46 @@ produce were reached with an in-memory `setState` only.
 - **Risk:** low. No tests; the next scheduled run is the check
   (`scripts/garmin-sync/README.md`).
 
+**Landed 2026-09-08 (v2.0.75).** −10 net lines across the three Python files.
+`garmin_auth.py` now exports `rest_url(path)`, `rest_headers(prefer=None)`,
+`rest_check(resp, what)` and `as_int` beside the `env` both scripts already
+import. Two departures, and the first is the finding this entry missed:
+
+- **It is three copies, not two — and the third was in `garmin_auth.py`
+  itself.** That module already talked to PostgREST for the token store, with
+  its own `_rest_headers()` and a `_rest_url()` hardcoded to
+  `integration_tokens`; `sync_activities.py` had `_rest` / `_headers` / `_check`;
+  `sync_sleep.py` had the whole thing inlined in `upsert()`. So the shared
+  vocabulary did not have to be invented, only promoted: `_rest_url` grew a
+  `path` argument, `_rest_headers` grew the optional `prefer` that
+  `sync_activities` had already added to its copy, and both lost their
+  underscore. `garmin_auth`'s own two call sites read the public names now, and
+  `_persist`'s `{**_rest_headers(), "Prefer": …}` dict merge is one argument.
+- **`supabase_upsert(table, on_conflict, rows)` was not built.** It fits
+  `sync_sleep` and exactly one of `sync_activities`' five calls: the others are
+  a GET with a select, two PATCHes, an `ignore-duplicates` POST and a
+  `return=representation` POST. A helper that covers a fifth of the call sites
+  would leave the other four spelling the plumbing out anyway, which is the
+  duplication this entry is about. The three-verb vocabulary covers all six.
+- **`_load_stored`'s failure stays non-fatal and now says so.** It warns and
+  returns `None` rather than exiting, because `GARMIN_TOKENSTORE` can still
+  carry the run — the same shape as the three deletes A4 deliberately kept out
+  of `deleteRow`, so it has the same kind of comment. `_persist` likewise keeps
+  its own loud non-fatal branch.
+
+**Checked without the next cron run** (this entry says that run is the check;
+it is the *last* check, not the only one available). The service-role key is a
+CI secret, so a real `DRY_RUN=true` sync cannot run from here — that part is
+honestly unverified until the 5 AM job. What *was* verified: all three files
+compile; an AST pass confirms no `_as_int` / `_rest` / `_headers` / `_check` /
+`_rest_url` / `_rest_headers` reference survives and no import went unused; and
+the helpers were run against fake env vars and compared to the exact strings
+and dicts the deleted copies built — all eleven identical, including the two
+`Prefer` variants and `rest_check`'s abort message. One string did change on
+purpose: `sync_sleep`'s failure now reads *Supabase sleep_logs upsert failed*
+where it read *Supabase upsert failed*, because the shared checker takes the
+name of what failed and every other call site already passed one.
+
 ## Tier 2 — medium, or needs a browser check
 
 ### S1. One save-and-toast helper (−120) — the biggest single win
@@ -1214,7 +1255,7 @@ Tier 1:
 - [x] B12 `RowActions` in `ui/` — 2026-09-08, v2.0.72. Four sites, not three; it *grew* the file by ~12 lines rather than saving 8, and `EditBtn` stopped being exported because `RowActions` absorbed every caller
 - [x] B13 ProgramTab small bits — 2026-09-08, v2.0.74. All four checked out as written; the setter-less `useState` was hiding the fact that the editor has no control for `weeklyPrinciples`, and the two starters are now one shape over a two-entry list wrapped in `display: contents` so the 8px rhythm survives
 - [x] B15 `uniqSorted` — 2026-09-08, v2.0.72. Twelve sites, not nine; the store selector was deliberately not built (B14 fixes the re-render cost for all of them at once)
-- [ ] C1 Garmin helpers shared
+- [x] C1 Garmin helpers shared — 2026-09-08, v2.0.75. Three copies, not two: `garmin_auth.py` held the third, so its `_rest_url`/`_rest_headers` were promoted rather than a new helper invented. `supabase_upsert` was not built — it fits one of `sync_activities`' five REST calls; `rest_url`/`rest_headers`/`rest_check` fit all six. A live `DRY_RUN` needs the CI service-role key, so the cron run is still the last check
 
 Tier 2:
 

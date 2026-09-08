@@ -61,7 +61,7 @@ from datetime import date, timedelta
 
 import requests
 
-from garmin_auth import env, garmin_client
+from garmin_auth import as_int, env, garmin_client, rest_check, rest_headers, rest_url
 
 # Garmin activityType.typeKey -> the app's cardio_sessions.activity_type value.
 CARDIO_TYPE_KEYS = {
@@ -98,10 +98,6 @@ SPORT_TYPE_KEYS = {
 #   strength_training — Garmin's summary has no sets or reps, so there is
 #     nothing to put in session_sets; its Training Effect is HR noise.
 SKIPPED_BY_DECISION = {"walking", "hiking", "skating_ws", "strength_training"}
-
-
-def _as_int(v) -> int | None:
-    return int(round(v)) if v is not None else None
 
 
 def _num(v) -> float | None:
@@ -217,8 +213,8 @@ def extract_row(user_id: str, act: dict) -> dict | None:
         "duration_minutes": duration_min,
         "distance_km": round(act["distance"] / 1000, 3) if act.get("distance") else None,
         "elevation_gain_m": _num(act.get("elevationGain")),
-        "avg_heart_rate": _as_int(act.get("averageHR")),
-        "max_heart_rate": _as_int(act.get("maxHR")),
+        "avg_heart_rate": as_int(act.get("averageHR")),
+        "max_heart_rate": as_int(act.get("maxHR")),
         "aerobic_te": _num(act.get("aerobicTrainingEffect")),
         "anaerobic_te": _num(act.get("anaerobicTrainingEffect")),
         "training_effect_label": act.get("trainingEffectLabel"),
@@ -324,8 +320,8 @@ def sport_row(user_id: str, act: dict) -> dict | None:
         "sport_name": base,
         "session_date": session_date,
         "duration_minutes": duration_min,
-        "avg_heart_rate": _as_int(act.get("averageHR")),
-        "max_heart_rate": _as_int(act.get("maxHR")),
+        "avg_heart_rate": as_int(act.get("averageHR")),
+        "max_heart_rate": as_int(act.get("maxHR")),
         "aerobic_te": _num(act.get("aerobicTrainingEffect")),
         "anaerobic_te": _num(act.get("anaerobicTrainingEffect")),
         "training_effect_label": act.get("trainingEffectLabel"),
@@ -406,74 +402,57 @@ def plan_sport(user_id: str, acts: list[dict], existing: list[dict]) -> dict:
     return plan
 
 
-# ── Supabase REST ──────────────────────────────────────────────────────────────
-
-def _rest(path: str) -> str:
-    return f"{env('SUPABASE_URL').rstrip('/')}/rest/v1/{path}"
-
-
-def _headers(prefer: str | None = None) -> dict[str, str]:
-    key = env("SUPABASE_SERVICE_ROLE_KEY")
-    h = {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-    if prefer:
-        h["Prefer"] = prefer
-    return h
-
-
-def _check(resp: requests.Response, what: str) -> None:
-    if not resp.ok:
-        sys.exit(f"Supabase {what} failed ({resp.status_code}): {resp.text}")
-
+# ── Supabase REST — the vocabulary is garmin_auth's; see rest_url/rest_headers ─
 
 def fetch_cardio_state(user_id: str) -> list[dict]:
     """Every cardio_sessions row of the user, with the columns a claim can fill."""
     resp = requests.get(
-        _rest("cardio_sessions"),
+        rest_url("cardio_sessions"),
         params={"select": CARDIO_STATE_COLS, "user_id": f"eq.{user_id}", "limit": "10000"},
-        headers=_headers(), timeout=30,
+        headers=rest_headers(), timeout=30,
     )
-    _check(resp, "cardio_sessions read")
+    rest_check(resp, "cardio_sessions read")
     return resp.json() or []
 
 
 def apply_cardio_plan(plan: dict) -> None:
     for row_id, patch, _ in plan["claimed"]:
         resp = requests.patch(
-            _rest("cardio_sessions"),
+            rest_url("cardio_sessions"),
             params={"id": f"eq.{row_id}"},
-            headers=_headers("return=minimal"),
+            headers=rest_headers("return=minimal"),
             json=patch, timeout=30,
         )
-        _check(resp, f"cardio_sessions claim ({row_id})")
+        rest_check(resp, f"cardio_sessions claim ({row_id})")
     if plan["inserted"]:
         # ignore-duplicates: a concurrent or repeated run can never double-insert
         # an activity, and never overwrites a row that is already there.
         resp = requests.post(
-            _rest("cardio_sessions"),
+            rest_url("cardio_sessions"),
             params={"on_conflict": "user_id,garmin_activity_id"},
-            headers=_headers("resolution=ignore-duplicates,return=minimal"),
+            headers=rest_headers("resolution=ignore-duplicates,return=minimal"),
             json=plan["inserted"], timeout=30,
         )
-        _check(resp, "cardio_sessions insert")
+        rest_check(resp, "cardio_sessions insert")
 
 
 def fetch_sport_state(user_id: str) -> tuple[dict[str, str], list[dict]]:
     """(sport type name, lower-cased -> id) and every sport_sessions row of the
     user, with the columns a claim or a backfill can fill (SPORT_STATE_COLS)."""
     resp = requests.get(
-        _rest("sport_types"),
+        rest_url("sport_types"),
         params={"select": "id,name", "user_id": f"eq.{user_id}"},
-        headers=_headers(), timeout=30,
+        headers=rest_headers(), timeout=30,
     )
-    _check(resp, "sport_types read")
+    rest_check(resp, "sport_types read")
     types = {r["name"].strip().lower(): r["id"] for r in resp.json() or []}
 
     resp = requests.get(
-        _rest("sport_sessions"),
+        rest_url("sport_sessions"),
         params={"select": SPORT_STATE_COLS, "user_id": f"eq.{user_id}", "limit": "10000"},
-        headers=_headers(), timeout=30,
+        headers=rest_headers(), timeout=30,
     )
-    _check(resp, "sport_sessions read")
+    rest_check(resp, "sport_sessions read")
     return types, resp.json() or []
 
 
@@ -482,25 +461,25 @@ def create_sport_type(user_id: str, name: str) -> str:
     a sync cannot know whether a sport has competitors; the user sets that when
     first editing the row."""
     resp = requests.post(
-        _rest("sport_types"),
-        headers=_headers("return=representation"),
+        rest_url("sport_types"),
+        headers=rest_headers("return=representation"),
         json={"user_id": user_id, "name": name, "is_system": False,
               "has_competitor": False, "has_teammate": False},
         timeout=30,
     )
-    _check(resp, f"sport_types insert ({name})")
+    rest_check(resp, f"sport_types insert ({name})")
     return resp.json()[0]["id"]
 
 
 def apply_sport_plan(user_id: str, plan: dict, types: dict[str, str]) -> None:
     for row_id, patch, _ in plan["backfilled"] + plan["claimed"]:
         resp = requests.patch(
-            _rest("sport_sessions"),
+            rest_url("sport_sessions"),
             params={"id": f"eq.{row_id}"},
-            headers=_headers("return=minimal"),
+            headers=rest_headers("return=minimal"),
             json=patch, timeout=30,
         )
-        _check(resp, f"sport_sessions patch ({row_id})")
+        rest_check(resp, f"sport_sessions patch ({row_id})")
 
     rows = []
     for row in plan["inserted"]:
@@ -516,12 +495,12 @@ def apply_sport_plan(user_id: str, plan: dict, types: dict[str, str]) -> None:
         # ignore-duplicates: a concurrent or repeated run can never double-insert
         # an activity, and never overwrites a row that is already there.
         resp = requests.post(
-            _rest("sport_sessions"),
+            rest_url("sport_sessions"),
             params={"on_conflict": "user_id,garmin_activity_id"},
-            headers=_headers("resolution=ignore-duplicates,return=minimal"),
+            headers=rest_headers("resolution=ignore-duplicates,return=minimal"),
             json=rows, timeout=30,
         )
-        _check(resp, "sport_sessions insert")
+        rest_check(resp, "sport_sessions insert")
 
 
 def print_unmapped_inventory(unmapped: dict[str, list[dict]], existing: list[dict]) -> None:

@@ -51,7 +51,10 @@ them. An activity already in the table is skipped, so a re-run writes nothing.
 
 - Auth is **token-based** and lives in [garmin_auth.py](garmin_auth.py). A token
   blob is generated once locally (answering MFA if you have it on), so CI never
-  needs your password and never hits an MFA prompt.
+  needs your password and never hits an MFA prompt. That module also holds the
+  Supabase REST vocabulary both sync scripts use — `env`, `rest_url`,
+  `rest_headers`, `rest_check` and `as_int` — so there is one place where a
+  header, an endpoint or a failure message is decided.
 - **The token rotates, so it is stored where the job can write it.** Garmin's
   access token lasts about an hour and is renewed with a refresh token that
   Garmin replaces on every use — the previous one dies immediately. So the

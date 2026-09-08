@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Token-persisting Garmin login, shared by sync_sleep.py and sync_activities.py.
+"""Token-persisting Garmin login, shared by sync_sleep.py and sync_activities.py,
+plus the Supabase REST vocabulary all three of them speak (`env`, `rest_url`,
+`rest_headers`, `rest_check`, `as_int`).
 
 The DI access token lives about an hour and is renewed with a refresh token that
 Garmin **rotates on every use** — the old refresh token dies the moment the new
@@ -53,28 +55,53 @@ def env(name: str, required: bool = True) -> str | None:
     return val
 
 
-def _rest_headers() -> dict[str, str]:
+# ── The shared Supabase REST vocabulary ───────────────────────────────────────
+# This module already talks to PostgREST for the token store, and both sync
+# scripts were spelling the same three things out again. They live here beside
+# `env` because that is what those scripts already import from.
+
+
+def rest_url(path: str) -> str:
+    """The PostgREST endpoint for one table."""
+    return f"{env('SUPABASE_URL').rstrip('/')}/rest/v1/{path}"
+
+
+def rest_headers(prefer: str | None = None) -> dict[str, str]:
+    """Service-role headers. `prefer` carries PostgREST's conflict resolution and
+    return mode, e.g. `resolution=merge-duplicates,return=minimal`."""
     key = env("SUPABASE_SERVICE_ROLE_KEY")
-    return {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    h = {"apikey": key, "Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+    if prefer:
+        h["Prefer"] = prefer
+    return h
 
 
-def _rest_url() -> str:
-    return f"{env('SUPABASE_URL').rstrip('/')}/rest/v1/integration_tokens"
+def rest_check(resp: requests.Response, what: str) -> None:
+    """Abort on a failed call. Deliberately fatal: half a sync is worse than
+    none, because the next run's `days` window may no longer reach the gap."""
+    if not resp.ok:
+        sys.exit(f"Supabase {what} failed ({resp.status_code}): {resp.text}")
+
+
+def as_int(v) -> int | None:
+    """Garmin sometimes returns HR/HRV/score as floats (e.g. 81.0); the DB columns are int."""
+    return int(round(v)) if v is not None else None
 
 
 def _load_stored() -> str | None:
     """Read the token Supabase holds, or None on the very first run."""
     global _persisted
     resp = requests.get(
-        _rest_url(),
+        rest_url("integration_tokens"),
         params={
             "select": "token",
             "user_id": f"eq.{env('TEKIO_USER_ID')}",
             "provider": f"eq.{PROVIDER}",
         },
-        headers=_rest_headers(),
+        headers=rest_headers(),
         timeout=30,
     )
+    # Not `rest_check`: this one read is allowed to fail.
     if not resp.ok:
         # Not fatal — GARMIN_TOKENSTORE can still carry this run. Say it loudly
         # anyway: without the write-back the token dies again after one refresh.
@@ -101,9 +128,9 @@ def _persist(path: str) -> None:
         return
 
     resp = requests.post(
-        _rest_url(),
+        rest_url("integration_tokens"),
         params={"on_conflict": "user_id,provider"},
-        headers={**_rest_headers(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+        headers=rest_headers("resolution=merge-duplicates,return=minimal"),
         json=[{
             "user_id": env("TEKIO_USER_ID"),
             "provider": PROVIDER,
