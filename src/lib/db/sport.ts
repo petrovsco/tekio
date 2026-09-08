@@ -2,6 +2,54 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { SportEntry, SportTypeInfo, NewSportFlags, QualityRating, MatchResult } from '../../types'
 import { withOrigin } from '../env'
+import { userRows, deleteRow } from './_rows'
+
+// One literal on purpose: PostgREST parses the select string at the type level,
+// and a concatenation is just `string`, which costs the returned rows their
+// column names.
+const COLS = 'id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, source, garmin_activity_id, max_heart_rate, aerobic_te, anaerobic_te, training_effect_label, training_load, zone_distribution, sport_types(name)'
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function toEntry(r: any): SportEntry {
+  return {
+    id: r.id,
+    date: r.session_date,
+    sport: ((r.sport_types as { name: string } | null)?.name ?? '') as SportEntry['sport'],
+    withTrainer: r.with_trainer,
+    quality: (r.quality ?? 0) as QualityRating,
+    duration: r.duration_minutes != null ? Number(r.duration_minutes) : undefined,
+    avgHr: r.avg_heart_rate != null ? Number(r.avg_heart_rate) : undefined,
+    notes: r.notes ?? '',
+    competitorNames: r.competitor_names ?? undefined,
+    result: (r.result ?? undefined) as MatchResult | undefined,
+    teammateNames: r.teammate_names ?? undefined,
+    source: (r.source ?? 'manual') as SportEntry['source'],
+    garminActivityId: r.garmin_activity_id ?? undefined,
+    // The Garmin intensity columns (roadmap 058) — written by the sync only, never typed.
+    maxHr: r.max_heart_rate != null ? Number(r.max_heart_rate) : undefined,
+    aerobicTe: r.aerobic_te != null ? Number(r.aerobic_te) : undefined,
+    anaerobicTe: r.anaerobic_te != null ? Number(r.anaerobic_te) : undefined,
+    trainingEffectLabel: r.training_effect_label ?? undefined,
+    trainingLoad: r.training_load != null ? Number(r.training_load) : undefined,
+    zoneDistribution: Array.isArray(r.zone_distribution) ? r.zone_distribution.map(Number) : undefined,
+  }
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** The columns a save and an update both write. The sport itself travels as a
+ *  foreign key, so the caller resolves it first. */
+const toRow = (entry: Omit<SportEntry, 'id'>, sportTypeId: string) => ({
+  sport_type_id: sportTypeId,
+  session_date: entry.date,
+  with_trainer: entry.withTrainer,
+  quality: entry.quality || null,
+  duration_minutes: entry.duration ?? null,
+  avg_heart_rate: entry.avgHr ?? null,
+  notes: entry.notes || null,
+  competitor_names: entry.competitorNames?.length ? entry.competitorNames : null,
+  result: entry.result || null,
+  teammate_names: entry.teammateNames?.length ? entry.teammateNames : null,
+})
 
 async function getOrCreateSportType(name: string, newSportFlags?: NewSportFlags): Promise<string> {
   const { data: existing, error: selectError } = await supabase
@@ -29,44 +77,13 @@ async function getOrCreateSportType(name: string, newSportFlags?: NewSportFlags)
 }
 
 export async function loadSportTypes(): Promise<SportTypeInfo[]> {
-  const { data, error } = await supabase
-    .from('sport_types')
-    .select('name, has_competitor, has_teammate')
-    .eq('user_id', USER_ID)
-  if (error) throw error
-  return (data ?? []).map(r => ({ name: r.name, hasCompetitor: r.has_competitor, hasTeammate: r.has_teammate }))
+  const rows = await userRows('sport_types', 'name, has_competitor, has_teammate')
+  return rows.map(r => ({ name: r.name, hasCompetitor: r.has_competitor, hasTeammate: r.has_teammate }))
 }
 
 export async function loadSports(): Promise<SportEntry[]> {
-  const { data, error } = await supabase
-    .from('sport_sessions')
-    // One literal on purpose: supabase-js parses the select string at the type level, and a concatenation is just `string`.
-    .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, source, garmin_activity_id, max_heart_rate, aerobic_te, anaerobic_te, training_effect_label, training_load, zone_distribution, sport_types(name)')
-    .eq('user_id', USER_ID)
-    .order('session_date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(r => ({
-    id: r.id,
-    date: r.session_date,
-    sport: ((r.sport_types as unknown as { name: string } | null)?.name ?? '') as SportEntry['sport'],
-    withTrainer: r.with_trainer,
-    quality: (r.quality ?? 0) as QualityRating,
-    duration: r.duration_minutes != null ? Number(r.duration_minutes) : undefined,
-    avgHr: r.avg_heart_rate != null ? Number(r.avg_heart_rate) : undefined,
-    notes: r.notes ?? '',
-    competitorNames: r.competitor_names ?? undefined,
-    result: (r.result ?? undefined) as MatchResult | undefined,
-    teammateNames: r.teammate_names ?? undefined,
-    source: (r.source ?? 'manual') as SportEntry['source'],
-    garminActivityId: r.garmin_activity_id ?? undefined,
-    // The Garmin intensity columns (roadmap 058) — written by the sync only, never typed.
-    maxHr: r.max_heart_rate != null ? Number(r.max_heart_rate) : undefined,
-    aerobicTe: r.aerobic_te != null ? Number(r.aerobic_te) : undefined,
-    anaerobicTe: r.anaerobic_te != null ? Number(r.anaerobic_te) : undefined,
-    trainingEffectLabel: r.training_effect_label ?? undefined,
-    trainingLoad: r.training_load != null ? Number(r.training_load) : undefined,
-    zoneDistribution: Array.isArray(r.zone_distribution) ? r.zone_distribution.map(Number) : undefined,
-  }))
+  const rows = await userRows('sport_sessions', COLS, 'session_date')
+  return rows.map(toEntry)
 }
 
 export async function saveSportEntry(
@@ -76,41 +93,14 @@ export async function saveSportEntry(
   const sportTypeId = await getOrCreateSportType(entry.sport, newSportFlags)
   const { data, error } = await supabase
     .from('sport_sessions')
-    .insert(withOrigin({
-      user_id: USER_ID,
-      sport_type_id: sportTypeId,
-      session_date: entry.date,
-      with_trainer: entry.withTrainer,
-      quality: entry.quality || null,
-      duration_minutes: entry.duration ?? null,
-      avg_heart_rate: entry.avgHr ?? null,
-      notes: entry.notes || null,
-      competitor_names: entry.competitorNames?.length ? entry.competitorNames : null,
-      result: entry.result || null,
-      teammate_names: entry.teammateNames?.length ? entry.teammateNames : null,
-    }))
-    .select('id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names')
+    .insert(withOrigin({ user_id: USER_ID, ...toRow(entry, sportTypeId) }))
+    .select(COLS)
     .single()
   if (error) throw error
-  return {
-    id: data.id,
-    date: data.session_date,
-    sport: entry.sport,
-    withTrainer: data.with_trainer,
-    quality: (data.quality ?? 0) as QualityRating,
-    duration: data.duration_minutes != null ? Number(data.duration_minutes) : undefined,
-    avgHr: data.avg_heart_rate != null ? Number(data.avg_heart_rate) : undefined,
-    notes: data.notes ?? '',
-    competitorNames: data.competitor_names ?? undefined,
-    result: (data.result ?? undefined) as MatchResult | undefined,
-    teammateNames: data.teammate_names ?? undefined,
-  }
+  return toEntry(data)
 }
 
-export async function deleteSportEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('sport_sessions').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteSportEntry = (id: string): Promise<void> => deleteRow('sport_sessions', id)
 
 export async function updateSportEntry(
   id: string,
@@ -120,18 +110,7 @@ export async function updateSportEntry(
   const sportTypeId = await getOrCreateSportType(patch.sport, newSportFlags)
   const { error } = await supabase
     .from('sport_sessions')
-    .update({
-      sport_type_id: sportTypeId,
-      session_date: patch.date,
-      with_trainer: patch.withTrainer,
-      quality: patch.quality || null,
-      duration_minutes: patch.duration ?? null,
-      avg_heart_rate: patch.avgHr ?? null,
-      notes: patch.notes || null,
-      competitor_names: patch.competitorNames?.length ? patch.competitorNames : null,
-      result: patch.result || null,
-      teammate_names: patch.teammateNames?.length ? patch.teammateNames : null,
-    })
+    .update(toRow(patch, sportTypeId))
     .eq('id', id)
   if (error) throw error
 }

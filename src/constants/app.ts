@@ -37,20 +37,24 @@ export const WATER_GOAL_ML = 2500
 // type here: it is a `format` on any of these (roadmap 054).
 export const CARDIO_TYPES = ['Running', 'Cycling', 'Swimming', 'Indoor Rowing', 'Custom'] as const
 
-export const CARDIO_TYPE_MAP: Record<string, string> = {
+/** Flips a display→column map. Derived rather than written out a second time:
+ *  two hand-kept copies of one mapping are a pair that can drift, and adding a
+ *  type meant remembering to edit both. Typed `Record<string, string>` on the
+ *  way back because the columns are wider than the app's own list — the
+ *  `activity_type` check constraint permits ten values against the five below
+ *  (walking, hiking, elliptical, jump_rope, other), so a reader still needs its
+ *  `?? r.activity_type` fallback for a row the app did not write. */
+const invert = (map: Record<string, string>): Record<string, string> =>
+  Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k]))
+
+export const CARDIO_TYPE_MAP: Record<typeof CARDIO_TYPES[number], string> = {
   Running: 'running',
   Cycling: 'cycling',
   Swimming: 'swimming',
   'Indoor Rowing': 'rowing',
   Custom: 'custom',
 }
-export const CARDIO_TYPE_REVERSE: Record<string, string> = {
-  running: 'Running',
-  cycling: 'Cycling',
-  swimming: 'Swimming',
-  rowing: 'Indoor Rowing',
-  custom: 'Custom',
-}
+export const CARDIO_TYPE_REVERSE = invert(CARDIO_TYPE_MAP)
 
 /** The two values `cardio_sessions.format` takes; a form leaves it unset when
  *  the session was neither in particular. */
@@ -61,14 +65,11 @@ export const CARDIO_FORMATS: { value: CardioFormat; label: string }[] = [
 
 export const DONATION_TYPES = ['Full Blood', 'Plasma'] as const
 
-export const DONATION_TYPE_MAP: Record<string, string> = {
+export const DONATION_TYPE_MAP: Record<typeof DONATION_TYPES[number], string> = {
   'Full Blood': 'full_blood',
   Plasma: 'plasma',
 }
-export const DONATION_TYPE_REVERSE: Record<string, string> = {
-  full_blood: 'Full Blood',
-  plasma: 'Plasma',
-}
+export const DONATION_TYPE_REVERSE = invert(DONATION_TYPE_MAP)
 /** 56 / 14 — donation-service eligibility rules, convention only (FDA 21 CFR
  * 630.15; the plasma interval is national convention, 72 h-14 d across
  * Europe), NOT physiology. Calendar countdown only - must not feed the

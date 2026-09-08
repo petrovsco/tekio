@@ -2,15 +2,11 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { BodyweightEntry } from '../../types'
 import { withOrigin } from '../env'
+import { userRows, deleteRow } from './_rows'
 
 export async function loadBodyweight(): Promise<BodyweightEntry[]> {
-  const { data, error } = await supabase
-    .from('bodyweight_logs')
-    .select('id, log_date, weight, notes')
-    .eq('user_id', USER_ID)
-    .order('log_date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(r => ({
+  const rows = await userRows('bodyweight_logs', 'id, log_date, weight, notes', 'log_date')
+  return rows.map(r => ({
     id: r.id,
     date: r.log_date,
     weight: Number(r.weight),
@@ -30,10 +26,7 @@ export async function saveBodyweightEntry(entry: Omit<BodyweightEntry, 'id'>): P
   return { id: data.id, date: data.log_date, weight: Number(data.weight) }
 }
 
-export async function deleteBodyweightEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('bodyweight_logs').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteBodyweightEntry = (id: string): Promise<void> => deleteRow('bodyweight_logs', id)
 
 export async function updateBodyweightEntry(
   id: string,

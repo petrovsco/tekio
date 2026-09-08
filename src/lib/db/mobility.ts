@@ -3,6 +3,7 @@ import { USER_ID } from '../../constants/app'
 import { getOrCreateExerciseRow } from './exercises'
 import type { MobilityEntry } from '../../types'
 import { withOrigin } from '../env'
+import { userRows, deleteRow } from './_rows'
 
 /** Map of exercise_id → its muscle-group names (canonical, shared across sessions). */
 async function loadExerciseMuscleMap(): Promise<Map<string, string[]>> {
@@ -22,16 +23,15 @@ async function loadExerciseMuscleMap(): Promise<Map<string, string[]>> {
 }
 
 export async function loadMobility(): Promise<MobilityEntry[]> {
-  const [{ data, error }, muscleMap] = await Promise.all([
-    supabase
-      .from('mobility_sessions')
-      .select('id, session_date, total_duration, notes, mobility_exercises(id, exercise_name, duration_minutes, notes, exercise_id)')
-      .eq('user_id', USER_ID)
-      .order('session_date', { ascending: false }),
+  const [rows, muscleMap] = await Promise.all([
+    userRows(
+      'mobility_sessions',
+      'id, session_date, total_duration, notes, mobility_exercises(id, exercise_name, duration_minutes, notes, exercise_id)',
+      'session_date',
+    ),
     loadExerciseMuscleMap(),
   ])
-  if (error) throw error
-  return (data ?? []).map(r => {
+  return rows.map(r => {
     const exercises = (r.mobility_exercises ?? []) as { id: string; exercise_name: string; duration_minutes: number | null; notes: string | null; exercise_id: string | null }[]
     return {
       id: r.id,
@@ -109,10 +109,7 @@ export async function saveMobilityEntry(entry: Omit<MobilityEntry, 'id'>): Promi
   return { id: session.id, date: entry.date, exercises: entry.exercises, duration: totalDuration }
 }
 
-export async function deleteMobilityEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('mobility_sessions').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteMobilityEntry = (id: string): Promise<void> => deleteRow('mobility_sessions', id)
 
 export async function updateMobilityEntry(
   id: string,

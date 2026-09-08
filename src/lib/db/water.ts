@@ -2,15 +2,11 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WaterEntry } from '../../types'
 import { withOrigin } from '../env'
+import { userRows, deleteRow } from './_rows'
 
 export async function loadWater(): Promise<WaterEntry[]> {
-  const { data, error } = await supabase
-    .from('water_logs')
-    .select('id, log_date, amount_ml')
-    .eq('user_id', USER_ID)
-    .order('log_date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(r => ({
+  const rows = await userRows('water_logs', 'id, log_date, amount_ml', 'log_date')
+  return rows.map(r => ({
     id: r.id,
     date: r.log_date,
     amountMl: Number(r.amount_ml),
@@ -31,10 +27,7 @@ export async function saveWaterEntry(entry: Omit<WaterEntry, 'id'>): Promise<Wat
   return { id: data.id, date: data.log_date, amountMl: Number(data.amount_ml) }
 }
 
-export async function deleteWaterEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('water_logs').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteWaterEntry = (id: string): Promise<void> => deleteRow('water_logs', id)
 
 export async function updateWaterEntry(
   id: string,

@@ -5,6 +5,7 @@ import { withOrigin } from '../env'
 // One resolver for every write path (roadmap 044) — a second copy here is how
 // the alias fix would silently miss half the ways a set gets logged.
 import { getOrCreateExerciseRow } from './exercises'
+import { userRows, deleteRow } from './_rows'
 
 async function getOrCreateSession(date: string): Promise<string> {
   const { data: existing } = await supabase
@@ -25,24 +26,14 @@ async function getOrCreateSession(date: string): Promise<string> {
 }
 
 export async function loadWeights(): Promise<WeightEntry[]> {
-  const { data, error } = await supabase
-    .from('training_sessions')
-    .select(`
-      session_date,
-      session_exercises (
-        id,
-        sort_order,
-        superset_group_id,
-        exercises ( name ),
-        session_sets ( set_number, weight, reps )
-      )
-    `)
-    .eq('user_id', USER_ID)
-    .order('session_date', { ascending: false })
-  if (error) throw error
+  const sessions = await userRows(
+    'training_sessions',
+    'session_date, session_exercises(id, sort_order, superset_group_id, exercises(name), session_sets(set_number, weight, reps))',
+    'session_date',
+  )
 
   const entries: WeightEntry[] = []
-  for (const session of data ?? []) {
+  for (const session of sessions) {
     const exercises = (session.session_exercises ?? []) as unknown as {
       id: string
       sort_order: number
@@ -123,8 +114,7 @@ export async function deleteWeightEntry(id: string): Promise<void> {
     .eq('id', id)
     .maybeSingle()
 
-  const { error } = await supabase.from('session_exercises').delete().eq('id', id)
-  if (error) throw error
+  await deleteRow('session_exercises', id)
 
   // Clean up empty sessions
   if (se?.session_id) {

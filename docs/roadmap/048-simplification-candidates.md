@@ -1,10 +1,11 @@
 # Roadmap: Simplification candidates — a ranked list for `/simplify`
 
 **Label:** infra
-**Status:** in progress — four landed: **A8** (v2.0.58), **A1** (v2.0.63, which
-took `knip` to zero) and **S1** in two parts (v2.0.65 store + tabs, v2.0.66
-EditModal, after which `npm run lint` reports nothing in that file and the repo
-sits at 023's accepted floor of 6 warnings). **A4 + A5 are next.**
+**Status:** in progress — six landed: **A8** (v2.0.58), **A1** (v2.0.63, which
+took `knip` to zero), **S1** in two parts (v2.0.65 store + tabs, v2.0.66
+EditModal, after which the repo sits at 023's accepted floor of 6 lint
+warnings) and **A4 + A5** together (v2.0.68, the whole `lib/db` layer).
+**B2 + B3 are next.**
 Each remaining candidate is one atomic unit a later session lands with
 `/simplify`; tick its box in Acceptance when it ships.
 Committed to 2.1.0 by Peter on 2026-09-05 as spare-time units.
@@ -436,6 +437,35 @@ useful part of this record:
   not an ORM — CLAUDE.md's "no repository abstraction" still holds.
 - **Risk:** low; pure plumbing, untested layer.
 
+**Landed 2026-09-08 (v2.0.68), together with A5** — one commit, because both
+entries edit the same eight files and splitting them would have meant touching
+each file twice. −89 lines from the ten files against +32 for `_rows.ts` (22 of
+which are comment), so −57 net; first paint fell 2.68 kB to 349.79 kB. Two
+departures from what this entry proposed:
+
+- **`cols` had to be generic over its own literal type, not `string`.** PostgREST
+  parses the select string at the *type* level — that is where the returned rows
+  get their column names — so a parameter typed plain `string` collapses every
+  row to `GenericStringError` and every `r.some_column` in the callers stops
+  compiling. `sport.ts` already carried a comment saying why its select must be
+  one literal; the helper would have broken exactly what that comment protects.
+  One type parameter (`userRows<Q extends string>`) passes the literal through
+  and keeps the checking the inline queries had. The cost is that a call site
+  must still pass a literal, so `cardio.ts`'s concatenated `COLS` became a single
+  line — it had silently lost its column checking to that concatenation.
+- **`dateCol` is optional**, because `loadSportTypes` reads a lookup table with
+  no date to sort by. That is the eighth load this entry lists.
+
+**Ten files, not eight.** `mobility.ts`'s load (it sits inside a `Promise.all`,
+which is why the hand-read pass missed it), `weights.ts`'s load and its
+`session_exercises` delete, and `muscles.ts`'s delete are the same two shapes;
+leaving them would have left two ways of doing one thing, which is the opposite
+of the point. Deliberately left alone: the three deletes that **ignore** their
+error (`program.ts` ×2 and `weights.ts`'s two `training_sessions` cleanups) —
+routing those through `deleteRow` would make them start throwing, which is a
+behaviour change, not a simplification; and `program.ts`'s loads, which carry
+`.in()` clauses, status filters and their own orders.
+
 ### A5. Row ↔ entry mapping duplicated inside four db files (−45)
 
 - **Where:** `sport.ts:47-59` vs `:85-97` (row → entry) and `:70-81` vs
@@ -449,6 +479,48 @@ useful part of this record:
   derive the reverse maps with `Object.fromEntries(Object.entries(MAP).map(
   ([k, v]) => [v, k]))`; drop the fallbacks.
 - **Risk:** low.
+
+**Landed 2026-09-08 (v2.0.68) with A4.** Every file named now has one `toRow`
+and one `toEntry` (`recovery.ts` has two of each — sleep and the sauna/cold
+pair). `invert()` in `constants/app.ts` derives both reverse maps. Three things
+this entry got half-right, and the corrections are the useful part:
+
+- **Only the *forward* fallbacks were dead. The reverse ones are load-bearing.**
+  On the way *in*, `?? entry.type.toLowerCase()` is unreachable because
+  `entry.type` is a closed union — and typing the maps
+  `Record<typeof CARDIO_TYPES[number], string>` now makes that a compile-time
+  fact rather than a hope: adding a sixth cardio type without extending the map
+  is an error. On the way *out*, the same-looking `?? r.activity_type` reads the
+  **database**, and `cardio_sessions_activity_type_check` permits **ten** values
+  against `CARDIO_TYPES`' five — walking, hiking, elliptical, jump_rope, other.
+  Nothing writes those today, but the constraint says a row may hold one, and
+  without the fallback the history would render `undefined`. Both readers keep
+  theirs, with a comment saying which case it is for; that is also why the
+  derived reverse maps stay `Record<string, string>`.
+- **`sport.ts` lost its second mapper by widening the insert's returning
+  clause**, which this entry did not anticipate. The save hand-wrote a 13-line
+  row → entry copy only because its `.select(...)` was narrower than the load's
+  and had no `sport_types(name)` join, so the sport name had to come from the
+  argument instead of the row. Selecting the same `COLS` on the insert returns
+  the embed too, and one `toEntry` now serves both. Browser-checked, because an
+  embedded select on an insert-returning is the one genuinely new query shape
+  here: the created row came back with `sport: "Tennis"` from the join.
+- **`saveSleepEntry` still skips `withOrigin`.** The refactor moves that upsert's
+  payload into `sleepRow()` and deliberately does not fix the missing origin tag
+  — that is a behaviour change listed under *Found on the way*, and it needs a
+  decision rather than a silent ride-along in a simplification.
+
+**Browser-checked on live data** (house rule `verify-in-browser`; this is the
+whole data layer, so a regression pass, not a spot check). Bootstrap loaded all
+eleven store lists through `userRows` — 212 weights, 220 cardio, 53 sports, 5
+sport types, 3 mobility, 11 bodyweight, 38 water, 1 donation, 19 sleep, 0 sauna,
+0 cold (the two zeroes are real: no rows exist) — and Home drew its body map,
+readiness gauge and fold tiles unchanged. Writes were tested without disturbing
+the user's data: a cardio row and a sleep row each saved back to their own values
+and compared identical field-for-field afterwards (`toRow` / `sleepRow` on the
+update path), and one sport row was created, read back and deleted, leaving the
+count at 53 with nothing left behind after a full reload (`toEntry` on the new
+insert-embed, plus `deleteRow`). Zero console errors.
 
 ### B5. `Recent` duplicated; five sheets hand-build the header (−45)
 
@@ -644,8 +716,8 @@ Tier 2:
 
 - [x] S1 save-and-toast helper (store + tabs) — 2026-09-08, v2.0.65. Browser-checked: Resume→Pause round trip on a live program printed both toasts and left the database as it was; a Weights save with the database cut off printed "Failed to save." and left the form filled
 - [x] S1 save-and-toast helper (EditModal) — 2026-09-08, v2.0.66. Browser-checked on live data: a sleep entry saved unchanged ("Updated!", modal closed); the same save with the API cut off printed "Failed to update." and left the modal open with every value intact; clearing a required field made Save a no-op with no toast; "Delete entry" with the API cut off printed "Failed to delete."; the superset form, driven through the store because the history holds none, rendered both exercises and kept its eight set rows on a failed save. Zero console errors
-- [ ] A4 `userRows` / `deleteRow`
-- [ ] A5 `toRow` / `toEntry`, derived reverse maps
+- [x] A4 `userRows` / `deleteRow` — 2026-09-08, v2.0.68. Ten files, not eight; `cols` is generic over its literal type so the callers keep their column checking
+- [x] A5 `toRow` / `toEntry`, derived reverse maps — 2026-09-08, v2.0.68. The forward fallbacks are gone and the maps are now total by type; the reverse fallbacks stay, because the `activity_type` constraint is wider than `CARDIO_TYPES`
 - [ ] B5 sheet header + `Recent` shared
 - [ ] B6 `StepperCapture`
 - [ ] B7 WeightsTab memoised

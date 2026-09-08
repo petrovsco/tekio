@@ -2,17 +2,20 @@ import { supabase } from '../supabase'
 import { USER_ID, CARDIO_TYPE_MAP, CARDIO_TYPE_REVERSE } from '../../constants/app'
 import type { CardioEntry } from '../../types'
 import { withOrigin } from '../env'
+import { userRows, deleteRow } from './_rows'
 
-const COLS =
-  'id, session_date, activity_type, duration_minutes, distance_km, avg_heart_rate, ' +
-  'max_heart_rate, elevation_gain_m, zone_distribution, aerobic_te, anaerobic_te, ' +
-  'training_effect_label, training_load, source, garmin_activity_id, notes, format, bout_seconds'
+// One literal on purpose: PostgREST parses the select string at the type level,
+// and a concatenation is just `string`, which costs the returned rows their
+// column names.
+const COLS = 'id, session_date, activity_type, duration_minutes, distance_km, avg_heart_rate, max_heart_rate, elevation_gain_m, zone_distribution, aerobic_te, anaerobic_te, training_effect_label, training_load, source, garmin_activity_id, notes, format, bout_seconds'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function toEntry(r: any): CardioEntry {
   return {
     id: r.id,
     date: r.session_date,
+    // The fallback is for a column value the app's own list has no name for:
+    // the check constraint permits ten activity types against CARDIO_TYPES' five.
     type: (CARDIO_TYPE_REVERSE[r.activity_type] ?? r.activity_type) as CardioEntry['type'],
     duration: Number(r.duration_minutes),
     distance: r.distance_km != null ? Number(r.distance_km) : undefined,
@@ -33,57 +36,41 @@ function toEntry(r: any): CardioEntry {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+/** The columns a save and an update both write — the Garmin-only intensity
+ *  columns are not among them, because a typed session never sets them.
+ *  `entry.type` is a closed union, so the map covers it with no fallback. */
+const toRow = (entry: Omit<CardioEntry, 'id'>) => ({
+  session_date: entry.date,
+  activity_type: CARDIO_TYPE_MAP[entry.type],
+  duration_minutes: entry.duration,
+  distance_km: entry.distance ?? null,
+  avg_heart_rate: entry.avgHr ?? null,
+  notes: entry.notes ?? null,
+  format: entry.format ?? null,
+  bout_seconds: entry.format === 'intervals' ? entry.boutSeconds ?? null : null,
+})
+
 export async function loadCardio(): Promise<CardioEntry[]> {
-  const { data, error } = await supabase
-    .from('cardio_sessions')
-    .select(COLS)
-    .eq('user_id', USER_ID)
-    .order('session_date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(toEntry)
+  const rows = await userRows('cardio_sessions', COLS, 'session_date')
+  return rows.map(toEntry)
 }
 
 export async function saveCardioEntry(entry: Omit<CardioEntry, 'id'>): Promise<CardioEntry> {
   const { data, error } = await supabase
     .from('cardio_sessions')
-    .insert(withOrigin({
-      user_id: USER_ID,
-      session_date: entry.date,
-      activity_type: CARDIO_TYPE_MAP[entry.type] ?? entry.type.toLowerCase(),
-      duration_minutes: entry.duration,
-      distance_km: entry.distance ?? null,
-      avg_heart_rate: entry.avgHr ?? null,
-      notes: entry.notes ?? null,
-      format: entry.format ?? null,
-      bout_seconds: entry.format === 'intervals' ? entry.boutSeconds ?? null : null,
-    }))
+    .insert(withOrigin({ user_id: USER_ID, ...toRow(entry) }))
     .select(COLS)
     .single()
   if (error) throw error
   return toEntry(data)
 }
 
-export async function deleteCardioEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('cardio_sessions').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteCardioEntry = (id: string): Promise<void> => deleteRow('cardio_sessions', id)
 
 export async function updateCardioEntry(
   id: string,
   patch: Omit<CardioEntry, 'id'>
 ): Promise<void> {
-  const { error } = await supabase
-    .from('cardio_sessions')
-    .update({
-      session_date: patch.date,
-      activity_type: CARDIO_TYPE_MAP[patch.type] ?? patch.type.toLowerCase(),
-      duration_minutes: patch.duration,
-      distance_km: patch.distance ?? null,
-      avg_heart_rate: patch.avgHr ?? null,
-      notes: patch.notes ?? null,
-      format: patch.format ?? null,
-      bout_seconds: patch.format === 'intervals' ? patch.boutSeconds ?? null : null,
-    })
-    .eq('id', id)
+  const { error } = await supabase.from('cardio_sessions').update(toRow(patch)).eq('id', id)
   if (error) throw error
 }

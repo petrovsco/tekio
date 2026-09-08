@@ -2,6 +2,7 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { SleepEntry, SaunaEntry, ColdEntry, SleepQuality } from '../../types'
 import { withOrigin } from '../env'
+import { userRows, deleteRow } from './_rows'
 
 // ── Sleep (sleep_logs: log_date / duration_hours / quality) ─────────────────
 
@@ -35,14 +36,19 @@ function mapSleep(r: SleepRow): SleepEntry {
   }
 }
 
+/** The columns a save and an update both write. Deliberately not `sleep_score`,
+ *  `hrv` or `resting_hr`: those are Garmin's and a typed night must not clear
+ *  them — see the upsert note below. */
+const sleepRow = (entry: Omit<SleepEntry, 'id'>) => ({
+  log_date: entry.date,
+  duration_hours: entry.hours,
+  quality: entry.quality ?? null,
+  notes: entry.notes ?? null,
+})
+
 export async function loadSleep(): Promise<SleepEntry[]> {
-  const { data, error } = await supabase
-    .from('sleep_logs')
-    .select(SLEEP_COLS)
-    .eq('user_id', USER_ID)
-    .order('log_date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(mapSleep)
+  const rows = await userRows('sleep_logs', SLEEP_COLS, 'log_date')
+  return rows.map(mapSleep)
 }
 
 export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<SleepEntry> {
@@ -51,14 +57,10 @@ export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<Sle
   // sleep_score untouched (it isn't in the payload).
   const { data, error } = await supabase
     .from('sleep_logs')
-    .upsert({
-      user_id: USER_ID,
-      log_date: entry.date,
-      duration_hours: entry.hours,
-      quality: entry.quality ?? null,
-      source: 'manual',
-      notes: entry.notes ?? null,
-    }, { onConflict: 'user_id,log_date' })
+    .upsert(
+      { user_id: USER_ID, source: 'manual', ...sleepRow(entry) },
+      { onConflict: 'user_id,log_date' }
+    )
     .select(SLEEP_COLS)
     .single()
   if (error) throw error
@@ -66,22 +68,11 @@ export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<Sle
 }
 
 export async function updateSleepEntry(id: string, patch: Omit<SleepEntry, 'id'>): Promise<void> {
-  const { error } = await supabase
-    .from('sleep_logs')
-    .update({
-      log_date: patch.date,
-      duration_hours: patch.hours,
-      quality: patch.quality ?? null,
-      notes: patch.notes ?? null,
-    })
-    .eq('id', id)
+  const { error } = await supabase.from('sleep_logs').update(sleepRow(patch)).eq('id', id)
   if (error) throw error
 }
 
-export async function deleteSleepEntry(id: string): Promise<void> {
-  const { error } = await supabase.from('sleep_logs').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteSleepEntry = (id: string): Promise<void> => deleteRow('sleep_logs', id)
 
 // ── Sauna & Cold (session tables, identical shape) ──────────────────────────
 
@@ -95,56 +86,45 @@ function mapSession(r: { id: string; session_date: string; duration_minutes: num
   }
 }
 
-async function loadSessions(table: 'sauna_sessions' | 'cold_sessions') {
-  const { data, error } = await supabase
-    .from(table)
-    .select('id, session_date, duration_minutes, temperature_c, notes')
-    .eq('user_id', USER_ID)
-    .order('session_date', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(mapSession)
+const SESSION_COLS = 'id, session_date, duration_minutes, temperature_c, notes'
+
+type SessionEntry = { date: string; duration: number; tempC?: number; notes?: string }
+type SessionTable = 'sauna_sessions' | 'cold_sessions'
+
+/** The columns a save and an update both write. */
+const sessionRow = (entry: SessionEntry) => ({
+  session_date: entry.date,
+  duration_minutes: entry.duration,
+  temperature_c: entry.tempC ?? null,
+  notes: entry.notes ?? null,
+})
+
+async function loadSessions(table: SessionTable) {
+  const rows = await userRows(table, SESSION_COLS, 'session_date')
+  return rows.map(mapSession)
 }
 
-async function saveSession(table: 'sauna_sessions' | 'cold_sessions', entry: { date: string; duration: number; tempC?: number; notes?: string }) {
+async function saveSession(table: SessionTable, entry: SessionEntry) {
   const { data, error } = await supabase
     .from(table)
-    .insert(withOrigin({
-      user_id: USER_ID,
-      session_date: entry.date,
-      duration_minutes: entry.duration,
-      temperature_c: entry.tempC ?? null,
-      notes: entry.notes ?? null,
-    }))
-    .select('id, session_date, duration_minutes, temperature_c, notes')
+    .insert(withOrigin({ user_id: USER_ID, ...sessionRow(entry) }))
+    .select(SESSION_COLS)
     .single()
   if (error) throw error
   return mapSession(data)
 }
 
-async function updateSession(table: 'sauna_sessions' | 'cold_sessions', id: string, patch: { date: string; duration: number; tempC?: number; notes?: string }) {
-  const { error } = await supabase
-    .from(table)
-    .update({
-      session_date: patch.date,
-      duration_minutes: patch.duration,
-      temperature_c: patch.tempC ?? null,
-      notes: patch.notes ?? null,
-    })
-    .eq('id', id)
-  if (error) throw error
-}
-
-async function deleteSession(table: 'sauna_sessions' | 'cold_sessions', id: string) {
-  const { error } = await supabase.from(table).delete().eq('id', id)
+async function updateSession(table: SessionTable, id: string, patch: SessionEntry) {
+  const { error } = await supabase.from(table).update(sessionRow(patch)).eq('id', id)
   if (error) throw error
 }
 
 export const loadSauna = (): Promise<SaunaEntry[]> => loadSessions('sauna_sessions')
 export const saveSaunaEntry = (entry: Omit<SaunaEntry, 'id'>): Promise<SaunaEntry> => saveSession('sauna_sessions', entry)
 export const updateSaunaEntry = (id: string, patch: Omit<SaunaEntry, 'id'>): Promise<void> => updateSession('sauna_sessions', id, patch)
-export const deleteSaunaEntry = (id: string): Promise<void> => deleteSession('sauna_sessions', id)
+export const deleteSaunaEntry = (id: string): Promise<void> => deleteRow('sauna_sessions', id)
 
 export const loadCold = (): Promise<ColdEntry[]> => loadSessions('cold_sessions')
 export const saveColdEntry = (entry: Omit<ColdEntry, 'id'>): Promise<ColdEntry> => saveSession('cold_sessions', entry)
 export const updateColdEntry = (id: string, patch: Omit<ColdEntry, 'id'>): Promise<void> => updateSession('cold_sessions', id, patch)
-export const deleteColdEntry = (id: string): Promise<void> => deleteSession('cold_sessions', id)
+export const deleteColdEntry = (id: string): Promise<void> => deleteRow('cold_sessions', id)

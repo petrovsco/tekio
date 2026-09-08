@@ -2,6 +2,7 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { Adaptation, BodyRegion, ExerciseMuscleLink, MuscleContribution, MuscleGroup } from '../../types'
 import { withOrigin } from '../env'
+import { deleteRow } from './_rows'
 
 export async function loadMuscleGroups(): Promise<MuscleGroup[]> {
   const { data, error } = await supabase
@@ -157,7 +158,4 @@ export async function updateMuscleGroup(
 /** Delete a muscle group. Exercise links cascade; fails if it has child groups
  *  (surfaced to the caller). The habit rows that could also block it went with
  *  the habit tables on 2026-09-05 (roadmap 025). */
-export async function deleteMuscleGroup(id: string): Promise<void> {
-  const { error } = await supabase.from('muscle_groups').delete().eq('id', id)
-  if (error) throw error
-}
+export const deleteMuscleGroup = (id: string): Promise<void> => deleteRow('muscle_groups', id)
