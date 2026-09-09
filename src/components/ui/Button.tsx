@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from 'react'
 import { Icon } from './Icon'
 
 // Control tones (design-system §8). Colour is not one of them: the accent has
@@ -44,6 +44,31 @@ export function Btn({ variant = 'primary', children, small, className = '', ...p
   )
 }
 
+/** A two-button question, in the chip tones (§8): solid ink commits, outline
+ *  backs out. `DelBtn` asks whether to delete; the 1RM ask in `WeightsTab` asks
+ *  whether the set was taken to failure. Same shape, so it is drawn once. */
+export function YesNo({ onYes, onNo }: {
+  onYes: (e: MouseEvent<HTMLButtonElement>) => void
+  onNo: () => void
+}) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      <button
+        onClick={onYes}
+        className="px-2 py-0.5 text-[11px] font-semibold text-white bg-ink border border-ink rounded-[3px] cursor-pointer"
+      >
+        Yes
+      </button>
+      <button
+        onClick={onNo}
+        className="px-2 py-0.5 text-[11px] font-semibold text-ink border border-ink bg-white rounded-[3px] cursor-pointer"
+      >
+        No
+      </button>
+    </span>
+  )
+}
+
 interface DelBtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label?: string
   noConfirm?: boolean
@@ -53,24 +78,7 @@ export function DelBtn({ label = 'Delete', onClick, noConfirm = false, className
   const [confirming, setConfirming] = useState(false)
 
   if (confirming) {
-    // The confirmation step is what makes this safe, so the pair reads with the
-    // chip tones (§8): solid ink commits, outline backs out.
-    return (
-      <span className="inline-flex items-center gap-1">
-        <button
-          onClick={e => { setConfirming(false); onClick?.(e) }}
-          className="px-2 py-0.5 text-[11px] font-semibold text-white bg-ink border border-ink rounded-[3px] cursor-pointer"
-        >
-          Yes
-        </button>
-        <button
-          onClick={() => setConfirming(false)}
-          className="px-2 py-0.5 text-[11px] font-semibold text-ink border border-ink bg-white rounded-[3px] cursor-pointer"
-        >
-          No
-        </button>
-      </span>
-    )
+    return <YesNo onYes={e => { setConfirming(false); onClick?.(e) }} onNo={() => setConfirming(false)} />
   }
 
   return (

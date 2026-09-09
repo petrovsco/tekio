@@ -1498,7 +1498,7 @@ decision is the next step.
   Tekiō's own invention rather than a published estimator. The inventory is
   reference, so "(no brief)" was the tracking gap: nothing in `docs/roadmap/`
   listed it, which meant `/roadmap` could not see it. **Now filed as
-  [067](../067-ground-1rm-estimator.md)** (backlog — it needs Peter's decision
+  [067](067-ground-1rm-estimator.md)** (backlog — it needs Peter's decision
   first: ground the three formulas, or delete a number nothing reads back), and
   the three inventory rows point at it instead of saying "(no brief)".
 
@@ -1645,7 +1645,7 @@ Housekeeping:
       [069](../069-sleep-logs-row-origin.md), `weekStartDay` →
       [070](../070-week-start-day-program-week.md), flat `exercises` →
       [071](../071-retire-flat-exercises-fallback.md), the 1RM estimator →
-      [067](../067-ground-1rm-estimator.md) (filed earlier), and the `CYCLE`
+      [067](067-ground-1rm-estimator.md) (filed earlier), and the `CYCLE`
       correction, which was a decision recorded in CLAUDE.md at the time. Two of
       the three new briefs correct the entry that spawned them: the sleep fix is
       not one line (the column does not exist) and the flat-`exercises` removal

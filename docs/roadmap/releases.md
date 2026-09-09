@@ -73,7 +73,7 @@ In running order:
     [070](070-week-start-day-program-week.md) and
     [071](071-retire-flat-exercises-fallback.md), none of them tagged to a
     release yet.
-11. [067](067-ground-1rm-estimator.md) — the estimated 1RM Weights prints,
+11. [067](done/067-ground-1rm-estimator.md) — the estimated 1RM Weights prints,
     either grounded or deleted. Added to the release on 2026-09-09 (Peter). It
     is the fourth of 048's found-on-the-way items and the only one that cannot
     start on its own: which of the two readings applies — a claim to ground, or

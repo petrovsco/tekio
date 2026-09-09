@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, estimate1RM, best1RM, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -214,34 +214,63 @@ describe('hasLonePace', () => {
   })
 })
 
-describe('estimate1RM', () => {
-  it('returns the weight itself for a single rep', () => {
-    expect(estimate1RM(100, 1)).toBe(100)
+describe('oneRM', () => {
+  it('reports a single rep as measured, not estimated', () => {
+    expect(oneRM(100, 1)).toEqual({ kind: 'measured', kg: 100 })
   })
 
-  it('blends Epley and Brzycki for multi-rep sets', () => {
-    // Epley: 100×(1+5/30)=116.67 ; Brzycki: 100×36/32=112.5 ; mean ≈ 114.58
-    expect(estimate1RM(100, 5)).toBeCloseTo(114.58, 1)
+  it('estimates inside the window with Brzycki, rounded to the plate', () => {
+    // Brzycki: 100 × 36/32 = 112.5 — already on a 2.5 kg boundary
+    expect(oneRM(100, 5)).toEqual({ kind: 'estimated', kg: 112.5, fromReps: 5 })
+    // Brzycki: 100 × 36/34 = 105.88 → 105
+    expect(oneRM(100, 3)).toEqual({ kind: 'estimated', kg: 105, fromReps: 3 })
   })
 
-  it('falls back to Epley at very high reps', () => {
-    expect(estimate1RM(50, 40)).toBeCloseTo(50 * (1 + 40 / 30), 5)
+  it('refuses to estimate above the grounded ceiling', () => {
+    expect(oneRM(100, 6)).toBeNull()
+    expect(oneRM(50, 40)).toBeNull()
   })
 
-  it('is zero for empty input', () => {
-    expect(estimate1RM(0, 5)).toBe(0)
-    expect(estimate1RM(100, 0)).toBe(0)
+  it('is null for empty input', () => {
+    expect(oneRM(0, 5)).toBeNull()
+    expect(oneRM(100, 0)).toBeNull()
   })
 })
 
-describe('best1RM', () => {
-  it('takes the max estimate across sets', () => {
+describe('bestOneRM', () => {
+  it('takes the best across sets and ignores out-of-window ones', () => {
     const sets = [{ weight: 80, reps: 8 }, { weight: 100, reps: 3 }, { weight: 60, reps: 12 }]
-    expect(best1RM(sets)).toBeCloseTo(estimate1RM(100, 3), 5)
+    expect(bestOneRM(sets)).toEqual({ kind: 'estimated', kg: 105, fromReps: 3 })
   })
 
-  it('is zero with no sets', () => {
-    expect(best1RM([])).toBe(0)
+  it('prefers a measured max over an equal estimate', () => {
+    // 89 × 36/32 = 100.125 → 100, the same number the single rep proves outright
+    expect(bestOneRM([{ weight: 89, reps: 5 }, { weight: 100, reps: 1 }]))
+      .toEqual({ kind: 'measured', kg: 100 })
+  })
+
+  it('is null when no set supports one', () => {
+    expect(bestOneRM([])).toBeNull()
+    expect(bestOneRM([{ weight: 60, reps: 12 }])).toBeNull()
+  })
+})
+
+describe('isSetPR', () => {
+  const history = [{ weight: 100, reps: 5 }, { weight: 110, reps: 3 }]
+
+  it('is a best when nothing logged matched the load at the reps', () => {
+    expect(isSetPR({ weight: 105, reps: 5 }, history)).toBe(true)
+    expect(isSetPR({ weight: 100, reps: 6 }, history)).toBe(true)
+  })
+
+  it('is not a best when a logged set already did as much', () => {
+    expect(isSetPR({ weight: 100, reps: 5 }, history)).toBe(false)
+    expect(isSetPR({ weight: 95, reps: 3 }, history)).toBe(false)
+  })
+
+  it('needs a real set', () => {
+    expect(isSetPR({ weight: 0, reps: 5 }, history)).toBe(false)
+    expect(isSetPR({ weight: 100, reps: 0 }, history)).toBe(false)
   })
 })
 

@@ -1,7 +1,7 @@
 # Roadmap: Ground the 1RM estimate WeightsTab prints
 
 **Label:** feature
-**Status:** in progress — picked up and committed to 2.1.0 on 2026-09-09. Peter chose reading 1 the same day (**ground it**) and changed what ships with it: the estimate stops being computed continuously and appears only when a max attempt is declared, and it is offered only for sets of 2–5 reps. The scout ran 2026-09-09 and the block is below: Epley and Brzycki **partially supported**, their average **convention only** (nobody has studied averaging), the 2–5 window **supported but narrower than the evidence requires**. Three decisions are back with Peter before code moves — the averaging step, the ceiling, and how the app learns a set was taken to failure. Found 2026-09-08 while landing candidate A1 of [048](done/048-simplification-candidates.md); inventory rows 8.1, 8.2 and 8.4 have said `unknown` / **(no brief)** since the inventory was written, and this file is the brief they were missing.
+**Status:** done — shipped 2026-09-09 (v2.0.91). The estimate is asked for rather than computed at rest, comes only from a set confirmed as taken to failure, is refused above 5 reps, names Brzycki instead of Tekiō's own average of two formulas, and rounds to the plate. The PR badge is measured now, not estimated. Three decisions from the run are D40–D42 in the inventory ledger.
 **Release:** 2.1.0
 
 ## Why this exists
@@ -16,7 +16,7 @@ wraps it, and `WeightsTab` prints the result beside a logged entry as
 **"≈NNkg 1RM"**. A number claiming physiological meaning is on screen today,
 and nothing in `docs/roadmap/` lists it.
 
-The [grounding inventory](../grounding-inventory.md) §8 already knows, which is
+The [grounding inventory](../../grounding-inventory.md) §8 already knows, which is
 exactly the problem the `pending-work-in-roadmap` house rule names: the
 inventory is a reference doc, so `unknown` + **(no brief)** records a gap that
 nothing schedules. A reader has to already be looking at §8 to find it.
@@ -31,7 +31,7 @@ Three claims, one screen:
 | 8.2 | Brzycki — `weight × 36/(37 − reps)` | published estimator, `unknown` |
 | 8.4 | **`(epley + brzycki) / 2`** | **not a published formula** — Tekiō's own |
 
-Row 8.3 (the `reps >= 37` guard) is settled: [066](done/066-inventory-definitional-rows.md)
+Row 8.3 (the `reps >= 37` guard) is settled: [066](066-inventory-definitional-rows.md)
 marked it `n/a — definitional`, because the denominator is zero at 37 reps and
 the guard patches a hole in the arithmetic rather than asserting anything about
 a body. It needs nothing here.
@@ -280,26 +280,49 @@ a find-and-replace:
 3. **To failure** — the formulas were validated on sets taken to fatigue, so the
    app needs to know a set was, and today it has no way to.
 
+## What shipped
+
+| Was | Is |
+|---|---|
+| the estimate recomputed on every keystroke and printed against every logged entry | asked for with one chip, and only when a typed set is inside the window |
+| any set, at any rep count | 2–5 reps, and the lifter confirms it was taken to failure before a number appears |
+| `(Epley + Brzycki) / 2`, Tekiō's own | Brzycki alone, named and cited in the code |
+| printed to the kilogram | rounded to the plate (2.5 kg) |
+| a 1-rep set treated as an estimate | reported as **measured**, with no `≈` |
+| PR badge from a comparison of two estimates | PR badge from logged sets: nothing matched this load at these reps |
+
+`epley1RM`, `estimate1RM`, `best1RM` and Brzycki's `reps >= 37` guard are gone —
+with the window capped at 5, the pole the guard patched is unreachable. The
+Yes/No confirmation pair `DelBtn` already drew is now the shared `YesNo`
+primitive, which is what asks the to-failure question.
+
+Verified in the browser at 390 × 900 on 2026-09-09, no writes to the database:
+100 kg × 5 offers the chip and no number; Yes prints `≈112.5 kg` with
+"Brzycki, from 5 reps"; editing the set to × 4 withdraws the answer and asks
+again; No prints "No estimate — the formula is only validated on a set taken to
+failure"; 8 reps offers nothing at all; 140 kg × 1 prints `140 kg` as
+**measured**; the history list carries no 1RM chip; console clean.
+
 ## Acceptance
 
 - [x] Peter picks a reading: **ground it** (2026-09-09), with the two changes in
       *Peter's decision*
-- [ ] `/ground` run against inventory rows 8.1, 8.2, 8.4 **and the 2–5 rep
+- [x] `/ground` run against inventory rows 8.1, 8.2, 8.4 **and the 2–5 rep
       window**, its `## Grounding` block landed here, source comments on the
       formulas
-- [ ] 8.4 either cites support for averaging, or the code drops to one named
+- [x] 8.4 either cites support for averaging, or the code drops to one named
       estimator and the inventory row retires
-- [ ] The rep window ships as a hard rule: no estimate above the grounded
+- [x] The rep window ships as a hard rule: no estimate above the grounded
       ceiling, and the ceiling's source is in the code comment
-- [ ] The estimate is on demand — nothing computes or prints a 1RM until a max
+- [x] The estimate is on demand — nothing computes or prints a 1RM until a max
       attempt is declared; the Est. 1RM panel no longer follows every keystroke
       and the history chip no longer labels ordinary volume work
-- [ ] The PR badge still says *this was your best* on a basis that survives the
+- [x] The PR badge still says *this was your best* on a basis that survives the
       change — a real max where one exists, an in-window estimate otherwise
-- [ ] A real, measured 1RM is distinguishable from an estimate wherever both can
+- [x] A real, measured 1RM is distinguishable from an estimate wherever both can
       appear (the truest number is not printed as if it were a guess, or the
       reverse)
-- [ ] `docs/grounding-inventory.md` §8 no longer says **(no brief)**
-- [ ] The matching box in [048](done/048-simplification-candidates.md) Acceptance
+- [x] `docs/grounding-inventory.md` §8 no longer says **(no brief)**
+- [x] The matching box in [048](048-simplification-candidates.md) Acceptance
       ("the four found-on-the-way items each have a brief or a recorded
       decision") counts this one as covered

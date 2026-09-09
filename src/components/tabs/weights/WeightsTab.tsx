@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, cycleInfo, deloadSets, groupBy, isDeloadDate, isTodayDone, lastPerformance, programMode, best1RM, weightsPickerNames, uniqSorted } from '../../../lib/utils'
+import { today, cycleInfo, deloadSets, groupBy, isDeloadDate, isTodayDone, lastPerformance, programMode, bestOneRM, isSetPR, weightsPickerNames, uniqSorted } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
-import { Btn, RowActions } from '../../ui/Button'
+import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
-import { SSBadge, MICRO_LABEL } from '../../ui/Badges'
+import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
@@ -27,6 +27,11 @@ export function WeightsTab() {
   const [chartMetric, setChartMetric] = useState<'maxWeight' | 'volume'>('maxWeight')
   const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
   const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
+  // The 1RM is answered on demand and never at rest (roadmap 067). The answer
+  // belongs to the exact set it was asked about, so the ask carries that set's
+  // identity: edit the exercise or any number and the ask no longer matches,
+  // which reads as `idle` again without an effect resetting it.
+  const [ask, setAsk] = useState<{ key: string; state: 'asking' | 'toFailure' | 'submax' } | null>(null)
 
   const weights = useAppStore(s => s.weights)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
@@ -68,17 +73,25 @@ export function WeightsTab() {
 
   const lastPerf = getLastPerf(ex)
 
-  // Estimated 1RM (Epley × Brzycki blend): live from the sets being entered,
-  // plus the historical best across all logged sets for this exercise.
-  const live1RM = best1RM(parseSets(sets, revealed))
-  const historical1RM = ex.trim()
-    ? Math.max(
-        0,
-        ...weights
-          .filter(d => d.exercise.toLowerCase() === ex.trim().toLowerCase())
-          .map(d => best1RM(d.sets)),
-      )
-    : 0
+  const typedSets = useMemo(() => parseSets(sets, revealed), [sets, revealed])
+
+  // What the typed sets could support if asked — computed, but not shown until
+  // it is. `null` when no set is inside the grounded rep window.
+  const oneRmCandidate = bestOneRM(typedSets)
+
+  // A personal best is measured, never estimated: the first typed set that
+  // nothing already logged for this exercise matched at its reps and its load.
+  const exHistory = useMemo(
+    () => ex.trim()
+      ? weights.filter(d => d.exercise.toLowerCase() === ex.trim().toLowerCase()).flatMap(d => d.sets)
+      : [],
+    [weights, ex],
+  )
+  const prSet = typedSets.find(s => isSetPR(s, exHistory)) ?? null
+
+  const askKey = `${ex.trim().toLowerCase()}|${typedSets.map(s => `${s.weight}x${s.reps}`).join(',')}`
+  const maxAsk = ask?.key === askKey ? ask.state : 'idle'
+  const answer = (state: 'asking' | 'toFailure' | 'submax') => () => setAsk({ key: askKey, state })
 
   const handleSelectEx = (n: string) => {
     setEx(n); setSelEx(n); setSsExercises(null)
@@ -234,20 +247,54 @@ export function WeightsTab() {
             />
           </div>
 
-          {(live1RM > 0 || historical1RM > 0) && (
-            <div className="flex items-center justify-between gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
-              <span className={FIELD_LABEL}>Est. 1RM</span>
-              <span className="text-[13px] font-bold text-ink tabular-nums flex items-center gap-1.5">
-                {live1RM > 0 ? `${Math.round(live1RM)} kg` : '–'}
-                {historical1RM > 0 && (
-                  <span className="text-[11px] text-ink-2 font-normal">· best {Math.round(historical1RM)} kg</span>
-                )}
-                {/* A personal best is a fact, not an urgency, so it takes no
-                    accent (design-system §1) — it is stated, like SS and DELOAD. */}
-                {live1RM > 0 && live1RM >= historical1RM && historical1RM > 0 && (
-                  <span className="inline-flex items-center px-1.5 py-[2px] rounded-[2px] bg-ink text-white text-[8px] font-bold uppercase tracking-[0.08em]">PR</span>
-                )}
-              </span>
+          {(prSet || oneRmCandidate) && (
+            <div className="flex flex-col gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
+              {/* A personal best is a stated fact, not an urgency, so it takes
+                  the outline tone (design-system §1) — like SS and DELOAD. */}
+              {prSet && (
+                <div className="flex items-center justify-between gap-2">
+                  <span className={FIELD_LABEL}>Personal best</span>
+                  <span className="text-[11px] text-ink-2 tabular-nums flex items-center gap-1.5">
+                    {prSet.weight}kg×{prSet.reps}
+                    <MicroLabel>PR</MicroLabel>
+                  </span>
+                </div>
+              )}
+
+              {oneRmCandidate && maxAsk === 'idle' && (
+                <button className={`${ACT_CHIP} self-start`} onClick={answer('asking')}>
+                  Estimate 1RM
+                </button>
+              )}
+
+              {oneRmCandidate && maxAsk === 'asking' && (
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <span className="text-[11px] text-ink-2">Was that set taken to failure?</span>
+                  <YesNo onYes={answer('toFailure')} onNo={answer('submax')} />
+                </div>
+              )}
+
+              {oneRmCandidate && maxAsk === 'toFailure' && (
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={FIELD_LABEL}>{oneRmCandidate.kind === 'measured' ? '1RM' : 'Est. 1RM'}</span>
+                    <span className="text-[13px] font-bold text-ink tabular-nums">
+                      {oneRmCandidate.kind === 'measured' ? '' : '≈'}{oneRmCandidate.kg} kg
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-ink-3 leading-snug">
+                    {oneRmCandidate.kind === 'measured'
+                      ? 'Measured — a single rep to failure is the max itself.'
+                      : `Brzycki, from ${oneRmCandidate.fromReps} reps. A tested max moves about 3 % day to day, so this is rounded to the plate.`}
+                  </p>
+                </div>
+              )}
+
+              {maxAsk === 'submax' && (
+                <p className="text-[10px] text-ink-3 leading-snug">
+                  No estimate — the formula is only validated on a set taken to failure.
+                </p>
+              )}
             </div>
           )}
 
@@ -347,11 +394,6 @@ export function WeightsTab() {
                 <div className="min-w-0">
                   <p className="text-xs font-bold text-ink flex items-center gap-1.5 flex-wrap">
                     {entry.exercise}
-                    {best1RM(entry.sets) > 0 && (
-                      <span className="text-[10px] font-semibold text-ink-2 border border-line px-1.5 py-0.5 rounded-[2px] tabular-nums">
-                        ≈{Math.round(best1RM(entry.sets))}kg 1RM
-                      </span>
-                    )}
                   </p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {entry.sets.map((s, i) => (

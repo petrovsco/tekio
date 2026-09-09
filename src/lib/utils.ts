@@ -224,33 +224,81 @@ export function defaultProgram(): Program {
 
 // ── One-rep-max estimation ────────────────────────────────────────────────────
 
-/** Epley estimated 1RM: weight × (1 + reps/30). */
-function epley1RM(weight: number, reps: number): number {
-  return weight * (1 + reps / 30)
-}
+/**
+ * The highest rep count an estimate is offered from. Deliberately conservative:
+ * the published windows are 4–6 (Dohoney 2002), 4–10 (Roberts 2025) and "under
+ * 10" (Mayhew 2008, LeSuer 1997), so nothing in the literature objects to 5 and
+ * nothing puts the honest ceiling below it. Peter set it on 2026-09-09 under a
+ * rule that the window may be narrowed by evidence, never widened.
+ * Below this, a 1-rep set is a *measured* max and is never estimated.
+ * See docs/roadmap/done/067-ground-1rm-estimator.md#grounding
+ */
+const ONE_RM_REP_MAX = 5
 
-/** Brzycki estimated 1RM: weight × 36/(37 − reps). Undefined (→0) at ≥37 reps. */
+/**
+ * Brzycki M, JOPERD 1993;64(1):88–90 — a strength coach's article rather than a
+ * validation study, but independently validated since (LeSuer 1997, Reynolds
+ * 2006, Mayhew 2008), with a small bias that varies by exercise. Chosen over
+ * Epley on 2026-09-09 because it is the conservative of the two inside the
+ * window: below 10 reps it never claims a higher max, and at exactly 10 the two
+ * are algebraically identical. Averaging them — which Tekiō did until then — is
+ * an estimator nobody has published or tested.
+ * Valid only for a set taken to failure; the caller enforces that.
+ * See docs/roadmap/done/067-ground-1rm-estimator.md#grounding
+ */
 function brzycki1RM(weight: number, reps: number): number {
-  if (reps >= 37) return 0
   return (weight * 36) / (37 - reps)
 }
 
 /**
- * Estimated 1RM for a single set, blending the Epley and Brzycki formulas
- * (they diverge at the extremes). A single rep is already a true max; very high
- * reps fall back to Epley since Brzycki breaks down.
+ * Plates come in 2.5 kg pairs, and a *tested* 1RM moves ~3 % from day to day in
+ * a trained lifter (Grgic 2020) — larger than the gap between rep-max formulas.
+ * An estimate printed to the kilogram would claim a precision the measurement
+ * itself does not have. See docs/roadmap/done/067-ground-1rm-estimator.md#grounding
  */
-export function estimate1RM(weight: number, reps: number): number {
-  if (!weight || reps < 1) return 0
-  if (reps === 1) return weight
-  const e = epley1RM(weight, reps)
-  const b = brzycki1RM(weight, reps)
-  return b > 0 ? (e + b) / 2 : e
+const toPlate = (kg: number): number => Math.round(kg / 2.5) * 2.5
+
+/** A one-rep max the app is willing to state, and how it knows it. */
+export type OneRM =
+  | { kind: 'measured'; kg: number }
+  | { kind: 'estimated'; kg: number; fromReps: number }
+
+/**
+ * The 1RM a single set supports, or `null` when it supports none. A single rep
+ * is the max itself and is reported as measured; 2 to `ONE_RM_REP_MAX` reps are
+ * estimated; anything heavier on reps returns nothing rather than a number the
+ * formula cannot stand behind.
+ */
+export function oneRM(weight: number, reps: number): OneRM | null {
+  if (!(weight > 0) || !(reps >= 1)) return null
+  if (reps === 1) return { kind: 'measured', kg: weight }
+  if (reps > ONE_RM_REP_MAX) return null
+  return { kind: 'estimated', kg: toPlate(brzycki1RM(weight, reps)), fromReps: reps }
 }
 
-/** Best estimated 1RM across a group of sets (0 if none). */
-export function best1RM(sets: { weight: number; reps: number }[]): number {
-  return sets.reduce((m, s) => Math.max(m, estimate1RM(s.weight, s.reps)), 0)
+/**
+ * The best 1RM a group of sets supports. Ties go to the measured one: a set
+ * actually lifted for a single rep outranks an estimate of the same size.
+ */
+export function bestOneRM(sets: { weight: number; reps: number }[]): OneRM | null {
+  let best: OneRM | null = null
+  for (const s of sets) {
+    const c = oneRM(s.weight, s.reps)
+    if (!c) continue
+    if (!best || c.kg > best.kg || (c.kg === best.kg && c.kind === 'measured')) best = c
+  }
+  return best
+}
+
+/**
+ * Is this set a personal best for the exercise? Measured, never estimated: a
+ * set is a best when nothing already logged both matched its reps and matched
+ * its load. Repeating a previous set is not a best; beating it at the same reps
+ * is, and so is holding the load for more reps.
+ */
+export function isSetPR(set: { weight: number; reps: number }, history: { weight: number; reps: number }[]): boolean {
+  if (!(set.weight > 0) || !(set.reps >= 1)) return false
+  return !history.some(h => h.reps >= set.reps && h.weight >= set.weight)
 }
 
 // ── Cardio duration helpers ───────────────────────────────────────────────────
