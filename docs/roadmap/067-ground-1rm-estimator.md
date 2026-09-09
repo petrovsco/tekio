@@ -1,7 +1,8 @@
 # Roadmap: Ground the 1RM estimate WeightsTab prints
 
-**Label:** backlog
-**Status:** backlog — found 2026-09-08 while landing candidate A1 of [048](done/048-simplification-candidates.md); needs Peter's decision before any scout run. Inventory rows 8.1, 8.2 and 8.4 have said `unknown` / **(no brief)** since the inventory was written; this file is the brief they were missing, not new work committed to.
+**Label:** feature
+**Status:** in progress — picked up and committed to 2.1.0 on 2026-09-09. The ground-or-delete reading is still Peter's call and nothing is written until he picks; the surfaces that decision covers are listed in *What is actually on screen*. Found 2026-09-08 while landing candidate A1 of [048](done/048-simplification-candidates.md); inventory rows 8.1, 8.2 and 8.4 have said `unknown` / **(no brief)** since the inventory was written, and this file is the brief they were missing.
+**Release:** 2.1.0
 
 ## Why this exists
 
@@ -55,9 +56,27 @@ Two readings, and they lead to different work:
    on it — and doctrine §1 says a number that changes nothing is decoration. In
    that reading the honest fix is to **delete it**, not ground it.
 
-Reading 2 is worth taking seriously. Grep before deciding: as of 2026-09-08
-`best1RM` is called only inside `WeightsTab` (a per-entry label and a chart
-series). Nothing else in the app consumes an estimated 1RM.
+Reading 2 is worth taking seriously. Grepped again on 2026-09-09: `best1RM` is
+called only inside `WeightsTab`. Nothing else in the app consumes an estimated
+1RM — no target reads it, no readiness gate, no adaptation credit.
+
+## What is actually on screen
+
+Four renders, in two places — and **no chart series**. The 2026-09-08 line above
+naming one was wrong: `historical1RM` in `WeightsTab` is a maximum over every
+logged set, not a trend line.
+
+| Where | What it prints |
+|---|---|
+| Est. 1RM panel, while sets are being typed | the live estimate for the sets so far |
+| the same panel | `· best NNN kg` — the highest estimate ever logged for that exercise |
+| the same panel | a **PR** badge when the live estimate reaches or beats that best |
+| History list, per entry | the `≈NNkg 1RM` chip |
+
+The PR badge is the one that needs a replacement rather than a deletion. It is
+the only place in Weights that says *this was your best*, and today it says it in
+estimated kilograms. Under reading 2 it either goes with the estimator or
+re-bases on something measured — the heaviest set at equal or higher reps.
 
 ## Doctrine checklist
 
@@ -67,8 +86,8 @@ series). Nothing else in the app consumes an estimated 1RM.
 2. **What does it let me stop doing?** Under reading 2, showing a number nobody
    acts on. Under reading 1, wondering whether it is right.
 3. **Input or destination?** Neither; a label on an existing surface.
-4. **Honest shape?** A single scalar per entry, plus a trend line. If it stays,
-   the error band is part of the honest shape — an estimate printed to the
+4. **Honest shape?** A single scalar per entry, plus one all-time maximum. If it
+   stays, the error band is part of the honest shape — an estimate printed to the
    kilogram implies a precision no 1RM formula has.
 5. **Physiological number?** Yes — that is the whole brief.
 
@@ -79,8 +98,11 @@ series). Nothing else in the app consumes an estimated 1RM.
       `## Grounding` block landed here, source comments on the three formulas
 - [ ] If grounded: 8.4 either cites support for averaging, or the code drops to
       one named estimator and the inventory row retires
-- [ ] If deleted: `estimate1RM`, `best1RM`, `epley1RM`, `brzycki1RM` and the
-      WeightsTab label and chart series go; rows 8.1–8.4 retire as removed
+- [ ] If deleted: `estimate1RM`, `best1RM`, `epley1RM`, `brzycki1RM`, their
+      tests, the Est. 1RM panel and the history chip go; rows 8.1–8.4 retire as
+      removed
+- [ ] If deleted: the PR badge is re-based on a measured fact or removed with a
+      reason written here — it must not be left reading from a deleted estimate
 - [ ] `docs/grounding-inventory.md` §8 no longer says **(no brief)**
 - [ ] The matching box in [048](done/048-simplification-candidates.md) Acceptance
       ("the four found-on-the-way items each have a brief or a recorded
