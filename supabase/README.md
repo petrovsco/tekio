@@ -59,6 +59,16 @@ has to be *decided* about them (commit as files, or accept as server-only) is in
   days + Thursday/Saturday variant days, 32 blocks, 78 tagged exercises, 2
   supersets, weekly principles). Drafted from the sports-physician context doc;
   sets/reps/loads are placeholders to refine in-app. Not captured by `db pull`.
+- **`cardio_work_distance_km` backfill** — **data**, 2026-09-09. Fills
+  `cardio_sessions.work_distance_km` on 27 of the 43 `[N4x4] Indoor Rowing`
+  rows, matched by `garmin_activity_id`, from the "Indoor Rowing" entries of
+  the Notion *Gym Tracker* database. Garmin reports distance 0.0 for indoor
+  rowing, so Notion is the only source; each figure covers the 16 minutes of
+  4×4 work, not the whole session, which is why it is not `distance_km` (the
+  column's own migration says why). The Notion row dated 2024-10-07 was mapped
+  to the 2024-10-06 session — no rowing activity exists on 10-07 in the Garmin
+  history and the row was typed on 10-09. The remaining 16 rowing rows have no
+  Notion entry and stay NULL. Not captured by `db pull`.
 
 ```sql
 do $$
