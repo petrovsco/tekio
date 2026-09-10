@@ -23,7 +23,7 @@
 }
 
 @theme {
-  /* SIGNAL — the one design language (docs/design-system.md §§1–7).
+  /* SIGNAL — the one design language (tekio.rfcs/design-system.md §§1–7).
      The v1 slate/indigo tokens were retired in roadmap 033. */
   --color-paper: #faf9f7;      /* page ground */
   --color-ink: #1a1a1a;        /* primary text; inverted-card ground */

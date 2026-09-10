@@ -22,7 +22,7 @@ export function resolveExerciseAdaptation(
 /**
  * Rep-derived adaptations, ordered by their range's lower bound. Derived from
  * `repRange` so the boundaries have exactly one home — see
- * docs/grounding-inventory.md §2.
+ * tekio.rfcs/grounding-inventory.md §2.
  */
 const REP_DERIVED = ADAPTATIONS
   .filter(a => a.repRange !== null)
@@ -45,18 +45,18 @@ export function classifyWeightSet(reps: number, override?: Adaptation | null): A
 }
 
 // ── Cardio session → adaptation (roadmap 005, grounded 2026-09-06) ────────────
-// The rules and every number below are docs/grounding/005-hr-zone-intensity-classification.md.
+// The rules and every number below are tekio.rfcs/grounding/005-hr-zone-intensity-classification.md.
 
-/** 25 — endurance-credit floor for a steady/unstated row with no HR data; a convention inside 20–30 min (Tekiō's 30-min endurance definition, ACSM's ≥ 20-min vigorous bout) — duration never selects VO₂max or anaerobic (Gastin 2001; Buchheit & Laursen 2013), see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+/** 25 — endurance-credit floor for a steady/unstated row with no HR data; a convention inside 20–30 min (Tekiō's 30-min endurance definition, ACSM's ≥ 20-min vigorous bout) — duration never selects VO₂max or anaerobic (Gastin 2001; Buchheit & Laursen 2013), see tekio.rfcs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const ENDURANCE_FLOOR_MIN = 25
 
-/** 2.0 — Firstbeat's band edge ('maintaining'); vendor convention, aerobic floor only — never awards anaerobic capacity, no 'dominant counts' rescue, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+/** 2.0 — Firstbeat's band edge ('maintaining'); vendor convention, aerobic floor only — never awards anaerobic capacity, no 'dominant counts' rescue, see tekio.rfcs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const TE_STIMULUS_THRESHOLD = 2.0
 
-/** 8 — minutes at ≥ 90 % HRmax (Garmin Z5; range 5–10) that make a session VO₂max work: the dose is minutes at ≥ 90 % (Buchheit & Laursen 2013; Seiler 2013: a 4×4 runs at ≈ 94 % HRpeak); Z4 straddles the threshold band and never decides, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+/** 8 — minutes at ≥ 90 % HRmax (Garmin Z5; range 5–10) that make a session VO₂max work: the dose is minutes at ≥ 90 % (Buchheit & Laursen 2013; Seiler 2013: a 4×4 runs at ≈ 94 % HRpeak); Z4 straddles the threshold band and never decides, see tekio.rfcs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const VO2MAX_Z5_MIN = 8
 
-/** 120 — the work-bout length (s) at or below which an intervals row is anaerobic-capacity work, above which it is VO₂max: aerobic and anaerobic contributions are equal at ~75 s and longer efforts are aerobically dominated (Gastin 2001); Tekiō's anaerobic protocol is 20 s–2 min all-out (row 3.7), its VO₂max intervals 3–8 min (row 3.8; Seiler & Tønnessen 2009: ~1–8 min at 90–100 % V̇O₂max), see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+/** 120 — the work-bout length (s) at or below which an intervals row is anaerobic-capacity work, above which it is VO₂max: aerobic and anaerobic contributions are equal at ~75 s and longer efforts are aerobically dominated (Gastin 2001); Tekiō's anaerobic protocol is 20 s–2 min all-out (row 3.7), its VO₂max intervals 3–8 min (row 3.8; Seiler & Tønnessen 2009: ~1–8 min at 90–100 % V̇O₂max), see tekio.rfcs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const ANAEROBIC_BOUT_MAX_S = 120
 
 /** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. Garmin's TEMPO / LACTATE_THRESHOLD are deliberately not here and not special-cased: threshold work trains endurance by a harder route than Zone 2, so it falls to the aerobic floor (005 fork 1b, decided 2026-09-07). */
@@ -127,7 +127,7 @@ export function classifyCardio(entry: CardioEntry, hrMax?: number | null): Adapt
   return classifyCardioAdaptations(entry, hrMax)[0] ?? null
 }
 
-/** 'endurance' — a tennis match is ~70–75 % HRmax, ~52 % V̇O₂max, ~77 % of time below VT1 and ~3 % above VT2 with 5–10 s rallies (Baiget 2015; Ferrauti 2001; Fernandez 2006): aerobic-base work, not VO₂max or anaerobic; convention, singles and doubles alike, see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
+/** 'endurance' — a tennis match is ~70–75 % HRmax, ~52 % V̇O₂max, ~77 % of time below VT1 and ~3 % above VT2 with 5–10 s rallies (Baiget 2015; Ferrauti 2001; Fernandez 2006): aerobic-base work, not VO₂max or anaerobic; convention, singles and doubles alike, see tekio.rfcs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const SPORT_DEFAULT_ADAPTATION: Adaptation = 'endurance'
 
 /**
@@ -177,7 +177,7 @@ export interface MuscleStimulus {
  * thing that differs, and each surface names its window on screen. Only
  * `stimulus` links count; recovery links never add sets. A power set (override
  * or keyword) counts in `byQuality.power` only, never in `total` — see
- * docs/grounding/039-adaptations-read.md#grounding (S3). An override
+ * tekio.rfcs/grounding/039-adaptations-read.md#grounding (S3). An override
  * naming a cardio quality still counts in `total` (the muscle did the work) and
  * in no `byQuality` bucket. See the same brief, §6.
  */
@@ -274,14 +274,14 @@ export interface AdaptationSummary {
  * physiological line: no study places a cutoff at any fraction of the floor;
  * 0.70 sits just above the maintenance zone (Bickel 2011: 1/9–1/3 of a full
  * dose keeps muscle in young adults; Israetel MV ≈ 0.6 × floor).
- * See docs/grounding/039-adaptations-read.md#grounding */
+ * See tekio.rfcs/grounding/039-adaptations-read.md#grounding */
 export const GAP_CUTOFF = 0.70
 
 // statusFor — three states are a label of a continuous fill (sets ÷ floor), not three physiological
 // bands: stimulus is graded from the first set (Schoenfeld 2017, Pelland 2026, Krieger 2010; trained
 // men at ~3 sets/wk still grow, Schoenfeld 2019). Only 0 (untouched) and the floor carry meaning;
 // the on_track line sits at GAP_CUTOFF so it is the line the map's callouts stop at (roadmap 045).
-// See docs/grounding/039-adaptations-read.md#grounding
+// See tekio.rfcs/grounding/039-adaptations-read.md#grounding
 function statusFor(sets: number, fillFraction: number): MuscleStatus {
   if (sets <= 0) return 'untouched'
   if (fillFraction >= GAP_CUTOFF) return 'on_track'
@@ -484,12 +484,12 @@ export function buildMuscleStatusTree(
     .sort((a, b) => b.aggSets - a.aggSets || a.name.localeCompare(b.name))
 }
 
-// ── The typed-HR path (roadmap 059) — its rule and two cuts are docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding ──
+// ── The typed-HR path (roadmap 059) — its rule and two cuts are tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding ──
 
-/** 83 — % of HRmax at or below which a typed average HR on a steady row is endurance work: Tønnessen's Z2 is 74–83 % HRmax (Stöggl & Sperlich 2015) and 84–88 % is the threshold band — a label (057), never a bucket — so this cut moves no credit on its own; a ±5 % band, not a line (Jamnick 2020), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 83 — % of HRmax at or below which a typed average HR on a steady row is endurance work: Tønnessen's Z2 is 74–83 % HRmax (Stöggl & Sperlich 2015) and 84–88 % is the threshold band — a label (057), never a bucket — so this cut moves no credit on its own; a ±5 % band, not a line (Jamnick 2020), see tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_ENDURANCE_MAX_PCT = 83
 
-/** 89 — % of HRmax at or above which a typed average HR on a steady row is VO₂max work: Tønnessen's Z4 floor (89 %), Garmin's Z5 line (90 %) and Buchheit & Laursen 2013's ≥ 90 % criterion coincide, so one cut serves this path and the Z5 dose (row 6.4); steady 85 % work raised V̇O₂max less than intervals (Helgerud 2007), which is why the band below files as endurance, see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 89 — % of HRmax at or above which a typed average HR on a steady row is VO₂max work: Tønnessen's Z4 floor (89 %), Garmin's Z5 line (90 %) and Buchheit & Laursen 2013's ≥ 90 % criterion coincide, so one cut serves this path and the Z5 dose (row 6.4); steady 85 % work raised V̇O₂max less than intervals (Helgerud 2007), which is why the band below files as endurance, see tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_VO2MAX_MIN_PCT = 89
 
 export type TypedHrBand = 'endurance' | 'threshold' | 'vo2max'

@@ -1,6 +1,6 @@
 -- HRmax for any user (roadmap 060). 059's derived peak served only a user
 -- with two years of synced rows, so the default becomes the Tanaka age
--- estimate (208 − 0.7 × age, docs/roadmap/done/059 §Grounding) from a birth
+-- estimate (208 − 0.7 × age, tekio.rfcs/rfcs/done/059 §Grounding) from a birth
 -- date, and the tracker's replicated peak becomes a proposal the user
 -- accepts on the Profile — a sync never overwrites a number they set.
 -- One stored number, last write wins: hr_max_override (059) keeps holding

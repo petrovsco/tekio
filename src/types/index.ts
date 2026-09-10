@@ -74,7 +74,7 @@ export interface CardioEntry extends GarminIntensity {
 
 /**
  * The seven trainable physical adaptations (Huberman × Galpin framework,
- * simplified 2026-08-29 — see docs/roadmap/done/019-adaptation-model-simplification.md).
+ * simplified 2026-08-29 — see tekio.rfcs/rfcs/done/0019-adaptation-model-simplification.md).
  * Four are muscle-linked and read per muscle; three are whole-body cardio
  * qualities read per session.
  */

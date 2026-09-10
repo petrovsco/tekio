@@ -27,7 +27,7 @@
 //     are found.
 //
 // Node built-ins only. `npm run check:docs` runs all three;
-// docs/roadmap/README.md says when.
+// tekio.rfcs/rfcs/README.md says when.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

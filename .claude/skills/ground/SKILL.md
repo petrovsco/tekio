@@ -25,10 +25,10 @@ the point:
 | Does the UI read well? | `frontend-design` | Craft, and it belongs after the diff exists |
 
 Growing `/ground` to cover those rebuilds the single all-purpose panel that
-[009-feature-grounding.md](../../../docs/roadmap/done/009-feature-grounding.md) was written
+009-feature-grounding.md (`tekio.rfcs/rfcs/done/0009-feature-grounding.md`) was written
 to reject. Four concerns, two moments — don't re-merge them.
 
-Prerequisite: [docs/doctrine.md](../../../docs/doctrine.md) — §4 is the
+Prerequisite: `tekio.rfcs/doctrine.md` — §4 is the
 checklist this skill runs. It is imported from the workspace `CLAUDE.md`, so it
 should already be in context.
 
@@ -113,7 +113,7 @@ presentational primitives in `src/components/ui/` that state no number.
    `unknown` before, they are `unknown` after, and the inventory row does not
    clear. Whether the exemption should apply at all when the base was never
    checked is an open question, deferred to 3.0.0 —
-   [065](../../../docs/roadmap/065-rescale-exemption-unchecked-base.md). No case
+   065 (`tekio.rfcs/rfcs/0065-rescale-exemption-unchecked-base.md`). No case
    has ever run: `RECOVERY_WEIGHTS` was its worked example and was retired on
    2026-08-31 rather than rescaled.
 2. **Unit or shape change.** Same claim, different representation — per-week to
@@ -228,7 +228,7 @@ order:
 immediately before `## Acceptance`. Verbatim: don't summarise away the
 provenance tags or the "Where they split" section, which is the part that
 records a real design fork. A brief that collects many runs keeps them in
-`docs/grounding/<NNN>-<slug>.md` under its own `## Grounding` heading and
+`tekio.rfcs/grounding/<NNN>-<slug>.md` under its own `## Grounding` heading and
 leaves a pointer in the brief's section (039 is the precedent — nine blocks
 were 790 of its 1,426 lines). That file stays put when the brief retires, so
 its source comments never need repointing.
@@ -236,12 +236,12 @@ its source comments never need repointing.
 **2. The constant** — one line above it, from the scout's `### Source comment`:
 
 ```ts
-/** 0.45 — sleep dominates systemic readiness; see docs/roadmap/<brief>.md#grounding */
+/** 0.45 — sleep dominates systemic readiness; see tekio.rfcs/rfcs/<brief>.md#grounding */
 ```
 
 **3. The decisions ledger** — one row per *decision* the run produced (a
 design call, a semantic choice, a deliberate non-change) in
-[docs/grounding-inventory.md](../../../docs/grounding-inventory.md#decisions-from-scout-runs),
+`tekio.rfcs/grounding-inventory.md#decisions-from-scout-runs`,
 with its load-bearing sources and a link to the full record. Numbers get
 inventory rows; decisions get ledger rows.
 
@@ -281,7 +281,7 @@ number that most needs a run. `r05` is definitional: plates come in 2.5 kg pairs
 
 ### Maintenance
 
-Source comments cite a brief path, and briefs move to `docs/roadmap/done/` when
+Source comments cite a brief path, and briefs move to `tekio.rfcs/rfcs/done/` when
 complete. When you move one, `grep -rn "<brief-filename>" src/` and repoint every
 comment. Grounding blocks travel with their brief — never copy one into a second
 file.

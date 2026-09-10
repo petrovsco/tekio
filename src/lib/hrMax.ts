@@ -1,12 +1,12 @@
 import type { CardioEntry, SportEntry } from '../types'
 import { today } from './utils'
 
-// Every number below is docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding.
+// Every number below is tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding.
 
-/** 24 — months of synced rows the observed HRmax is read over; a convention inside 12–36: age moves HRmax ~0.7 bpm/yr (Gellish 2007 — under 1.5 bpm inside the window), training status 3–7 % (Zavorsky 2000), and a shorter window mistakes fewer all-out efforts for drift (on the development dataset a 12-month read gives 191 against a 24-month read of 196), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 24 — months of synced rows the observed HRmax is read over; a convention inside 12–36: age moves HRmax ~0.7 bpm/yr (Gellish 2007 — under 1.5 bpm inside the window), training status 3–7 % (Zavorsky 2000), and a shorter window mistakes fewer all-out efforts for drift (on the development dataset a 12-month read gives 191 against a 24-month read of 196), see tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_MAX_WINDOW_MONTHS = 24
 
-/** 3 — bpm a second session must come within for a session max to count: the observed HRmax is a replicated peak, never the single highest reading, because a wrist-optical spike can sit 20 bpm above anything a second session reaches (Navalta 2020: limits of agreement −32 to +162 bpm; a 214 appears in the development dataset) and Garmin's auto-detect ratchets to any such reading; a chest strap's precision plus day-to-day noise, a convention, see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 3 — bpm a second session must come within for a session max to count: the observed HRmax is a replicated peak, never the single highest reading, because a wrist-optical spike can sit 20 bpm above anything a second session reaches (Navalta 2020: limits of agreement −32 to +162 bpm; a 214 appears in the development dataset) and Garmin's auto-detect ratchets to any such reading; a chest strap's precision plus day-to-day noise, a convention, see tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_MAX_REPLICATION_BPM = 3
 
 /** The observed HRmax and the session that set it. */
@@ -61,10 +61,10 @@ export function observedHrMax(cardio: CardioEntry[], sports: SportEntry[], date:
 /** Where the stored HRmax came from: typed by the user, or the tracker peak they accepted. */
 export type HrMaxSource = 'typed' | 'tracker'
 
-/** 208 — the intercept of the Tanaka age formula (HRmax ≈ 208 − 0.7 × age), the default when the user has set no number; lowest RMSE of the age formulas in athletes (Tanaka 2001; Kasiak 2023: 9.2 bpm) and still ±9–11 bpm for one person (Martin 2025), so the Profile calls it an estimate; never 220 − age (Robergs & Landwehr 2002), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 208 — the intercept of the Tanaka age formula (HRmax ≈ 208 − 0.7 × age), the default when the user has set no number; lowest RMSE of the age formulas in athletes (Tanaka 2001; Kasiak 2023: 9.2 bpm) and still ±9–11 bpm for one person (Martin 2025), so the Profile calls it an estimate; never 220 − age (Robergs & Landwehr 2002), see tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_MAX_FORMULA_INTERCEPT = 208
 
-/** 0.7 — bpm of HRmax lost per year of age in the same formula (Tanaka 2001; within-person 0.7 bpm/yr, Gellish 2007), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 0.7 — bpm of HRmax lost per year of age in the same formula (Tanaka 2001; within-person 0.7 bpm/yr, Gellish 2007), see tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_MAX_FORMULA_SLOPE = 0.7
 
 /** Whole years from `birthDate` to `date`; null without a birth date, or for one not yet reached. */

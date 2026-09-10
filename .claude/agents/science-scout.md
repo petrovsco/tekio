@@ -134,5 +134,5 @@ Return exactly this block and nothing else:
 - What would move this number: <...>
 
 ### Source comment
-`// <value> — <one-line justification>, see docs/roadmap/<brief>.md#grounding`
+`// <value> — <one-line justification>, see tekio.rfcs/rfcs/<brief>.md#grounding`
 ````

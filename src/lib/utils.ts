@@ -118,7 +118,7 @@ export function isDeloadDate(startDate: string | null | undefined, d: string): b
 /**
  * A deload session's prescribed sets: reps scaled by {@link DELOAD_REP_FACTOR}
  * (min 1), load unchanged. The single deload model — the plan preview and the
- * "Deload ↓" button must not disagree. See docs/grounding-inventory.md §5.
+ * "Deload ↓" button must not disagree. See tekio.rfcs/grounding-inventory.md §5.
  */
 export function deloadSets(lastSets: LiftSet[]): LiftSet[] {
   return lastSets.map(s => ({
@@ -231,7 +231,7 @@ export function defaultProgram(): Program {
  * nothing puts the honest ceiling below it. Set on 2026-09-09 under a standing
  * rule that the window may be narrowed by evidence, never widened.
  * Below this, a 1-rep set is a *measured* max and is never estimated.
- * See docs/roadmap/done/067-ground-1rm-estimator.md#grounding
+ * See tekio.rfcs/rfcs/done/0067-ground-1rm-estimator.md#grounding
  */
 const ONE_RM_REP_MAX = 5
 
@@ -244,7 +244,7 @@ const ONE_RM_REP_MAX = 5
  * are algebraically identical. Averaging them — which Tekiō did until then — is
  * an estimator nobody has published or tested.
  * Valid only for a set taken to failure; the caller enforces that.
- * See docs/roadmap/done/067-ground-1rm-estimator.md#grounding
+ * See tekio.rfcs/rfcs/done/0067-ground-1rm-estimator.md#grounding
  */
 function brzycki1RM(weight: number, reps: number): number {
   return (weight * 36) / (37 - reps)
@@ -254,7 +254,7 @@ function brzycki1RM(weight: number, reps: number): number {
  * Plates come in 2.5 kg pairs, and a *tested* 1RM moves ~3 % from day to day in
  * a trained lifter (Grgic 2020) — larger than the gap between rep-max formulas.
  * An estimate printed to the kilogram would claim a precision the measurement
- * itself does not have. See docs/roadmap/done/067-ground-1rm-estimator.md#grounding
+ * itself does not have. See tekio.rfcs/rfcs/done/0067-ground-1rm-estimator.md#grounding
  */
 const toPlate = (kg: number): number => Math.round(kg / 2.5) * 2.5
 
@@ -518,8 +518,8 @@ export function isDayDoneInWeek(
  *  reads as an explicit 0; every consumer skips zero-weight links, so such a
  *  link adds no sets, no recency and no source. Every muscle read is
  *  denominated in this (inventory row 7.1, decision D13).
- *  See docs/grounding/039-adaptations-read.md#grounding and
- *  docs/roadmap/done/042-level-3-link-audit.md */
+ *  See tekio.rfcs/grounding/039-adaptations-read.md#grounding and
+ *  tekio.rfcs/rfcs/done/0042-level-3-link-audit.md */
 export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0 }
 
 // ── Weights picker ─────────────────────────────────────────────────────────────
@@ -529,7 +529,7 @@ export const LEVEL_WEIGHT: Record<number, number> = { 1: 1, 2: 0.5, 3: 0 }
  * every catalogue exercise that trains a muscle (has a stimulus link). Recovery-
  * only rows (stretches, foam rolling) and unmapped habit-era rows stay out, so a
  * scout-named lift is selectable before its first set without the picker filling
- * up with "Sauna". See docs/roadmap/done/043-scout-named-exercises-catalogue.md.
+ * up with "Sauna". See tekio.rfcs/rfcs/done/0043-scout-named-exercises-catalogue.md.
  */
 export function weightsPickerNames(weights: WeightEntry[], links: ExerciseMuscleLink[]): string[] {
   const names = new Set(weights.map(w => w.exercise))

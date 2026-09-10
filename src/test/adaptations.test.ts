@@ -86,7 +86,7 @@ describe('classifyWeightSet', () => {
 
 // ── classifyCardio ────────────────────────────────────────────────────────────
 
-// The rules are docs/grounding/005-hr-zone-intensity-classification.md (2026-09-06).
+// The rules are tekio.rfcs/grounding/005-hr-zone-intensity-classification.md (2026-09-06).
 
 describe('classifyCardio — no intensity data (005 run B)', () => {
   const c = (duration: number, format?: CardioFormat): CardioEntry => ({ id: 'x', date: '2025-01-01', type: 'Running', duration, format })

@@ -5,17 +5,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Product doctrine
 
 **Tekiō tells me what's missing.** Before proposing, designing, or building
-any feature, apply [docs/doctrine.md](docs/doctrine.md) — it carries
+any feature, apply `tekio.rfcs/doctrine.md` — it carries
 the purpose statement, the principles, the hard caps (max 4 menu sections; the
 6-week shelf expiry), the five-question brief checklist, and the Core/Fold/Shelf
 ledger for every surface. It is imported below so it is always in context.
 
-@docs/doctrine.md
+@../tekio.rfcs/doctrine.md
+
+## Where the specifications live
+
+**`petrovsco/tekio.rfcs`**, cloned as a sibling at `Projects/tekio.rfcs`. This
+repo holds code. The plan — one numbered RFC per unit of work — and the standing
+reference that says what the product already claims both live there:
+`doctrine.md`, `design-system.md`, `code-review.md`, `grounding-inventory.md`
+and `grounding/`.
+
+They were `docs/` here until 2026-09-10 and moved with their history. Numbers
+did not change, only their padding: brief 71 is RFC 0071. Source comments that
+cite a brief now name the path in the specs repo, so a citation stays greppable
+across both checkouts.
+
+**Two repositories, two commits.** Work that changes both the plan and the code
+is committed in both, in the same session, neither one left dirty. Never copy an
+RFC back into this repo for convenience — a copied spec disagrees with itself
+within a week.
 
 ## Reviewing code
 
 **Before `/code-review` or `/simplify` on this repo, read
-[docs/code-review.md](docs/code-review.md).** It is the list of things a good
+`tekio.rfcs/code-review.md`.** It is the list of things a good
 generic React reviewer gets wrong here — the deliberate decisions that look like
 defects (one hardcoded user, wide-open RLS, no router, `any` at the database
 edge), where the real risk is (any number claiming physiological meaning is
@@ -62,21 +80,21 @@ production**, on purpose: the staging build is somebody's daily app while the
 product has one user, so a row tagged `origin = 'staging'` is real training
 data, not a test row, and is never deleted by its tag. The risks the shared database creates, and the work
 that pays them, are
-[roadmap/037-row-origin-tagging.md](docs/roadmap/done/037-row-origin-tagging.md)
+roadmap/037-row-origin-tagging.md (`tekio.rfcs/rfcs/done/0037-row-origin-tagging.md`)
 (marking which build wrote a row) and
-[roadmap/024-staging-shared-database-safety.md](docs/roadmap/024-staging-shared-database-safety.md)
+roadmap/024-staging-shared-database-safety.md (`tekio.rfcs/rfcs/0024-staging-shared-database-safety.md`)
 (the migration policy).
 
 **Releasing a version.** Seven steps, in this order — 2.0.0 went out this way on
 2026-09-05, and the reasoning behind each one is
-[roadmap/050-release-procedure.md](docs/roadmap/050-release-procedure.md):
+roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/0050-release-procedure.md`):
 
 1. **Pre-flight on `develop`** — `npm run build`, `npm run test`, `npm run check:docs`, all green.
-2. **Registry** — in [docs/roadmap/releases.md](docs/roadmap/releases.md) set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line.
+2. **Registry** — in `tekio.rfcs/rfcs/releases.md` set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line.
 3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
 4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`.
 5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so opening the site to read the version at the foot of Profile needs whoever holds them.
-6. **Post-release** — take the briefs that waited on the release off `blocked`; run the queued schema drops as tracked migrations ([roadmap/025](docs/roadmap/done/025-release-blocked-schema-drops.md)) under the migration policy in [roadmap/024](docs/roadmap/024-staging-shared-database-safety.md), and never delete rows by their `origin` tag — they are real data; move finished briefs to `done/` and repoint their links.
+6. **Post-release** — take the briefs that waited on the release off `blocked`; run the queued schema drops as tracked migrations (roadmap/025 (`tekio.rfcs/rfcs/done/0025-release-blocked-schema-drops.md`)) under the migration policy in roadmap/024 (`tekio.rfcs/rfcs/0024-staging-shared-database-safety.md`), and never delete rows by their `origin` tag — they are real data; move finished briefs to `done/` and repoint their links.
 7. **Open the next release** section in `releases.md`.
 
 ## Commands
@@ -105,7 +123,7 @@ judgement about whether code is *good* stays with `/simplify` and
 
 `knip` reports dead files, exports and dependencies; it never deletes. Its
 findings are triaged by hand into candidate A1 of
-[roadmap/048](docs/roadmap/done/048-simplification-candidates.md), which is the brief
+roadmap/048 (`tekio.rfcs/rfcs/done/0048-simplification-candidates.md`), which is the brief
 that does the deleting — so `knip` reporting zero is what says A1 is finished.
 
 `perf` measures only what `dist/index.html` fetches before it can draw — the
@@ -180,7 +198,7 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 @~/.claude/modus/rules/build-before-push.md
 @~/.claude/modus/rules/direct-push.md
 @~/.claude/modus/rules/verify-in-browser.md
-@~/.claude/modus/rules/pending-work-in-roadmap.md
+@~/.claude/modus/rules/rfc-convention.md
 @~/.claude/modus/rules/no-personal-context.md
 
 ### No personal context in this repo
@@ -213,17 +231,17 @@ information about the person currently using it:
 Repo specifics for those rules: this repo is the working directory, so all paths
 are repo-relative — run `npm run build` here; "main branch" means `develop`
 (see Branching and versioning above — every push bumps the version too);
-roadmap briefs go to `docs/roadmap/` (the context guard is pointed there via
+roadmap briefs go to `tekio.rfcs/rfcs/` (the context guard is pointed there via
 `CTX_GUARD_ROADMAP_DIR` in `.claude/settings.local.json`). Every brief
 carries a `**Label:**` line — bug / infra / feature / backlog — defined in
-[docs/roadmap/README.md](docs/roadmap/README.md).
+`tekio.rfcs/rfcs/README.md`.
 
 **Reference-only docs** — these state what *is* and must never grow a follow-up,
-a "proposed edit" or a next step; those go to `docs/roadmap/` instead:
-[docs/doctrine.md](docs/doctrine.md) (decisions),
-[docs/code-review.md](docs/code-review.md) (what a reviewer needs),
-[docs/grounding-inventory.md](docs/grounding-inventory.md) (an index of the 75
-numbers), [docs/grounding/](docs/grounding/) (the verbatim scout blocks a brief
-outgrew), [docs/design-system.md](docs/design-system.md) (the visual
+a "proposed edit" or a next step; those go to `tekio.rfcs/rfcs/` instead:
+`tekio.rfcs/doctrine.md` (decisions),
+`tekio.rfcs/code-review.md` (what a reviewer needs),
+`tekio.rfcs/grounding-inventory.md` (an index of the 75
+numbers), `tekio.rfcs/grounding/` (the verbatim scout blocks a brief
+outgrew), `tekio.rfcs/design-system.md` (the visual
 language), [supabase/README.md](supabase/README.md) and
 [scripts/garmin-sync/README.md](scripts/garmin-sync/README.md) (how things work).

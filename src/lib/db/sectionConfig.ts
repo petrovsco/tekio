@@ -18,7 +18,7 @@ export interface SectionConfig {
 // cards, so nothing reads it. The app stopped writing and selecting it (roadmap
 // 018 unit 6), and the column itself was dropped on 2026-09-05, once 2.0.0
 // reached master — the drop had to wait because both branches share one
-// database (docs/roadmap/done/025-release-blocked-schema-drops.md).
+// database (tekio.rfcs/rfcs/done/0025-release-blocked-schema-drops.md).
 const DEFAULTS: SectionConfig[] = [
   { sectionKey: 'Weights',     showInMenu: true, sortOrder: 0 },
   { sectionKey: 'Cardio',      showInMenu: true, sortOrder: 2 },

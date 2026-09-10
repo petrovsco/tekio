@@ -1,7 +1,7 @@
 // Roadmap 023 item 2 — dead-code detection. `npm run knip`.
 //
 // Knip only reports; it never deletes. Its findings are triaged by hand into
-// candidate A1 of docs/roadmap/048-simplification-candidates.md, which is the
+// candidate A1 of tekio.rfcs/rfcs/0048-simplification-candidates.md, which is the
 // brief that does the deleting.
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
