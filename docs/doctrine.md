@@ -7,7 +7,7 @@ something I want.
 Established 2026-08-26. Amend it deliberately; don't drift past it.
 Amended 2026-08-29: nine adaptations → seven — Speed and Skill dropped,
 Power reclassified as muscle-linked (execution: roadmap 019).
-Amended 2026-09-05: Habits deleted a month before its R2 expiry — Peter's
+Amended 2026-09-05: Habits deleted a month before its R2 expiry — a deliberate
 call, not the calendar's (execution: roadmap 035).
 
 ---
@@ -170,8 +170,8 @@ prints the seven by name from the same coverage read as Adaptations — one
 helper, one sentence on both screens, the power line gone — and still fits one
 900 px screen with nothing to scroll. It read: *Untouched: power, anaerobic,
 VO₂max. Short: strength, hypertrophy, muscular endurance, endurance.* All three
-questions have now passed at source. The sentence above is Peter's own
-five-second read, not a test run's, so the verdict is his to record here;
+questions have now passed at source. The sentence above is a real five-second
+read, not a test run's, so the verdict is the reader's to record here;
 until that line says **met**, the austerity holds. Record:
 [roadmap/done/062-home-adaptations-one-screen.md](roadmap/done/062-home-adaptations-one-screen.md).
 

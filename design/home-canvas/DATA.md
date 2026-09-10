@@ -1,6 +1,12 @@
-# Real data snapshot — pulled 2026-08-27 (Step 0 of roadmap 018)
+# Design fixture — one active user, 42-day cycle window
 
-Live Supabase, single user. Cycle window = last 42 days. Re-pull before round 3.
+**Invented values, real shape.** This is the dataset the Home screen was designed
+against: a single user mid-cycle, with the awkward cases the screen has to survive —
+an upper/lower split that has drifted badly, stale water, no active program, and a
+blood donation far enough back to matter to nothing. It was derived from a live pull
+at design time; **every biometric figure here has since been replaced with an invented
+one**, because a product repo holds fixtures, not people. Keep it that way when you
+refresh it: change the numbers, keep the awkwardness.
 
 ## Muscles — working sets this cycle (42d), last stimulus
 
@@ -53,15 +59,15 @@ Six of nine adaptations are at **zero** this cycle.
 
 ## Recovery — systemic inputs
 
-Sleep (Garmin, live):
+Sleep (wearable import):
 | Date | Hours | Sleep score | HRV | Resting HR |
 |---|---|---|---|---|
-| 2026-08-27 | 7.55 | 73 | 83 | 51 |
-| 2026-08-26 | 7.83 | 82 | 85 | 50 |
-| 2026-08-25 | 8.70 | 84 | 81 | 52 |
+| 2026-08-27 | 7.55 | 68 | 72 | 57 |
+| 2026-08-26 | 7.83 | 77 | 74 | 56 |
+| 2026-08-25 | 8.70 | 79 | 70 | 58 |
 
 Water: last logged 2026-08-12, 700 ml. Recent daily range 700–2900 ml. Stale, 15 days.
-Blood donation: full blood on 2026-03-24 — 156 days ago, well past any window.
+Blood donation: full blood on 2026-02-11 — 197 days ago, well past any window.
 Body weight: 77.4 kg on 2026-08-17. Trend: 74.0 (Mar) -> 75.0 -> 75.7 -> 76.7 -> 76.0 -> 76.5 -> 75.3 (Jul 28) -> 77.4. Up ~3.4 kg over 5 months.
 
 ## Cardio / sport

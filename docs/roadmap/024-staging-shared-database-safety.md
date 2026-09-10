@@ -24,10 +24,11 @@ data. A second Supabase project would mean replaying every migration twice and
 keeping two schemas in step, for a database whose value is precisely that it is
 the real one.
 
-**Staging is the user's daily app.** He logs on `develop`'s build to test the app
-in live conditions — Peter, 2026-09-05: *"they were real sessions, that's why
-we used prod DB in staging — because I wanted to test the app in live
-conditions."* So a row tagged `origin = 'staging'` is a real row that happens
+**Staging is somebody's daily app.** While the product has one user, that user
+logs on `develop`'s build to test it in live conditions — 2026-09-05: *"they
+were real sessions, that's why we used prod DB in staging — because I wanted to
+test the app in live conditions."* So a row tagged `origin = 'staging'` is a
+real row that happens
 to have been written by the staging build. The tag says which build wrote it,
 which is useful when a bug is found, and says nothing about whether the row
 may be deleted.

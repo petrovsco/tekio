@@ -437,8 +437,9 @@ carries no attribution at all today.
    the window leaving the cycle, each attribution kept or removed).
    Bump the counts paragraph and add an "Updated 2026-09-xx by the 039 runs"
    note in *How to read it*.
-4. **the user's own knowledge base:** only if a run produces durable life-knowledge
-   (unlikely here — these are training prescriptions).
+4. **The user's own knowledge base** (optional, machine-local — see `/ground`
+   step 4): only if a run produces durable life-knowledge (unlikely here —
+   these are training prescriptions).
 
 ### 6.5 Running order and checkpoints
 

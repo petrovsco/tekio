@@ -28,7 +28,7 @@ reserved for stabilisers and minor contributors.** An audit of
 `exercise_muscle_groups` the same day found 24 stimulus links at level 3, and
 about ten of them are real synergists that belong at level 2. Zeroing the
 tier first would delete real stimulus from the read. So: relabel first, then
-zero. The relabel is a judgement about the user's own anatomy tags, which is why
+zero. The relabel is a judgement about the catalogue's own anatomy tags, which is why
 this is a brief with a checklist and not a migration.
 
 The full evidence and the fork it settles are in

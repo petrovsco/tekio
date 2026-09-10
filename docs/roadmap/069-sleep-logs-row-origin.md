@@ -10,7 +10,7 @@ corrected (see *048 called this a one-line fix; it is not*).
 Every root row a person writes from the app records which build wrote it —
 `dev`, `staging`, or null for production. That is
 [037](done/037-row-origin-tagging.md)'s guarantee, and it is what lets anyone
-looking at the training log later tell a row the user really logged from a row
+looking at the training log later tell a row a user really logged from a row
 somebody created while trying something out.
 
 **A night of sleep typed into the app does not record it.** Fourteen tables
@@ -21,7 +21,7 @@ carry the `origin` column; `sleep_logs` is not one of them, and
 it does.
 
 So a night logged from localhost or from stg-tekio.shamatoff.com lands looking
-exactly like a night Peter typed on the real site. Nothing deletes it — the
+exactly like a night typed on the real site. Nothing deletes it — the
 release sweep that used to read these tags was withdrawn on 2026-09-05 after it
 destroyed real data ([053](done/053-recover-swept-staging-rows.md)) — but the
 attribution is wrong, and attribution is the whole point of the column.

@@ -58,9 +58,9 @@ Both sit behind the same cookie gate in [middleware.ts](middleware.ts) —
 `BASIC_AUTH_ENABLED` is one environment variable covering Preview *and*
 Production, so a change to it changes both. Vercel Authentication is off; that
 gate is the only door. Staging talks to the **same Supabase project as
-production**, on purpose: the user runs the staging build daily, so a
-row tagged `origin = 'staging'` is real training data, not a test row, and is
-never deleted by its tag. The risks the shared database creates, and the work
+production**, on purpose: the staging build is somebody's daily app while the
+product has one user, so a row tagged `origin = 'staging'` is real training
+data, not a test row, and is never deleted by its tag. The risks the shared database creates, and the work
 that pays them, are
 [roadmap/037-row-origin-tagging.md](docs/roadmap/done/037-row-origin-tagging.md)
 (marking which build wrote a row) and
@@ -75,7 +75,7 @@ that pays them, are
 2. **Registry** — in [docs/roadmap/releases.md](docs/roadmap/releases.md) set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line.
 3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
 4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`.
-5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so only Peter can open the site and read the version at the foot of Profile.
+5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so opening the site to read the version at the foot of Profile needs whoever holds them.
 6. **Post-release** — take the briefs that waited on the release off `blocked`; run the queued schema drops as tracked migrations ([roadmap/025](docs/roadmap/done/025-release-blocked-schema-drops.md)) under the migration policy in [roadmap/024](docs/roadmap/024-staging-shared-database-safety.md), and never delete rows by their `origin` tag — they are real data; move finished briefs to `done/` and repoint their links.
 7. **Open the next release** section in `releases.md`.
 
@@ -181,6 +181,34 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 @~/.claude/modus/rules/direct-push.md
 @~/.claude/modus/rules/verify-in-browser.md
 @~/.claude/modus/rules/pending-work-in-roadmap.md
+@~/.claude/modus/rules/no-personal-context.md
+
+### No personal context in this repo
+
+Stated in full, because this repo is **public** and the import line above
+resolves to nothing for a reader without modus installed. It is the one rule
+here that cannot afford to be invisible.
+
+**Tekiō is a product, not somebody's personal app.** It has exactly one user
+today because it is still an experiment, and that is a temporary state, not the
+design. So this repo holds product information and product code — never
+information about the person currently using it:
+
+- **No people.** No names, ages, birth years or relationships as *context*.
+  Naming an author, a co-author or who decided something is fine — that is task
+  management. Naming whose body, whose data or whose habits a feature is shaped
+  around is not.
+- **No real body, health or employment data.** Bodyweights, HRmax readings,
+  sleep scores, calorie or protein targets, employers, career plans. Where a
+  realistic figure is needed for a fixture, a design mock or a test, **invent one
+  and mark it invented** — see [design/home-canvas/DATA.md](design/home-canvas/DATA.md).
+- **State the shape, not the instance.** The test: would the sentence still be
+  true for a different user? "A wrist-optical spike can sit 20 bpm above a real
+  peak" is product knowledge. The same sentence with a person's 214 in it is not.
+- **Never name a private knowledge base.** No repo name, org, URL or path.
+  Tooling that must reach one (`/ground` step 4) reads
+  `~/.claude/modus/personal-os` and is **silently inert** when that file is
+  absent, which on most machines it is.
 
 Repo specifics for those rules: this repo is the working directory, so all paths
 are repo-relative — run `npm run build` here; "main branch" means `develop`

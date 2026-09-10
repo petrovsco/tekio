@@ -228,7 +228,7 @@ export function defaultProgram(): Program {
  * The highest rep count an estimate is offered from. Deliberately conservative:
  * the published windows are 4–6 (Dohoney 2002), 4–10 (Roberts 2025) and "under
  * 10" (Mayhew 2008, LeSuer 1997), so nothing in the literature objects to 5 and
- * nothing puts the honest ceiling below it. Peter set it on 2026-09-09 under a
+ * nothing puts the honest ceiling below it. Set on 2026-09-09 under a standing
  * rule that the window may be narrowed by evidence, never widened.
  * Below this, a 1-rep set is a *measured* max and is never estimated.
  * See docs/roadmap/done/067-ground-1rm-estimator.md#grounding

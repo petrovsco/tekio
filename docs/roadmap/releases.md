@@ -20,7 +20,7 @@ closes what 2.0.0 opened rather than adding surface.
 **Nothing goes before it any more.**
 [053](done/053-recover-swept-staging-rows.md) — recovering the rows the
 withdrawn release sweep deleted on 2026-09-05 — was **discarded** on
-2026-09-07: Peter does not remember the sessions, so nothing honest can be
+2026-09-07: the sessions are not remembered, so nothing honest can be
 re-entered, and the prevention half had already shipped. It was never a 2.1.0
 item.
 

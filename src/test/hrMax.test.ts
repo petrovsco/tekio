@@ -12,21 +12,21 @@ const match = (date: string, maxHr: number): SportEntry =>
 
 describe('observedHrMax — the replicated peak (059)', () => {
   const TODAY = '2026-09-07'
-  // the user's own top readings on 2026-09-07: 214 and 200 are singleton runs,
-  // 196 / 195 / 192 a rowing cluster.
-  const peter = [
+  // Fixture: two singleton running spikes (214, 200) above a rowing cluster
+  // (196 / 195 / 192) — the case the replication rule exists to survive.
+  const readings = [
     row('2023-07-02', 214, 'Running'), row('2023-12-17', 200, 'Running'),
     row('2024-10-25', 196), row('2025-03-04', 195), row('2025-04-01', 192), row('2026-08-28', 189, 'Running'),
   ]
   it('is the highest peak a second session comes within 3 bpm of, never the single highest reading', () => {
     expect(HR_MAX_REPLICATION_BPM).toBe(3)
-    expect(observedHrMax(peter, [], TODAY)).toEqual({ value: 196, date: '2024-10-25', label: 'Indoor Rowing' })
+    expect(observedHrMax(readings, [], TODAY)).toEqual({ value: 196, date: '2024-10-25', label: 'Indoor Rowing' })
     expect(observedHrMax([row('2026-01-01', 200), row('2026-02-01', 190)], [], TODAY)).toBeNull()
     expect(observedHrMax([row('2026-01-01', 200), row('2026-02-01', 197)], [], TODAY)?.value).toBe(200)
   })
   it('reads a rolling 24-month window: once the cluster ages out, 191 stands', () => {
     expect(HR_MAX_WINDOW_MONTHS).toBe(24)
-    const rows = [...peter, row('2025-11-07', 191), row('2025-12-05', 191)]
+    const rows = [...readings, row('2025-11-07', 191), row('2025-12-05', 191)]
     expect(observedHrMax(rows, [], TODAY)?.value).toBe(196)
     expect(observedHrMax(rows, [], '2027-11-01')?.value).toBe(191)
     expect(observedHrMax(rows, [], '2024-10-25')).toBeNull()

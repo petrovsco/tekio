@@ -59,7 +59,7 @@ export const VO2MAX_Z5_MIN = 8
 /** 120 — the work-bout length (s) at or below which an intervals row is anaerobic-capacity work, above which it is VO₂max: aerobic and anaerobic contributions are equal at ~75 s and longer efforts are aerobically dominated (Gastin 2001); Tekiō's anaerobic protocol is 20 s–2 min all-out (row 3.7), its VO₂max intervals 3–8 min (row 3.8; Seiler & Tønnessen 2009: ~1–8 min at 90–100 % V̇O₂max), see docs/grounding/005-hr-zone-intensity-classification.md#grounding */
 export const ANAEROBIC_BOUT_MAX_S = 120
 
-/** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. Garmin's TEMPO / LACTATE_THRESHOLD are deliberately not here and not special-cased: threshold work trains endurance by a harder route than Zone 2, so it falls to the aerobic floor (005 fork 1b, Peter 2026-09-07). */
+/** Labels that stand in for the Z5 dose when the row carries no zones — a heuristic over the same TE + time-in-zone inputs (US 11771355 B2), so a fallback only. Garmin's TEMPO / LACTATE_THRESHOLD are deliberately not here and not special-cased: threshold work trains endurance by a harder route than Zone 2, so it falls to the aerobic floor (005 fork 1b, decided 2026-09-07). */
 const VO2MAX_LABELS = /VO2|VO₂|ANAEROBIC|SPRINT|SPEED/
 
 /** Minutes in Garmin's Z5 (≥ 90 % HRmax), or null when the row carries no zones. */

@@ -106,7 +106,7 @@ describe('classifyCardio — no intensity data (005 run B)', () => {
 // ── The typed-HR path (005 run B, built in 059) ───────────────────────────────
 
 describe('typedHrBand / classifyTypedHr — a typed average HR against the profile HRmax (059)', () => {
-  const HRMAX = 196 // the user's replicated observed peak on 2026-09-07
+  const HRMAX = 196 // a replicated observed peak, the shape the profile stores
   const c = (duration: number, avgHr?: number, extra: Partial<CardioEntry> = {}): CardioEntry =>
     ({ id: 'x', date: '2025-01-01', type: 'Indoor Rowing', duration, avgHr, ...extra })
   it('bands in whole percent at the grounded cuts: ≤ 83 endurance, 84–88 threshold, ≥ 89 VO₂max', () => {

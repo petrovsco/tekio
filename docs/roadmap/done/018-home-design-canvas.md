@@ -570,7 +570,7 @@ where date >= current_date - 42 order by date;
 ```
 
 Also carry over what is already on screen: readiness **36%**, body weight
-**77.4 kg**, Garmin sleep score **80**, and the real sport names (Tennis, Beach
+**77.4 kg**, sleep score **74**, and the fixture's sport names (Tennis, Beach
 Volleyball).
 
 ### Step 1 — round 1: settle the structure

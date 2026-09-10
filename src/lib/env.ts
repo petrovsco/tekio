@@ -2,9 +2,9 @@
  * Which environment is this build running in? (roadmap 037)
  *
  * Staging, local dev and production all talk to the *same* Supabase project, so
- * a row written while trying something out is a real row in the user's real
- * training log. This is how the app knows to mark those rows, and how the shell
- * knows to say so on screen.
+ * a row written while trying something out lands in the user's real training
+ * log. This is how the app knows to mark those rows, and how the shell knows to
+ * say so on screen.
  */
 export type AppEnv = 'production' | 'staging' | 'dev'
 

@@ -23,8 +23,8 @@ Tekiō's `exercises` table. Two things follow:
    ([WeightsTab.tsx:47](../../../src/components/tabs/weights/WeightsTab.tsx#L47)).
    A catalogue row alone is invisible; the picker has to read the catalogue.
 
-On the way in, the same audit found **fourteen exercises Peter has already
-logged that have no muscle links at all** — Chest Press (6 sessions), Leg
+On the way in, the same audit found **fourteen exercises already logged in the
+database that have no muscle links at all** — Chest Press (6 sessions), Leg
 Extension (5), Dips (4), Forward Dumbbell Lunge (3), Jump Back Squat (3), and
 nine more. Every set on them has counted for nothing on the muscle read. That
 is the same fix (rows in `exercise_muscle_groups`), so it lands here too.

@@ -40,7 +40,7 @@ The Cardio tab's history and charts show three cardio sessions. Garmin holds
 **157 cardio-type activities** for the same account (running 132, cycling 24,
 one treadmill run — 2023-05-13 to 2026-09-06). That is the whole history: the
 2026-09-06 `dump` run asked for everything back to 2012 and still got 277
-activities, so the user's Garmin log starts in May 2023. The sync has only ever
+activities, so the connected Garmin log starts in May 2023. The sync has only ever
 run with a 7-day window, and it only started working on 2026-08-26, so
 everything before that is invisible to the app. The raw list is in the
 gitignored `scripts/garmin-sync/dumps/` (JSON and a CSV), read with

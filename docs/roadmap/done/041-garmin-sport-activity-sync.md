@@ -15,9 +15,9 @@ the rows kept their Garmin source, which closes the round trip.
   activity already in the table is skipped outright. Workflow gained
   `days` / `kinds` / `dry_run` dispatch inputs. Garmin badge on `SportRow`.
 - **2026-09-06** — Ten-year dry run (277 activities; the window opened
-  2016-09-09 but the user's Garmin log starts 2023-05-13, see 054): the
+  2016-09-09 but the connected Garmin log starts 2023-05-13, see 054): the
   tennis key is **`tennis_v2`**, not `tennis`; no volleyball activities at all
-  (Peter's 12 volleyball rows were never on the watch); unmapped: `hiit` ×63
+  (the 12 hand-logged volleyball rows were never on the watch); unmapped: `hiit` ×63
   (2023-06..2026-01), `strength_training` ×43 (2024-09..2026-02), `walking`
   ×9, `skating_ws` ×1, `hiking` ×1 — none on the same day as a manual sport
   row, so nothing to claim. The 157 cardio-type activities in that history
@@ -98,7 +98,7 @@ during implementation, whichever keeps the token/auth/upsert plumbing
 DRY-est):
 - A second `typeKey` map, e.g. `SPORT_TYPE_KEYS = {"tennis": "Tennis", "padel":
   "Padel", ...}` — check Garmin's actual `typeKey` values for the sports
-  Peter actually plays before hard-coding names (confirm against a real
+  the user actually plays before hard-coding names (confirm against a real
   synced activity, don't guess the full Garmin taxonomy).
 - For a matched sport activity: resolve/create the `sport_types` row (mirrors
   `getOrCreateSportType` in `src/lib/db/sport.ts`, but from Python against
@@ -135,7 +135,7 @@ backfill/testing.
       others as their real `typeKey` values are confirmed) into
       `sport_sessions` with duration/avg HR/date/name filled and
       quality/competitors/result left blank. (`tennis_v2` is the only sport
-      key in ten years of the user's Garmin history — see the log.)
+      key in ten years of the connected Garmin history — see the log.)
 - [x] Re-running the sync never duplicates a row or overwrites a quality
       rating the user already entered. (Dry re-run after the backfill: 3
       already synced, 0 new; `plan_sport` never writes `notes`, `quality`

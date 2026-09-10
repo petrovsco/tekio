@@ -14,16 +14,17 @@
   ticked (024 Part 3 withdrawn, the sweep out of the 050 release procedure), so
   nothing carries forward and the brief is **discarded**, not done — it never
   recovered a row.
-- **2026-09-06 (final)** — Peter confirms he does not remember the sets. The two weights sessions' exercises, reps and weights are therefore lost for good: unreadable from disk (above) and not in memory. WAL would not have helped either — a default `DELETE` logs only the primary key, not the old row's columns. What Plan C can still restore: the two sport sessions (Garmin), the two water logs, the body weight, and the fact that he trained on 09-02 and 09-03. No set values will be invented to fill the gap.
+- **2026-09-06 (final)** — confirmed: the sets are not remembered. The two weights sessions' exercises, reps and weights are therefore lost for good: unreadable from disk (above) and not in memory. WAL would not have helped either — a default `DELETE` logs only the primary key, not the old row's columns. What Plan C can still restore: the two sport sessions (Garmin), the two water logs, the body weight, and the fact that he trained on 09-02 and 09-03. No set values will be invented to fill the gap.
 
 ## What happened
 
 On the evening of 2026-09-05, after 2.0.0 shipped, the release sweep from
 [024](../024-staging-shared-database-safety.md) Part 3 deleted every log row
 tagged `origin = 'staging'`. The sweep assumed a staging row was a test row.
-It was not: the user runs the staging build daily, precisely to test
-it in live conditions, so those were his real sessions of that week. The
-preview listed only counts and dates, Peter's "ok" was read as approval, and
+It was not: the staging build is the daily app of the product's one user,
+precisely so it is tested in live conditions, so those were real sessions of
+that week. The preview listed only counts and dates, an "ok" was read as
+approval, and
 nothing checked what the rows were. Part 3 is withdrawn; this brief gets the
 rows back.
 
@@ -207,8 +208,8 @@ What is known from the ids and dates above: weights sessions on Wednesday
 sport sessions on Tuesday 09-01 and Friday 09-04, water on 09-03 and 09-04,
 body weight on 09-03.
 
-- **Only the structure survives, not the loads.** Peter confirmed 2026-09-06
-  he does not remember the sets, and they can't be read back, so the reps and
+- **Only the structure survives, not the loads.** Confirmed 2026-09-06 that the
+  sets are not remembered, and they can't be read back, so the reps and
   weights are gone. If those days followed his active program the `program_day`
   still shows which exercises and in what order, so the two sessions can be
   re-entered as having happened — but no set values should be invented to fill
@@ -230,8 +231,8 @@ the app. Peter's call whether it is worth doing for one week.
 - [x] The record of what happened is in 024 Part 3 and the sweep is out of
       the release procedure in 050 (done 2026-09-05, in the commit that
       created this brief).
-- [x] The set data is confirmed unrecoverable: unreadable from disk and not in
-      Peter's memory (2026-09-06). The two weights sessions' loads are lost.
+- [x] The set data is confirmed unrecoverable: unreadable from disk and not
+      remembered (2026-09-06). The two weights sessions' loads are lost.
 - [ ] Peter decides what, if anything, to re-log by hand (Plan C): the sport
       sessions (Garmin), water, body weight, and optionally the two training
       days' structure — no invented set values. **Decided 2026-09-07: nothing

@@ -14,7 +14,7 @@
 production (Part 2), and the release cleanup ritual (Part 3). Only Part 1 blocks
 anything — 026's acceptance logs a test entry of *every* type through EditModal
 against the shared production database, and today nothing distinguishes those
-rows from a session Peter actually trained.
+rows from a session a user actually trained.
 
 Parts 2 and 3 stay in 024. Part 3 is *only meaningful once this ships*: a
 cleanup that cannot identify its targets is a cleanup that deletes real training
@@ -96,7 +96,7 @@ that would otherwise delete real data:
 
 `saveBodyweightEntry` is an **upsert** on `(user_id, log_date)`. Verifying
 EditModal from localhost on a day the user has already weighed in would take the
-conflict branch and stamp `origin = 'dev'` onto **his real row**, which the
+conflict branch and stamp `origin = 'dev'` onto **their real row**, which the
 Part 3 sweep would then delete. Write-once means an update never re-tags: the
 real row keeps its null and survives.
 
@@ -136,7 +136,7 @@ rather than writing an explicit `origin: null`.
 
 A persistent, unmissable marker whenever the resolved environment is not
 production, naming which one it is. The failure mode this exists to prevent is
-Peter logging a real session into staging by mistake.
+a user logging a real session into staging by mistake.
 
 Keep it plain — 026 restyles the whole shell right after this, so the marker
 should be a few lines that survive that sweep, not a designed component.
@@ -180,7 +180,7 @@ should be a few lines that survive that sweep, not a designed component.
   and so keeps `withOrigin` an identity function there.
   **Not checked with my own eyes:** the banner on live staging. Its gate
   credentials are Vercel *Secrets* and `vercel env pull` refuses to decrypt
-  them, so signing in needs Peter. The banner itself was verified on localhost
+  them, so signing in needs whoever holds them. The banner itself was verified on localhost
   and only its label differs.
 
 ## Acceptance

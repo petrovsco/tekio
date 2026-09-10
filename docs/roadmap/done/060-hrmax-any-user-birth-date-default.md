@@ -8,8 +8,8 @@
 
 059 shipped an HRmax the app derives from the user's own synced rows: the
 highest session peak that a second session comes within 3 bpm of, over 24
-months. For Peter that is 196 bpm, set by 220 Garmin rows. For anyone else it
-is nothing.
+months. On the one account with years of synced rows that produces 196 bpm.
+For anyone else it is nothing.
 
 The failure is exact. The typed-HR path (059 shape 3) exists for one person:
 someone who hand-logs a cardio row and types the average heart rate. That
@@ -23,8 +23,8 @@ path fires on zero rows until two near-maximal sessions have synced.
 an override or waits for the sync. Peter's answer, 2026-09-07: "I feel this is
 built only for me. Doesn't make sense. Although the grounding is not so good,
 it makes sense for a default value." The general-use objective (2026-09-03) is
-the frame: single-user shortcuts expire, and a default that only the user's data
-can produce is one.
+the frame: single-user shortcuts expire, and a default that only one account's
+history can produce is one.
 
 ## The case against
 
@@ -102,8 +102,8 @@ Picked by Peter on 2026-09-07, before the code:
 
 1. **Which read does this sharpen?** The cardio-adaptation bands on Home and
    Adaptations through the typed-HR path, and the Profile card.
-2. **What does it let me stop doing?** Deriving a number only the user's data can
-   produce; overwriting a user's number silently.
+2. **What does it let me stop doing?** Deriving a number only one account's
+   history can produce; overwriting a user's number silently.
 3. **Input or destination?** Input — a birth date and an accept button feed an
    existing read.
 4. **Honest shape of the data?** One number per user with its source; a
@@ -119,7 +119,7 @@ Picked by Peter on 2026-09-07, before the code:
 
 - A stale flag when no session in the window comes within 5 % of the number —
   059 decision 5 stands.
-- Per-modality HRmax; syncing the watch's own setting (the user types 196 into
+- Per-modality HRmax; syncing the watch's own setting (the number is typed into
   the Garmin by hand).
 - Reading a typed HR on `intervals` rows; Garmin zones — 059's out-of-scope
   stands.
@@ -131,4 +131,4 @@ Picked by Peter on 2026-09-07, before the code:
 - [x] Profile: a birth date picker; the card shows the estimate / tracker / typed state; the tracker proposal with a **Use N** button; the typed field relabelled — "Another device or a test (bpm)".
 - [x] `resolveHrMax` reads stored ?? formula ?? null; a sync never overwrites a stored number; tests for the formula (age 35 → 184), the proposal rule (no stored number / more than 3 bpm above / lower never), and last write wins — `formulaHrMax`, `ageAt`, `hrMaxProposal` in `src/lib/hrMax.ts`; 12 tests in `hrMax.test.ts` (184 / 180 / 194 by age, the day before a birthday, 192 → offered and 193 → not); the 43 classifier tests unchanged.
 - [x] Inventory row for the formula; ledger D39; the pointer in 059's decisions; `npm run check:docs` passes — rows 6.13–6.14, D37 amended, D39 added; 81 anchors, 76 passed, 0 failed.
-- [x] Browser-checked: the user's card proposes 196; accepting stores it with source `tracker`; with the stored number cleared and a birth date set, the card shows the estimate — headless Chromium 2026-09-07: "No number yet" + the 196 proposal → **Use 196** → "Using 196 bpm from your tracker (Indoor Rowing, 2024-10-25)", no proposal → typed 200 → "Using 200 bpm you typed" → cleared → proposal back → birth date → "Estimated 184 bpm from your age"; the cardio form's hint shows with a typed 150 and no number, and not with the estimate or on an intervals row. The only console error is the known favicon 404. Everything reset to NULL afterwards — the accept is Peter's to click.
+- [x] Browser-checked: the card proposes 196; accepting stores it with source `tracker`; with the stored number cleared and a birth date set, the card shows the estimate — headless Chromium 2026-09-07: "No number yet" + the 196 proposal → **Use 196** → "Using 196 bpm from your tracker (Indoor Rowing, 2024-10-25)", no proposal → typed 200 → "Using 200 bpm you typed" → cleared → proposal back → birth date → "Estimated 184 bpm from your age"; the cardio form's hint shows with a typed 150 and no number, and not with the estimate or on an intervals row. The only console error is the known favicon 404. Everything reset to NULL afterwards — the accept is the user's to click.

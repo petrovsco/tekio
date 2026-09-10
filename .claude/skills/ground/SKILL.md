@@ -245,11 +245,15 @@ design call, a semantic choice, a deliberate non-change) in
 with its load-bearing sources and a link to the full record. Numbers get
 inventory rows; decisions get ledger rows.
 
-**4. the user's own knowledge base** — *only* if the finding is durable life-knowledge
-beyond Tekiō (e.g. "full-blood donation suppresses endurance performance for
-weeks"). Draft it there for `/ingest` → `wiki/health/`. The *why* behind the
-number stays next to the number regardless; the inbox is not a substitute for
-step 2.
+**4. The user's own knowledge base** — *only* if the finding is durable
+life-knowledge beyond Tekiō (e.g. "full-blood donation suppresses endurance
+performance for weeks"). This step is **optional and machine-local**: read
+`~/.claude/modus/personal-os` for a path. If that file is absent — and on most
+machines it is — **skip this step silently**: do not guess a location, do not
+search for one, and never write a resolved path into this repo. Where it does
+exist, leave a draft in that base's inbox for its own ingest step. The *why*
+behind the number stays next to the number regardless; this step is never a
+substitute for step 2.
 
 ### Verdict vocabulary
 

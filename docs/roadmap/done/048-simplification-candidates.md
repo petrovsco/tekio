@@ -1098,7 +1098,7 @@ eleven store lists through `userRows` — 212 weights, 220 cardio, 53 sports, 5
 sport types, 3 mobility, 11 bodyweight, 38 water, 1 donation, 19 sleep, 0 sauna,
 0 cold (the two zeroes are real: no rows exist) — and Home drew its body map,
 readiness gauge and fold tiles unchanged. Writes were tested without disturbing
-the user's data: a cardio row and a sleep row each saved back to their own values
+the live data: a cardio row and a sleep row each saved back to their own values
 and compared identical field-for-field afterwards (`toRow` / `sleepRow` on the
 update path), and one sport row was created, read back and deleted, leaving the
 count at 53 with nothing left behind after a full reload (`toEntry` on the new

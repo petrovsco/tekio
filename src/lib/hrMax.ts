@@ -3,10 +3,10 @@ import { today } from './utils'
 
 // Every number below is docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding.
 
-/** 24 — months of synced rows the observed HRmax is read over; a convention inside 12–36: age moves HRmax ~0.7 bpm/yr (Gellish 2007 — under 1.5 bpm inside the window), training status 3–7 % (Zavorsky 2000), and a shorter window mistakes fewer all-out efforts for drift (Peter's 12-month read is 191, his 24-month read 196), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 24 — months of synced rows the observed HRmax is read over; a convention inside 12–36: age moves HRmax ~0.7 bpm/yr (Gellish 2007 — under 1.5 bpm inside the window), training status 3–7 % (Zavorsky 2000), and a shorter window mistakes fewer all-out efforts for drift (on the development dataset a 12-month read gives 191 against a 24-month read of 196), see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_MAX_WINDOW_MONTHS = 24
 
-/** 3 — bpm a second session must come within for a session max to count: the observed HRmax is a replicated peak, never the single highest reading, because a wrist-optical spike can sit 20 bpm above anything a second session reaches (Navalta 2020: limits of agreement −32 to +162 bpm; Peter's 214) and Garmin's auto-detect ratchets to any such reading; a chest strap's precision plus day-to-day noise, a convention, see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
+/** 3 — bpm a second session must come within for a session max to count: the observed HRmax is a replicated peak, never the single highest reading, because a wrist-optical spike can sit 20 bpm above anything a second session reaches (Navalta 2020: limits of agreement −32 to +162 bpm; a 214 appears in the development dataset) and Garmin's auto-detect ratchets to any such reading; a chest strap's precision plus day-to-day noise, a convention, see docs/roadmap/done/059-profile-hrmax-typed-hr-path.md#grounding */
 export const HR_MAX_REPLICATION_BPM = 3
 
 /** The observed HRmax and the session that set it. */

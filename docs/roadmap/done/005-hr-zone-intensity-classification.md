@@ -10,7 +10,7 @@
 - 2026-09-05 — Committed to 2.1.0 by Peter. Kickoff = a `/ground` run on rows 6.1–6.5 plus the two unindexed rules, then the classifier.
 - 2026-09-06 (day) — Data condition met: the whole Garmin history (277 sessions, all with Training Effect, 124 with HR zones) sits in the gitignored `scripts/garmin-sync/dumps/`; since 054 (v2.0.17) the 220 cardio sessions are in `cardio_sessions` with `format = 'intervals'` on the 63 HIIT ones.
 - 2026-09-06 (evening) — Picked up. Two science-scout runs — A: the intensity criterion for a session with Garmin data; B: the fallback with none — landed in [grounding/005](../../grounding/005-hr-zone-intensity-classification.md#grounding) after every citation passed eutils / Crossref. Classifier rewritten on them (v2.0.23), tests moved, the dump re-run (§Result). Inventory rows 6.1–6.7, ledger D33–D36.
-- 2026-09-07 — Fork 1 → **(b)** on Peter's call: tempo / lactate-threshold runs credit endurance (`THRESHOLD_LABELS` deleted, row 6.6 retired, D34 amended, 039 S9 carries a boundary note; 42 runs and 3 rides regain credit, §Result). HRmax: Peter sets the watch to 185 (220 − 35) and lets Garmin's auto-detect follow (v2.0.24). Next: bout length.
+- 2026-09-07 — Fork 1 → **(b)** on Peter's call: tempo / lactate-threshold runs credit endurance (`THRESHOLD_LABELS` deleted, row 6.6 retired, D34 amended, 039 S9 carries a boundary note; 42 runs and 3 rides regain credit, §Result). HRmax: the watch is set from the 220 − age default and Garmin's auto-detect follows (v2.0.24). Next: bout length.
 - 2026-09-07 (later) — Bout length: `cardio_sessions.bout_seconds` (migration applied), `CardioEntry.boutSeconds`, a Bout (MM:SS) field in the log form and the edit modal shown only when format = intervals (P1), `ANAEROBIC_BOUT_MAX_S = 120` decides first on an intervals row (inventory 6.8, D34). `analyze_dump.py` projects the name-based backfill: 43 `[N4x4]` → VO₂max, 19 EMOM / `[4x60]` → anaerobic (v2.0.25).
 - 2026-09-07 (evening) — Name-based backfill run on Peter's go: 43 rows → 240 s, 19 → 60 s, the one "HIIT - Custom" stays NULL. The anaerobic read moves from "767 d ago" (the tie-break row) to "354 d ago" (`[4x60] Slam/Jump`, 2025-09-18). Peter asked for threshold sessions to be labelled → [057](057-threshold-sessions-labelled.md) (v2.0.26).
 - 2026-09-07 (night) — The typed-splits probe answered itself from the 2026-09-06 dump: the activity *summary* already carries `splitSummaries`, and every one of the 63 HIIT activities has an `INTERVAL_ACTIVE` entry (count + total seconds), so the bout is total ÷ count with no second call. The sync now fills `bout_seconds` from it (`_bout_seconds`, `analyze_dump.py` mirrors it); the claim rule fills an empty manual bout and never overwrites a typed one. Measured vs name-based on the 63 rows: 54 identical, 9 moved (§What remains). Verdicts unchanged: 43 VO₂max + 20 anaerobic (v2.0.27).
@@ -40,7 +40,7 @@ today:
   anaerobic` (rows 6.1, 6.2); a sport row with no duration is VO₂max (6.5).
 
 Neither set of rules has been grounded, and the 2026-09-06 history dump
-(below) shows both misreading the user's own sessions.
+(below) shows both misreading real logged sessions.
 
 ## Evidence — the Garmin history against the current rules (2026-09-06)
 
@@ -181,8 +181,8 @@ the HRmax item below.
   [058](058-garmin-data-on-sport-rows.md).**
 - **The typed-HR path for manual steady rows.** Grounded in run B (≤ ~83 %
   HRmax endurance, ≥ ~89–90 % VO₂max) but the app holds no profile HRmax. The
-  watch's HRmax is settled — Peter sets it to 185 (220 − 35, 2026-09-07) and
-  lets Garmin's auto-detect raise it; a running spike of 214 had likely set it
+  watch's HRmax is settled — it was set from the 220 − age default on
+  2026-09-07 and Garmin's auto-detect raises it; a running spike of 214 had likely set it
   too high, which is why 0 of 277 sessions reached 8 min in Z5. An in-app
   HRmax is a number with physiological meaning, so it needs a `/ground` run
   (220 − age vs Tanaka 2001 vs the observed peak) before the path is built.
@@ -206,7 +206,7 @@ the HRmax item below.
 - [x] Bout length on intervals rows: `bout_seconds` column, a Bout (MM:SS) field shown only when format = intervals, `ANAEROBIC_BOUT_MAX_S = 120` decides first on an intervals row (v2.0.25, 2026-09-07).
 - [x] All 63 synced HIIT rows carry a bout — name-based backfill on Peter's go (2026-09-07), replaced by the measured value from the splits the same night (9 rows moved, no verdict changed).
 - [x] New synced intervals rows get a bout: the sync reads it off the summary's `INTERVAL_ACTIVE` split — measured, no second call (v2.0.27, 2026-09-07).
-- [x] Peter: the watch's HRmax set — 185 (220 − 35), Garmin's auto-detect follows (2026-09-07).
+- [x] Peter: the watch's HRmax set from the 220 − age default, Garmin's auto-detect follows (2026-09-07).
 - [x] Peter: fork 1 decided and recorded here — (b), 2026-09-07; shipped in v2.0.24.
 
 Split out on 2026-09-07 (Peter's call), each now its own brief with its own
