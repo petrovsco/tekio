@@ -26,6 +26,7 @@ npm-debug.log*
 *.tsbuildinfo
 
 # Playwright ad-hoc tests (gitignored, used with MCP)
+.playwright-mcp/
 playwright-tests/
 
 # Python (garmin-sync scripts run in CI; these are local-only artifacts)
