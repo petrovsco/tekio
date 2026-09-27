@@ -90,6 +90,7 @@ HIIT_TYPE_KEY = "hiit"
 # activity go in here (run with DRY_RUN=true to see what is being skipped).
 SPORT_TYPE_KEYS = {
     "tennis_v2": "Tennis",  # Garmin's key for tennis since its 2023 rework (10-year dry run, 2026-09-06)
+    "volleyball": "Volleyball",  # skipped as unmapped ×3 on the 30-day run of 2026-09-27
 }
 
 # Activity types that stay out by decision, not for want of a mapping — a dry

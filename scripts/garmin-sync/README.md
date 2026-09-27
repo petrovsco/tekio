@@ -19,7 +19,7 @@ data and upsert it into Supabase:
     length the watch's timer measured, read off the summary's
     `INTERVAL_ACTIVE` split (total ÷ count; roadmap 005) — which the app reads
     first: ≤ 120 s is anaerobic capacity, longer is VO₂max.
-  - sport (tennis, …) → `sport_sessions`, with duration, avg HR and — since
+  - sport (tennis, volleyball, …) → `sport_sessions`, with duration, avg HR and — since
     roadmap 058 — the same Training Effect + HR zones a cardio row gets, so
     the app classifies a synced match by the same rules instead of by
     convention (a row synced before those columns existed is backfilled by
@@ -135,6 +135,10 @@ gh run watch   # then read the log
 # do it
 gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport
 ```
+
+The sleep workflow takes one input, `days` (trailing nights, default 3), for
+the same purpose: `gh workflow run garmin-sleep-sync.yml -f days=17` refills a
+gap after the sync has been down.
 
 A cardio backfill is the same shape (`kinds=cardio`): a run logged by hand
 before the sync existed is claimed by the Garmin activity on that date, not

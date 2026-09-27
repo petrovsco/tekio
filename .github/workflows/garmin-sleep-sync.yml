@@ -8,6 +8,10 @@ on:
     # 09:00 UTC daily (~10–11 Europe local) — the overnight watch sync has landed by then.
     - cron: '0 9 * * *'
   workflow_dispatch: # manual "Run workflow" button for testing / backfill
+    inputs:
+      days:
+        description: 'Trailing nights to sync (raise for a backfill)'
+        default: '3'
 
 concurrency:
   group: garmin-sleep-sync
@@ -33,4 +37,5 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           TEKIO_USER_ID: ${{ secrets.TEKIO_USER_ID }}
-          SYNC_DAYS: '3'
+          # `inputs` is empty on the schedule, so this falls back to the daily default.
+          SYNC_DAYS: ${{ inputs.days || '3' }}
