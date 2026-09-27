@@ -109,7 +109,7 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 | Secret | Value |
 | --- | --- |
 | `GARMIN_TOKENSTORE` | the JSON blob from step 1 (bootstrap only — the live token then lives in Supabase) |
-| `SUPABASE_URL` | `https://snpjfzfqjwkdwzzqfhsz.supabase.co` |
+| `SUPABASE_URL` | Supabase → Project Settings → API → **Project URL** (`https://<project-ref>.supabase.co`) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API → **service_role** key (server-side only) |
 | `TEKIO_USER_ID` | the `USER_ID` from `src/constants/app.ts` |
 

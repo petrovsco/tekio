@@ -1,6 +1,6 @@
 # Supabase
 
-The production database — project ref **`snpjfzfqjwkdwzzqfhsz`** ("Tekiō") — is
+The production database — project named "Tekiō" (its ref, `<project-ref>` below, is in the dashboard URL and in `VITE_SUPABASE_URL`) — is
 the single source of truth (single-user app, live data, no sandbox). Schema
 changes **are** tracked server-side (`supabase migration list` shows the full
 history), but were historically applied directly via the dashboard / MCP and
@@ -18,7 +18,7 @@ Requires the project's access token + DB password, so run this locally:
 
 ```bash
 supabase login                                   # or export SUPABASE_ACCESS_TOKEN
-supabase link --project-ref snpjfzfqjwkdwzzqfhsz
+supabase link --project-ref <project-ref>
 supabase db pull                                 # → supabase/migrations/<ts>_remote_schema.sql
 git add supabase/migrations && git commit -m "Baseline DB schema"
 ```
@@ -120,7 +120,7 @@ Without the CLI, the Management API takes the same shape — note that the
 entrypoint is the nested path, not `index.ts`:
 
 ```bash
-curl -X POST "https://api.supabase.com/v1/projects/snpjfzfqjwkdwzzqfhsz/functions/deploy?slug=assistant-chat" \
+curl -X POST "https://api.supabase.com/v1/projects/<project-ref>/functions/deploy?slug=assistant-chat" \
   -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" \
   -F 'metadata={"entrypoint_path":"assistant-chat/index.ts","name":"assistant-chat","verify_jwt":false};type=application/json' \
   -F "file=@supabase/functions/assistant-chat/index.ts;filename=assistant-chat/index.ts" \
