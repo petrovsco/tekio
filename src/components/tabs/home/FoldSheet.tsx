@@ -43,7 +43,7 @@ export function WaterCapture() {
   return (
     <div>
       <div className="flex gap-1.5 flex-wrap">
-        {[100, 250, 500].map(ml => (
+        {[50, 200, 500].map(ml => (
           <Chip key={ml} onClick={() => addWaterEntry({ date: today(), amountMl: ml })}>
             +{ml} ml
           </Chip>
