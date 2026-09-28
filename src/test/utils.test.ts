@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePace, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -186,31 +186,44 @@ describe('rollupCardio', () => {
   it('returns nothing for no sessions', () => {
     expect(rollupCardio([], 'month')).toEqual([])
   })
+
+  it('weights average heart rate by minutes, over the sessions that carry both', () => {
+    // 30 min at 120 and 90 min at 160: a plain mean says 140, the minutes say
+    // (3600 + 14400) / 120 = 150. The third session has no heart rate and the
+    // fourth no duration, so neither moves the average — both are counted.
+    const rows = rollupCardio([
+      { date: '2026-03-02', duration: 30, avgHr: 120 },
+      { date: '2026-03-04', duration: 90, avgHr: 160 },
+      { date: '2026-03-05', duration: 45 },
+      { date: '2026-03-06', avgHr: 180 },
+    ], 'month')
+    expect(rows).toEqual([{ key: '2026-03', sessions: 4, duration: 165, avgHr: 150 }])
+  })
 })
 
-describe('hasLonePace', () => {
+describe('hasLonePoint', () => {
   const paced = (key: string) => ({ key, sessions: 1, duration: 30, distance: 5, pace: 6 })
   const empty = (key: string) => ({ key, sessions: 0, duration: 0 })
   const bare = (key: string) => ({ key, sessions: 1, duration: 30 })
 
   it('is true for a paced bucket with a hole on both sides, at the edges too', () => {
     const rows = [paced('2026-01'), empty('2026-02'), paced('2026-03'), empty('2026-04'), paced('2026-05')]
-    expect(rows.map((_, i) => hasLonePace(rows, i))).toEqual([true, false, true, false, true])
+    expect(rows.map((_, i) => hasLonePoint(rows, i, 'pace'))).toEqual([true, false, true, false, true])
   })
 
   it('is false for a paced bucket joined to a neighbour', () => {
     const rows = [paced('2026-01'), paced('2026-02'), empty('2026-03')]
-    expect(rows.map((_, i) => hasLonePace(rows, i))).toEqual([false, false, false])
+    expect(rows.map((_, i) => hasLonePoint(rows, i, 'pace'))).toEqual([false, false, false])
   })
 
   it('treats a bucket of sessions without distance as a hole', () => {
     const rows = [paced('2026-01'), bare('2026-02'), paced('2026-03')]
-    expect(rows.map((_, i) => hasLonePace(rows, i))).toEqual([true, false, true])
+    expect(rows.map((_, i) => hasLonePoint(rows, i, 'pace'))).toEqual([true, false, true])
   })
 
   it('is lone for a single paced bucket, and false with no buckets at all', () => {
-    expect(hasLonePace([paced('2026-01')], 0)).toBe(true)
-    expect(hasLonePace([], 0)).toBe(false)
+    expect(hasLonePoint([paced('2026-01')], 0, 'pace')).toBe(true)
+    expect(hasLonePoint([], 0, 'pace')).toBe(false)
   })
 })
 

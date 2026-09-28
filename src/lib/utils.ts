@@ -1,6 +1,6 @@
 import type {
   WeightEntry, Program, ProgramDay, ProgramDayBlock, ProgramWeekOverride, MobilityEntry,
-  DayOfWeek, ExerciseMuscleLink, LiftSet, CardioEntry,
+  DayOfWeek, ExerciseMuscleLink, LiftSet,
 } from '../types'
 import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR, DAYS_OF_WEEK } from '../constants/app'
 
@@ -552,14 +552,17 @@ export const grainForFrame = (frame: TimeFrame): CardioGrain =>
 
 /** One week or month of cardio, summed. `key` is the week's start date
  *  (YYYY-MM-DD) or the month (YYYY-MM). `distance` and `pace` are absent when
- *  no session in the bucket carried a distance; an empty bucket has
- *  `sessions: 0` and `duration: 0`. */
+ *  no session in the bucket carried a distance, `avgHr` when none carried a
+ *  heart rate and a duration; an empty bucket has `sessions: 0` and
+ *  `duration: 0`. A per-session point built by the caller may leave
+ *  `duration` out: a hand-logged sport session need not state one. */
 export interface CardioBucket {
   key: string
   sessions: number
-  duration: number
+  duration?: number
   distance?: number
   pace?: number
+  avgHr?: number
 }
 
 const nextBucketKey = (key: string, grain: 'week' | 'month'): string => {
@@ -577,23 +580,32 @@ const nextBucketKey = (key: string, grain: 'week' | 'month'): string => {
  *  so a gap in training draws as a gap rather than a trend that never happened
  *  (P2). Pace is summed minutes over summed km across the sessions that have a
  *  distance — distance-weighted, so a 3 km jog does not count as much as a
- *  20 km run. Weeks key by `weekKey`, so they match the sport card's. */
+ *  20 km run. Average heart rate is weighted the same way by minutes, across
+ *  the sessions that carry both, so a 10-minute warm-up does not count as much
+ *  as a 90-minute match. Weeks key by `weekKey`, so they match the sport
+ *  card's. Sport sessions go through here too (roadmap 076), which is why a
+ *  duration may be absent: it counts the session and adds no minutes. */
 export function rollupCardio(
-  sessions: Pick<CardioEntry, 'date' | 'duration' | 'distance'>[],
+  sessions: { date: string; duration?: number; distance?: number; avgHr?: number }[],
   grain: 'week' | 'month',
   weekStart: WeekStartDay = 'monday',
 ): CardioBucket[] {
   if (sessions.length === 0) return []
   const keyOf = (date: string) => grain === 'month' ? date.slice(0, 7) : weekKey(date, weekStart)
-  const sums = new Map<string, { sessions: number; duration: number; distance: number; distDuration: number }>()
+  const sums = new Map<string, { sessions: number; duration: number; distance: number; distDuration: number; hrMinutes: number; hrDuration: number }>()
   for (const s of sessions) {
     const k = keyOf(s.date)
-    const b = sums.get(k) ?? { sessions: 0, duration: 0, distance: 0, distDuration: 0 }
+    const b = sums.get(k) ?? { sessions: 0, duration: 0, distance: 0, distDuration: 0, hrMinutes: 0, hrDuration: 0 }
+    const duration = s.duration ?? 0
     b.sessions += 1
-    b.duration += s.duration
+    b.duration += duration
     if (s.distance) {
       b.distance += s.distance
-      b.distDuration += s.duration
+      b.distDuration += duration
+    }
+    if (s.avgHr && duration > 0) {
+      b.hrMinutes += s.avgHr * duration
+      b.hrDuration += duration
     }
     sums.set(k, b)
   }
@@ -613,14 +625,16 @@ export function rollupCardio(
       ...(b.distance > 0
         ? { distance: +b.distance.toFixed(2), pace: +(b.distDuration / b.distance).toFixed(2) }
         : {}),
+      ...(b.hrDuration > 0 ? { avgHr: Math.round(b.hrMinutes / b.hrDuration) } : {}),
     })
   }
   return out
 }
 
-/** A pace bucket with no paced neighbour has no segment: Recharts joins
- *  adjacent non-null points only, and the rollup keeps empty buckets as holes
- *  on purpose (P2). Such a point is drawn as a dot or it is invisible — the
- *  one exception to §9's "no resting dots" (roadmap 056). */
-export const hasLonePace = (buckets: CardioBucket[], i: number): boolean =>
-  buckets[i]?.pace != null && buckets[i - 1]?.pace == null && buckets[i + 1]?.pace == null
+/** A second-series bucket (pace, or average heart rate) with no neighbour
+ *  carrying the same series has no segment: Recharts joins adjacent non-null
+ *  points only, and the rollup keeps empty buckets as holes on purpose (P2).
+ *  Such a point is drawn as a dot or it is invisible — the one exception to
+ *  §9's "no resting dots" (roadmap 056). */
+export const hasLonePoint = (buckets: CardioBucket[], i: number, field: 'pace' | 'avgHr'): boolean =>
+  buckets[i]?.[field] != null && buckets[i - 1]?.[field] == null && buckets[i + 1]?.[field] == null

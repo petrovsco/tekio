@@ -10,15 +10,7 @@ import { Icon } from '../../ui/Icon'
 import { MicroLabel } from '../../ui/Badges'
 import { RatingRead } from '../../ui/Fields'
 import type { CardioEntry, SportEntry } from '../../../types'
-
-/**
- * One history for both capture paths. A sport session is cardio stimulus, so
- * "what did I do this week" is one list — the doctrine fold that actually
- * changes a read, rather than two tabs stacked behind a toggle.
- */
-type Session =
-  | { kind: 'cardio'; entry: CardioEntry }
-  | { kind: 'sport'; entry: SportEntry }
+import { lensSessions, sessionLabel, type Lens, type Session } from './lens'
 
 /** Garmin's Training-Effect label (e.g. "VO2MAX", "AEROBIC_BASE") → readable text. */
 function prettyTeLabel(label: string): string {
@@ -30,13 +22,7 @@ function prettyTeLabel(label: string): string {
   return titled.replace(/Vo2max/i, 'VO₂max').replace(/Vo2/i, 'VO₂')
 }
 
-function sessionDate(s: Session): string {
-  return s.entry.date
-}
-
-function sessionLabel(s: Session): string {
-  return s.kind === 'cardio' ? s.entry.type : s.entry.sport
-}
+const sessionDate = (s: Session): string => s.entry.date
 
 function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
   const removeCardioEntry = useAppStore(s => s.removeCardioEntry)
@@ -137,31 +123,35 @@ function SportRow({ d }: { d: SportEntry }) {
   )
 }
 
-export function SessionList() {
+/**
+ * The history for what the lens admits (roadmap 076). Under All it is one
+ * list for both capture paths: a sport session is cardio stimulus, so "what
+ * did I do this week" is one list, and the icon on each row says which kind
+ * it is.
+ */
+export function SessionList({ lens }: { lens: Lens }) {
   const cardio = useAppStore(s => s.cardio)
   const sports = useAppStore(s => s.sports)
   // Read once for the whole list: the observed peak walks every synced row, so
   // a per-row hook would repeat that work for each row drawn.
   const { hrMax } = useHrMax()
 
-  const merged: Session[] = [
-    ...cardio.map(entry => ({ kind: 'cardio' as const, entry })),
-    ...sports.map(entry => ({ kind: 'sport' as const, entry })),
-  ].sort((a, b) => sessionDate(b).localeCompare(sessionDate(a)))
-
-  const sportNames = uniqSorted(sports.map(d => d.sport))
+  const sessions = lensSessions(cardio, sports, lens)
+  const sportNames = lens === 'cardio' ? [] : uniqSorted(sports.map(d => d.sport))
 
   return (
     <Card>
       <SecTitle>Sessions</SecTitle>
       <HistoryList
-        items={merged}
+        // A filter picked under one lens may name nothing under the next.
+        key={lens}
+        items={sessions}
         getDate={sessionDate}
         // Swimming is a cardio type and a sport; one filter entry covers both rows.
-        categories={[...new Set<string>([...CARDIO_TYPES, ...sportNames])]}
+        categories={[...new Set<string>([...(lens === 'sport' ? [] : CARDIO_TYPES), ...sportNames])]}
         categoryLabel="Type"
         matchesCategory={(s, cat) => sessionLabel(s) === cat}
-        emptyMessage="No sessions yet"
+        emptyMessage={lens === 'all' ? 'No sessions yet' : `No ${lens} sessions yet`}
         renderItem={s => s.kind === 'cardio'
           ? <CardioRow key={`c-${s.entry.id}`} d={s.entry} hrMax={hrMax} />
           : <SportRow key={`s-${s.entry.id}`} d={s.entry} />
