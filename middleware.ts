@@ -14,62 +14,77 @@ import { next } from '@vercel/edge'
 
 const COOKIE = 'tekio_stg'
 
+// The gate is the first screen anyone sees, so it speaks the app's visual
+// language (tekio.rfcs/design-system.md): paper ground, one white card, the
+// TEKIŌ wordmark, fields and a solid-ink commit per §8. It is plain inline CSS
+// because the app's stylesheet sits behind this gate too.
 const loginPage = (error = false) => `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#faf9f7">
   <title>Tekiō — Sign in</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       min-height: 100svh;
       display: flex; align-items: center; justify-content: center;
-      background: #f1f5f9;
-      font-family: system-ui, -apple-system, sans-serif;
+      padding: 16px;
+      background: #faf9f7; color: #1a1a1a;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
     .card {
+      width: min(320px, 100%);
       background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 36px 32px;
-      width: min(340px, calc(100vw - 32px));
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border: 1px solid #e2e2e0;
+      border-radius: 3px;
+      padding: 20px 16px 16px;
     }
-    h1 { color: #1e293b; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 28px; letter-spacing: -0.3px; }
-    label { display: block; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+    .mark { font-size: 15px; font-weight: 700; letter-spacing: 0.14em; }
+    .sub { font-size: 12px; line-height: 1.4; color: #6b6b6b; margin-top: 4px; }
+    .rule { height: 1px; background: #eeeeec; margin: 16px 0; }
+    label {
+      display: block; margin-bottom: 4px;
+      font-size: 9px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.12em; color: #8a8a8a;
+    }
     input {
-      display: block; width: 100%;
-      padding: 10px 12px;
-      background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px;
-      color: #1e293b; font-size: 15px;
-      outline: none; margin-bottom: 18px;
-      transition: border-color 0.15s;
+      display: block; width: 100%; margin-bottom: 12px;
+      padding: 8px 10px;
+      background: #ffffff; color: #1a1a1a;
+      border: 1px solid #e2e2e0; border-radius: 3px;
+      font: inherit; font-size: 16px; /* 16px keeps iOS from zooming the field */
+      outline: none;
     }
-    input:focus { border-color: #6366f1; }
+    input:focus { border-color: #1a1a1a; }
     button {
-      width: 100%; padding: 11px;
-      background: #6366f1; color: #ffffff;
-      border: none; border-radius: 8px;
-      font-size: 15px; font-weight: 600; cursor: pointer;
-      transition: opacity 0.15s;
+      width: 100%; margin-top: 4px; padding: 9px 12px;
+      background: #1a1a1a; color: #ffffff;
+      border: 1px solid #1a1a1a; border-radius: 3px;
+      font: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
     }
-    button:hover { opacity: 0.88; }
-    .err { color: #ef4444; font-size: 13px; text-align: center; margin-bottom: 16px; }
+    button:hover { background: #333333; }
+    button:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 2px; }
+    .err { font-size: 11px; line-height: 1.4; color: #c2410c; margin-bottom: 12px; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Tekiō</h1>
-    ${error ? '<p class="err">Incorrect credentials — try again.</p>' : ''}
+  <main class="card">
+    <div class="mark">TEKIŌ</div>
+    <p class="sub">Private build. Sign in to continue.</p>
+    <div class="rule"></div>
+    ${error ? '<p class="err" role="alert">Incorrect credentials — try again.</p>' : ''}
     <form method="POST">
       <label for="u">Username</label>
-      <input id="u" type="text" name="u" autocomplete="username" autofocus>
+      <input id="u" type="text" name="u" autocomplete="username" autocapitalize="none" spellcheck="false" autofocus>
       <label for="p">Password</label>
       <input id="p" type="password" name="p" autocomplete="current-password">
       <button type="submit">Sign in</button>
     </form>
-  </div>
+  </main>
 </body>
 </html>`
 
