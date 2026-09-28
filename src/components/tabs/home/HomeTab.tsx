@@ -14,6 +14,7 @@ import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adap
 import { coverageLine } from '../adaptations/labels'
 import { Icon } from '../../ui/Icon'
 import type { FoldKind } from './FoldSheet'
+import type { WholeBodyQuality } from './QualitySheet'
 
 // The fused Home read (roadmap 010/018, design-system.md, language SIGNAL).
 // Everything here is T1: the whole five-second answer and nothing else — no
@@ -23,8 +24,9 @@ import type { FoldKind } from './FoldSheet'
 const FoldSheet = lazy(() => import('./FoldSheet'))
 const MuscleSheet = lazy(() => import('./MuscleSheet'))
 const RecoverySheet = lazy(() => import('./RecoverySheet'))
+const QualitySheet = lazy(() => import('./QualitySheet'))
 
-type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true }
+type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true } | { quality: WholeBodyQuality }
 
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
@@ -133,6 +135,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     import('./FoldSheet')
     import('./MuscleSheet')
     import('./RecoverySheet')
+    import('./QualitySheet')
   }
 
   const states = useMemo(
@@ -292,7 +295,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
           <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
-          {/* sauna / cold / manual sleep live behind this tap — the card that
+          {/* water / sauna / cold / manual sleep live behind this tap — the card that
               raises "can I push?" is where the input belongs (P1) */}
           <span
             aria-hidden
@@ -363,7 +366,12 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           {qualityTiles.map(q => (
-            <div key={q.key} className="border border-line rounded-sm px-[5px] pt-1 pb-[5px]">
+            <button
+              key={q.key}
+              onClick={() => setSheet({ quality: q.key })}
+              aria-label={`${q.name} sessions, last ${MUSCLE_WINDOW_DAYS} days`}
+              className="border border-line rounded-sm px-[5px] pt-1 pb-[5px] text-left cursor-pointer"
+            >
               <div className="flex items-center gap-1">
                 <svg width="8" height="8" aria-hidden>
                   <rect x="0.5" y="0.5" width="7" height="7" rx="1" fill={q.fill} stroke={q.edge} />
@@ -371,7 +379,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
                 <span className="text-[9px] font-bold tracking-[0.02em]">{q.name}</span>
               </div>
               <div className="text-[9px] text-ink-2 mt-0.5">{q.note}</div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -396,7 +404,15 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           ? <FoldSheet kind={sheet.fold} onClose={() => setSheet(null)} />
           : 'recovery' in sheet
             ? <RecoverySheet onClose={() => setSheet(null)} />
-            : (
+            : 'quality' in sheet
+              ? (
+                <QualitySheet
+                  quality={sheet.quality}
+                  sessionTarget={coverage[sheet.quality].sessionTarget}
+                  onClose={() => setSheet(null)}
+                />
+              )
+              : (
               <MuscleSheet
                 muscle={sheet.muscle}
                 onClose={() => setSheet(null)}

@@ -31,7 +31,9 @@ export default function FoldSheet({ kind, onClose }: FoldSheetProps) {
   )
 }
 
-function WaterCapture() {
+/** Also rendered by RecoverySheet: WATER is a column on the readiness card,
+ *  so the card's own sheet has to take it too. */
+export function WaterCapture() {
   const water = useAppStore(s => s.water)
   const addWaterEntry = useAppStore(s => s.addWaterEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
