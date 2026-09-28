@@ -53,7 +53,7 @@ export function CardioLogForm() {
         />
         <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
         <Inp
-          label="Duration (MM:SS)"
+          label="Duration (H:MM:SS)"
           type="text"
           value={duration}
           onChange={e => setDuration(e.target.value)}

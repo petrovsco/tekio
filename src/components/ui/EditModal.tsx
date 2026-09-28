@@ -244,7 +244,7 @@ function CardioForm({ record, onClose }: FormProps<CardioEntry>) {
         />
         <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
         <Inp
-          label="Duration (MM:SS)"
+          label="Duration (H:MM:SS)"
           type="text"
           value={duration}
           onChange={e => setDuration(e.target.value)}
@@ -459,7 +459,7 @@ function SportForm({ record, onClose }: FormProps<SportEntry>) {
 
       <div className="grid grid-cols-2 gap-2.5">
         <Inp
-          label="Duration (MM:SS, opt.)"
+          label="Duration (H:MM:SS, opt.)"
           type="text"
           value={duration}
           onChange={e => setDuration(e.target.value)}

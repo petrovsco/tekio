@@ -114,7 +114,7 @@ export function SportLogForm() {
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           <Inp
-            label="Duration (MM:SS, opt.)"
+            label="Duration (H:MM:SS, opt.)"
             type="text"
             value={duration}
             onChange={e => setDuration(e.target.value)}

@@ -303,23 +303,25 @@ export function isSetPR(set: { weight: number; reps: number }, history: { weight
 
 // ── Cardio duration helpers ───────────────────────────────────────────────────
 
-/** Parses "MM:SS" or plain minutes string → decimal minutes */
+/** Parses "H:MM:SS", "MM:SS" or plain minutes string → decimal minutes */
 export function parseDurationMins(raw: string): number {
   const s = raw.trim()
   if (s.includes(':')) {
-    const [mStr, sStr] = s.split(':')
-    const m = parseInt(mStr, 10) || 0
-    const sec = Math.min(parseInt(sStr, 10) || 0, 59)
-    return m + sec / 60
+    const parts = s.split(':').map(p => parseInt(p, 10) || 0)
+    const [h, m, sec] = parts.length >= 3 ? parts : [0, parts[0], parts[1]]
+    return h * 60 + m + Math.min(sec, 59) / 60
   }
   return parseFloat(s) || 0
 }
 
-/** Formats decimal minutes → "MM:SS" */
+/** Formats decimal minutes → "H:MM:SS", or "M:SS" under an hour. Rounds to
+ *  the whole second first, so 59.999 min reads 1:00:00, never 59:60. */
 export function formatDurationMins(mins: number): string {
-  const m = Math.floor(mins)
-  const s = Math.round((mins - m) * 60)
-  return `${m}:${String(s).padStart(2, '0')}`
+  const total = Math.round(mins * 60)
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = String(total % 60).padStart(2, '0')
+  return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`
 }
 
 /** Returns pace string "M:SS/km" or empty string if data missing */

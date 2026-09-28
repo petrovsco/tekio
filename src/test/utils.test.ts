@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -640,5 +640,28 @@ describe('weightsPickerNames', () => {
 
   it('is empty when nothing is logged and nothing is mapped', () => {
     expect(weightsPickerNames([], [])).toEqual([])
+  })
+})
+
+describe('formatDurationMins / parseDurationMins', () => {
+  it('drops the hour under 60 minutes', () => {
+    expect(formatDurationMins(42.5)).toBe('42:30')
+    expect(formatDurationMins(0.25)).toBe('0:15')
+  })
+  it('shows H:MM:SS from an hour up', () => {
+    expect(formatDurationMins(60)).toBe('1:00:00')
+    expect(formatDurationMins(95 + 7 / 60)).toBe('1:35:07')
+  })
+  it('rounds to the second without ever printing :60', () => {
+    expect(formatDurationMins(59.9999)).toBe('1:00:00')
+    expect(formatDurationMins(4.9999)).toBe('5:00')
+  })
+  it('round-trips what it prints', () => {
+    for (const mins of [0.5, 42.5, 60, 95 + 7 / 60, 150])
+      expect(parseDurationMins(formatDurationMins(mins))).toBeCloseTo(mins, 5)
+  })
+  it('still reads plain minutes and MM:SS', () => {
+    expect(parseDurationMins('45')).toBe(45)
+    expect(parseDurationMins('12:30')).toBe(12.5)
   })
 })
