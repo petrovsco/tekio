@@ -5,6 +5,9 @@ import { Icon } from '../../ui/Icon'
 // The SIGNAL bottom sheet (design-system §§2, 8): T2 capture and drill-ins
 // open over a scrim so the T1 read never reflows (P1). The old ui/Modal stays
 // on the old language for the unrestyled tabs — this is its Home counterpart.
+// From `sm` up it is a centred card instead, the same breakpoint and geometry
+// as ui/Modal: a sheet stretched edge to edge on a desktop reads as one long
+// line per row, and the grab handle means nothing without a thumb.
 
 interface BottomSheetProps {
   onClose: () => void
@@ -27,14 +30,19 @@ export function BottomSheet({ onClose, label, children }: BottomSheetProps) {
   }, [onClose])
 
   return createPortal(
-    <div className="fixed inset-0 z-[200]" role="dialog" aria-modal="true" aria-label={label}>
+    <div
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={label}
+    >
       <div className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" onClick={onClose} />
       <div
-        className="absolute bottom-0 left-0 right-0 bg-white text-ink border-t-2 border-ink rounded-t-[6px] max-h-[85vh] overflow-y-auto overflow-x-hidden px-4 pt-[10px]"
+        className="relative w-full min-w-0 sm:max-w-[480px] bg-white text-ink border-t-2 sm:border-2 border-ink rounded-t-[6px] sm:rounded-[6px] max-h-[85vh] overflow-y-auto overflow-x-hidden px-4 pt-[10px] sm:pt-4"
         // safe-area-inset-bottom has no utility class in this app — inline it.
         style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
       >
-        <div className="w-[34px] h-[3px] bg-chrome rounded-[2px] mx-auto mb-[10px]" />
+        <div className="sm:hidden w-[34px] h-[3px] bg-chrome rounded-[2px] mx-auto mb-[10px]" />
         {children}
       </div>
     </div>,
