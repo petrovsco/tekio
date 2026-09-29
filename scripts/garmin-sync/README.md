@@ -120,8 +120,35 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 
 Actions tab → **Garmin sleep sync** / **Garmin activity sync** → **Run workflow**.
 Check the logs, then confirm rows landed in `sleep_logs` / `cardio_sessions` /
-`sport_sessions`. After that they run daily (sleep 09:00 UTC, activities 02:00
-UTC = 5 AM Bulgaria).
+`sport_sessions`. After that they run daily — see step 4.
+
+### 4. Start them on time
+
+GitHub's `schedule:` trigger is best-effort and has started these jobs hours
+late, so the daily run is started from the database instead (RFC 0077). Two
+`pg_cron` jobs call `public.dispatch_garmin_sync()`
+([migration](../../supabase/migrations/20260929080000_garmin_sync_dispatch_cron.sql)),
+which asks GitHub for a `workflow_dispatch` on `develop`: activities at
+**08:00 Europe/Sofia**, sleep at **08:10** — apart, because both rotate the
+same Garmin token. Each job is scheduled at 05 and 06 UTC and the function keeps
+the slot that is 08 in Sofia, so daylight saving needs no edit. The workflows'
+own cron lines stay as a fallback (activities 02:00 UTC, sleep 09:00 UTC); a
+second run changes nothing.
+
+The dispatch needs a GitHub token in Supabase Vault:
+
+1. GitHub → **Settings → Developer settings → Fine-grained tokens → Generate**.
+   Repository access: only `petrovsco/tekio`. Permissions: **Actions: Read and
+   write**. Pick the longest expiry you are comfortable with and note the date.
+2. Supabase → SQL editor, run once:
+   ```sql
+   select vault.create_secret('<the token>', 'github_actions_dispatch_token');
+   ```
+   To replace an expired one:
+   `select vault.update_secret((select id from vault.secrets where name = 'github_actions_dispatch_token'), '<new token>');`
+
+Without the token the function logs a warning and starts nothing, and the
+GitHub cron fallback is all that runs.
 
 **Backfill / dry run.** The activity workflow's *Run workflow* button takes
 four inputs — `days` (how far back), `kinds` (`cardio,sport`, or one of them),
@@ -177,6 +204,11 @@ present`. Start there.
   2026-08-26 fix. It means "the token was rejected", not "the endpoint is down".
 - **No sleep data** → the watch hadn't synced that night, or the device doesn't
   produce a Sleep Score. Duration still syncs even without a score.
+- **No run at 08:00** → look at what the database did:
+  `select * from cron.job_run_details order by start_time desc limit 5;` for
+  the job, then `select status_code, content from net._http_response order by
+  created desc limit 5;` for GitHub's answer. `204` is a started run; `401` or
+  `403` means the Vault token has expired or lacks Actions: write.
 - **Run it locally** to debug: set the same env vars and
   `python sync_sleep.py`. It shares the Supabase token store with CI, so a local
   run rotates the token CI uses — expect the next CI run to say `Supabase` and

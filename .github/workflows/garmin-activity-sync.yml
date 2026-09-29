@@ -12,9 +12,10 @@ name: Garmin activity sync
 
 on:
   schedule:
-    # 02:00 UTC daily = 5 AM Bulgaria time (EEST, UTC+3). GH Actions cron is
-    # fixed UTC with no DST awareness, so this drifts to 4 AM BG once Bulgaria
-    # falls back to EET (UTC+2) in late October.
+    # Fallback only. The daily run is started at 08:00 Sofia time by pg_cron in
+    # Supabase through workflow_dispatch (RFC 0077), because GitHub's schedule
+    # has started this job 5–8 hours late. The sync is idempotent, so when both
+    # fire, the second run changes nothing.
     - cron: '0 2 * * *'
   workflow_dispatch: # manual "Run workflow" button for testing / backfill
     inputs:

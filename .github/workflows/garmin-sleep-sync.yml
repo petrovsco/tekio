@@ -5,7 +5,9 @@ name: Garmin sleep sync
 
 on:
   schedule:
-    # 09:00 UTC daily (~10–11 Europe local) — the overnight watch sync has landed by then.
+    # Fallback, and the late catch. The daily run is started at 08:10 Sofia time
+    # by pg_cron in Supabase through workflow_dispatch (RFC 0077); this later
+    # slot picks up a night the watch had not synced by then.
     - cron: '0 9 * * *'
   workflow_dispatch: # manual "Run workflow" button for testing / backfill
     inputs:
