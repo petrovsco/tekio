@@ -3,6 +3,7 @@ import { useAppStore } from './store/app'
 import { AppShell } from './components/layout/AppShell'
 import { HomeTab } from './components/tabs/home/HomeTab'
 import { HomeSkeleton } from './components/tabs/HomeSkeleton'
+import { dismissSplash } from './lib/splash'
 
 // T3 — on demand (design-system tier table, roadmap 018 unit 5). Everything
 // reached by an explicit destination change is a lazy chunk with no prefetch;
@@ -54,6 +55,7 @@ export default function App() {
   const bootstrap = useAppStore(s => s.bootstrap)
 
   useEffect(() => { bootstrap() }, [])
+  useEffect(() => { if (!loading) dismissSplash() }, [loading])
 
   const go = (t: string, muscle?: string) => {
     setFocusMuscle(muscle ?? null)

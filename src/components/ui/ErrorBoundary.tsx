@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import type { ReactNode } from 'react'
 import { Btn } from './Button'
+import { dismissSplash } from '../../lib/splash'
 
 // Without a boundary, any render error unmounts the whole tree and leaves a
 // white page with nothing to tap. This is the floor under everything: a line
@@ -13,6 +14,11 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
 
   static getDerivedStateFromError(error: Error): State {
     return { error }
+  }
+
+  // The splash sits above the whole app; left up, it would hide this message.
+  componentDidCatch() {
+    dismissSplash()
   }
 
   render() {
