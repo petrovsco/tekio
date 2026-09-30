@@ -10,7 +10,7 @@
 --              weekly_session_target 2 and never selects this column.
 --
 -- Expand only. Zeroing the two legacy values is contract work and waits for
--- the release sweep (tekio.rfcs/rfcs/0080-release-2-1-0-schema-drops.md).
+-- the release sweep (tekio.rfcs/rfcs/done/0080-release-2-1-0-schema-drops.md).
 ALTER TABLE public.adaptation_targets
   ADD COLUMN IF NOT EXISTS weekly_minutes_target integer NOT NULL DEFAULT 0;
 

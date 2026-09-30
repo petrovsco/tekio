@@ -93,15 +93,15 @@ and marking which build wrote a row is
 `tekio.rfcs/rfcs/done/0037-row-origin-tagging.md`.
 
 **Releasing a version.** Seven steps, in this order — 2.0.0 went out this way on
-2026-09-05, and the reasoning behind each one is
-roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/0050-release-procedure.md`):
+2026-09-05 and 2.1.0 on 2026-09-30, and the reasoning behind each one is
+roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/done/0050-release-procedure.md`):
 
 1. **Pre-flight on `develop`** — `npm run build`, `npm run test`, `npm run check:docs`, all green.
 2. **Registry** — in `tekio.rfcs/rfcs/releases.md` set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line.
 3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
 4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`.
-5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so opening the site to read the version at the foot of Profile needs whoever holds them.
-6. **Post-release** — take the briefs that waited on the release off `blocked`; run the release sweep — the release's schema-drops queue (for 2.1.0, `tekio.rfcs/rfcs/0080-release-2-1-0-schema-drops.md`) as one tracked migration, under the policy in [supabase/README.md](supabase/README.md#two-builds-one-schema--the-migration-policy) — and never delete rows by their `origin` tag, they are real data; move finished briefs to `done/` and repoint their links.
+5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` (or, with no CLI installed, the Vercel connector's `get_deployment` on `tekio.shamatoff.com`, team `bubolazi-projects` — one call) must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so opening the site to read the version at the foot of Profile needs whoever holds them.
+6. **Post-release** — take the briefs that waited on the release off `blocked`; run the release sweep — the release's schema-drops queue (2.1.0's was `tekio.rfcs/rfcs/done/0080-release-2-1-0-schema-drops.md`) as one tracked migration — applied with `apply_migration`, the file is named after the version Supabase stamps on it (`list_migrations`), not one chosen beforehand — under the policy in [supabase/README.md](supabase/README.md#two-builds-one-schema--the-migration-policy) — and never delete rows by their `origin` tag, they are real data; move finished briefs to `done/` and repoint their links.
 7. **Open the next release** section in `releases.md`.
 
 ## Commands

@@ -61,8 +61,9 @@ can live with. The reasoning is `tekio.rfcs/rfcs/done/0024-staging-shared-databa
    so the two builds can run side by side — a column `develop` stopped reading,
    config that only production still shows, a constraint widened for the
    overlap — gets a row in the release's schema-drops brief: what it is, the
-   version that stopped needing it, what still reads it, and the SQL. For 2.1.0
-   that is `tekio.rfcs/rfcs/0080-release-2-1-0-schema-drops.md`.
+   version that stopped needing it, what still reads it, and the SQL. 2.1.0's
+   was `tekio.rfcs/rfcs/done/0080-release-2-1-0-schema-drops.md`; the next
+   release's brief is opened with its first row.
 4. **That queue is the release sweep.** It runs at step 6 of the release
    procedure (`CLAUDE.md`), once `master` runs the new code: one tracked
    migration, then a check that the app's bootstrap still loads against the
