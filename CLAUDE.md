@@ -78,12 +78,19 @@ Production, so a change to it changes both. Vercel Authentication is off; that
 gate is the only door. Staging talks to the **same Supabase project as
 production**, on purpose: the staging build is somebody's daily app while the
 product has one user, so a row tagged `origin = 'staging'` is real training
-data, not a test row, and is never deleted by its tag. The risks the shared database creates, and the work
-that pays them, are
-roadmap/037-row-origin-tagging.md (`tekio.rfcs/rfcs/done/0037-row-origin-tagging.md`)
-(marking which build wrote a row) and
-roadmap/024-staging-shared-database-safety.md (`tekio.rfcs/rfcs/0024-staging-shared-database-safety.md`)
-(the migration policy).
+data, not a test row, and is never deleted by its tag.
+
+**Two builds, one schema.** Because both builds share the tables, a migration is
+a production change whichever branch asked for it. Expand now (new tables,
+nullable or defaulted columns, wider constraints); contract after the release
+(drops, renames, narrowing — anything the build on `master` still reads). What
+exists only so the two builds can run side by side is queued in the release's
+schema-drops brief, and removing it at step 6 below *is* the release sweep: it
+removes schema, never rows. The full policy is
+[supabase/README.md](supabase/README.md#two-builds-one-schema--the-migration-policy);
+the reasoning is `tekio.rfcs/rfcs/done/0024-staging-shared-database-safety.md`,
+and marking which build wrote a row is
+`tekio.rfcs/rfcs/done/0037-row-origin-tagging.md`.
 
 **Releasing a version.** Seven steps, in this order — 2.0.0 went out this way on
 2026-09-05, and the reasoning behind each one is
@@ -94,7 +101,7 @@ roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/0050-release-procedure.md`):
 3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
 4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`.
 5. **Verify production** — `vercel inspect tekio.shamatoff.com` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` must show `meta.githubCommitSha` equal to `master`, the alias `tekio.shamatoff.com`, and a 401 from the gate; the gate credentials are Vercel Secrets, so opening the site to read the version at the foot of Profile needs whoever holds them.
-6. **Post-release** — take the briefs that waited on the release off `blocked`; run the queued schema drops as tracked migrations (roadmap/025 (`tekio.rfcs/rfcs/done/0025-release-blocked-schema-drops.md`)) under the migration policy in roadmap/024 (`tekio.rfcs/rfcs/0024-staging-shared-database-safety.md`), and never delete rows by their `origin` tag — they are real data; move finished briefs to `done/` and repoint their links.
+6. **Post-release** — take the briefs that waited on the release off `blocked`; run the release sweep — the release's schema-drops queue (for 2.1.0, `tekio.rfcs/rfcs/0080-release-2-1-0-schema-drops.md`) as one tracked migration, under the policy in [supabase/README.md](supabase/README.md#two-builds-one-schema--the-migration-policy) — and never delete rows by their `origin` tag, they are real data; move finished briefs to `done/` and repoint their links.
 7. **Open the next release** section in `releases.md`.
 
 ## Commands

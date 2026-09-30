@@ -30,8 +30,9 @@ export const IS_PRODUCTION = APP_ENV === 'production'
 
 /**
  * The value written to `origin` on rows this build creates — null in
- * production, so production rows stay unmarked and the release cleanup can
- * only ever delete what it positively identifies as *not* production.
+ * production, so a row says which build wrote it. It marks, it never condemns:
+ * a staging row is real data and nothing deletes rows by this tag
+ * (supabase/README.md, the migration policy).
  */
 export const ROW_ORIGIN: AppEnv | null = IS_PRODUCTION ? null : APP_ENV
 
