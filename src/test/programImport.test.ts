@@ -55,7 +55,7 @@ describe('parseProgramJson', () => {
     expect(p.days.length).toBe(1)
     const day = p.days[0]
     expect(day.dayOfWeek).toBe('Tuesday')
-    expect(day.blocks?.length).toBe(1)
+    expect(day.blocks.length).toBe(1)
     const block = day.blocks![0]
     expect(block.blockType).toBe('weight')
     expect(block.scheduledTime).toBe('18:00')

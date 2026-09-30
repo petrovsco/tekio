@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAppStore, useVariantWeek } from '../../store/app'
-import { cycleInfo, getGrouped, sessionDates, defaultProgram, today, cycleExerciseProgress, programMode, resolveTodayDay, weekdayOf, startOfWeek, isDayDoneInWeek, variantGroups, deriveFlat } from '../../lib/utils'
+import { cycleInfo, sessionDates, defaultProgram, today, cycleExerciseProgress, programMode, resolveTodayDay, weekdayOf, startOfWeek, isDayDoneInWeek, variantGroups, deriveFlat } from '../../lib/utils'
 import { CYCLE } from '../../constants/app'
 import { BLOCK_TYPES, BLOCK_META, TRAINING_TAGS, DEFAULT_TAG } from '../../constants/program'
 import { DAYS_OF_WEEK } from '../../constants/app'
@@ -34,29 +34,18 @@ const ADD_EX_COLS = 'minmax(0,1fr) 108px auto auto'
 
 // ── Editor helpers ────────────────────────────────────────────────────────────
 
-/** A weight block built from a day's flat exercises (for legacy days w/o blocks). */
-function flatToBlock(day: ProgramDay): ProgramDayBlock {
-  return {
-    blockType: 'weight',
-    name: day.name,
-    sortOrder: 0,
-    exercises: day.exercises.map((name, j) => ({ exercise: name, trainingTag: 'STRENGTH' as TrainingTag, sortOrder: j })),
-    supersets: day.supersets ?? [],
-  }
-}
-
-/** Normalize a program's days for editing: every day carries a `blocks` array. */
+/** A program's days, copied for editing so the draft can be mutated freely. */
 function normalizeDays(program: Program): ProgramDay[] {
   const src = program.phases?.length ? program.phases.flatMap(ph => ph.days) : program.days
   return src.map(d => ({
     ...d,
     dayOfWeek: d.dayOfWeek ?? null,
-    blocks: d.blocks && d.blocks.length > 0 ? d.blocks.map(b => ({ ...b })) : (d.exercises.length > 0 ? [flatToBlock(d)] : []),
+    blocks: d.blocks.map(b => ({ ...b })),
   }))
 }
 
 /** Recompute the flat `exercises`/`supersets` view from a day's weight blocks. */
-const recomputeFlat = (day: ProgramDay): ProgramDay => ({ ...day, ...deriveFlat(day.blocks ?? []) })
+const recomputeFlat = (day: ProgramDay): ProgramDay => ({ ...day, ...deriveFlat(day.blocks) })
 
 // ── Program Editor ────────────────────────────────────────────────────────────
 
@@ -81,7 +70,7 @@ function ProgramEditor({ draft, onSave, onCancel }: {
   const [importMsg, setImportMsg] = useState<string | null>(null)
 
   const mutateBlock = (di: number, bi: number, fn: (b: ProgramDayBlock) => ProgramDayBlock) =>
-    setDays(ds => ds.map((d, i) => i !== di ? d : { ...d, blocks: (d.blocks ?? []).map((b, j) => j !== bi ? b : fn(b)) }))
+    setDays(ds => ds.map((d, i) => i !== di ? d : { ...d, blocks: d.blocks.map((b, j) => j !== bi ? b : fn(b)) }))
 
   const addDay = () => setDays(ds => [...ds, {
     name: `Day ${ds.length + 1}`, exercises: [], supersets: [], dayOfWeek: null, queueOrder: null, blocks: [],
@@ -92,10 +81,10 @@ function ProgramEditor({ draft, onSave, onCancel }: {
     setDays(ds => ds.map((d, i) => i === di ? { ...d, dayOfWeek: (v || null) as ProgramDay['dayOfWeek'] } : d))
 
   const addBlock = (di: number) => setDays(ds => ds.map((d, i) => i !== di ? d : {
-    ...d, blocks: [...(d.blocks ?? []), { blockType: 'weight' as BlockType, name: 'New block', sortOrder: (d.blocks?.length ?? 0), exercises: [], supersets: [] }],
+    ...d, blocks: [...d.blocks, { blockType: 'weight' as BlockType, name: 'New block', sortOrder: d.blocks.length, exercises: [], supersets: [] }],
   }))
   const removeBlock = (di: number, bi: number) =>
-    setDays(ds => ds.map((d, i) => i !== di ? d : { ...d, blocks: (d.blocks ?? []).filter((_, j) => j !== bi) }))
+    setDays(ds => ds.map((d, i) => i !== di ? d : { ...d, blocks: d.blocks.filter((_, j) => j !== bi) }))
   const setBlockType = (di: number, bi: number, t: BlockType) => mutateBlock(di, bi, b => ({ ...b, blockType: t }))
   const setBlockName = (di: number, bi: number, v: string) => mutateBlock(di, bi, b => ({ ...b, name: v }))
   const setBlockTime = (di: number, bi: number, v: string) => mutateBlock(di, bi, b => ({ ...b, scheduledTime: v || undefined }))
@@ -142,7 +131,7 @@ function ProgramEditor({ draft, onSave, onCancel }: {
     setDays(normalizeDays(res.program))
     setImportErr(null)
     const dayCount = res.program.days.length
-    const blockCount = res.program.days.reduce((n, d) => n + (d.blocks?.length ?? 0), 0)
+    const blockCount = res.program.days.reduce((n, d) => n + d.blocks.length, 0)
     setImportMsg(`Imported ${dayCount} day${dayCount === 1 ? '' : 's'}, ${blockCount} block${blockCount === 1 ? '' : 's'}.`)
     setShowImport(false)
   }
@@ -223,7 +212,7 @@ function ProgramEditor({ draft, onSave, onCancel }: {
             </p>
           )}
 
-          {(day.blocks ?? []).map((block, bi) => {
+          {day.blocks.map((block, bi) => {
             const meta = BLOCK_META[block.blockType]
             return (
               <div key={bi} className={`mb-2.5 p-2 ${NEST}`}>
@@ -361,29 +350,10 @@ function ExTile({ inSS, children }: { inSS?: boolean; children: React.ReactNode 
   )
 }
 
-/** Renders a day's blocks with their exercises + tags. Falls back to the flat
- *  superset-grouped view for legacy days that carry no blocks. */
+/** Renders a day's blocks with their exercises + tags. */
 function DayBlocks({ day }: { day: ProgramDay }) {
-  const blocks = day.blocks ?? []
-  if (blocks.length === 0) {
-    if (day.exercises.length === 0) return <span className="text-[11px] text-ink-3">Rest day</span>
-    return (
-      <div className="flex flex-wrap gap-1.5">
-        {getGrouped(day).map((g, gi) =>
-          g.type === 'superset' ? (
-            <ExTile key={gi} inSS>
-              <SSBadge />
-              {g.exercises.map((ex, i) => (
-                <span key={i}>{i > 0 ? '+ ' : ''}{ex}</span>
-              ))}
-            </ExTile>
-          ) : (
-            <ExTile key={gi}>{g.exercises[0]}</ExTile>
-          )
-        )}
-      </div>
-    )
-  }
+  const { blocks } = day
+  if (blocks.length === 0) return <span className="text-[11px] text-ink-3">Rest day</span>
   return (
     <div className="flex flex-col gap-2">
       {blocks.map((block, bi) => {
@@ -417,22 +387,7 @@ function DayBlocks({ day }: { day: ProgramDay }) {
 
 /** Compact one-line summary of a day's block types (for the schedule list). */
 function BlockTypeStrip({ day }: { day: ProgramDay }) {
-  const blocks = day.blocks ?? []
-  if (blocks.length === 0) {
-    return (
-      <div className="flex flex-wrap items-center gap-1 mt-1">
-        {getGrouped(day).map((g, gi) =>
-          g.type === 'superset' ? (
-            <span key={gi} className="inline-flex items-center gap-1 text-[10px] text-ink-2">
-              <SSBadge />{g.exercises.join(' + ')}
-            </span>
-          ) : (
-            <span key={gi} className="text-[10px] text-ink-3">{g.exercises[0]}</span>
-          )
-        )}
-      </div>
-    )
-  }
+  const { blocks } = day
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {blocks.map((b, i) => (

@@ -273,8 +273,8 @@ export interface ProgramDay {
   queueOrder?: number | null
   isVariant?: boolean
   variantGroupKey?: string | null
-  /** Block breakdown of this day; `exercises`/`supersets` above are derived from the weight-type block(s) for backward compatibility */
-  blocks?: ProgramDayBlock[]
+  /** The day itself; `exercises`/`supersets` above are derived from its weight-type block(s) (`deriveFlat`) */
+  blocks: ProgramDayBlock[]
 }
 
 export interface ProgramPhase {

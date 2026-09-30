@@ -3,7 +3,7 @@ import { weekdayOf, programMode, resolveTodayDay, isDayDoneInWeek, activeVariant
 import type { Program, ProgramDay, ProgramPhase, ProgramWeekOverride, WeightEntry } from '../types'
 
 function day(name: string, opts: Partial<ProgramDay> = {}): ProgramDay {
-  return { name, exercises: [], supersets: [], ...opts }
+  return { name, exercises: [], supersets: [], blocks: [], ...opts }
 }
 
 function program(days: ProgramDay[], opts: Partial<Program> = {}): Program {

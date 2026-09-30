@@ -129,16 +129,9 @@ async function loadPhasesForPrograms(programIds: string[]): Promise<Map<string, 
         }
       })
 
-      // Days written before blocks existed keep their flat list; every other day
-      // derives it from its weight blocks (the same read the editor and the JSON
-      // importer use). The legacy branch is live — see roadmap 048.
-      const legacyExRows = exRows.filter(e => e.block_id === null)
-      const flat = legacyExRows.length > 0
-        ? {
-            exercises: legacyExRows.map(e => e.name),
-            supersets: namePairsForDay(d.id, new Set(legacyExRows.map(e => e.id)), exById),
-          }
-        : deriveFlat(blocks)
+      // The flat list is derived from the weight blocks — the same read the
+      // editor and the JSON importer use.
+      const flat = deriveFlat(blocks)
 
       builtDays.set(d.id, {
         id: d.id,
@@ -390,24 +383,8 @@ export async function saveProgram(
   return { ...program, programId: programId!, userProgramId: userProgramId! }
 }
 
-/** Persists a day's blocks. Falls back to a single weight block built from the
- *  flat `exercises`/`supersets` for legacy days that carry no `blocks`. */
-async function saveDayBlocks(dayId: string, day: ProgramDay): Promise<void> {
-  const blocks: ProgramDayBlock[] = day.blocks && day.blocks.length > 0
-    ? day.blocks
-    : day.exercises.length > 0
-      ? [{
-          blockType: 'weight',
-          name: day.name,
-          sortOrder: 0,
-          exercises: day.exercises.map((name, j) => ({
-            exercise: name,
-            trainingTag: 'STRENGTH',
-            sortOrder: j,
-          })),
-          supersets: day.supersets,
-        }]
-      : []
+/** Persists a day's blocks. */
+async function saveDayBlocks(dayId: string, { blocks }: ProgramDay): Promise<void> {
 
   // sort_order is UNIQUE per (program_day_id) across all blocks, so it must
   // increase globally within the day rather than restart at 0 per block.

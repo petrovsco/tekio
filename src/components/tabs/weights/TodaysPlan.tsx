@@ -43,24 +43,20 @@ const LOG_IN_TAB: Partial<Record<BlockType, string>> = {
 // which is why they are all `ACT_CHIP`, the reversible tone.
 const BANNER = 'rounded-[3px] overflow-hidden border border-line bg-white mb-1'
 
-/** Weight-logging sections of a day (one per weight block; whole day if legacy). */
+/** Weight-logging sections of a day (one per weight block). */
 function weightSectionsFor(day: ProgramDay): { name?: string; groups: GroupedExercise[] }[] {
-  const blocks = day.blocks ?? []
-  if (blocks.length === 0) {
-    return day.exercises.length > 0 ? [{ groups: getGrouped(day) }] : []
-  }
-  return blocks
+  return day.blocks
     .filter(b => b.blockType === 'weight')
     .map(b => ({
       name: b.name,
-      groups: getGrouped({ name: b.name, exercises: b.exercises.map(e => e.exercise), supersets: b.supersets }),
+      groups: getGrouped({ exercises: b.exercises.map(e => e.exercise), supersets: b.supersets }),
     }))
     .filter(s => s.groups.length > 0)
 }
 
 /** Non-weight blocks of a day (sport / mobility / conditioning / warmup / recovery). */
 function infoBlocksFor(day: ProgramDay): ProgramDayBlock[] {
-  return (day.blocks ?? []).filter(b => b.blockType !== 'weight')
+  return day.blocks.filter(b => b.blockType !== 'weight')
 }
 
 // ── Weight groups (the loggable part) ─────────────────────────────────────────
@@ -199,7 +195,7 @@ function WeeklyChecklist({ program, isDeload, ...h }: {
         {days.map((d, i) => {
           const done = doneFlags[i]
           const isSel = i === selected
-          const blockIcons = (d.blocks ?? []).map(b => BLOCK_META[b.blockType].iconName)
+          const blockIcons = d.blocks.map(b => BLOCK_META[b.blockType].iconName)
           return (
             <div key={i} className="border-b border-hairline last:border-0">
               <button onClick={() => setSelected(isSel ? -1 : i)} className={`w-full flex items-center gap-2 px-3 py-2.5 text-left cursor-pointer ${isSel ? 'bg-hairline' : ''}`}>

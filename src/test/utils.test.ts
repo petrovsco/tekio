@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, deriveFlat, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
+import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, deriveFlat, defaultProgram, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
 import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -458,7 +458,11 @@ describe('isTodayDone', () => {
   const TODAY = '2025-06-01'
 
   function makeDay(exercises: string[]): ProgramDay {
-    return { name: 'Test Day', exercises, supersets: [] }
+    const blocks: ProgramDayBlock[] = [{
+      blockType: 'weight', name: 'Test Day', sortOrder: 0, supersets: [],
+      exercises: exercises.map((exercise, j) => ({ exercise, trainingTag: 'STRENGTH', sortOrder: j })),
+    }]
+    return { name: 'Test Day', ...deriveFlat(blocks), blocks }
   }
 
   it('returns true when day is null or has no exercises', () => {
@@ -504,7 +508,11 @@ describe('cycleExerciseProgress', () => {
   afterEach(() => { vi.useRealTimers() })
 
   function makeDay(exercises: string[]): ProgramDay {
-    return { name: 'Test Day', exercises, supersets: [] }
+    const blocks: ProgramDayBlock[] = [{
+      blockType: 'weight', name: 'Test Day', sortOrder: 0, supersets: [],
+      exercises: exercises.map((exercise, j) => ({ exercise, trainingTag: 'STRENGTH', sortOrder: j })),
+    }]
+    return { name: 'Test Day', ...deriveFlat(blocks), blocks }
   }
 
   it('returns empty array when no exercises in cycle days', () => {
@@ -663,5 +671,19 @@ describe('formatDurationMins / parseDurationMins', () => {
   it('still reads plain minutes and MM:SS', () => {
     expect(parseDurationMins('45')).toBe(45)
     expect(parseDurationMins('12:30')).toBe(12.5)
+  })
+})
+
+describe('defaultProgram', () => {
+  // tekio.rfcs/rfcs/done/0071-retire-flat-exercises-fallback.md: the default
+  // program is written in the one shape a program day has — blocks — so no
+  // reader needs a flat-list fallback for it.
+  it('gives every day one weight block, with the flat view derived from it', () => {
+    for (const day of defaultProgram().days) {
+      expect(day.blocks).toHaveLength(1)
+      expect(day.blocks[0].blockType).toBe('weight')
+      expect(day.blocks[0].exercises.map(e => e.sortOrder)).toEqual(day.exercises.map((_, i) => i))
+      expect({ exercises: day.exercises, supersets: day.supersets }).toEqual(deriveFlat(day.blocks))
+    }
   })
 })

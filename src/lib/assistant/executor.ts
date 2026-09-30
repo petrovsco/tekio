@@ -5,6 +5,7 @@
 // clear error back when something can't be found.
 import { useAppStore } from '../../store/app'
 import { createExercise, createMuscleGroup, upsertExerciseMuscle, deleteExerciseMuscle } from '../db/muscles'
+import { deriveFlat } from '../utils'
 import type {
   BodyRegion, MuscleContribution,
   ActiveProgram, ProgramDay, TrainingTag,
@@ -66,21 +67,21 @@ function addExerciseToDay(
   position: number | undefined,
   presc: { setsText?: string; repsText?: string; weightText?: string; notes?: string },
 ): void {
-  if (day.blocks && day.blocks.length) {
-    const block = day.blocks.find(b => b.blockType === 'weight') ?? day.blocks[0]
-    const at = position != null && position >= 0 && position <= block.exercises.length ? position : block.exercises.length
-    block.exercises.splice(at, 0, {
-      exercise: name, trainingTag: 'STRENGTH' as TrainingTag, sortOrder: 0,
-      setsText: presc.setsText, repsText: presc.repsText, weightText: presc.weightText, notes: presc.notes,
-    })
-    block.exercises.forEach((e, i) => (e.sortOrder = i))
-  } else {
-    const at = position != null && position >= 0 && position <= day.exercises.length ? position : day.exercises.length
-    day.exercises.splice(at, 0, name)
+  let block = day.blocks.find(b => b.blockType === 'weight') ?? day.blocks[0]
+  if (!block) {
+    // A rest day: the exercise opens the day's first weight block.
+    block = { blockType: 'weight', name: day.name, sortOrder: 0, exercises: [], supersets: [] }
+    day.blocks.push(block)
   }
+  const at = position != null && position >= 0 && position <= block.exercises.length ? position : block.exercises.length
+  block.exercises.splice(at, 0, {
+    exercise: name, trainingTag: 'STRENGTH' as TrainingTag, sortOrder: 0,
+    setsText: presc.setsText, repsText: presc.repsText, weightText: presc.weightText, notes: presc.notes,
+  })
+  block.exercises.forEach((e, i) => (e.sortOrder = i))
 }
 
-/** Rename or remove an exercise across a day's blocks (or flat list) + supersets. */
+/** Rename or remove an exercise across a day's blocks + supersets. */
 function editExerciseInDay(day: ProgramDay, oldName: string, newName: string | null): boolean {
   const lc = oldName.toLowerCase()
   let hit = false
@@ -88,25 +89,17 @@ function editExerciseInDay(day: ProgramDay, oldName: string, newName: string | n
     if (newName === null) return pairs.filter(([a, b]) => a.toLowerCase() !== lc && b.toLowerCase() !== lc)
     return pairs.map(([a, b]) => [a.toLowerCase() === lc ? newName : a, b.toLowerCase() === lc ? newName : b] as [string, string])
   }
-  if (day.blocks && day.blocks.length) {
-    for (const block of day.blocks) {
-      const before = block.exercises.length
-      if (newName === null) {
-        block.exercises = block.exercises.filter(e => e.exercise.toLowerCase() !== lc)
-        if (block.exercises.length !== before) hit = true
-      } else {
-        block.exercises.forEach(e => { if (e.exercise.toLowerCase() === lc) { e.exercise = newName; hit = true } })
-      }
-      block.exercises.forEach((e, i) => (e.sortOrder = i))
-      block.supersets = fixPairs(block.supersets)
+  for (const block of day.blocks) {
+    const before = block.exercises.length
+    if (newName === null) {
+      block.exercises = block.exercises.filter(e => e.exercise.toLowerCase() !== lc)
+      if (block.exercises.length !== before) hit = true
+    } else {
+      block.exercises.forEach(e => { if (e.exercise.toLowerCase() === lc) { e.exercise = newName; hit = true } })
     }
-  } else {
-    const before = day.exercises.length
-    if (newName === null) day.exercises = day.exercises.filter(e => e.toLowerCase() !== lc)
-    else day.exercises = day.exercises.map(e => (e.toLowerCase() === lc ? newName : e))
-    if (newName === null ? day.exercises.length !== before : day.exercises.some(e => e === newName)) hit = true
+    block.exercises.forEach((e, i) => (e.sortOrder = i))
+    block.supersets = fixPairs(block.supersets)
   }
-  day.supersets = fixPairs(day.supersets)
   return hit
 }
 
@@ -127,6 +120,7 @@ async function withProgramDay(
   if (!day) return fail(callName, `Day "${dayName}" not found in ${program.name}.`)
   const outcome = mutate(day)
   if (typeof outcome !== 'string') return outcome
+  Object.assign(day, deriveFlat(day.blocks))
   await useAppStore.getState().saveActiveProgram(clone, clone.programId, clone.userProgramId)
   return ok(callName, outcome)
 }

@@ -173,7 +173,7 @@ export function deriveFlat(blocks: ProgramDayBlock[]): { exercises: string[]; su
   }
 }
 
-export function getGrouped(day: ProgramDay | null | undefined): GroupedExercise[] {
+export function getGrouped(day: Pick<ProgramDay, 'exercises' | 'supersets'> | null | undefined): GroupedExercise[] {
   if (!day) return []
   const ss = day.supersets ?? []
   const used = new Set<string>()
@@ -213,13 +213,25 @@ export function defaultProgram(): Program {
     currentDayIndex: 0,
     lastAdvancedDate: today(),
     days: [
-      { name: 'Day 1 — Squat + Bench + Curls', exercises: ['Back Squat', 'Bench Press', 'Bicep Curls'], supersets: [['Bench Press', 'Bicep Curls']] },
-      { name: 'Day 2 — Deadlift + Rows + Calves', exercises: ['Deadlift', 'Rows', 'Calf Raises', 'Reverse Fly'], supersets: [['Calf Raises', 'Reverse Fly']] },
-      { name: 'Day 3 — OHP + Pull-ups + Triceps', exercises: ['Overhead Press', 'Pull-ups', 'Tricep Extensions'], supersets: [] },
-      { name: 'Day 4 — Squat + Bench + Curls', exercises: ['Back Squat', 'Bench Press', 'Bicep Curls'], supersets: [['Bench Press', 'Bicep Curls']] },
-      { name: 'Day 5 — Rows + Deadlift + Triceps', exercises: ['Rows', 'Deadlift', 'Tricep Extensions', 'Calf Raises'], supersets: [['Tricep Extensions', 'Calf Raises']] },
+      weightDay('Day 1 — Squat + Bench + Curls', ['Back Squat', 'Bench Press', 'Bicep Curls'], [['Bench Press', 'Bicep Curls']]),
+      weightDay('Day 2 — Deadlift + Rows + Calves', ['Deadlift', 'Rows', 'Calf Raises', 'Reverse Fly'], [['Calf Raises', 'Reverse Fly']]),
+      weightDay('Day 3 — OHP + Pull-ups + Triceps', ['Overhead Press', 'Pull-ups', 'Tricep Extensions'], []),
+      weightDay('Day 4 — Squat + Bench + Curls', ['Back Squat', 'Bench Press', 'Bicep Curls'], [['Bench Press', 'Bicep Curls']]),
+      weightDay('Day 5 — Rows + Deadlift + Triceps', ['Rows', 'Deadlift', 'Tricep Extensions', 'Calf Raises'], [['Tricep Extensions', 'Calf Raises']]),
     ],
   }
+}
+
+/** A day of one weight block — the shape `saveDayBlocks` writes. */
+function weightDay(name: string, exercises: string[], supersets: [string, string][]): ProgramDay {
+  const block: ProgramDayBlock = {
+    blockType: 'weight',
+    name,
+    sortOrder: 0,
+    exercises: exercises.map((exercise, j) => ({ exercise, trainingTag: 'STRENGTH', sortOrder: j })),
+    supersets,
+  }
+  return { name, ...deriveFlat([block]), blocks: [block] }
 }
 
 // ── One-rep-max estimation ────────────────────────────────────────────────────
