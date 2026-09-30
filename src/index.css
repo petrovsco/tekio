@@ -12,12 +12,11 @@
   100% { opacity: 0; transform: translate(-50%, -4px); }
 }
 
-/* The document itself is paper, and does not bounce. Without a ground here the
-   overscroll area was the browser's white, and the rubber-band dragged the
-   sticky environment banner and header down with the page. */
+/* The document itself is paper, so the overscroll area is not the browser's
+   white. Overscroll is left on: `overscroll-behavior-y: none` (2.0.107) also
+   switched off pull-to-refresh, which is the only reload a phone tab has. */
 html, body {
   background: var(--color-paper);
-  overscroll-behavior-y: none;
 }
 
 .animate-shimmer {
