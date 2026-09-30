@@ -33,6 +33,10 @@ on:
         description: 'Also upload the raw activity list (every type, every field) as an artifact'
         type: boolean
         default: false
+      catalogue:
+        description: "Also upload Garmin's activity-type catalogue as an artifact (RFC 0073)"
+        type: boolean
+        default: false
 
 concurrency:
   group: garmin-activity-sync
@@ -63,6 +67,7 @@ jobs:
           SYNC_KINDS: ${{ inputs.kinds || 'cardio,sport' }}
           DRY_RUN: ${{ inputs.dry_run || 'false' }}
           DUMP_PATH: ${{ inputs.dump && 'garmin-activities.json' || '' }}
+          CATALOGUE_PATH: ${{ inputs.catalogue && 'garmin-activity-types.json' || '' }}
 
       # Only on a manual run that asked for it. Fetch it with
       #   gh run download <run id> -n garmin-activities -D scripts/garmin-sync/dumps/
@@ -72,4 +77,13 @@ jobs:
         with:
           name: garmin-activities
           path: garmin-activities.json
+          retention-days: 90
+
+      # Garmin's product catalogue, not personal data — it is committed once
+      # decided (scripts/garmin-sync/activity_types.json, RFC 0073).
+      - if: ${{ inputs.catalogue }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: garmin-activity-types
+          path: garmin-activity-types.json
           retention-days: 90

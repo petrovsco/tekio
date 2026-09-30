@@ -50,6 +50,10 @@ Env vars:
                               (every type, every field) to this JSON file. The
                               workflow uploads it as an artifact, so the history
                               can be studied locally without any secret leaving CI.
+  CATALOGUE_PATH              if set, also write Garmin's whole activity-type
+                              catalogue (get_activity_types) to this JSON file —
+                              the list activity_types.json is decided from (RFC 0073).
+                              Garmin's product data, not personal data.
 """
 from __future__ import annotations
 
@@ -551,6 +555,11 @@ def main() -> None:
     with garmin_client() as client:
         print(f"Logged in as {client.display_name}")
         activities = client.get_activities_by_date(start.isoformat(), end.isoformat()) or []
+        catalogue_path = os.getenv("CATALOGUE_PATH", "").strip()
+        if catalogue_path:
+            with open(catalogue_path, "w", encoding="utf-8") as f:
+                json.dump(client.get_activity_types(), f, ensure_ascii=False, indent=1)
+            print(f"Wrote Garmin's activity-type catalogue to {catalogue_path}")
     print(f"Fetched {len(activities)} activity(ies) {start}..{end}")
 
     dump_path = os.getenv("DUMP_PATH", "").strip()
