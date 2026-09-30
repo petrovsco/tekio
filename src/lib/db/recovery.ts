@@ -54,11 +54,12 @@ export async function loadSleep(): Promise<SleepEntry[]> {
 export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<SleepEntry> {
   // Upsert on the per-night key: if the daily Garmin sync already created this
   // night, a manual add updates the subjective fields and leaves the objective
-  // sleep_score untouched (it isn't in the payload).
+  // sleep_score untouched (it isn't in the payload). The origin tag is safe on
+  // the conflict branch too: the write-once trigger keeps the row's own origin.
   const { data, error } = await supabase
     .from('sleep_logs')
     .upsert(
-      { user_id: USER_ID, source: 'manual', ...sleepRow(entry) },
+      withOrigin({ user_id: USER_ID, source: 'manual', ...sleepRow(entry) }),
       { onConflict: 'user_id,log_date' }
     )
     .select(SLEEP_COLS)
