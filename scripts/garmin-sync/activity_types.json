@@ -1,0 +1,792 @@
+{
+ "_about": "Garmin's activity-type catalogue, every entry decided (RFC 0073). Pulled with get_activity_types() by the workflow's `catalogue` input. Each type carries exactly one of cardio (a cardio_sessions.activity_type, or by_name for hiit), sport (a sport_types.name) or skip (a key into reasons). A type Garmin adds later is in none: the sync skips it and warns, and it is decided here.",
+ "pulled": "2026-09-30",
+ "reasons": {
+  "walking": "Walking-type: neither a cardio modality nor a sport in the app. Decided 2026-09-06; the reason corrected 2026-09-27 (RFC 0073). Hiking is the closer call and comes back only with a stronger reason than that it was recorded.",
+  "strength": "Garmin's summary has no sets or reps, so there is nothing to put in session_sets, and its Training Effect is HR noise.",
+  "mobility": "Mobility has its own capture, and this sync writes only cardio and sport rows. Syncing it is a separate question (RFC 0083).",
+  "not_training": "No training stimulus the app reads: motorsport and vehicles, flying, fishing and boating, diving, timers and step counts, stillness practices.",
+  "safety": "A safety alert, not an activity.",
+  "category": "A category in the catalogue, not an activity.",
+  "multisport": "A multisport container or a transition between legs; it carries no session of its own. How a triathlon's legs arrive from Garmin is unverified, because none has been recorded.",
+  "unspecified": "Garmin's generic 'Other': nothing says what it was, so nothing decides where it lands."
+ },
+ "types": [
+  {
+   "typeKey": "all",
+   "parent": null,
+   "skip": "category"
+  },
+  {
+   "typeKey": "american_football",
+   "parent": "team_sports",
+   "sport": "American Football"
+  },
+  {
+   "typeKey": "apnea_diving",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "apnea_hunting",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "archery",
+   "parent": "other",
+   "sport": "Archery"
+  },
+  {
+   "typeKey": "assistance",
+   "parent": "safety",
+   "skip": "safety"
+  },
+  {
+   "typeKey": "atv_v2",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "auto_racing",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "backcountry_skiing",
+   "parent": "winter_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "backcountry_skiing_snowboarding_ws",
+   "parent": "winter_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "backcountry_snowboarding",
+   "parent": "winter_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "badminton",
+   "parent": "racket_sports",
+   "sport": "Badminton"
+  },
+  {
+   "typeKey": "baseball",
+   "parent": "team_sports",
+   "sport": "Baseball"
+  },
+  {
+   "typeKey": "basketball",
+   "parent": "team_sports",
+   "sport": "Basketball"
+  },
+  {
+   "typeKey": "bikeToRunTransition_v2",
+   "parent": "other",
+   "skip": "multisport"
+  },
+  {
+   "typeKey": "bmx",
+   "parent": "cycling",
+   "sport": "BMX"
+  },
+  {
+   "typeKey": "boating_v2",
+   "parent": "water_sports",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "bouldering",
+   "parent": "fitness_equipment",
+   "sport": "Bouldering"
+  },
+  {
+   "typeKey": "boxing",
+   "parent": "other",
+   "sport": "Boxing"
+  },
+  {
+   "typeKey": "breathwork",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "casual_walking",
+   "parent": "walking",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "ccr_diving",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "cricket",
+   "parent": "team_sports",
+   "sport": "Cricket"
+  },
+  {
+   "typeKey": "cross_country_indoor_skiing",
+   "parent": "fitness_equipment",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "cross_country_skiing_ws",
+   "parent": "winter_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "cycling",
+   "parent": "all",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "cyclocross",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "dance",
+   "parent": "fitness_equipment",
+   "sport": "Dance"
+  },
+  {
+   "typeKey": "disc_golf",
+   "parent": "other",
+   "sport": "Disc Golf"
+  },
+  {
+   "typeKey": "diving",
+   "parent": "all",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "downhill_biking",
+   "parent": "cycling",
+   "sport": "Downhill Biking"
+  },
+  {
+   "typeKey": "driving_general",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "e_bike_fitness",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "e_bike_mountain",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "e_enduro_mtb",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "e_sport",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "elliptical",
+   "parent": "fitness_equipment",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "enduro_mtb",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "fall_detected",
+   "parent": "safety",
+   "skip": "safety"
+  },
+  {
+   "typeKey": "field_hockey",
+   "parent": "team_sports",
+   "sport": "Field Hockey"
+  },
+  {
+   "typeKey": "fishing_v2",
+   "parent": "water_sports",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "fitness_equipment",
+   "parent": "all",
+   "skip": "category"
+  },
+  {
+   "typeKey": "floor_climbing",
+   "parent": "other",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "flying",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "gauge_diving",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "golf",
+   "parent": "other",
+   "sport": "Golf"
+  },
+  {
+   "typeKey": "gravel_cycling",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "hand_cycling",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "hang_gliding",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "hiit",
+   "parent": "fitness_equipment",
+   "cardio": "by_name"
+  },
+  {
+   "typeKey": "hiking",
+   "parent": "all",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "horseback_riding",
+   "parent": "other",
+   "sport": "Horseback Riding"
+  },
+  {
+   "typeKey": "hunting",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "hunting_fishing",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "ice_hockey",
+   "parent": "team_sports",
+   "sport": "Ice Hockey"
+  },
+  {
+   "typeKey": "incident_detected",
+   "parent": "safety",
+   "skip": "safety"
+  },
+  {
+   "typeKey": "indoor_cardio",
+   "parent": "fitness_equipment",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "indoor_climbing",
+   "parent": "fitness_equipment",
+   "sport": "Indoor Climbing"
+  },
+  {
+   "typeKey": "indoor_cycling",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "indoor_hand_cycling",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "indoor_rowing",
+   "parent": "fitness_equipment",
+   "cardio": "rowing"
+  },
+  {
+   "typeKey": "indoor_running",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "inline_skating",
+   "parent": "other",
+   "sport": "Skating"
+  },
+  {
+   "typeKey": "jump_rope",
+   "parent": "fitness_equipment",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "kayaking_v2",
+   "parent": "water_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "kiteboarding_v2",
+   "parent": "water_sports",
+   "sport": "Kiteboarding"
+  },
+  {
+   "typeKey": "lacrosse",
+   "parent": "team_sports",
+   "sport": "Lacrosse"
+  },
+  {
+   "typeKey": "lap_swimming",
+   "parent": "swimming",
+   "cardio": "swimming"
+  },
+  {
+   "typeKey": "meditation",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "mixed_martial_arts",
+   "parent": "other",
+   "sport": "Mixed Martial Arts"
+  },
+  {
+   "typeKey": "mobility",
+   "parent": "fitness_equipment",
+   "skip": "mobility"
+  },
+  {
+   "typeKey": "motocross_v2",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "motorcycling_v2",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "mountain_biking",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "mountaineering",
+   "parent": "other",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "multi_gas_diving",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "multi_sport",
+   "parent": "all",
+   "skip": "multisport"
+  },
+  {
+   "typeKey": "obstacle_run",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "offshore_grinding_v2",
+   "parent": "water_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "onshore_grinding_v2",
+   "parent": "fitness_equipment",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "open_water_swimming",
+   "parent": "swimming",
+   "cardio": "swimming"
+  },
+  {
+   "typeKey": "other",
+   "parent": "all",
+   "skip": "unspecified"
+  },
+  {
+   "typeKey": "overland",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "paddelball",
+   "parent": "racket_sports",
+   "sport": "Padel"
+  },
+  {
+   "typeKey": "paddling_v2",
+   "parent": "water_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "para_sports",
+   "parent": "all",
+   "skip": "category"
+  },
+  {
+   "typeKey": "pickleball",
+   "parent": "racket_sports",
+   "sport": "Pickleball"
+  },
+  {
+   "typeKey": "pilates",
+   "parent": "fitness_equipment",
+   "skip": "mobility"
+  },
+  {
+   "typeKey": "platform_tennis",
+   "parent": "racket_sports",
+   "sport": "Platform Tennis"
+  },
+  {
+   "typeKey": "pool_apnea",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "racket_sports",
+   "parent": "all",
+   "skip": "category"
+  },
+  {
+   "typeKey": "racquetball",
+   "parent": "racket_sports",
+   "sport": "Racquetball"
+  },
+  {
+   "typeKey": "rc_drone",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "recumbent_cycling",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "resort_skiing",
+   "parent": "winter_sports",
+   "sport": "Resort Skiing"
+  },
+  {
+   "typeKey": "resort_skiing_snowboarding_ws",
+   "parent": "winter_sports",
+   "sport": "Resort Skiing/Snowboarding"
+  },
+  {
+   "typeKey": "resort_snowboarding",
+   "parent": "winter_sports",
+   "sport": "Resort Snowboarding"
+  },
+  {
+   "typeKey": "road_biking",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "rock_climbing",
+   "parent": "other",
+   "sport": "Rock Climbing"
+  },
+  {
+   "typeKey": "rowing_v2",
+   "parent": "water_sports",
+   "cardio": "rowing"
+  },
+  {
+   "typeKey": "rucking",
+   "parent": "hiking",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "rugby",
+   "parent": "team_sports",
+   "sport": "Rugby"
+  },
+  {
+   "typeKey": "runToBikeTransition_v2",
+   "parent": "other",
+   "skip": "multisport"
+  },
+  {
+   "typeKey": "running",
+   "parent": "all",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "safety",
+   "parent": "all",
+   "skip": "safety"
+  },
+  {
+   "typeKey": "sailing_v2",
+   "parent": "water_sports",
+   "sport": "Sailing"
+  },
+  {
+   "typeKey": "single_gas_diving",
+   "parent": "diving",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "skate_skiing_ws",
+   "parent": "winter_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "skating_ws",
+   "parent": "winter_sports",
+   "sport": "Skating"
+  },
+  {
+   "typeKey": "sky_diving",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "snorkeling",
+   "parent": "water_sports",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "snow_shoe_ws",
+   "parent": "winter_sports",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "snowmobiling_ws",
+   "parent": "winter_sports",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "soccer",
+   "parent": "team_sports",
+   "sport": "Soccer"
+  },
+  {
+   "typeKey": "softball",
+   "parent": "team_sports",
+   "sport": "Softball"
+  },
+  {
+   "typeKey": "speed_walking",
+   "parent": "walking",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "squash",
+   "parent": "racket_sports",
+   "sport": "Squash"
+  },
+  {
+   "typeKey": "stair_climbing",
+   "parent": "fitness_equipment",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "stand_up_paddleboarding_v2",
+   "parent": "water_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "steps",
+   "parent": "all",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "stop_watch",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "street_running",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "strength_training",
+   "parent": "fitness_equipment",
+   "skip": "strength"
+  },
+  {
+   "typeKey": "surfing_v2",
+   "parent": "water_sports",
+   "sport": "Surfing"
+  },
+  {
+   "typeKey": "swimToBikeTransition_v2",
+   "parent": "other",
+   "skip": "multisport"
+  },
+  {
+   "typeKey": "swimming",
+   "parent": "all",
+   "cardio": "swimming"
+  },
+  {
+   "typeKey": "table_tennis",
+   "parent": "racket_sports",
+   "sport": "Table Tennis"
+  },
+  {
+   "typeKey": "team_sports",
+   "parent": "all",
+   "skip": "category"
+  },
+  {
+   "typeKey": "tennis_v2",
+   "parent": "racket_sports",
+   "sport": "Tennis"
+  },
+  {
+   "typeKey": "track_cycling",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "track_running",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "trail_running",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "transition_v2",
+   "parent": "other",
+   "skip": "multisport"
+  },
+  {
+   "typeKey": "treadmill_running",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "ultimate_disc",
+   "parent": "team_sports",
+   "sport": "Ultimate Disc"
+  },
+  {
+   "typeKey": "ultra_run",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "virtual_ride",
+   "parent": "cycling",
+   "cardio": "cycling"
+  },
+  {
+   "typeKey": "virtual_run",
+   "parent": "running",
+   "cardio": "running"
+  },
+  {
+   "typeKey": "volleyball",
+   "parent": "team_sports",
+   "sport": "Volleyball"
+  },
+  {
+   "typeKey": "wakeboarding_v2",
+   "parent": "water_sports",
+   "sport": "Wakeboarding"
+  },
+  {
+   "typeKey": "wakesurfing",
+   "parent": "water_sports",
+   "sport": "Wakesurfing"
+  },
+  {
+   "typeKey": "walking",
+   "parent": "all",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "water_sports",
+   "parent": "all",
+   "skip": "category"
+  },
+  {
+   "typeKey": "water_tubing",
+   "parent": "water_sports",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "waterskiing",
+   "parent": "water_sports",
+   "sport": "Water Skiing"
+  },
+  {
+   "typeKey": "wheelchair_push_run",
+   "parent": "para_sports",
+   "cardio": "custom"
+  },
+  {
+   "typeKey": "wheelchair_push_walk",
+   "parent": "para_sports",
+   "skip": "walking"
+  },
+  {
+   "typeKey": "whitewater_rafting_kayaking",
+   "parent": "other",
+   "sport": "Whitewater Rafting"
+  },
+  {
+   "typeKey": "whitewater_rafting_v2",
+   "parent": "water_sports",
+   "sport": "Whitewater Rafting"
+  },
+  {
+   "typeKey": "wind_kite_surfing",
+   "parent": "other",
+   "sport": "Wind/Kite Surfing"
+  },
+  {
+   "typeKey": "windsurfing_v2",
+   "parent": "water_sports",
+   "sport": "Windsurfing"
+  },
+  {
+   "typeKey": "wingsuit_flying",
+   "parent": "other",
+   "skip": "not_training"
+  },
+  {
+   "typeKey": "winter_sports",
+   "parent": "all",
+   "skip": "category"
+  },
+  {
+   "typeKey": "yoga",
+   "parent": "fitness_equipment",
+   "skip": "mobility"
+  },
+  {
+   "typeKey": "rowing",
+   "parent": null,
+   "cardio": "rowing",
+   "legacy": "Garmin's rowing key before rowing_v2; kept so a full-history backfill still maps old rows."
+  }
+ ]
+}

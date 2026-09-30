@@ -10,7 +10,8 @@ Two kinds of activity are synced, into two tables:
   into the right cardio adaptation (see src/lib/adaptations.ts:classifyCardioAdaptations).
   An intervals row also gets its work-bout length from the summary's
   `splitSummaries` (roadmap 005) — see _bout_seconds.
-- **sport** (tennis, …) -> `sport_sessions` (roadmap 041), with duration,
+- **sport** (tennis, volleyball, every team, racket, board and skill sport in
+  Garmin's catalogue) -> `sport_sessions` (roadmap 041), with duration,
   average HR and — since roadmap 058 — the same Training-Effect / HR-zone data
   a cardio row carries, so the app reads a synced match through the same rules
   (src/lib/adaptations.ts:classifySportAdaptations). Quality, competitors and
@@ -18,7 +19,8 @@ Two kinds of activity are synced, into two tables:
   as an entry still to be rated. A row 041 synced before those columns existed
   is backfilled by the next run that sees its activity (see plan_sport).
 
-Strength, walks, hikes and skating stay out by decision (SKIPPED_BY_DECISION).
+Every Garmin activity type is decided in activity_types.json (RFC 0073): cardio,
+sport, or skipped with a reason — strength, walks and hikes among the skips.
 
 Both are idempotent on the (user_id, garmin_activity_id) unique key, and both
 go one step further: before anything is inserted, each activity looks for a
@@ -44,8 +46,7 @@ Env vars:
   SYNC_DAYS                   how many trailing days to sync (default 7; raise for a backfill)
   SYNC_KINDS                  comma list of cardio, sport (default: both)
   DRY_RUN                     true → fetch and print the plan, write nothing. Also
-                              lists the activity types nothing maps yet, so the
-                              maps below grow from real data, not guesses.
+                              lists any activity type the catalogue lacks.
   DUMP_PATH                   if set, write the raw activity list Garmin returned
                               (every type, every field) to this JSON file. The
                               workflow uploads it as an artifact, so the history
@@ -62,47 +63,58 @@ import os
 import sys
 from collections import Counter
 from datetime import date, timedelta
+from pathlib import Path
 
 import requests
 
 from garmin_auth import as_int, env, garmin_client, rest_check, rest_headers, rest_url
 
-# Garmin activityType.typeKey -> the app's cardio_sessions.activity_type value.
-CARDIO_TYPE_KEYS = {
-    # cycling
-    "cycling": "cycling", "road_biking": "cycling", "mountain_biking": "cycling",
-    "gravel_cycling": "cycling", "indoor_cycling": "cycling", "virtual_ride": "cycling",
-    "cyclocross": "cycling", "recumbent_cycling": "cycling", "e_bike_fitness": "cycling",
-    # running
-    "running": "running", "treadmill_running": "running", "trail_running": "running",
-    "track_running": "running", "virtual_run": "running", "indoor_running": "running",
-    "street_running": "running", "obstacle_run": "running",
-    # swimming
-    "lap_swimming": "swimming", "open_water_swimming": "swimming", "swimming": "swimming",
-    # rowing (app calls this "Indoor Rowing")
-    "indoor_rowing": "rowing", "rowing": "rowing", "rowing_v2": "rowing",
-}
+# Every Garmin activity type, decided once (RFC 0073): activity_types.json holds
+# Garmin's whole catalogue, each entry carrying exactly one of `cardio` (the
+# cardio_sessions.activity_type it lands as), `sport` (the sport_types.name it
+# lands under — created on first play) or `skip` (a key into its `reasons`).
+# A sport never played before therefore syncs with no change here. Only a type
+# Garmin adds after the pull is in none of the three: it is skipped and the run
+# warns (see main), and the fix is to decide it in the JSON.
+_CATALOGUE = json.loads((Path(__file__).parent / "activity_types.json").read_text(encoding="utf-8"))
 
 # Garmin's `hiit` profile is a format, not a modality (roadmap 054): the
 # activity name says what was done. "[N4x4] Indoor Rowing" is rowing done as
 # intervals — the app's own VO₂max protocol; "HIIT - EMOM", "[4x60] Slam/Jump"
 # and the like are conditioning with no modality among the four, so they land
 # as `custom`. Either way format = 'intervals' and the name goes to notes.
+# In the catalogue it is the one `cardio: "by_name"` entry.
 HIIT_TYPE_KEY = "hiit"
 
-# Garmin activityType.typeKey -> sport_types.name. Only keys seen on a real
-# activity go in here (run with DRY_RUN=true to see what is being skipped).
-SPORT_TYPE_KEYS = {
-    "tennis_v2": "Tennis",  # Garmin's key for tennis since its 2023 rework (10-year dry run, 2026-09-06)
-    "volleyball": "Volleyball",  # skipped as unmapped ×3 on the 30-day run of 2026-09-27
-}
+# Garmin typeKey -> cardio_sessions.activity_type. An endurance type that fits
+# none of the four modalities (elliptical, cross-country skiing, paddling, …)
+# lands as `custom` with Garmin's name in notes; a synced row is classified by
+# its own Training Effect whatever its modality, so this chooses where it shows,
+# not what it credits.
+CARDIO_TYPE_KEYS = {t["typeKey"]: t["cardio"] for t in _CATALOGUE["types"]
+                    if "cardio" in t and t["typeKey"] != HIIT_TYPE_KEY}
 
-# Activity types that stay out by decision, not for want of a mapping — a dry
-# run counts them as skipped without asking for the maps to grow.
-#   walking / hiking / skating_ws — not a stimulus the app counts (Peter, 2026-09-06).
-#   strength_training — Garmin's summary has no sets or reps, so there is
-#     nothing to put in session_sets; its Training Effect is HR noise.
-SKIPPED_BY_DECISION = {"walking", "hiking", "skating_ws", "strength_training"}
+# Garmin typeKey -> sport_types.name. Existing app names win (`tennis_v2` is
+# Tennis); a new one reads the way Garmin's app shows it.
+SPORT_TYPE_KEYS = {t["typeKey"]: t["sport"] for t in _CATALOGUE["types"] if "sport" in t}
+
+# Garmin typeKey -> why it stays out. A dry run counts these as skipped by
+# decision without asking for the maps to grow.
+SKIPPED_BY_DECISION = {t["typeKey"]: _CATALOGUE["reasons"][t["skip"]]
+                       for t in _CATALOGUE["types"] if "skip" in t}
+
+# Garmin sends one `volleyball` key for indoor and beach alike (two years of
+# history, 2026-09-27). The activity name decides, the way a HIIT name picks
+# its modality; the name is kept in notes either way (RFC 0073).
+BEACH_VOLLEYBALL = "Beach Volleyball"
+
+
+def sport_name(act: dict) -> str | None:
+    """The sport_types.name a Garmin activity lands under, or None if it is no sport."""
+    base = SPORT_TYPE_KEYS.get(_type_key(act))
+    if base == "Volleyball" and "beach" in (act.get("activityName") or "").lower():
+        return BEACH_VOLLEYBALL
+    return base
 
 
 def _num(v) -> float | None:
@@ -315,7 +327,7 @@ def sport_row(user_id: str, act: dict) -> dict | None:
     the app classifies a synced match through the same rules (roadmap 058).
     Every key is present, None where Garmin sent nothing: a batch insert needs
     the same keys on every row, and a claim decides column by column."""
-    base = SPORT_TYPE_KEYS.get(_type_key(act))
+    base = sport_name(act)
     basics = _basics(act)
     if not base or not basics:
         return None
@@ -577,7 +589,7 @@ def main() -> None:
         if cardio_target(act):
             if "cardio" in kinds:
                 cardio_acts.append(act)
-        elif key in SPORT_TYPE_KEYS:
+        elif sport_name(act):
             if "sport" in kinds:
                 sport_acts.append(act)
         elif key in SKIPPED_BY_DECISION:
@@ -588,7 +600,13 @@ def main() -> None:
         print("Skipped by decision: " + ", ".join(f"{k} ×{n}" for k, n in decided.most_common()))
     if unmapped:
         counts = sorted(unmapped.items(), key=lambda kv: -len(kv[1]))
-        print("Skipped, no mapping: " + ", ".join(f"{k} ×{len(v)}" for k, v in counts))
+        listed = ", ".join(f"{k} ×{len(v)}" for k, v in counts)
+        print("Skipped, no mapping: " + listed)
+        # Every catalogued type is decided, so this means Garmin has added a type
+        # since the pull. A warning, not a failure: the rest of the run is good.
+        # It shows on the Actions page; decide the type in activity_types.json.
+        print(f"::warning title=Garmin activity type not in the catalogue::{listed} — "
+              "re-pull the catalogue and decide it in scripts/garmin-sync/activity_types.json (RFC 0073)")
 
     if "cardio" in kinds:
         if not cardio_acts:

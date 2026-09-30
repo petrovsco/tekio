@@ -8,6 +8,7 @@ import json
 import re
 import sys
 from collections import Counter, defaultdict
+from pathlib import Path
 from statistics import median
 
 path = sys.argv[1]
@@ -107,7 +108,9 @@ ENDURANCE_FLOOR_MIN = 25   # endurance-credit floor for a steady/unstated row wi
 # TEMPO / LACTATE_THRESHOLD are not special-cased: threshold work is endurance by a
 # harder route than Zone 2, so it falls to the aerobic floor (fork 1b, 2026-09-07).
 VO2MAX_LABELS = r"VO2|VO₂|ANAEROBIC|SPRINT|SPEED"
-SPORT_TYPE_KEYS = {"tennis_v2"}   # what sync_activities.py routes to sport_sessions
+# What sync_activities.py routes to sport_sessions — read from the same catalogue (RFC 0073).
+SPORT_TYPE_KEYS = {t["typeKey"] for t in json.loads(
+    (Path(__file__).parent / "activity_types.json").read_text(encoding="utf-8"))["types"] if "sport" in t}
 SPORT_DEFAULT = "endurance"       # SPORT_DEFAULT_ADAPTATION — a match with no Garmin data, by convention (inventory 6.5)
 
 

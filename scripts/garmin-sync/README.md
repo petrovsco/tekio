@@ -7,7 +7,9 @@ data and upsert it into Supabase:
   `sleep_logs`: duration, **Sleep Score**, HRV, resting HR, bed/wake times.
 - **[Activities](../../.github/workflows/garmin-activity-sync.yml)**
   (`sync_activities.py`), two kinds:
-  - cardio (cycling / running / swimming / rowing) → `cardio_sessions`, with
+  - cardio (cycling / running / swimming / rowing, and as *Custom* every
+    endurance type that is none of the four — elliptical, cross-country
+    skiing, paddling, …) → `cardio_sessions`, with
     distance, elevation, avg/max HR, HR-zone time, and **Aerobic / Anaerobic
     Training Effect**. The app uses the Training Effect + zones to classify
     each session into one cardio adaptation, or none
@@ -19,23 +21,39 @@ data and upsert it into Supabase:
     length the watch's timer measured, read off the summary's
     `INTERVAL_ACTIVE` split (total ÷ count; roadmap 005) — which the app reads
     first: ≤ 120 s is anaerobic capacity, longer is VO₂max.
-  - sport (tennis, volleyball, …) → `sport_sessions`, with duration, avg HR and — since
+  - sport (tennis, volleyball, and every team, racket, board and skill sport
+    Garmin knows) → `sport_sessions`, with duration, avg HR and — since
     roadmap 058 — the same Training Effect + HR zones a cardio row gets, so
     the app classifies a synced match by the same rules instead of by
     convention (a row synced before those columns existed is backfilled by
     the next run that sees its activity). The quality rating, competitors and
     result stay yours to fill in, so a synced session shows up in the Cardio
-    tab as an entry still to be rated. Only
-    activity types seen on a real activity are mapped (`SPORT_TYPE_KEYS`); a
-    dry run (below) lists what is being skipped so the map grows from data.
+    tab as an entry still to be rated. A sport played for the first time
+    creates its sport type. A Garmin volleyball activity whose name contains
+    "beach" lands under *Beach Volleyball*.
 
 Both use the unofficial Garmin Connect API (via [`garminconnect`](https://github.com/cyberjunky/python-garminconnect)).
 Fine for reading your own account on this single-user app; it can break if Garmin
 changes their internal API (bump the library version if so). Both share the same
 secrets and are **idempotent** (sleep upserts on `(user_id, log_date)`; activities
-on `(user_id, garmin_activity_id)`), so re-running is safe. Strength, walks,
-hikes and skating stay out by decision (`SKIPPED_BY_DECISION` in the script):
-a dry run counts them as skipped without asking for the map to grow.
+on `(user_id, garmin_activity_id)`), so re-running is safe.
+
+**Every Garmin activity type is decided in
+[`activity_types.json`](activity_types.json)** (RFC 0073): Garmin's whole
+catalogue, each type carrying exactly one of `cardio`, `sport` or `skip` (with
+a written reason — strength, walks and hikes among them). The script builds its
+maps from it, and `src/test/garminActivityTypes.test.ts` fails if a type is in
+it undecided. A type Garmin adds later is the only thing that can still be
+unknown: the run skips it and raises a **warning** on the Actions page, and
+the fix is to re-pull the catalogue and decide the new type:
+
+```bash
+gh workflow run garmin-activity-sync.yml -f days=1 -f dry_run=true -f catalogue=true
+gh run download <run id> -n garmin-activity-types -D /tmp/garmin-catalogue/
+# add the new typeKey to activity_types.json with its decision
+```
+
+The catalogue is Garmin's product data, not personal data, so it is committed.
 
 **Activities claim the row you logged by hand.** Before inserting, each
 activity looks for a hand-logged session on the same date — the same sport
@@ -151,12 +169,13 @@ Without the token the function logs a warning and starts nothing, and the
 GitHub cron fallback is all that runs.
 
 **Backfill / dry run.** The activity workflow's *Run workflow* button takes
-four inputs — `days` (how far back), `kinds` (`cardio,sport`, or one of them),
-`dry_run` (print the plan, write nothing) and `dump` (also upload the raw
-activity list as an artifact). From a terminal:
+five inputs — `days` (how far back), `kinds` (`cardio,sport`, or one of them),
+`dry_run` (print the plan, write nothing), `dump` (also upload the raw
+activity list as an artifact) and `catalogue` (also upload Garmin's
+activity-type catalogue). From a terminal:
 
 ```bash
-# see what a two-year sport backfill would do, and which activity types are unmapped
+# see what a two-year sport backfill would do
 gh workflow run garmin-activity-sync.yml -f days=730 -f kinds=sport -f dry_run=true
 gh run watch   # then read the log
 # do it
