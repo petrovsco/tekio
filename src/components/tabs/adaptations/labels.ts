@@ -1,6 +1,6 @@
 import type { Adaptation } from '../../../types'
 import type { MuscleQuality } from '../../../lib/fusedRead'
-import { splitCoverage, type AdaptationSummary } from '../../../lib/adaptations'
+import { splitCoverage, type AdaptationSummary, type TargetUnit } from '../../../lib/adaptations'
 
 // Editorial short names for the Adaptations drill-down (roadmap 031). Home's
 // whole-body tiles already say VO₂MAX / ANAEROBIC / ENDURANCE and its muscle
@@ -40,6 +40,14 @@ export function coverageLine(coverage: Record<Adaptation, AdaptationSummary>, wi
   if (untouched.length > 0) parts.push(`Untouched: ${untouched.map(k => QUALITY_PROSE[k]).join(', ')}.`)
   if (short.length > 0) parts.push(`Short: ${short.map(k => QUALITY_PROSE[k]).join(', ')}.`)
   return parts.length > 0 ? parts.join(' ') : `Every quality on target in the last ${windowDays} days.`
+}
+
+/** A target's unit as the reads print it — "sets", "sessions", "min" (roadmap
+ *  0012: the word follows the target in use, never the modality). */
+export const UNIT_LABEL: Record<TargetUnit, string> = {
+  sets: 'sets',
+  sessions: 'sessions',
+  minutes: 'min',
 }
 
 /** The segmented control's order — the force–velocity continuum, fastest first

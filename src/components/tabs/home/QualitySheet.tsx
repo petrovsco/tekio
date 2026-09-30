@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { Adaptation, CardioEntry, EditModalTarget, SportEntry } from '../../../types'
 import { useAppStore } from '../../../store/app'
 import { muscleWindow } from '../../../lib/fusedRead'
-import { classifyCardioAdaptations, classifySportAdaptations } from '../../../lib/adaptations'
+import { classifyCardioAdaptations, classifySportAdaptations, type AdaptationSummary } from '../../../lib/adaptations'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { today, daysBetween, fmtAgo, formatDurationMins } from '../../../lib/utils'
@@ -31,12 +31,13 @@ const fmtDay = (date: string): string =>
 
 interface QualitySheetProps {
   quality: WholeBodyQuality
-  /** The window's session target, from the same coverage call the tile reads. */
-  sessionTarget: number
+  /** The quality's coverage — volume, target and unit — from the same call the
+   *  tile reads, so the title is the tile's number (roadmap 0012). */
+  summary: AdaptationSummary
   onClose: () => void
 }
 
-export default function QualitySheet({ quality, sessionTarget, onClose }: QualitySheetProps) {
+export default function QualitySheet({ quality, summary, onClose }: QualitySheetProps) {
   const cardio = useAppStore(s => s.cardio)
   const sports = useAppStore(s => s.sports)
   const openEditModal = useAppStore(s => s.openEditModal)
@@ -64,13 +65,18 @@ export default function QualitySheet({ quality, sessionTarget, onClose }: Qualit
   const rows = credited.filter(r => r.entry.date >= from)
   const lastBefore = rows.length === 0 ? credited[0] ?? null : null
 
-  const target = Math.round(sessionTarget * 10) / 10
+  const target = Math.round(summary.target * 10) / 10
+  // Endurance counts minutes (Galpin's side of 0012's fork); the others count
+  // the sessions listed below.
+  const title = summary.unit === 'minutes'
+    ? `${Math.round(summary.volume)} of ${Math.round(summary.target)} min`
+    : `${rows.length} of ${target} session${target === 1 ? '' : 's'}`
 
   return (
     <BottomSheet onClose={onClose} label={QUALITY_SHORT[quality]}>
       <SheetHeader
         eyebrow={`${QUALITY_SHORT[quality]} · LAST ${MUSCLE_WINDOW_DAYS} DAYS`}
-        title={`${rows.length} of ${target} session${target === 1 ? '' : 's'}`}
+        title={title}
         sub={rows.length === 0
           ? credited.length === 0
             ? `Nothing on record has credited ${QUALITY_SHORT[quality].toLowerCase()} yet.`

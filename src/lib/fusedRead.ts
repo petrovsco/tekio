@@ -9,8 +9,8 @@ import {
 import { LEVEL_WEIGHT, today, daysBetween, groupBy } from './utils'
 import {
   classifyCardioAdaptations, classifySportAdaptations,
-  classifyWeightSet, resolveExerciseAdaptation, muscleStimulus,
-  MUSCLE_QUALITIES, type MuscleQuality,
+  classifyWeightSet, resolveExerciseAdaptation, muscleStimulus, perMuscleVolume,
+  MUSCLE_QUALITIES, type MuscleQuality, type TargetShape, type TargetUnit,
 } from './adaptations'
 
 export { MUSCLE_QUALITIES }
@@ -86,8 +86,10 @@ export function muscleStates(
  * 10-rep set therefore shows on the hypertrophy map and not the strength map,
  * and a power set shows on the power map only (039 S3). `recovering` stays
  * muscle-level — a muscle recovers from any hard set, not from a quality.
- * `weeklyTarget` is the quality's weekly rate, scaled to the window here
- * exactly as MUSCLE_SET_TARGET is (/ground exemption 2 — a shape change).
+ * `shape` is the quality's weekly target ({@link targetShape}); its rate is
+ * scaled to the window here exactly as MUSCLE_SET_TARGET is (/ground
+ * exemption 2 — a shape change), and its unit picks what `sets` counts: power
+ * reads sessions per muscle, the other three weighted sets (roadmap 0012).
  */
 /**
  * A weekly per-muscle set rate scaled to the muscle window — the same
@@ -104,19 +106,19 @@ export function muscleQualityStates(
   exerciseMuscles: ExerciseMuscleLink[],
   muscleGroups: MuscleGroup[],
   quality: MuscleQuality,
-  weeklyTarget: number,
+  shape: TargetShape,
   overrides?: Record<string, Adaptation>,
   date: string = today(),
 ): MuscleState[] {
-  const { byQuality } = muscleStimulus(weights, exerciseMuscles, muscleWindow(date), overrides)
+  const stimulus = muscleStimulus(weights, exerciseMuscles, muscleWindow(date), overrides)
   const feedsQuality = (w: WeightEntry) => {
     const override = resolveExerciseAdaptation(w.exercise, overrides)
     return w.sets.some(s => classifyWeightSet(s.reps, override).includes(quality))
   }
   const lastAny = lastStimulusDates(weights, exerciseMuscles, date)
   const lastOfQuality = lastStimulusDates(weights, exerciseMuscles, date, feedsQuality)
-  const target = windowMuscleTarget(weeklyTarget)
-  return buildMuscleStates(muscleGroups, byQuality[quality], lastOfQuality, lastAny, target, date)
+  const target = windowMuscleTarget(shape.weekly)
+  return buildMuscleStates(muscleGroups, perMuscleVolume(stimulus, quality, shape.unit), lastOfQuality, lastAny, target, date)
 }
 
 /**
@@ -335,10 +337,11 @@ export function muscleSources(
 }
 
 /**
- * One muscle's quality mix over the muscle window: level-weighted sets per
- * muscle-linked quality from {@link muscleStimulus}. A set counts toward every
- * quality whose rep band covers it, so the four can add up to more than the
- * muscle's windowed total (roadmap 039 §6.0).
+ * One muscle's quality mix over the muscle window: level-weighted volume per
+ * muscle-linked quality from {@link muscleStimulus}, each in its target's unit
+ * (`units`; sets when omitted). A set counts toward every quality whose rep
+ * band covers it, so the four can add up to more than the muscle's windowed
+ * total (roadmap 039 §6.0).
  */
 export function muscleQualityMix(
   weights: WeightEntry[],
@@ -346,10 +349,11 @@ export function muscleQualityMix(
   muscle: string,
   overrides?: Record<string, Adaptation>,
   date: string = today(),
+  units?: Partial<Record<MuscleQuality, TargetUnit>>,
 ): Record<MuscleQuality, number> {
-  const { byQuality } = muscleStimulus(weights, exerciseMuscles, muscleWindow(date), overrides)
+  const stimulus = muscleStimulus(weights, exerciseMuscles, muscleWindow(date), overrides)
   return Object.fromEntries(
-    MUSCLE_QUALITIES.map(q => [q, byQuality[q][muscle] ?? 0]),
+    MUSCLE_QUALITIES.map(q => [q, perMuscleVolume(stimulus, q, units?.[q] ?? 'sets')[muscle] ?? 0]),
   ) as Record<MuscleQuality, number>
 }
 

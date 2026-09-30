@@ -258,7 +258,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     if (state === 'untouched') return { ...meta, note, fill: '#ffffff', edge: '#c2410c' }
     const step = state === 'on_target'
       ? 3
-      : Math.min(rampStep(c.sessionTarget > 0 ? c.volume / c.sessionTarget : 1), 2)
+      : Math.min(rampStep(c.target > 0 ? c.volume / c.target : 1), 2)
     return { ...meta, note, fill: RAMP[step], edge: step === 3 ? '#1f1f1f' : '#c9c9c7' }
   })
 
@@ -367,7 +367,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             <button
               key={q.key}
               onClick={() => setSheet({ quality: q.key })}
-              aria-label={`${q.name} sessions, last ${MUSCLE_WINDOW_DAYS} days`}
+              aria-label={`${q.name} ${coverage[q.key].unit}, last ${MUSCLE_WINDOW_DAYS} days`}
               className="border border-line rounded-sm px-[5px] pt-1 pb-[5px] text-left cursor-pointer"
             >
               <div className="flex items-center gap-1">
@@ -406,7 +406,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
               ? (
                 <QualitySheet
                   quality={sheet.quality}
-                  sessionTarget={coverage[sheet.quality].sessionTarget}
+                  summary={coverage[sheet.quality]}
                   onClose={() => setSheet(null)}
                 />
               )

@@ -168,6 +168,14 @@ export interface MuscleStimulus {
   byQuality: Record<MuscleQuality, Record<string, number>>
   /** Plain set counts per quality (no muscle weighting), same multi-membership. */
   sets: Record<MuscleQuality, number>
+  /** Level-weighted sessions per muscle group per quality: each day a muscle
+   *  did work in the quality counts once, at the highest level any of that
+   *  day's links gave it — so a primary mover's day is 1, a day it only
+   *  assisted is its secondary weight. The per-muscle count a
+   *  session-shaped quality (power) is judged by (roadmap 0012). */
+  sessions: Record<MuscleQuality, Record<string, number>>
+  /** Distinct days with a set in the quality (no muscle weighting). */
+  days: Record<MuscleQuality, number>
 }
 
 /**
@@ -195,6 +203,9 @@ export function muscleStimulus(
   const total: Record<string, number> = {}
   const byQuality = perQuality<Record<string, number>>(() => ({}))
   const sets = perQuality(() => 0)
+  // quality → muscle → date → the day's highest link weight
+  const dayWeight = perQuality<Map<string, Map<string, number>>>(() => new Map())
+  const qualityDays = perQuality<Set<string>>(() => new Set())
   for (const w of weights) {
     if (w.date < window.from || w.date > window.to) continue
     const override = resolveExerciseAdaptation(w.exercise, overrides)
@@ -202,19 +213,38 @@ export function muscleStimulus(
     for (const set of w.sets) {
       const qualities = classifyWeightSet(set.reps, override).filter(isMuscleQuality)
       const hard = !qualities.includes('power')
-      for (const q of qualities) sets[q] += 1
+      for (const q of qualities) { sets[q] += 1; qualityDays[q].add(w.date) }
       for (const l of links) {
         const lw = LEVEL_WEIGHT[l.level] ?? 0
         if (!lw) continue // zero-weight tier (level 3, roadmap 042): no sets, no key
         if (hard) total[l.group] = (total[l.group] ?? 0) + lw
-        for (const q of qualities) byQuality[q][l.group] = (byQuality[q][l.group] ?? 0) + lw
+        for (const q of qualities) {
+          byQuality[q][l.group] = (byQuality[q][l.group] ?? 0) + lw
+          let byDate = dayWeight[q].get(l.group)
+          if (!byDate) dayWeight[q].set(l.group, (byDate = new Map()))
+          byDate.set(w.date, Math.max(byDate.get(w.date) ?? 0, lw))
+        }
       }
     }
   }
   const round = (r: Record<string, number>) => { for (const k in r) r[k] = +r[k].toFixed(2) }
+  const sessions = perQuality<Record<string, number>>(() => ({}))
+  const days = perQuality(() => 0)
+  for (const q of MUSCLE_QUALITIES) {
+    for (const [group, byDate] of dayWeight[q]) {
+      sessions[q][group] = [...byDate.values()].reduce((a, b) => a + b, 0)
+    }
+    days[q] = qualityDays[q].size
+  }
   round(total)
-  for (const q of MUSCLE_QUALITIES) round(byQuality[q])
-  return { total, byQuality, sets }
+  for (const q of MUSCLE_QUALITIES) { round(byQuality[q]); round(sessions[q]) }
+  return { total, byQuality, sets, sessions, days }
+}
+
+/** One quality's per-muscle volume in the unit its target counts: sessions
+ *  for a session-shaped quality, level-weighted sets otherwise. */
+export function perMuscleVolume(stimulus: MuscleStimulus, quality: MuscleQuality, unit: TargetUnit): Record<string, number> {
+  return unit === 'sessions' ? stimulus.sessions[quality] : stimulus.byQuality[quality]
 }
 
 /** Resistance sets logged inside [from, to], each counted once — the honest
@@ -234,9 +264,10 @@ export interface MuscleStatusRow {
   id: string
   name: string
   parentId: string | null
-  /** Weighted sets toward this adaptation this week (self only). */
+  /** Weighted volume toward this adaptation in the window (self only), in the
+   *  adaptation's own unit — sets, or sessions for power (roadmap 0012). */
   sets: number
-  /** Weighted sets including immediate children. */
+  /** The same, including immediate children. */
   aggSets: number
   target: number
   status: MuscleStatus
@@ -247,21 +278,23 @@ export interface MuscleStatusRow {
 
 export interface AdaptationSummary {
   key: Adaptation
-  /** Primary weekly volume: set count (resistance) or session count (cardio). */
+  /** Volume over the window, in `unit` — the unit of the target in use, never
+   *  of the modality (roadmap 0012): sets, sessions, or minutes. */
   volume: number
-  unit: 'sets' | 'sessions'
+  unit: TargetUnit
   /** Top-level muscle rows with rolled-up children (resistance adaptations only). */
   muscles: MuscleStatusRow[]
   /** On-track / worked / total counts over the *judged* leaves (resistance only) — see `met`. */
   onTrack: number
   worked: number
   totalMuscles: number
-  /** Session target for the cardio adaptations over the window (0 for resistance). */
-  sessionTarget: number
+  /** Whole-body target over the window, in `unit` (0 for a per-muscle quality,
+   *  which is judged muscle by muscle instead). */
+  target: number
   /**
    * Whether the adaptation is on target over the window — no judged muscle
-   * below GAP_CUTOFF of its target (resistance), or the session target reached
-   * (cardio). The judged muscles are the leaves the gap map draws callouts for,
+   * below GAP_CUTOFF of its target (muscle-linked), or the whole-body target
+   * reached (cardio). The judged muscles are the leaves the gap map draws callouts for,
    * so the "N of 7 on target" counter, its "Short:" line and the map's callouts
    * read one threshold (roadmap 045).
    */
@@ -292,8 +325,9 @@ const inRange = (d: string, start: string, end: string) => d >= start && d <= en
 
 /**
  * Per-adaptation coverage across all modalities inside the inclusive window
- * [from, date]. Resistance adaptations get a rolled-up muscle-group breakdown
- * with status; cardio adaptations report session counts. Resistance sets come
+ * [from, date]. Muscle-linked adaptations get a rolled-up muscle-group
+ * breakdown with status; cardio adaptations report a whole-body count — each in
+ * the unit of its target ({@link targetShape}). Resistance sets come
  * from {@link muscleStimulus}, so a set inside a rep-band overlap counts toward
  * every quality it trains — the four muscle-linked volumes may add up to more
  * than the sets logged (roadmap 039 §6.0). The muscle read counts logged sets
@@ -307,20 +341,40 @@ const inRange = (d: string, start: string, end: string) => d >= start && d <= en
  * Per-adaptation weekly target overrides as they arrive from the DB. Structural
  * on purpose: `lib/` stays free of `lib/db/` imports.
  */
-export type TargetOverrides =
-  Partial<Record<Adaptation, { weeklyMuscleTarget: number; weeklySessionTarget?: number }>>
+export type TargetOverrides = Partial<Record<Adaptation, {
+  weeklyMuscleTarget: number
+  weeklySessionTarget: number
+  weeklyMinutesTarget: number
+}>>
+
+/** What a weekly target counts (roadmap 0012). */
+export type TargetUnit = 'sets' | 'sessions' | 'minutes'
+
+/** A weekly target and the unit it counts in. */
+export interface TargetShape {
+  unit: TargetUnit
+  weekly: number
+}
 
 /**
- * The weekly per-muscle set target for one adaptation: the user's override if
- * there is one, else the model default on the adaptation's metadata.
+ * The weekly target an adaptation is judged by, and its unit: the user's DB row
+ * if there is one, else the model default on the adaptation's metadata. The
+ * first non-zero of minutes → sessions → sets decides the shape, so the unit
+ * follows the target in use and never the modality — a set count can no longer
+ * be read against a session target and printed as "sets" (roadmap 0012 §1).
+ * The order also lets a DB row carry a new-shape value beside the legacy one
+ * the build on `master` still reads, until the release sweep clears it.
  *
  * One resolver, so every read that draws a muscle against its target draws it
  * against the same number — the rule roadmap 063 set for the whole-body strip
  * and 064 applied here. Callers scale it to their own window; the muscle reads
  * do that with {@link windowMuscleTarget} in `fusedRead.ts`.
  */
-export function weeklyMuscleTarget(quality: Adaptation, targets?: TargetOverrides): number {
-  return targets?.[quality]?.weeklyMuscleTarget ?? ADAPTATION_MAP[quality].weeklyMuscleTarget
+export function targetShape(quality: Adaptation, targets?: TargetOverrides): TargetShape {
+  const t = targets?.[quality] ?? ADAPTATION_MAP[quality]
+  if (t.weeklyMinutesTarget > 0) return { unit: 'minutes', weekly: t.weeklyMinutesTarget }
+  if (t.weeklySessionTarget > 0) return { unit: 'sessions', weekly: t.weeklySessionTarget }
+  return { unit: 'sets', weekly: t.weeklyMuscleTarget }
 }
 
 export function adaptationCoverage(
@@ -351,48 +405,60 @@ export function adaptationCoverage(
 
   const stimulus = muscleStimulus(weights, exerciseMuscles, { from, to: date }, overrides)
 
+  const shapes = Object.fromEntries(
+    ADAPTATIONS.map(a => [a.key, targetShape(a.key, targets)]),
+  ) as Record<Adaptation, TargetShape>
+
   const volume = {} as Record<Adaptation, number>
   for (const a of ADAPTATIONS) volume[a.key] = 0
-  for (const q of MUSCLE_QUALITIES) volume[q] = stimulus.sets[q]
+  for (const q of MUSCLE_QUALITIES) volume[q] = shapes[q].unit === 'sessions' ? stimulus.days[q] : stimulus.sets[q]
+
+  // A credited session adds its minutes to a minutes-shaped quality, and one to
+  // any other. Galpin's side of the 0012 fork: every credited minute counts,
+  // with no per-bout floor. A session with no recorded duration adds none.
+  const credit = (a: Adaptation, minutes: number | undefined) => {
+    volume[a] += shapes[a].unit === 'minutes' ? (minutes ?? 0) : 1
+  }
 
   // Cardio sessions. A Garmin ride can count toward multiple adaptations (e.g.
   // VO₂max + anaerobic) when several systems each got a real Training Effect.
   for (const c of cardio) {
     if (!inRange(c.date, from, date)) continue
-    for (const a of classifyCardioAdaptations(c, args.hrMax)) volume[a] += 1
+    for (const a of classifyCardioAdaptations(c, args.hrMax)) credit(a, c.duration)
   }
 
   // Sport sessions count as cardio work — a match is endurance (roadmap 005).
   for (const s of sports) {
     if (!inRange(s.date, from, date)) continue
-    for (const a of classifySportAdaptations(s)) volume[a] += 1
+    for (const a of classifySportAdaptations(s)) credit(a, s.duration)
   }
 
   const out = {} as Record<Adaptation, AdaptationSummary>
   for (const meta of ADAPTATIONS) {
-    const muscleTarget = weeklyMuscleTarget(meta.key, targets) * scale
-    const sessionTarget = (targets?.[meta.key]?.weeklySessionTarget ?? meta.weeklySessionTarget) * scale
-    const isResistance = meta.modality === 'resistance' && muscleTarget > 0
-    const muscles = isResistance && isMuscleQuality(meta.key)
-      ? buildMuscleStatusTree(stimulus.byQuality[meta.key], muscleGroups, muscleTarget)
+    const { unit, weekly } = shapes[meta.key]
+    const windowTarget = weekly * scale
+    // A muscle-linked quality reads per muscle whatever it counts (doctrine P2).
+    const perMuscle = isMuscleQuality(meta.key) && unit !== 'minutes' && windowTarget > 0
+    const muscles = perMuscle && isMuscleQuality(meta.key)
+      ? buildMuscleStatusTree(perMuscleVolume(stimulus, meta.key, unit), muscleGroups, windowTarget)
       : []
     // Judge every leaf the gap map draws callouts for (a childless top-level
     // group is its own leaf). Rolled-up parents are not judged: "Shoulders on
     // target" above a REAR DELT callout is the contradiction 045 removes.
     const relevant = muscles.flatMap(m => (m.children.length > 0 ? m.children : [m]))
     const onTrack = relevant.filter(m => m.status === 'on_track').length
-    const met = isResistance
+    const met = perMuscle
       ? relevant.length > 0 && onTrack === relevant.length
-      : volume[meta.key] >= sessionTarget && sessionTarget > 0
+      : volume[meta.key] >= windowTarget && windowTarget > 0
     out[meta.key] = {
       key: meta.key,
       volume: volume[meta.key],
-      unit: meta.modality === 'resistance' ? 'sets' : 'sessions',
+      unit,
       muscles,
       onTrack,
       worked: relevant.filter(m => m.status !== 'untouched').length,
       totalMuscles: relevant.length,
-      sessionTarget,
+      target: perMuscle ? 0 : windowTarget,
       met,
     }
   }

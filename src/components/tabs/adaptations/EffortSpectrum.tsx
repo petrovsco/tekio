@@ -1,22 +1,25 @@
 import type { WholeBodyQuality } from '../../../lib/fusedRead'
 import { RAMP, NO_DATA, rampStep } from '../home/GapMap'
-import { QUALITY_SHORT, SPECTRUM_QUALITIES } from './labels'
+import { QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL } from './labels'
+import type { TargetUnit } from '../../../lib/adaptations'
 import { fmtAgo } from '../../../lib/utils'
 
 // The whole-body read of the Adaptations drill-down (roadmap 031 §3b): the
 // three cardio qualities are three regions of one continuum ordered by how long
 // the effort lasts — anaerobic capacity is seconds, VO₂max minutes, endurance
 // hours — so they are drawn as three bands on one axis. Each band fills by the
-// SIGNAL stimulus ramp (sessions ÷ the window target) and takes the accent edge
+// SIGNAL stimulus ramp (volume ÷ the window target) and takes the accent edge
 // when the quality is stale (design-system §§1, 4 — Home's polarity). A gap is a
 // visibly empty stretch of the axis. Doctrine P2: no silhouette, no organ.
 
 export interface SpectrumBand {
   key: WholeBodyQuality
-  /** Qualifying sessions inside the window. */
-  sessions: number
-  /** Session target over the same window (weekly rate × window / 7). */
+  /** Qualifying volume inside the window, in `unit` — sessions, or minutes for
+   *  endurance (roadmap 0012). */
+  volume: number
+  /** Target over the same window (weekly rate × window / 7), in `unit`. */
   target: number
+  unit: TargetUnit
   /** Days since the last qualifying session over all history; null = never. */
   daysSince: number | null
   /** Past the grounded staleness window (or never) — reads as missing. */
@@ -49,13 +52,13 @@ export function EffortSpectrum({ bands, zeroData, onPick }: EffortSpectrumProps)
         const b = byKey.get(key)
         const x = i * (BAND_W + GAP)
         const cx = x + BAND_W / 2
-        const frac = b && b.target > 0 ? b.sessions / b.target : 0
+        const frac = b && b.target > 0 ? b.volume / b.target : 0
         const fill = zeroData || !b ? NO_DATA : RAMP[rampStep(frac)]
         const stale = !zeroData && !!b?.stale
         const edge = zeroData || !b ? '#e2e2e0' : stale ? '#c2410c' : 'none'
         const sub = zeroData || !b
           ? '—'
-          : `${b.sessions}/${b.target} sessions · ${fmtAgo(b.daysSince)}`
+          : `${Math.round(b.volume)}/${Math.round(b.target)} ${UNIT_LABEL[b.unit]} · ${fmtAgo(b.daysSince)}`
         return (
           <g
             key={key}
@@ -74,9 +77,9 @@ export function EffortSpectrum({ bands, zeroData, onPick }: EffortSpectrumProps)
             {/* Endurance only: how many of those sessions pushed the threshold.
                 A second line because the one above is already full at this
                 width — and a count, never a band (roadmap 057). */}
-            {!zeroData && b && b.threshold != null && b.sessions > 0 && (
+            {!zeroData && b && b.threshold != null && b.volume > 0 && (
               <text x={cx} y={BAND_Y + BAND_H + 18} textAnchor="middle" fontSize="7" fill="#8a8a8a">
-                {b.threshold} at threshold
+                {b.threshold} {b.threshold === 1 ? 'session' : 'sessions'} at threshold
               </text>
             )}
             {/* tick under the band's centre on the shared axis */}

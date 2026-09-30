@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { today } from '../../lib/utils'
-import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, weeklyMuscleTarget, GAP_CUTOFF } from '../../lib/adaptations'
+import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, targetShape, GAP_CUTOFF } from '../../lib/adaptations'
 import { useHrMax } from '../../hooks/useHrMax'
 import {
   muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps,
@@ -14,7 +14,7 @@ import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 import { GapMap } from './home/GapMap'
 import { EffortSpectrum, type SpectrumBand } from './adaptations/EffortSpectrum'
-import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, coverageLine } from './adaptations/labels'
+import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL, coverageLine } from './adaptations/labels'
 
 // The Adaptations drill-down (roadmap 031): a second Home. One body map with a
 // four-way quality toggle for the muscle-linked four, one effort spectrum for
@@ -71,10 +71,10 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
     [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
   )
 
-  const weeklyTarget = weeklyMuscleTarget(quality, adaptationTargets)
+  const shape = useMemo(() => targetShape(quality, adaptationTargets), [quality, adaptationTargets])
   const states = useMemo(
-    () => muscleQualityStates(weights, exerciseMuscles, muscleGroups, quality, weeklyTarget, exerciseAdaptations, date),
-    [weights, exerciseMuscles, muscleGroups, quality, weeklyTarget, exerciseAdaptations, date],
+    () => muscleQualityStates(weights, exerciseMuscles, muscleGroups, quality, shape, exerciseAdaptations, date),
+    [weights, exerciseMuscles, muscleGroups, quality, shape, exerciseAdaptations, date],
   )
   const gaps = useMemo(
     () => rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF),
@@ -104,8 +104,9 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
     const q = wholeBody.find(s => s.key === key)
     return {
       key,
-      sessions: coverage[key].volume,
-      target: coverage[key].sessionTarget,
+      volume: coverage[key].volume,
+      target: coverage[key].target,
+      unit: coverage[key].unit,
       daysSince: q?.daysSince ?? null,
       stale: q?.stale ?? true,
       threshold: key === 'endurance' ? atThreshold : undefined,
@@ -141,7 +142,7 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
       <div className="mt-3 bg-white border border-line rounded-[3px] px-2.5 pt-[7px] pb-1.5">
         <div className="flex items-baseline gap-1.5 mb-1.5">
           <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">MUSCLE-LINKED</span>
-          <span className="text-[9px] text-ink-4">— {weeklyTarget}/wk per muscle · {MUSCLE_WINDOW_DAYS}-day window</span>
+          <span className="text-[9px] text-ink-4">— {shape.weekly} {UNIT_LABEL[shape.unit]}/wk per muscle · {MUSCLE_WINDOW_DAYS}-day window</span>
         </div>
         <div className="flex border border-ink rounded-[3px] overflow-hidden mb-2" role="tablist" aria-label="Muscle-linked quality">
           {MAP_QUALITIES.map((q, i) => (
@@ -158,7 +159,7 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
             </button>
           ))}
         </div>
-        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={openMuscle} />
+        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={openMuscle} unit={UNIT_LABEL[shape.unit]} />
         <div className="flex items-center gap-1 mt-1 -mb-0.5">
           <Btn variant="ghost" small className="flex items-center gap-1.5 !px-1.5" onClick={() => setSheet({ rx: quality })}>
             <Icon name="info" size={13} /> How to train it
@@ -186,7 +187,7 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
               <MuscleListSheet
                 quality={quality}
                 states={states}
-                weeklyTarget={weeklyTarget}
+                shape={shape}
                 onPick={openMuscle}
                 onClose={() => setSheet(null)}
               />

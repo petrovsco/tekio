@@ -6,6 +6,7 @@ import {
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
 import { PUSH_THRESHOLD, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
+import type { TargetUnit } from '../lib/adaptations'
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry, WaterEntry,
   ExerciseMuscleLink, MuscleGroup,
@@ -222,8 +223,8 @@ describe('muscleQualityStates', () => {
   const entry = (date: string, exercise: string, reps: number[]): WeightEntry =>
     ({ id: `${date}-${exercise}-${reps.join()}`, date, exercise, sets: reps.map(r => ({ weight: 50, reps: r })) })
   const biceps = (states: MuscleState[]) => states.find(m => m.name === 'Biceps')!
-  const on = (weights: WeightEntry[], q: MuscleQuality, weekly = 6, overrides?: Record<string, Adaptation>) =>
-    biceps(muscleQualityStates(weights, links, GROUPS, q, weekly, overrides, TODAY))
+  const on = (weights: WeightEntry[], q: MuscleQuality, weekly = 6, overrides?: Record<string, Adaptation>, unit: TargetUnit = 'sets') =>
+    biceps(muscleQualityStates(weights, links, GROUPS, q, { unit, weekly }, overrides, TODAY))
 
   it('exports the same window Home fills against', () => {
     expect(muscleWindow(TODAY)).toEqual({ from: ago(MUSCLE_WINDOW_DAYS - 1), to: TODAY })
@@ -237,7 +238,7 @@ describe('muscleQualityStates', () => {
 
   it('scales the weekly target to the window and weights sets by link level', () => {
     const weights = [entry(ago(1), 'Curls', [10, 10, 10])]
-    const states = muscleQualityStates(weights, links, GROUPS, 'hypertrophy', 10, undefined, TODAY)
+    const states = muscleQualityStates(weights, links, GROUPS, 'hypertrophy', { unit: 'sets', weekly: 10 }, undefined, TODAY)
     expect(biceps(states).fillFraction).toBe(+(3 / (10 * MUSCLE_WINDOW_DAYS / 7)).toFixed(3))
     expect(states.find(m => m.name === 'Triceps')?.sets).toBe(1.5)
   })
@@ -270,6 +271,15 @@ describe('muscleQualityStates', () => {
     expect(on(weights, 'hypertrophy', 10, asPower).sets).toBe(0)
     expect(on(weights, 'hypertrophy', 10, asPower).daysSince).toBeNull()
     expect(on(weights, 'power').sets).toBe(0)
+  })
+
+  it('reads power in level-weighted sessions per muscle when its target counts sessions (0012)', () => {
+    const asPower = { curls: 'power' as Adaptation }
+    const weights = [entry(ago(1), 'Curls', [5, 5, 5, 5]), entry(ago(3), 'Curls', [5, 5])]
+    const states = muscleQualityStates(weights, links, GROUPS, 'power', { unit: 'sessions', weekly: 2 }, asPower, TODAY)
+    expect(biceps(states).sets).toBe(2)                                  // two days, primary mover
+    expect(states.find(m => m.name === 'Triceps')?.sets).toBe(1)         // two days at level 2's 0.5
+    expect(biceps(states).fillFraction).toBe(+(2 / (2 * MUSCLE_WINDOW_DAYS / 7)).toFixed(3))
   })
 
   it('counts window sets only but keeps the older last date', () => {

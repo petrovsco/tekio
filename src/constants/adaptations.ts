@@ -32,24 +32,33 @@ export interface AdaptationMeta {
    */
   repRange: [number, number] | null
   /**
-   * Default weekly per-muscle-group target (weighted sets) used to colour a
-   * muscle green (on track) vs amber (needs work). `0` = not muscle-targeted
-   * (cardio adaptations show sessions instead).
+   * The three target shapes (roadmap 0012). Exactly one is non-zero, and which
+   * one it is decides the unit the adaptation is counted and printed in —
+   * `targetShape` in `lib/adaptations.ts` is the one place that reads them.
+   *
+   * Weekly per-muscle-group target in weighted sets. `0` = not set-shaped.
    */
   weeklyMuscleTarget: number
   /**
-   * Weekly session target for the whole-body cardio adaptations. An adaptation
-   * counts as "on target" once this many sessions are logged. `0` for the
-   * muscle-linked adaptations, which are judged by their muscle targets instead.
+   * Weekly session target. On a muscle-linked adaptation it is per muscle —
+   * the days that muscle did this kind of work — so the quality still reads on
+   * the body map (doctrine P2); on a cardio adaptation it is whole-body
+   * sessions. `0` = not session-shaped.
    */
   weeklySessionTarget: number
+  /**
+   * Weekly minutes target, summed over the sessions the classifier credits to
+   * the adaptation. `0` = not minutes-shaped.
+   */
+  weeklyMinutesTarget: number
 }
 
 /**
  * The seven adaptations, ordered along Galpin's force–velocity → endurance
  * continuum: four muscle-linked (power → muscular endurance, read per muscle)
- * then three whole-body cardio qualities (read per session). Speed and skill
- * were dropped 2026-08-29 — see
+ * then three whole-body cardio qualities (anaerobic and VO₂max read per
+ * session, endurance in minutes — roadmap 0012). Speed and skill were dropped
+ * 2026-08-29 — see
  * tekio.rfcs/rfcs/done/0019-adaptation-model-simplification.md.
  * This array is the single source of truth for the Adaptations drill-down and
  * its rx sheet.
@@ -61,18 +70,21 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     summary: 'Force × velocity — explosiveness',
     modality: 'resistance',
     repRange: null,
+    weeklyMuscleTarget: 0,
     /**
-     * 6 — convention only, unchanged by the nine → seven simplification. No
-     * literature doses power in weekly sets per muscle; the honest unit is
-     * contacts/throws per session, so this is an exposure counter (2 sessions ×
-     * 3 sets), not a dose. Was 4, raised to 6 to match the retired `speed`
-     * entry because no source supported the two carrying different numbers
-     * (Galpin prescribed both identically) — that reasoning is why the value is
-     * 6 and survives speed's removal.
-     * See tekio.rfcs/rfcs/done/0011-adaptation-weekly-targets.md#grounding
+     * 2 sessions per muscle per week — convention, and the same claim the old
+     * `weeklyMuscleTarget: 6` made in the only unit the app then had (6 = 2
+     * sessions × 3 sets, an exposure counter, not a dose). No literature doses
+     * power in weekly sets per muscle: it is dosed per session, 2–4 sessions a
+     * week for plyometrics and ≥2 in ACSM 2026, and "never to fatigue" makes a
+     * fatigue-shaped set count the wrong instrument. Per muscle, not whole-body,
+     * because power is what a specific muscle group produces (doctrine P2).
+     * `/ground` exemption 2 — same claim, different representation.
+     * See tekio.rfcs/rfcs/done/0011-adaptation-weekly-targets.md#grounding and
+     * tekio.rfcs/rfcs/done/0012-adaptation-target-shapes.md §2
      */
-    weeklyMuscleTarget: 6,
-    weeklySessionTarget: 0,
+    weeklySessionTarget: 2,
+    weeklyMinutesTarget: 0,
     /**
      * rx.power — 30–70 % 1RM is the pooled position-stand range (ACSM 2026,
      * Currier) and Galpin's; the measured optima are exercise-specific:
@@ -121,6 +133,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
+    weeklyMinutesTarget: 0,
     /**
      * rx.strength — heavy loads drive 1RM strength: ≥80 % 1RM in the position
      * stand (ACSM 2026, Currier) and the network meta-analysis (Currier 2023,
@@ -172,6 +185,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      */
     weeklyMuscleTarget: 10,
     weeklySessionTarget: 0,
+    weeklyMinutesTarget: 0,
     rx: {
       load: '30–80% 1RM',
       reps: '5–30 (≈8–15)',
@@ -202,6 +216,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      */
     weeklyMuscleTarget: 6,
     weeklySessionTarget: 0,
+    weeklyMinutesTarget: 0,
     /**
      * rx.muscular_endurance — 40–60 % 1RM for >15 reps with <90 s rest is the
      * ACSM 2009 prescription; the card's <60 s and 2–4 sets are conventions
@@ -241,6 +256,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * physiological floor. See tekio.rfcs/rfcs/done/0011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 1,
+    weeklyMinutesTarget: 0,
     // rx.anaerobic_capacity — anaerobic capacity (maximal accumulated O2 deficit) is separately trainable: 6 wk of
     // sprint work +10 % (Medbø & Burgers 1990), 7–8 × 20 s at 170 % VO2max / 10 s +28 % where moderate continuous
     // work moved nothing (Tabata 1996); 8 × 20 s / 10 s raised it where 4 × 4 min did not (Hov 2023, Helgerud 2023).
@@ -280,6 +296,7 @@ export const ADAPTATIONS: AdaptationMeta[] = [
      * See tekio.rfcs/rfcs/done/0011-adaptation-weekly-targets.md#grounding
      */
     weeklySessionTarget: 1,
+    weeklyMinutesTarget: 0,
     // rx.vo2max — long hard intervals raise VO2max more than anything else at matched work: 4 × 4 min at 90–95 %
     // HRmax / 3 min active +7.2 % vs 15/15 +5.5 % and no change for threshold or LSD (Helgerud 2007, the cue's
     // protocol); 4 × 8 min at 90 % beat 4 × 4 at 94 % and 4 × 16 at 88 % — total work × intensity interact (Seiler
@@ -307,19 +324,20 @@ export const ADAPTATIONS: AdaptationMeta[] = [
     modality: 'cardio',
     repRange: null,
     weeklyMuscleTarget: 0,
+    weeklySessionTarget: 0,
     /**
-     * 2 — convention only, and the UNIT is known to be wrong. Zone 2 is dosed in
-     * weekly minutes everywhere it is published (WHO 150–300, Galpin 150–200,
-     * Attia 180–240), and bout structure is irrelevant to cardiorespiratory
-     * fitness at matched volume (Murphy 2019). Sessions are typed endurance at
-     * ≥25 min, so 2 certifies ~50 min/week as adequate — a third of WHO's floor.
-     * Deliberately NOT raised: even 3 yields only ~75 min/week here, which buys
-     * a more plausible number without making it true. The fix is a weekly-minutes
-     * target (Garmin already supplies duration), which also forces a choice in
-     * the Attia-vs-Galpin bout-length split.
-     * See tekio.rfcs/rfcs/done/0011-adaptation-weekly-targets.md#grounding
+     * 150 minutes per week — an ADEQUACY FLOOR, the bottom of the grounded
+     * 150–240 range (WHO 150–300, Galpin 150–200, Attia 180–240); the scout's
+     * own default. Galpin's side of the fork: minutes accumulate however they
+     * come, with no per-bout floor, because bout structure is irrelevant to
+     * cardiorespiratory fitness at matched volume (Murphy 2019) — Attia's ≥45 min
+     * bout is a single-practitioner position and is not enforced. Replaces
+     * `weeklySessionTarget: 2`, which certified ~50 min a week.
+     * `/ground` exemptions 2 and 3 — a unit change, rounded inside the range.
+     * See tekio.rfcs/rfcs/done/0011-adaptation-weekly-targets.md#grounding and
+     * tekio.rfcs/rfcs/done/0012-adaptation-target-shapes.md §4
      */
-    weeklySessionTarget: 2,
+    weeklyMinutesTarget: 150,
     // rx.endurance — Zone 2 is the band immediately below LT1/VT1 (Sitko 2025 expert panel; Jamnick 2020); the talk
     // test is the validated field proxy (≈ VT1 across modes and after VT shifts — Persinger 2004, Foster 2008, Reed &
     // Pipe 2014). No %HRmax is printed on purpose: VT1 ≈ 81 % and Fatmax ≈ 72 % HRmax with 6–29 % CV (Meixner 2025,

@@ -103,7 +103,7 @@ interface PlacedCallout {
 /** Ranked gaps → positioned callouts: top 4 numbered, a 5th shown lighter and
  *  unnumbered when it is still clearly under-trained. Labels on the same side
  *  are nudged apart; the leader line follows. */
-function placeCallouts(gaps: MuscleState[]): PlacedCallout[] {
+function placeCallouts(gaps: MuscleState[], unit: string): PlacedCallout[] {
   const anchored = gaps.filter(m => ANCHORS[m.name])
   const picked = anchored.slice(0, 4).map((m, i) => ({ m, rank: i + 1 as number | null }))
   const fifth = anchored[4]
@@ -119,7 +119,7 @@ function placeCallouts(gaps: MuscleState[]): PlacedCallout[] {
       labelY: 0,
       side: (a.fig === 'front' ? 'L' : 'R') as 'L' | 'R',
       text: rank === null ? muscleShort(m.name) : `${rank} · ${muscleShort(m.name)}`,
-      sub: m.daysSince === null ? 'never trained' : `${fmtSets(m.sets)} sets / ${m.daysSince} d`,
+      sub: m.daysSince === null ? 'never trained' : `${fmtSets(m.sets)} ${unit} / ${m.daysSince} d`,
       major: rank !== null,
     }
   })
@@ -142,9 +142,12 @@ interface GapMapProps {
   zeroData: boolean
   /** Opens the muscle drill-in (T2) — a tap on a zone or a callout label. */
   onPick?: (muscle: string) => void
+  /** What `sets` on the states counts, as the callouts print it — "sets" on
+   *  Home, the quality's unit on the drill-down (power reads sessions, 0012). */
+  unit?: string
 }
 
-export function GapMap({ states, gaps, zeroData, onPick }: GapMapProps) {
+export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMapProps) {
   const uid = useId()
   const hatchId = `${uid}h`
 
@@ -162,7 +165,7 @@ export function GapMap({ states, gaps, zeroData, onPick }: GapMapProps) {
     return { fill: RAMP[rampStep(eff.fillFraction)], recovering: eff.recovering, pick }
   }
 
-  const callouts = zeroData ? [] : placeCallouts(gaps)
+  const callouts = zeroData ? [] : placeCallouts(gaps, unit)
 
   return (
     <div>

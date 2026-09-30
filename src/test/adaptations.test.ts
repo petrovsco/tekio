@@ -26,6 +26,7 @@ import {
   MUSCLE_QUALITIES,
   GAP_CUTOFF,
   type AdaptationSummary,
+  targetShape,
 } from '../lib/adaptations'
 import { muscleQualityStates, muscleWindow, rankMuscleGaps } from '../lib/fusedRead'
 import { coverageLine } from '../components/tabs/adaptations/labels'
@@ -341,17 +342,61 @@ describe('adaptationCoverage', () => {
 
     expect(cov.strength.volume).toBe(3)
     expect(cov.hypertrophy.volume).toBe(4)
-    expect(cov.power.volume).toBe(5)
-    expect(cov.endurance.volume).toBe(2)      // Running 45 min (≥ the 25-min floor) + the tennis match
+    expect(cov.power.volume).toBe(1)          // one day of power work — power counts sessions (0012)
+    expect(cov.power.unit).toBe('sessions')
+    expect(cov.endurance.volume).toBe(65)     // minutes: Running 45 (≥ the 25-min floor) + the 20-min match
+    expect(cov.endurance.unit).toBe('minutes')
+    expect(cov.strength.unit).toBe('sets')
     expect(cov.vo2max.volume).toBe(0)
 
     const chestStrength = cov.strength.muscles.find(m => m.id === 'chest')!
     expect(chestStrength.aggSets).toBe(3)
     const chestHyp = cov.hypertrophy.muscles.find(m => m.id === 'chest')!
     expect(chestHyp.aggSets).toBe(4)
-    // Box Jump power routed to Front Delt (child of Shoulders)
+    // Box Jump power routed to Front Delt (child of Shoulders): one session
     const shouldersPower = cov.power.muscles.find(m => m.id === 'shoulders')!
-    expect(shouldersPower.aggSets).toBe(5)
+    expect(shouldersPower.aggSets).toBe(1)
+  })
+
+  it('judges power per muscle in sessions, not sets (0012 §2)', () => {
+    const date = '2025-01-07'
+    const run = (weights: WeightEntry[]) => adaptationCoverage({
+      weights, cardio: [], sports: [], exerciseMuscles: links,
+      muscleGroups: groups.filter(g => g.id === 'shoulders' || g.id === 'front-delt'), from: '2025-01-01', date,
+    })
+    // Ten sets in one day is still one exposure — below the 2/wk target.
+    const oneDay = run([w('a', '2025-01-03', 'Box Jump', 5, 10)])
+    expect(oneDay.power.volume).toBe(1)
+    expect(oneDay.power.met).toBe(false)
+    // Two days of three sets meets it.
+    const twoDays = run([w('a', '2025-01-03', 'Box Jump', 5, 3), w('b', '2025-01-06', 'Box Jump', 5, 3)])
+    expect(twoDays.power.volume).toBe(2)
+    expect(twoDays.power.met).toBe(true)
+  })
+
+  it('reads endurance in credited minutes, with no per-bout floor (0012 §4, Galpin)', () => {
+    const cov = (cardio: CardioEntry[]) => adaptationCoverage({
+      weights: [], cardio, sports: [], exerciseMuscles: links, muscleGroups: groups,
+      from: '2025-01-01', date: '2025-01-07',
+    }).endurance
+    // Five 30-min easy sessions reach the 150-min floor; no 45-min bout is needed.
+    const five = cov(Array.from({ length: 5 }, (_, i) => ({ id: `r${i}`, date: `2025-01-0${i + 1}`, type: 'Running', duration: 30 })))
+    expect(five.volume).toBe(150)
+    expect(five.target).toBe(150)
+    expect(five.met).toBe(true)
+    // Two sessions — the old target — are now short.
+    const two = cov([{ id: 'a', date: '2025-01-02', type: 'Running', duration: 30 }, { id: 'b', date: '2025-01-04', type: 'Running', duration: 30 }])
+    expect(two.volume).toBe(60)
+    expect(two.met).toBe(false)
+  })
+
+  it('reads a DB row by the first non-zero of minutes → sessions → sets', () => {
+    // The legacy value the master build reads sits beside the new shape.
+    expect(targetShape('power', { power: { weeklyMuscleTarget: 6, weeklySessionTarget: 2, weeklyMinutesTarget: 0 } }))
+      .toEqual({ unit: 'sessions', weekly: 2 })
+    expect(targetShape('endurance', { endurance: { weeklyMuscleTarget: 0, weeklySessionTarget: 2, weeklyMinutesTarget: 150 } }))
+      .toEqual({ unit: 'minutes', weekly: 150 })
+    expect(targetShape('strength')).toEqual({ unit: 'sets', weekly: 6 })
   })
 
   it('counts a Garmin ride toward one adaptation — anaerobic TE ≥ 2.0 no longer double-counts it (005)', () => {
@@ -392,7 +437,8 @@ describe('adaptationCoverage', () => {
       exerciseMuscles: links, muscleGroups: groups,
       from: '2025-01-01', date: '2025-01-14', windowDays: 14,
     })
-    expect(cov.endurance.sessionTarget).toBe(4) // 2/wk over two weeks
+    expect(cov.endurance.target).toBe(300) // 150 min/wk over two weeks
+    expect(cov.vo2max.target).toBe(2)      // 1/wk over two weeks
     expect(cov.strength.muscles.find(m => m.id === 'chest')!.target).toBe(12) // 6/wk over two weeks
   })
 
@@ -491,7 +537,7 @@ describe('on target — counter, "Short:" line and map callouts read one line', 
       weights, cardio: [], sports: [], exerciseMuscles, muscleGroups,
       from, date, windowDays: MUSCLE_WINDOW_DAYS,
     })
-    const states = muscleQualityStates(weights, exerciseMuscles, muscleGroups, 'hypertrophy', weekly, undefined, date)
+    const states = muscleQualityStates(weights, exerciseMuscles, muscleGroups, 'hypertrophy', { unit: 'sets', weekly }, undefined, date)
     const callouts = rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF).map(m => m.name)
     return { met: cov.hypertrophy.met, callouts, muscles: cov.hypertrophy.muscles }
   }
@@ -580,7 +626,7 @@ describe('isThresholdCardio / isThresholdSport / thresholdEnduranceCount', () =>
 
 describe('splitCoverage / coverageLine — the one untouched/short split Home and Adaptations print (062)', () => {
   const summary = (key: Adaptation, volume: number, met: boolean): AdaptationSummary => ({
-    key, volume, unit: 'sets', muscles: [], onTrack: 0, worked: 0, totalMuscles: 0, sessionTarget: 0, met,
+    key, volume, unit: 'sets', muscles: [], onTrack: 0, worked: 0, totalMuscles: 0, target: 0, met,
   })
   const coverage = (rows: Partial<Record<Adaptation, [number, boolean]>>): Record<Adaptation, AdaptationSummary> =>
     Object.fromEntries(ADAPTATIONS.map(a => {

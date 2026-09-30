@@ -2,7 +2,8 @@ import { rankMuscleGaps, type MuscleQuality, type MuscleState } from '../../../l
 import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { BottomSheet, SheetHeader } from '../home/BottomSheet'
 import { RAMP, rampStep } from '../home/GapMap'
-import { QUALITY_SHORT } from './labels'
+import { QUALITY_SHORT, UNIT_LABEL } from './labels'
+import type { TargetShape } from '../../../lib/adaptations'
 import { fmtAgo, fmtSets } from '../../../lib/utils'
 
 // The per-muscle detail for the selected quality (roadmap 031 §3a, §7 decision
@@ -13,21 +14,22 @@ import { fmtAgo, fmtSets } from '../../../lib/utils'
 interface MuscleListSheetProps {
   quality: MuscleQuality
   states: MuscleState[]
-  /** Weekly per-muscle set rate the fill is judged against. */
-  weeklyTarget: number
+  /** The weekly per-muscle target the fill is judged against, and its unit. */
+  shape: TargetShape
   onPick: (muscle: string) => void
   onClose: () => void
 }
 
-export default function MuscleListSheet({ quality, states, weeklyTarget, onPick, onClose }: MuscleListSheetProps) {
+export default function MuscleListSheet({ quality, states, shape, onPick, onClose }: MuscleListSheetProps) {
   const ranked = rankMuscleGaps(states)
-  const target = weeklyTarget * MUSCLE_WINDOW_DAYS / 7
+  const target = shape.weekly * MUSCLE_WINDOW_DAYS / 7
+  const unit = UNIT_LABEL[shape.unit]
   return (
     <BottomSheet label={`${QUALITY_SHORT[quality]} — all muscles`} onClose={onClose}>
       <SheetHeader
         eyebrow="ALL MUSCLES · WORST FIRST"
         title={QUALITY_SHORT[quality]}
-        sub={`${weeklyTarget}/wk per muscle · ${MUSCLE_WINDOW_DAYS}-day window · target ${fmtSets(target)} sets`}
+        sub={`${shape.weekly} ${unit}/wk per muscle · ${MUSCLE_WINDOW_DAYS}-day window · target ${fmtSets(target)} ${unit}`}
         onClose={onClose}
       />
 

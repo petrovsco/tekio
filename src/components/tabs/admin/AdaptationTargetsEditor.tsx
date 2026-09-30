@@ -4,7 +4,15 @@ import { SecTitle } from '../../ui/Card'
 import { FIELD } from '../../ui/Input'
 import { ADAPTATIONS } from '../../../constants/adaptations'
 import { updateAdaptationTarget } from '../../../lib/db/adaptationTargets'
+import { targetShape, type TargetUnit } from '../../../lib/adaptations'
 import type { Adaptation } from '../../../types'
+
+/** The DB field that holds each shape's target. */
+const FIELD_FOR = {
+  sets: 'weeklyMuscleTarget',
+  sessions: 'weeklySessionTarget',
+  minutes: 'weeklyMinutesTarget',
+} as const satisfies Record<TargetUnit, string>
 
 export function AdaptationTargetsEditor() {
   const adaptationTargets = useAppStore(s => s.adaptationTargets)
@@ -14,7 +22,7 @@ export function AdaptationTargetsEditor() {
 
   const save = async (
     key: Adaptation,
-    field: 'weeklyMuscleTarget' | 'weeklySessionTarget',
+    field: (typeof FIELD_FOR)[TargetUnit],
     value: number,
   ) => {
     if (!Number.isFinite(value) || value < 0) return
@@ -35,8 +43,9 @@ export function AdaptationTargetsEditor() {
       <div>
         <SecTitle className="mb-1">Weekly targets</SecTitle>
         <p className="text-[11px] text-ink-2 leading-[1.4]">
-          Muscle-linked adaptations use a weekly per-muscle set target; the cardio ones use a
-          weekly session target. Reaching a target marks the adaptation “on target” on the dashboard.
+          Each adaptation is counted in its own unit: sets per muscle, sessions (per muscle for
+          power), or minutes for endurance. Reaching a target marks the adaptation “on target” on
+          the dashboard.
         </p>
       </div>
 
@@ -46,15 +55,15 @@ export function AdaptationTargetsEditor() {
           meanings. */}
       <div className="flex flex-col divide-y divide-hairline">
         {ADAPTATIONS.map(meta => {
-          const isResistance = meta.modality === 'resistance'
-          const field = isResistance ? 'weeklyMuscleTarget' : 'weeklySessionTarget'
-          const current = adaptationTargets[meta.key]?.[field]
-            ?? (isResistance ? meta.weeklyMuscleTarget : meta.weeklySessionTarget)
+          // The shape in use decides which field this row edits (roadmap 0012).
+          const { unit, weekly: current } = targetShape(meta.key, adaptationTargets)
+          const field = FIELD_FOR[unit]
+          const perMuscle = meta.modality === 'resistance' ? ' / muscle' : ''
           return (
             <div key={meta.key} className="flex items-center gap-2 py-2">
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-ink truncate">{meta.label}</p>
-                <p className="text-[10px] text-ink-3">{isResistance ? 'sets / muscle / week' : 'sessions / week'}</p>
+                <p className="text-[10px] text-ink-3">{`${unit}${perMuscle} / week`}</p>
               </div>
               {/* The field is full-width inside a fixed cell rather than a
                   narrow field: FIELD already sets w-full, and two width

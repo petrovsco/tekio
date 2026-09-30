@@ -9,7 +9,7 @@ import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR }
 import { today, fmtSets, fmtAgo } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
-import { GAP_CUTOFF, weeklyMuscleTarget } from '../../../lib/adaptations'
+import { GAP_CUTOFF, targetShape } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
 
@@ -67,17 +67,20 @@ export default function MuscleSheet({
     () => muscleSources(weights, exerciseMuscles, muscle),
     [weights, exerciseMuscles, muscle],
   )
-  const mix = useMemo(
-    () => muscleQualityMix(weights, exerciseMuscles, muscle, exerciseAdaptations),
-    [weights, exerciseMuscles, muscle, exerciseAdaptations],
-  )
-  // Each quality's own window target — the number the Adaptations map draws
-  // every muscle against, through the same resolver and the same scaler (064).
-  const qualityTargets = useMemo(
-    () => Object.fromEntries(MUSCLE_QUALITIES.map(
-      q => [q, windowMuscleTarget(weeklyMuscleTarget(q, adaptationTargets))],
-    )) as Record<(typeof MUSCLE_QUALITIES)[number], number>,
+  // Each quality's own target — the number and unit the Adaptations map draws
+  // every muscle against, through the same resolver and the same scaler (064);
+  // power counts sessions, the other three sets (roadmap 0012).
+  const shapes = useMemo(
+    () => Object.fromEntries(MUSCLE_QUALITIES.map(q => [q, targetShape(q, adaptationTargets)])) as
+      Record<(typeof MUSCLE_QUALITIES)[number], ReturnType<typeof targetShape>>,
     [adaptationTargets],
+  )
+  const mix = useMemo(
+    () => muscleQualityMix(
+      weights, exerciseMuscles, muscle, exerciseAdaptations, undefined,
+      Object.fromEntries(MUSCLE_QUALITIES.map(q => [q, shapes[q].unit])),
+    ),
+    [weights, exerciseMuscles, muscle, exerciseAdaptations, shapes],
   )
 
   const [logOpen, setLogOpen] = useState(false)
@@ -239,13 +242,15 @@ export default function MuscleSheet({
           </div>
           <div className="flex gap-1.5">
             {MUSCLE_QUALITIES.map(q => {
-              const target = qualityTargets[q]
+              const target = windowMuscleTarget(shapes[q].weekly)
               const fraction = target > 0 ? mix[q] / target : 0
               return (
                 <div key={q} className="grow basis-0 border border-line rounded-[2px] px-1.5 pt-1 pb-[5px] text-center">
                   <div className={`text-[13px] font-bold ${mix[q] === 0 ? 'text-ink-4' : 'text-ink'}`}>
                     {fmtSets(mix[q])}
-                    <span className="text-[8px] font-normal text-ink-3">/{fmtSets(target)}</span>
+                    <span className="text-[8px] font-normal text-ink-3">
+                      /{fmtSets(target)}{shapes[q].unit === 'sessions' ? ' sess' : ''}
+                    </span>
                   </div>
                   <div className="h-[3px] mt-1 rounded-sm bg-line overflow-hidden">
                     <div
