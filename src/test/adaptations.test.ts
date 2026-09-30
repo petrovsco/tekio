@@ -486,10 +486,10 @@ describe('on target — counter, "Short:" line and map callouts read one line', 
 
   // Both surfaces at once: `met` drives the header count and the "Short:"
   // line; the callouts are the leaves under GAP_CUTOFF on the quality map.
-  function read(weights: WeightEntry[], muscleGroups: MuscleGroup[], exerciseMuscles = links, tracked?: string[]) {
+  function read(weights: WeightEntry[], muscleGroups: MuscleGroup[], exerciseMuscles = links) {
     const cov = adaptationCoverage({
       weights, cardio: [], sports: [], exerciseMuscles, muscleGroups,
-      from, date, windowDays: MUSCLE_WINDOW_DAYS, trackedMuscleIds: tracked,
+      from, date, windowDays: MUSCLE_WINDOW_DAYS,
     })
     const states = muscleQualityStates(weights, exerciseMuscles, muscleGroups, 'hypertrophy', weekly, undefined, date)
     const callouts = rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF).map(m => m.name)
@@ -522,7 +522,7 @@ describe('on target — counter, "Short:" line and map callouts read one line', 
     const press: ExerciseMuscleLink[] = [
       { exercise: 'Overhead Press', group: 'Front Delt', region: 'upper', level: 1, contribution: 'stimulus' },
     ]
-    const r = read([w('a', '2025-01-10', 'Overhead Press', 10, target)], shoulders, press, ['shoulders'])
+    const r = read([w('a', '2025-01-10', 'Overhead Press', 10, target)], shoulders, press)
     expect(r.muscles.find(m => m.id === 'shoulders')!.fillFraction).toBe(1)
     expect(r.met).toBe(false)
     expect(r.callouts).toEqual(['Rear Delt'])

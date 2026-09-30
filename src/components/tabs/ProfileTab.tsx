@@ -14,9 +14,8 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { usePrefs } from '../../store/prefs'
-import { useAppStore } from '../../store/app'
 import { Card, SecTitle } from '../ui/Card'
 import { Inp } from '../ui/Input'
 import { Chip } from '../ui/Chip'
@@ -102,10 +101,8 @@ function SortableRow({ section }: { section: SectionConfig }) {
 export function ProfileTab() {
   const {
     sections, reorderSections, weekStartDay, setWeekStartDay,
-    trackedMuscleGroupIds, setTrackedMuscleGroupIds,
     setHrMaxStored, setBirthDate,
   } = usePrefs()
-  const muscleGroups = useAppStore(s => s.muscleGroups)
   const [dataAction, setDataAction] = useState<'import' | 'export' | null>(null)
 
   // The profile HRmax (roadmap 060): the number the user set — typed here, or
@@ -127,18 +124,6 @@ export function ProfileTab() {
         : source === 'estimate'
           ? `Estimated ${estimate} bpm from your age (${HR_MAX_FORMULA_INTERCEPT} − ${HR_MAX_FORMULA_SLOPE} × age, about ±10 bpm for one person) — a tracker peak or a typed number replaces it.`
           : 'No number yet — add your birth date, or type a max heart rate from another device or a test.'
-
-  const topMuscles = useMemo(
-    () => muscleGroups.filter(g => !g.parentId).sort((a, b) => a.name.localeCompare(b.name)),
-    [muscleGroups],
-  )
-  const tracked = new Set(trackedMuscleGroupIds)
-  const toggleMuscle = (id: string) => {
-    const next = new Set(tracked)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setTrackedMuscleGroupIds([...next])
-  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -212,31 +197,6 @@ export function ProfileTab() {
             onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }}
           />
         </div>
-      </Card>
-
-      <Card>
-        <SecTitle>Adaptation tracking</SecTitle>
-        <p className="text-xs text-ink-2 mb-2.5 leading-[1.4]">
-          Choose which muscle groups must hit their weekly target for a resistance adaptation to
-          count as “on target” on the dashboard. Select none to count every muscle group.
-        </p>
-        <div className="flex flex-wrap gap-1.5">
-          {topMuscles.map(g => (
-            <Chip key={g.id} small active={tracked.has(g.id)} onClick={() => toggleMuscle(g.id)}>
-              {g.name}
-            </Chip>
-          ))}
-        </div>
-        {tracked.size > 0 && (
-          // Undoing a selection is the third-rank action here, so it is ghost
-          // text (§8). The accent would claim an urgency this does not have.
-          <button
-            onClick={() => setTrackedMuscleGroupIds([])}
-            className="text-[11px] font-semibold text-ink-3 hover:text-ink mt-2.5 cursor-pointer transition-colors"
-          >
-            Reset to all muscle groups
-          </button>
-        )}
       </Card>
 
       <AssistantSettings />

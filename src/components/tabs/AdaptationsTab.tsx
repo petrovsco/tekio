@@ -1,6 +1,5 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
-import { usePrefs } from '../../store/prefs'
 import { today } from '../../lib/utils'
 import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, weeklyMuscleTarget, GAP_CUTOFF } from '../../lib/adaptations'
 import { useHrMax } from '../../hooks/useHrMax'
@@ -47,7 +46,6 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
   const muscleGroups = useAppStore(s => s.muscleGroups)
   const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
   const adaptationTargets = useAppStore(s => s.adaptationTargets)
-  const { trackedMuscleGroupIds } = usePrefs()
   const { hrMax } = useHrMax()
   const date = today()
   const { from } = muscleWindow(date)
@@ -68,9 +66,9 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
   const coverage = useMemo(
     () => adaptationCoverage({
       weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, windowDays: MUSCLE_WINDOW_DAYS,
-      overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets, hrMax,
+      overrides: exerciseAdaptations, targets: adaptationTargets, hrMax,
     }),
-    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets, hrMax],
+    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
   )
 
   const weeklyTarget = weeklyMuscleTarget(quality, adaptationTargets)

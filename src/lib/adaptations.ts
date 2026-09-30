@@ -262,8 +262,8 @@ export interface AdaptationSummary {
    * Whether the adaptation is on target over the window — no judged muscle
    * below GAP_CUTOFF of its target (resistance), or the session target reached
    * (cardio). The judged muscles are the leaves the gap map draws callouts for,
-   * inside the tracked top-level groups, so the "N of 7 on target" counter, its
-   * "Short:" line and the map's callouts read one threshold (roadmap 045).
+   * so the "N of 7 on target" counter, its "Short:" line and the map's callouts
+   * read one threshold (roadmap 045).
    */
   met: boolean
 }
@@ -337,11 +337,6 @@ export function adaptationCoverage(
     /** Optional exercise-name → adaptation overrides (lowercased keys). */
     overrides?: Record<string, Adaptation>
     /**
-     * Top-level muscle-group ids the user tracks toward completion. Empty/omitted
-     * counts every muscle group.
-     */
-    trackedMuscleIds?: string[]
-    /**
      * Per-adaptation weekly target overrides (from the DB). Missing keys fall back
      * to the built-in defaults on each adaptation's metadata.
      */
@@ -353,9 +348,6 @@ export function adaptationCoverage(
   const { weights, cardio, sports, exerciseMuscles, muscleGroups, from, overrides, targets } = args
   const date = args.date ?? today()
   const scale = (args.windowDays ?? 7) / 7
-  const trackedSet = args.trackedMuscleIds && args.trackedMuscleIds.length > 0
-    ? new Set(args.trackedMuscleIds)
-    : null
 
   const stimulus = muscleStimulus(weights, exerciseMuscles, { from, to: date }, overrides)
 
@@ -384,13 +376,10 @@ export function adaptationCoverage(
     const muscles = isResistance && isMuscleQuality(meta.key)
       ? buildMuscleStatusTree(stimulus.byQuality[meta.key], muscleGroups, muscleTarget)
       : []
-    // Judge the leaves the gap map draws callouts for (a childless top-level
-    // group is its own leaf), inside the tracked subset — or every group if
-    // none is set. Rolled-up parents are not judged: "Shoulders on target"
-    // above a REAR DELT callout is the contradiction 045 removes.
-    const relevant = muscles
-      .filter(m => !trackedSet || trackedSet.has(m.id))
-      .flatMap(m => (m.children.length > 0 ? m.children : [m]))
+    // Judge every leaf the gap map draws callouts for (a childless top-level
+    // group is its own leaf). Rolled-up parents are not judged: "Shoulders on
+    // target" above a REAR DELT callout is the contradiction 045 removes.
+    const relevant = muscles.flatMap(m => (m.children.length > 0 ? m.children : [m]))
     const onTrack = relevant.filter(m => m.status === 'on_track').length
     const met = isResistance
       ? relevant.length > 0 && onTrack === relevant.length

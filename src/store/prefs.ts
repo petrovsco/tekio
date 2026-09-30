@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { SectionConfig } from '../lib/db/sectionConfig'
 import { loadSectionConfig, updateSectionField, saveSectionConfig } from '../lib/db/sectionConfig'
 import {
-  loadProfile, updateWeekStartDay, updateTrackedMuscleGroupIds, updateHrMax, updateBirthDate,
+  loadProfile, updateWeekStartDay, updateHrMax, updateBirthDate,
 } from '../lib/db/user'
 import type { WeekStartDay } from '../lib/utils'
 import type { HrMaxSource } from '../lib/hrMax'
@@ -10,8 +10,6 @@ import type { HrMaxSource } from '../lib/hrMax'
 interface PrefsStore {
   sections: SectionConfig[]
   weekStartDay: WeekStartDay
-  /** Muscle-group ids counted toward adaptation completion. Empty = count all. */
-  trackedMuscleGroupIds: string[]
   /** The HRmax the user set (bpm) — typed, or the tracker peak they accepted; null = the age estimate, or nothing (roadmap 060). */
   hrMaxStored: number | null
   hrMaxSource: HrMaxSource | null
@@ -21,7 +19,6 @@ interface PrefsStore {
   setSection: (key: string, patch: Partial<Pick<SectionConfig, 'showInMenu'>>) => Promise<void>
   reorderSections: (newOrder: string[]) => Promise<void>
   setWeekStartDay: (value: WeekStartDay) => Promise<void>
-  setTrackedMuscleGroupIds: (ids: string[]) => Promise<void>
   setHrMaxStored: (value: number | null, source: HrMaxSource) => Promise<void>
   setBirthDate: (value: string | null) => Promise<void>
 }
@@ -29,7 +26,6 @@ interface PrefsStore {
 export const usePrefs = create<PrefsStore>((set, get) => ({
   sections: [],
   weekStartDay: 'monday',
-  trackedMuscleGroupIds: [],
   hrMaxStored: null,
   hrMaxSource: null,
   birthDate: null,
@@ -63,11 +59,6 @@ export const usePrefs = create<PrefsStore>((set, get) => ({
   setWeekStartDay: async (value) => {
     set({ weekStartDay: value })
     await updateWeekStartDay(value)
-  },
-
-  setTrackedMuscleGroupIds: async (ids) => {
-    set({ trackedMuscleGroupIds: ids })
-    await updateTrackedMuscleGroupIds(ids)
   },
 
   setHrMaxStored: async (value, source) => {

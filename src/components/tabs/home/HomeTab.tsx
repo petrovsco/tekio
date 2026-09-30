@@ -1,6 +1,5 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { usePrefs } from '../../../store/prefs'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, waterStatus, fusedVerdict,
@@ -125,7 +124,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const muscleGroups = useAppStore(s => s.muscleGroups)
   const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
   const adaptationTargets = useAppStore(s => s.adaptationTargets)
-  const { trackedMuscleGroupIds } = usePrefs()
 
   const [sheet, setSheet] = useState<OpenSheet | null>(null)
   const prefetched = useRef(false)
@@ -160,9 +158,9 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const coverage = useMemo(
     () => adaptationCoverage({
       weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, windowDays: MUSCLE_WINDOW_DAYS,
-      overrides: exerciseAdaptations, trackedMuscleIds: trackedMuscleGroupIds, targets: adaptationTargets, hrMax,
+      overrides: exerciseAdaptations, targets: adaptationTargets, hrMax,
     }),
-    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, trackedMuscleGroupIds, adaptationTargets, hrMax],
+    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
   )
   const missingLine = coverageLine(coverage, MUSCLE_WINDOW_DAYS)
 
