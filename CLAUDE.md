@@ -96,7 +96,7 @@ and marking which build wrote a row is
 2026-09-05 and 2.1.0 on 2026-09-30, and the reasoning behind each one is
 roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/done/0050-release-procedure.md`):
 
-1. **Pre-flight on `develop`** — `npm run build`, `npm run test`, `npm run check:docs`, all green.
+1. **Pre-flight on `develop`** — `npm run build`, `npm run test`, `npm run check:docs`, and `node scripts/check-links.mjs` in `tekio.rfcs`, all green.
 2. **Registry** — in `tekio.rfcs/rfcs/releases.md` set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line.
 3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
 4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`.
@@ -109,7 +109,7 @@ roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/done/0050-release-procedure.m
 ```bash
 npm run dev          # Start Vite dev server
 npm run build        # TypeScript check + Vite build
-npm run typecheck    # Type-check only (no emit)
+npm run typecheck    # Type-check only — `tsc -b`, both project configs, the check build runs
 npm run lint         # ESLint (flat config in eslint.config.js)
 npm run knip         # Dead files, exports and dependencies (knip.jsonc)
 npm run perf         # First-paint bundle size vs the committed baseline (needs a build)
