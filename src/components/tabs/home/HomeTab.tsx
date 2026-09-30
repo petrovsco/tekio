@@ -10,7 +10,7 @@ import { cycleInfo, today, daysBetween, fmtSets, fmtAgo } from '../../../lib/uti
 import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
-import { coverageLine } from '../adaptations/labels'
+import { coverageLine, coverageParts } from '../adaptations/labels'
 import { Icon } from '../../ui/Icon'
 import type { FoldKind } from './FoldSheet'
 import type { WholeBodyQuality } from './QualitySheet'
@@ -162,7 +162,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     }),
     [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
   )
-  const missingLine = coverageLine(coverage, MUSCLE_WINDOW_DAYS)
+  const missing = coverageParts(coverage)
 
   const verdict = fusedVerdict(sys.readiness, don)
   const gated = verdict.mode === 'hold'
@@ -326,8 +326,10 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         </div>
       )}
 
-      {/* What is missing = the map: ranked callouts on the body ARE the list */}
-      <div className="mt-3 bg-white border border-line rounded-[3px] px-2.5 py-[7px]">
+      {/* What is missing = the map: ranked callouts on the body ARE the list.
+          8px above, like the cards below — the 4px it gives back pays for the
+          line's larger type, and Home stays one 900px screen (0082) */}
+      <div className="mt-2 bg-white border border-line rounded-[3px] px-2.5 py-[7px]">
         <div className="flex items-baseline gap-1.5 mb-0.5">
           <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">WHAT IS MISSING</span>
           <span className="text-[9px] text-ink-4">— ranked on the body · worst first</span>
@@ -336,10 +338,23 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         {/* the seven qualities by name — the sentence the Adaptations header
             prints, from one helper (062). Power is one name in it, not a line
             of its own: it is muscle-linked, so its zero lives here, on the
-            muscle side, never in the cardio strip (P2) */}
-        <div className="text-[9px] text-ink-2 mt-1 text-pretty">
-          {zeroData ? 'ALL 7 QUALITIES — no data yet' : missingLine}
-        </div>
+            muscle side, never in the cardio strip (P2). Body size, not a 9px
+            note: it is the only thing on Home that answers §6's second
+            question, and at 9px a cold read never reached it (0082). The
+            untouched half leads in ink; the short half follows in ink-2 */}
+        <p className="text-xs leading-[1.4] mt-1 text-pretty">
+          {zeroData ? (
+            <span className="text-ink-2">All seven qualities — no data yet.</span>
+          ) : missing.untouched || missing.short ? (
+            <>
+              {missing.untouched && <span className="font-semibold">{missing.untouched}</span>}
+              {missing.untouched && missing.short && ' '}
+              {missing.short && <span className="text-ink-2">{missing.short}</span>}
+            </>
+          ) : (
+            coverageLine(coverage, MUSCLE_WINDOW_DAYS)
+          )}
+        </p>
         {/* The door (064). 062 kept both screens on the split "Home answers,
             Adaptations explains" — which only works if the answer can be
             walked to the explanation. Until now Adaptations lived in the

@@ -35,11 +35,24 @@ const QUALITY_PROSE: Record<Adaptation, string> = {
  * quality is missing (roadmap 062). Callers handle the zero-data case first.
  */
 export function coverageLine(coverage: Record<Adaptation, AdaptationSummary>, windowDays: number): string {
-  const { untouched, short } = splitCoverage(coverage)
-  const parts: string[] = []
-  if (untouched.length > 0) parts.push(`Untouched: ${untouched.map(k => QUALITY_PROSE[k]).join(', ')}.`)
-  if (short.length > 0) parts.push(`Short: ${short.map(k => QUALITY_PROSE[k]).join(', ')}.`)
+  const { untouched, short } = coverageParts(coverage)
+  const parts = [untouched, short].filter(Boolean)
   return parts.length > 0 ? parts.join(' ') : `Every quality on target in the last ${windowDays} days.`
+}
+
+/**
+ * The same sentence in its two halves, so Home can weight them apart — the
+ * untouched half is the stronger claim and leads (roadmap 0082). Joined, they
+ * are `coverageLine` exactly; an empty half is null.
+ */
+export function coverageParts(
+  coverage: Record<Adaptation, AdaptationSummary>,
+): { untouched: string | null; short: string | null } {
+  const { untouched, short } = splitCoverage(coverage)
+  return {
+    untouched: untouched.length > 0 ? `Untouched: ${untouched.map(k => QUALITY_PROSE[k]).join(', ')}.` : null,
+    short: short.length > 0 ? `Short: ${short.map(k => QUALITY_PROSE[k]).join(', ')}.` : null,
+  }
 }
 
 /** A target's unit as the reads print it — "sets", "sessions", "min" (roadmap

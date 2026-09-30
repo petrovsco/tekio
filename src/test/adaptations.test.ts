@@ -29,7 +29,7 @@ import {
   targetShape,
 } from '../lib/adaptations'
 import { muscleQualityStates, muscleWindow, rankMuscleGaps } from '../lib/fusedRead'
-import { coverageLine } from '../components/tabs/adaptations/labels'
+import { coverageLine, coverageParts } from '../components/tabs/adaptations/labels'
 import type { Adaptation, CardioEntry, CardioFormat, ExerciseMuscleLink, MuscleGroup, SportEntry, WeightEntry } from '../types'
 import { ADAPTATIONS, ADAPTATION_MAP } from '../constants/adaptations'
 import { MUSCLE_WINDOW_DAYS } from '../constants/app'
@@ -672,5 +672,14 @@ describe('splitCoverage / coverageLine — the one untouched/short split Home an
     expect(coverageLine(coverage({ power: [3, false] }), MUSCLE_WINDOW_DAYS))
       .toBe('Untouched: strength, hypertrophy, muscular endurance, anaerobic, VO₂max, endurance. Short: power.')
     expect(coverageLine(allMet, 14)).toBe('Every quality on target in the last 14 days.')
+  })
+
+  it('splits into the two halves Home weights apart, which join back to the line exactly (0082)', () => {
+    for (const c of [mixed, coverage({ power: [3, false] }), allMet]) {
+      const { untouched, short } = coverageParts(c)
+      const joined = [untouched, short].filter(Boolean).join(' ')
+      if (joined) expect(joined).toBe(coverageLine(c, MUSCLE_WINDOW_DAYS))
+    }
+    expect(coverageParts(allMet)).toEqual({ untouched: null, short: null })
   })
 })
