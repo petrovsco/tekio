@@ -674,12 +674,9 @@ describe('splitCoverage / coverageLine — the one untouched/short split Home an
     expect(coverageLine(allMet, 14)).toBe('Every quality on target in the last 14 days.')
   })
 
-  it('splits into the two halves Home weights apart, which join back to the line exactly (0082)', () => {
-    for (const c of [mixed, coverage({ power: [3, false] }), allMet]) {
-      const { untouched, short } = coverageParts(c)
-      const joined = [untouched, short].filter(Boolean).join(' ')
-      if (joined) expect(joined).toBe(coverageLine(c, MUSCLE_WINDOW_DAYS))
-    }
+  it('gives Home the names of each half, which the line is built from (0082)', () => {
+    expect(coverageParts(mixed))
+      .toEqual({ untouched: 'power, muscular endurance, anaerobic', short: 'hypertrophy, endurance' })
     expect(coverageParts(allMet)).toEqual({ untouched: null, short: null })
   })
 })

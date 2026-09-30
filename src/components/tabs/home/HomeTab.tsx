@@ -341,15 +341,20 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             muscle side, never in the cardio strip (P2). Body size, not a 9px
             note: it is the only thing on Home that answers §6's second
             question, and at 9px a cold read never reached it (0082). The
-            untouched half leads in ink; the short half follows in ink-2 */}
+            untouched half leads, its names in the accent — the same red that edges
+            an untouched whole-body tile below; the short half follows in ink-2 */}
         <p className="text-xs leading-[1.4] mt-1 text-pretty">
           {zeroData ? (
             <span className="text-ink-2">All seven qualities — no data yet.</span>
           ) : missing.untouched || missing.short ? (
             <>
-              {missing.untouched && <span className="font-semibold">{missing.untouched}</span>}
+              {missing.untouched && (
+                <span className="font-semibold">
+                  Untouched: <span className="text-signal">{missing.untouched}</span>.
+                </span>
+              )}
               {missing.untouched && missing.short && ' '}
-              {missing.short && <span className="text-ink-2">{missing.short}</span>}
+              {missing.short && <span className="text-ink-2">Short: {missing.short}.</span>}
             </>
           ) : (
             coverageLine(coverage, MUSCLE_WINDOW_DAYS)

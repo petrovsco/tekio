@@ -36,23 +36,24 @@ const QUALITY_PROSE: Record<Adaptation, string> = {
  */
 export function coverageLine(coverage: Record<Adaptation, AdaptationSummary>, windowDays: number): string {
   const { untouched, short } = coverageParts(coverage)
-  const parts = [untouched, short].filter(Boolean)
+  const parts: string[] = []
+  if (untouched) parts.push(`Untouched: ${untouched}.`)
+  if (short) parts.push(`Short: ${short}.`)
   return parts.length > 0 ? parts.join(' ') : `Every quality on target in the last ${windowDays} days.`
 }
 
 /**
- * The same sentence in its two halves, so Home can weight them apart — the
- * untouched half is the stronger claim and leads (roadmap 0082). Joined, they
- * are `coverageLine` exactly; an empty half is null.
+ * The names in each half of that sentence ("power, anaerobic"), so Home can
+ * weight them apart — the untouched names lead in the accent, their label
+ * stays ink (roadmap 0082). An empty half is null. `coverageLine` is built from
+ * these, so the two screens still print one sentence.
  */
 export function coverageParts(
   coverage: Record<Adaptation, AdaptationSummary>,
 ): { untouched: string | null; short: string | null } {
   const { untouched, short } = splitCoverage(coverage)
-  return {
-    untouched: untouched.length > 0 ? `Untouched: ${untouched.map(k => QUALITY_PROSE[k]).join(', ')}.` : null,
-    short: short.length > 0 ? `Short: ${short.map(k => QUALITY_PROSE[k]).join(', ')}.` : null,
-  }
+  const names = (keys: Adaptation[]) => (keys.length > 0 ? keys.map(k => QUALITY_PROSE[k]).join(', ') : null)
+  return { untouched: names(untouched), short: names(short) }
 }
 
 /** A target's unit as the reads print it — "sets", "sessions", "min" (roadmap
