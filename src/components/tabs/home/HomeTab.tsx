@@ -342,7 +342,8 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             note: it is the only thing on Home that answers §6's second
             question, and at 9px a cold read never reached it (0082). The
             untouched half leads, its names in the accent — the same red that edges
-            an untouched whole-body tile below; the short half follows in ink-2 */}
+            an untouched whole-body tile below; the short names follow in ink-2.
+            Both labels are the same ink semibold — only the names carry state */}
         <p className="text-xs leading-[1.4] mt-1 text-pretty">
           {zeroData ? (
             <span className="text-ink-2">All seven qualities — no data yet.</span>
@@ -354,7 +355,11 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
                 </span>
               )}
               {missing.untouched && missing.short && ' '}
-              {missing.short && <span className="text-ink-2">Short: {missing.short}.</span>}
+              {missing.short && (
+                <span>
+                  <span className="font-semibold">Short:</span> <span className="text-ink-2">{missing.short}.</span>
+                </span>
+              )}
             </>
           ) : (
             coverageLine(coverage, MUSCLE_WINDOW_DAYS)
