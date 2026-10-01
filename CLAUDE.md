@@ -70,7 +70,7 @@ with the commit. Patch bumps are not tagged.
 | Branch | URL | Vercel target |
 |---|---|---|
 | `master` | https://tekio.shamatoff.com | production |
-| `develop` | https://stg-tekio.shamatoff.com | preview |
+| `develop` | https://stg-app.tekio.fyi (the old stg-tekio.shamatoff.com redirects here) | preview |
 
 Both sit behind the same cookie gate in [middleware.ts](middleware.ts) —
 `BASIC_AUTH_ENABLED` is one environment variable covering Preview *and*
