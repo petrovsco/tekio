@@ -205,18 +205,15 @@ Deployed to Vercel. [middleware.ts](middleware.ts) implements optional staging p
 
 ## House rules (from modus)
 
-@~/.claude/modus/rules/session-wrap-up.md
-@~/.claude/modus/rules/build-before-push.md
-@~/.claude/modus/rules/direct-push.md
-@~/.claude/modus/rules/verify-in-browser.md
-@~/.claude/modus/rules/rfc-convention.md
-@~/.claude/modus/rules/no-personal-context.md
+The house rules are committed copies in [.claude/rules/modus/](.claude/rules/modus/),
+which Claude Code loads from the checkout, so they reach cloud sessions too. The
+modus plugin refreshes them at session start; edit a rule in modus, never here.
 
 ### No personal context in this repo
 
-Stated in full, because this repo is **public** and the import line above
-resolves to nothing for a reader without modus installed. It is the one rule
-here that cannot afford to be invisible.
+Stated in full as well, because this repo is **public** and a reader may never
+open `.claude/rules/`. It is the one rule here that cannot afford to be
+invisible.
 
 **Tekiō is a product, not somebody's personal app.** It has exactly one user
 today because it is still an experiment, and that is a temporary state, not the
