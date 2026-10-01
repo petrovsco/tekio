@@ -27,7 +27,12 @@ describe('environment resolution (roadmap 037)', () => {
 
   // The env var is set by hand in the Vercel dashboard. If it is ever missing,
   // staging still has to identify itself — that is what the fallback is for.
-  it('falls back to the hostname: stg- prefix is staging', async () => {
+  it('falls back to the hostname: stg. subdomain is staging', async () => {
+    const { APP_ENV } = await loadEnv({ hostname: 'stg.tekio.fyi' })
+    expect(APP_ENV).toBe('staging')
+  })
+
+  it('falls back to the hostname: the old stg- host is still staging', async () => {
     const { APP_ENV } = await loadEnv({ hostname: 'stg-tekio.shamatoff.com' })
     expect(APP_ENV).toBe('staging')
   })
@@ -38,7 +43,7 @@ describe('environment resolution (roadmap 037)', () => {
   })
 
   it('anything else is production', async () => {
-    const { APP_ENV, IS_PRODUCTION } = await loadEnv({ hostname: 'tekio.shamatoff.com' })
+    const { APP_ENV, IS_PRODUCTION } = await loadEnv({ hostname: 'tekio.fyi' })
     expect(APP_ENV).toBe('production')
     expect(IS_PRODUCTION).toBe(true)
   })
@@ -51,7 +56,7 @@ describe('withOrigin', () => {
   // payloads to the ones it sent before 037, so the tagging cannot break
   // production. That means no `origin` key at all — not `origin: null`.
   it('is the identity function in production', async () => {
-    const { withOrigin, ROW_ORIGIN } = await loadEnv({ hostname: 'tekio.shamatoff.com' })
+    const { withOrigin, ROW_ORIGIN } = await loadEnv({ hostname: 'tekio.fyi' })
     const row = { user_id: 'u', session_date: '2026-09-01' }
     expect(ROW_ORIGIN).toBeNull()
     expect(withOrigin(row)).toEqual(row)
@@ -59,7 +64,7 @@ describe('withOrigin', () => {
   })
 
   it('stamps the environment on staging', async () => {
-    const { withOrigin } = await loadEnv({ hostname: 'stg-tekio.shamatoff.com' })
+    const { withOrigin } = await loadEnv({ hostname: 'stg.tekio.fyi' })
     expect(withOrigin({ user_id: 'u' })).toEqual({ user_id: 'u', origin: 'staging' })
   })
 

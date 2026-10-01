@@ -12,7 +12,8 @@ function inferFromHostname(): AppEnv {
   if (typeof window === 'undefined') return 'production'
   const host = window.location.hostname
   if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]') return 'dev'
-  if (host.startsWith('stg-')) return 'staging'
+  // stg.tekio.fyi, and the old stg-tekio.shamatoff.com while it still redirects
+  if (host.startsWith('stg.') || host.startsWith('stg-')) return 'staging'
   return 'production'
 }
 
