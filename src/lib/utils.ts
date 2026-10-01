@@ -118,7 +118,8 @@ export function isDeloadDate(startDate: string | null | undefined, d: string): b
 /**
  * A deload session's prescribed sets: reps scaled by {@link DELOAD_REP_FACTOR}
  * (min 1), load unchanged. The single deload model — the plan preview and the
- * "Deload ↓" button must not disagree. See tekio.rfcs/grounding-inventory.md §5.
+ * "Deload ↓" button must not disagree. See
+ * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
  */
 export function deloadSets(lastSets: LiftSet[]): LiftSet[] {
   return lastSets.map(s => ({

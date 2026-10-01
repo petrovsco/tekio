@@ -10,11 +10,20 @@ export const DAYS_OF_WEEK: DayOfWeek[] = [
   'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
 ]
 
+/**
+ * 6 weeks: 5 loading weeks and 1 deload week. This is a convention at the centre
+ * of reported practice (a survey found 5.6 ± 2.3 weeks; a Delphi panel said
+ * 4–6), and no trial has tested deload frequency. Doctrine R2's 6-week shelf
+ * clock only borrows the number. See
+ * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
+ */
 export const CYCLE = 6
 
 /**
  * Deload week within the cycle (1-based) — the last week of every cycle.
- * Ungrounded; see tekio.rfcs/grounding-inventory.md §5.
+ * Placement is a convention: no trial compares where a deload goes, and the end
+ * of the block is the default the expert literature names (Bell 2023/2025). See
+ * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
  *
  * Equal to `CYCLE` in value but not in meaning: one says how long a block is,
  * the other says where the deload sits inside it, and the inventory tracks them
@@ -26,7 +35,10 @@ export const DELOAD_WEEK = CYCLE
 /**
  * Deload dose: reps are scaled to 70% of the last session, load unchanged.
  * `reps`-only is what the app applies and what `programs.deload_strategy`
- * persists. Ungrounded; see tekio.rfcs/grounding-inventory.md §5.
+ * persists. 0.7 cuts volume by about 30% at held load, the low end of the
+ * 25–50% range in the strength-taper and deload literature (Travis 2020;
+ * Bell 2025). No trial has tested the dose itself. See
+ * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
  */
 export const DELOAD_REP_FACTOR = 0.7
 
