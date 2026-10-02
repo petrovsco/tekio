@@ -100,11 +100,12 @@ export const DONATION_ELIGIBILITY_DAYS: Record<string, number> = {
  * see tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
 export const RECOVER_DAYS = 2
 
-/** 33 — convention only (industry red/yellow boundary; Whoop red ≤33): no
- * literature supports an absolute cutoff — the grounded method is
- * baseline-relative (7d rolling < baseline − 0.5×SD, Vesterinen 2016), see
- * tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
-export const PUSH_THRESHOLD = 33
+/** 33 / 66 — convention only: WHOOP's red/yellow/green edges, unvalidated
+ * vendor bands (Doherty 2025); the trialled three-tier rule cuts HRV deviation
+ * from own baseline (±0.5 / ±1 SD, DeBlauw 2021), not a composite. Each value
+ * is the top of its band, inclusive: 0–33 low holds, 34–66 moderate steadies,
+ * 67–100 ok pushes. See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding */
+export const READINESS_BANDS = { low: 33, moderate: 66 } as const
 
 /** staleness: vo2max 14 d, endurance 14 d, anaerobic 28 d — detraining onset in
  * trained adults (Coyle 1984; Houmard 1992; Madsen 1993; Simoneau 1987;

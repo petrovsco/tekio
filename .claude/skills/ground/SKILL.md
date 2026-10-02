@@ -70,10 +70,11 @@ file is still gated.
 
 | Where | Claims |
 |---|---|
-| [src/constants/app.ts](../../../src/constants/app.ts) | `CYCLE`, `DELOAD_WEEK`, `DELOAD_REP_FACTOR`, `WATER_GOAL_ML`, `DONATION_ELIGIBILITY_DAYS`, `DONATION_SUPPRESSION`, `RECOVER_DAYS`, `PUSH_THRESHOLD`, `QUALITY_STALENESS_DAYS`, `WEEKLY_SET_FLOOR`, `MUSCLE_WINDOW_DAYS`, `MUSCLE_SET_TARGET` |
+| [src/constants/app.ts](../../../src/constants/app.ts) | `CYCLE`, `DELOAD_WEEK`, `DELOAD_REP_FACTOR`, `WATER_GOAL_ML`, `DONATION_ELIGIBILITY_DAYS`, `DONATION_SUPPRESSION`, `RECOVER_DAYS`, `READINESS_BANDS`, `QUALITY_STALENESS_DAYS`, `WEEKLY_SET_FLOOR`, `MUSCLE_WINDOW_DAYS`, `MUSCLE_SET_TARGET` |
 | [src/constants/adaptations.ts](../../../src/constants/adaptations.ts) | `weeklyMuscleTarget`, `weeklySessionTarget`, `repRange`, every `rx` field (load / reps / sets / rest / effort / **cue**), `ADAPTATION_PRINCIPLE`, `KEYWORD_ADAPTATION` |
 | [src/lib/adaptations.ts](../../../src/lib/adaptations.ts) | the cardio classifier's thresholds — `ENDURANCE_FLOOR_MIN`, `TE_STIMULUS_THRESHOLD`, `VO2MAX_Z5_MIN`, `ANAEROBIC_BOUT_MAX_S` |
 | [src/lib/utils.ts](../../../src/lib/utils.ts) | `LEVEL_WEIGHT`, and the 1RM estimators `epley1RM` / `brzycki1RM` / `estimate1RM` |
+| [src/components/tabs/home/HomeTab.tsx](../../../src/components/tabs/home/HomeTab.tsx) | `STEADY_NOTE`, the instruction a moderate readiness band gives the day |
 | `adaptation_targets` (DB) | seeded defaults and any migration that writes `weekly_muscle_target` / `weekly_session_target` |
 | Local recovery | hours-since-stimulus thresholds, volume-load decay |
 | Deload | which week of the cycle deloads, and by how much |
@@ -303,7 +304,7 @@ legitimate. Two rules from the roadmap:
 - **Load-bearing before memorable.** Ground what the purpose sentence rests on
   first — the numbers that decide what Home calls "missing" or whether it says
   push or hold. The fused-read path (`WEEKLY_SET_FLOOR`, `MUSCLE_WINDOW_DAYS`,
-  `MUSCLE_SET_TARGET`, `QUALITY_STALENESS_DAYS`, `PUSH_THRESHOLD`) and the
+  `MUSCLE_SET_TARGET`, `QUALITY_STALENESS_DAYS`, `READINESS_BANDS`) and the
   per-adaptation targets are done; what is left and load-bearing is the deload
   dose (`DELOAD_WEEK`, `DELOAD_REP_FACTOR = 0.7` — both marked ungrounded in the
   file itself) and the Epley/Brzycki blend. `WATER_GOAL_ML = 2500` is more

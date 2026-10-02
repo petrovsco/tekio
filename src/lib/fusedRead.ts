@@ -3,7 +3,7 @@ import type {
   SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet,
 } from '../types'
 import {
-  RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
+  RECOVER_DAYS, READINESS_BANDS, QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
   MUSCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
 } from '../constants/app'
 import { LEVEL_WEIGHT, today, daysBetween, groupBy } from './utils'
@@ -481,9 +481,21 @@ export function waterStatus(water: WaterEntry[], date: string = today()): WaterS
   return { lastDate, daysSince: lastDate ? daysBetween(lastDate, date) : null, lastDayMl }
 }
 
+/** Systemic readiness in three bands: 0–33 low, 34–66 moderate, 67–100 ok. */
+export type ReadinessBand = 'low' | 'moderate' | 'ok'
+
+/** The band a readiness number falls in; null without readiness data. */
+export function readinessBand(readiness: number | null): ReadinessBand | null {
+  if (readiness === null) return null
+  if (readiness <= READINESS_BANDS.low) return 'low'
+  if (readiness <= READINESS_BANDS.moderate) return 'moderate'
+  return 'ok'
+}
+
 export interface FusedVerdict {
-  mode: 'push' | 'hold'
-  /** What flipped it to hold; null on a push day. */
+  /** hold on a low band (or an acute donation), steady on a moderate one, push otherwise. */
+  mode: 'push' | 'steady' | 'hold'
+  /** What held or steadied the day; null on a push day. */
   cause: 'readiness' | 'donation' | null
 }
 
@@ -493,6 +505,8 @@ export interface FusedVerdict {
  */
 export function fusedVerdict(readiness: number | null, donation?: DonationStatus): FusedVerdict {
   if (donation?.acuteHold) return { mode: 'hold', cause: 'donation' }
-  if (readiness !== null && readiness < PUSH_THRESHOLD) return { mode: 'hold', cause: 'readiness' }
+  const band = readinessBand(readiness)
+  if (band === 'low') return { mode: 'hold', cause: 'readiness' }
+  if (band === 'moderate') return { mode: 'steady', cause: 'readiness' }
   return { mode: 'push', cause: null }
 }

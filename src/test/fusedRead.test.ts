@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, HISTORY_WEEKS,
+  donationStatus, waterStatus, fusedVerdict, readinessBand, HISTORY_WEEKS,
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
-import { PUSH_THRESHOLD, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
+import { READINESS_BANDS, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
 import type { TargetUnit } from '../lib/adaptations'
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry, WaterEntry,
@@ -373,7 +373,7 @@ describe('systemicReadiness', () => {
     ]
     const r = systemicReadiness(sleep, TODAY)
     expect(r.hrvScore).toBeLessThan(20)
-    expect(r.readiness).toBeLessThan(PUSH_THRESHOLD)
+    expect(readinessBand(r.readiness)).toBe('low')
   })
 
   it('barely moves on a single bad night', () => {
@@ -382,7 +382,7 @@ describe('systemicReadiness', () => {
       ...Array.from({ length: 20 }, (_, i) => night(ago(i + 1), 73, 80)),
     ]
     const r = systemicReadiness(sleep, TODAY)
-    expect(r.readiness).toBeGreaterThan(PUSH_THRESHOLD)
+    expect(readinessBand(r.readiness)).not.toBe('low')
   })
 
   it('degrades to sleep-only without an HRV baseline', () => {
@@ -463,9 +463,30 @@ describe('waterStatus', () => {
 // ---------------------------------------------------------------------------
 
 describe('fusedVerdict', () => {
-  it('holds below the push threshold, pushes at it', () => {
-    expect(fusedVerdict(PUSH_THRESHOLD - 1)).toEqual({ mode: 'hold', cause: 'readiness' })
-    expect(fusedVerdict(PUSH_THRESHOLD)).toEqual({ mode: 'push', cause: null })
+  it('holds through 33, steadies from 34 through 66, pushes from 67', () => {
+    expect(READINESS_BANDS).toEqual({ low: 33, moderate: 66 })
+    expect(fusedVerdict(0)).toEqual({ mode: 'hold', cause: 'readiness' })
+    expect(fusedVerdict(33)).toEqual({ mode: 'hold', cause: 'readiness' })
+    expect(fusedVerdict(34)).toEqual({ mode: 'steady', cause: 'readiness' })
+    expect(fusedVerdict(66)).toEqual({ mode: 'steady', cause: 'readiness' })
+    expect(fusedVerdict(67)).toEqual({ mode: 'push', cause: null })
+    expect(fusedVerdict(100)).toEqual({ mode: 'push', cause: null })
+  })
+
+  it('bands readiness, and has no band without data', () => {
+    expect([33, 34, 66, 67].map(readinessBand)).toEqual(['low', 'moderate', 'moderate', 'ok'])
+    expect(readinessBand(null)).toBeNull()
+  })
+
+  it('needs both inputs to push: a crashed HRV caps a perfect night at steady', () => {
+    const sleep = [
+      ...Array.from({ length: 7 }, (_, i) => night(ago(i), 100, 50)),
+      ...Array.from({ length: 23 }, (_, i) => night(ago(i + 7), 100, 80)),
+    ]
+    const r = systemicReadiness(sleep, TODAY)
+    expect(r.hrvScore).toBe(0)
+    expect(r.readiness).toBe(50)
+    expect(fusedVerdict(r.readiness).mode).toBe('steady')
   })
 
   it('cannot gate without readiness data', () => {

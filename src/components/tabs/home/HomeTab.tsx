@@ -2,8 +2,8 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict,
-  type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
+  donationStatus, waterStatus, fusedVerdict, readinessBand,
+  type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict, type ReadinessBand,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { cycleInfo, today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
@@ -33,6 +33,17 @@ const joinNames = (names: string[]): string =>
   names.length <= 1 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
 
 const shortLower = (name: string): string => muscleShort(name).toLowerCase()
+
+/** The readiness card's band, beside its number (0085). */
+const BAND_LABEL: Record<ReadinessBand, string> = { low: 'LOW', moderate: 'MODERATE', ok: 'OK' }
+
+/** What a moderate band changes: the effort, not the gaps. Partially supported:
+ * in both trialled three-tier rules the middle tier was the planned session,
+ * lighter, never rest — reps and load cut (DeBlauw 2021), or volume cut and the
+ * intervals dropped (Nuuttila 2022) — though both cut on HRV against its own
+ * baseline, not a blended score. No percentage: each trial's 25% was its chosen
+ * step, not a tested dose. See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding */
+const STEADY_NOTE = 'Lighter today: no intervals or max efforts.'
 
 /** The gated instruction plus the top gap as its reason — all editorial text
  *  for the verdict block lives here, the numbers come from the fused read. */
@@ -77,9 +88,10 @@ function verdictCopy(args: {
     }
   }
 
+  const lead = verdict.mode === 'steady' ? 'Steady' : 'Push'
   const text = list
-    ? `Push. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
-    : `Push. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
+    ? `${lead}. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
+    : `${lead}. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
   const facts = gaps.slice(0, 2).map(m =>
     m.daysSince === null
       ? `${cap(shortLower(m.name))}: never trained.`
@@ -93,6 +105,7 @@ function verdictCopy(args: {
   if (don.aerobicSuppressed && !don.acuteHold) {
     facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (PLACEHOLDER: ~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
   }
+  if (verdict.mode === 'steady') facts.unshift(STEADY_NOTE)
   return { text, sub: facts.join(' ') }
 }
 
@@ -166,6 +179,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
 
   const verdict = fusedVerdict(sys.readiness, don)
   const gated = verdict.mode === 'hold'
+  const band = readinessBand(sys.readiness)
   const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
 
   const program = programs[0] ?? null
@@ -207,7 +221,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const banner = gated
     ? verdict.cause === 'donation'
       ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window (PLACEHOLDER) holds today. The gaps below stay open.`
-      : `Readiness ${sys.readiness} is below the push threshold (PLACEHOLDER). The gaps below stay open — today just isn't the day to close them.`
+      : `Readiness ${sys.readiness} is low. The gaps below stay open — today just isn't the day to close them.`
     : null
 
   // The three folds as T2 stat tiles (unit 3): a readiness input each, never a
@@ -292,6 +306,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <Icon name="heart" size={13} />
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
+          {band && <span className="text-[10px] font-bold tracking-[0.1em]">{BAND_LABEL[band]}</span>}
           <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
           {/* water / sauna / cold / manual sleep live behind this tap — the card that
               raises "can I push?" is where the input belongs (P1) */}
