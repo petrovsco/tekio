@@ -82,7 +82,6 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
         <div className="flex-1 overflow-y-auto pt-2">
           <NavItem icon="home" label="Home" active={tab === 'Home'} onClick={go('Home')} />
           <NavItem icon="adaptations" label="Adaptations" active={tab === 'Adaptations'} onClick={go('Adaptations')} />
-          <NavItem icon="program" label="Program" active={tab === 'Program'} onClick={go('Program')} />
           <GroupLabel>Log</GroupLabel>
           {visibleNav.map(n => (
             <NavItem key={n.key} icon={n.icon} label={n.label} active={tab === n.key} onClick={go(n.key)} />

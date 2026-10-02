@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { cycleInfo, isDeloadDate, isTodayDone, lastPerformance, mergeById, cycleExerciseProgress, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, deriveFlat, defaultProgram, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
-import type { WeightEntry, Program, ProgramDay, ProgramDayBlock, ExerciseMuscleLink } from '../types'
+import { describe, it, expect } from 'vitest'
+import { lastPerformance, recentExercises, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
+import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
-// daysBetween / groupBy / deriveFlat — the shared helpers (roadmap 048 A3/A10/A11)
+// daysBetween / groupBy — the shared helpers (roadmap 048 A3/A10/A11)
 // ---------------------------------------------------------------------------
 
 describe('daysBetween', () => {
@@ -39,27 +39,6 @@ describe('groupBy', () => {
 
   it('returns an empty map for no rows', () => {
     expect(groupBy([], (r: { k: string }) => r.k).size).toBe(0)
-  })
-})
-
-describe('deriveFlat', () => {
-  const block = (blockType: ProgramDayBlock['blockType'], names: string[], supersets: [string, string][] = []): ProgramDayBlock => ({
-    blockType, name: blockType, sortOrder: 0, supersets,
-    exercises: names.map((exercise, sortOrder) => ({ exercise, trainingTag: 'STRENGTH', sortOrder })),
-  })
-
-  it('flattens the weight blocks only', () => {
-    const blocks = [block('weight', ['Squat', 'Bench']), block('conditioning', ['Row'])]
-    expect(deriveFlat(blocks)).toEqual({ exercises: ['Squat', 'Bench'], supersets: [] })
-  })
-
-  it('collects supersets across weight blocks', () => {
-    const blocks = [block('weight', ['A', 'B'], [['A', 'B']]), block('weight', ['C'])]
-    expect(deriveFlat(blocks).supersets).toEqual([['A', 'B']])
-  })
-
-  it('is empty for a day with no blocks', () => {
-    expect(deriveFlat([])).toEqual({ exercises: [], supersets: [] })
   })
 })
 
@@ -291,127 +270,9 @@ describe('isSetPR', () => {
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeProgram(startDate: string): Program {
-  return {
-    name: 'Test',
-    startDate,
-    currentDayIndex: 0,
-    lastAdvancedDate: startDate,
-    days: [],
-  }
-}
-
 function makeEntry(id: string, date: string, exercise: string): WeightEntry {
   return { id, date, exercise, sets: [{ weight: 100, reps: 5 }] }
 }
-
-// Fix "today" to a known date so tests are deterministic
-function freezeToday(dateStr: string) {
-  const fakeNow = new Date(dateStr).getTime()
-  vi.spyOn(Date, 'now').mockReturnValue(fakeNow)
-  // Also mock `new Date()` for utils that use it
-  vi.setSystemTime(new Date(dateStr))
-}
-
-// ---------------------------------------------------------------------------
-// cycleInfo
-// ---------------------------------------------------------------------------
-
-describe('cycleInfo', () => {
-  beforeEach(() => { vi.useFakeTimers() })
-  afterEach(() => { vi.useRealTimers() })
-
-  it('returns week 1 and no deload when no program', () => {
-    freezeToday('2025-01-06')
-    expect(cycleInfo(null)).toEqual({ week: 1, isDeload: false, isComplete: false })
-    expect(cycleInfo(undefined)).toEqual({ week: 1, isDeload: false, isComplete: false })
-  })
-
-  it('returns week 1 on day 0 (start date = today)', () => {
-    freezeToday('2025-01-06')
-    expect(cycleInfo(makeProgram('2025-01-06'))).toEqual({ week: 1, isDeload: false, isComplete: false })
-  })
-
-  it('returns week 2 after 7 days', () => {
-    freezeToday('2025-01-13')
-    expect(cycleInfo(makeProgram('2025-01-06'))).toEqual({ week: 2, isDeload: false, isComplete: false })
-  })
-
-  it('returns week 6 (deload) at exactly 5 full weeks in (day 35)', () => {
-    // startDate 2025-01-01, today = 2025-02-05 (+35 days)
-    freezeToday('2025-02-05')
-    const info = cycleInfo(makeProgram('2025-01-01'))
-    expect(info.week).toBe(6)
-    expect(info.isDeload).toBe(true)
-    expect(info.isComplete).toBe(false)
-  })
-
-  it('deload triggers at wc === CYCLE (6), NOT at wc > 6', () => {
-    // week 5 should NOT be deload
-    freezeToday('2025-01-29') // +28 days from 2025-01-01
-    expect(cycleInfo(makeProgram('2025-01-01'))).toEqual({ week: 5, isDeload: false, isComplete: false })
-  })
-
-  it('marks program complete after the deload week has elapsed (42+ days)', () => {
-    // 6 * 7 = 42 days in → cycle is done, no rolling
-    freezeToday('2025-02-12') // +42 days from 2025-01-01
-    const info = cycleInfo(makeProgram('2025-01-01'))
-    expect(info.isComplete).toBe(true)
-    expect(info.isDeload).toBe(false)
-  })
-
-  it('remains complete further beyond the cycle end (no wrapping)', () => {
-    // 49 days in → still complete, NOT back to week 1
-    freezeToday('2025-02-19') // +49 days from 2025-01-01
-    const info = cycleInfo(makeProgram('2025-01-01'))
-    expect(info.isComplete).toBe(true)
-    expect(info.week).toBe(6) // stays at CYCLE, never "week 7"
-  })
-})
-
-// ---------------------------------------------------------------------------
-// isDeloadDate
-// ---------------------------------------------------------------------------
-
-describe('isDeloadDate', () => {
-  it('does not wrap past the cycle — weeks 7 and 13 are not deloads, as cycleInfo says', () => {
-    // +42 days = week 7 (cycle complete); +84 days = week 13, which a 7-week wrap marked as deload
-    expect(isDeloadDate('2025-01-01', '2025-02-12')).toBe(false)
-    expect(isDeloadDate('2025-01-01', '2025-03-26')).toBe(false)
-    expect(isDeloadDate('2025-01-01', '2025-02-19')).toBe(false) // +49, a 6-week wrap's next deload
-  })
-
-  it('returns false when startDate is null or undefined', () => {
-    expect(isDeloadDate(null, '2025-01-06')).toBe(false)
-    expect(isDeloadDate(undefined, '2025-01-06')).toBe(false)
-  })
-
-  it('returns false for a non-deload date (week 1)', () => {
-    // startDate 2025-01-01, check date 2025-01-01 (day 0 → week 1)
-    expect(isDeloadDate('2025-01-01', '2025-01-01')).toBe(false)
-  })
-
-  it('returns false for week 5', () => {
-    // +28 days = week 5
-    expect(isDeloadDate('2025-01-01', '2025-01-29')).toBe(false)
-  })
-
-  it('returns true for week 6 (deload week)', () => {
-    // +35 days from 2025-01-01 = week 6
-    expect(isDeloadDate('2025-01-01', '2025-02-05')).toBe(true)
-  })
-
-  it('returns true for any date within the deload week', () => {
-    // Days 35–41 all land in week 6
-    expect(isDeloadDate('2025-01-01', '2025-02-06')).toBe(true) // day 36
-    expect(isDeloadDate('2025-01-01', '2025-02-07')).toBe(true) // day 37
-  })
-
-  it('returns false after deload week ends (cycle wraps)', () => {
-    // +42 days → week 1 of next cycle
-    expect(isDeloadDate('2025-01-01', '2025-02-12')).toBe(false)
-  })
-})
 
 // ---------------------------------------------------------------------------
 // lastPerformance
@@ -421,27 +282,15 @@ describe('lastPerformance', () => {
   const w = (id: string, exercise: string, date: string): WeightEntry =>
     ({ id, exercise, date, sets: [{ weight: 60, reps: 8 }] })
 
-  // startDate 2025-01-01 → week 6 (the deload week) is 2025-02-05 … 2025-02-11.
-  const START = '2025-01-01'
   const rows = [
     w('1', 'Bench Press', '2025-01-08'),
-    w('2', 'Bench Press', '2025-02-06'), // deload week
+    w('2', 'Bench Press', '2025-02-06'),
     w('3', 'Bench Press', '2025-01-22'),
     w('4', 'Squat', '2025-03-01'),
   ]
 
   it('returns the most recent session whatever the array order', () => {
     expect(lastPerformance(rows, 'Bench Press')?.id).toBe('2')
-  })
-
-  it('skips sessions that fall in a deload week', () => {
-    expect(lastPerformance(rows, 'Bench Press', [START])?.id).toBe('3')
-  })
-
-  it('skips a session that is deload for any of the programs given', () => {
-    // 2025-01-22 is week 4 of the first program but week 6 of one started
-    // five weeks later, so with both programs active it is excluded too.
-    expect(lastPerformance(rows, 'Bench Press', [START, '2024-12-18'])?.id).toBe('1')
   })
 
   it('matches the name case-insensitively and trims it', () => {
@@ -454,145 +303,27 @@ describe('lastPerformance', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
-// isTodayDone
-// ---------------------------------------------------------------------------
+describe('recentExercises', () => {
+  const w = (exercise: string, date: string): WeightEntry =>
+    ({ id: exercise + date, exercise, date, sets: [{ weight: 60, reps: 8 }] })
+  const rows = [
+    w('Squat', '2025-03-01'),
+    w('Bench Press', '2025-03-04'),
+    w('Squat', '2025-03-05'),
+    w('Deadlift', '2025-02-01'),
+    w('Row', '2025-03-04'),
+  ]
 
-describe('isTodayDone', () => {
-  beforeEach(() => { vi.useFakeTimers() })
-  afterEach(() => { vi.useRealTimers() })
-
-  const TODAY = '2025-06-01'
-
-  function makeDay(exercises: string[]): ProgramDay {
-    const blocks: ProgramDayBlock[] = [{
-      blockType: 'weight', name: 'Test Day', sortOrder: 0, supersets: [],
-      exercises: exercises.map((exercise, j) => ({ exercise, trainingTag: 'STRENGTH', sortOrder: j })),
-    }]
-    return { name: 'Test Day', ...deriveFlat(blocks), blocks }
-  }
-
-  it('returns true when day is null or has no exercises', () => {
-    freezeToday(TODAY)
-    expect(isTodayDone([], null)).toBe(true)
-    expect(isTodayDone([], makeDay([]))).toBe(true)
+  it('orders by each exercise’s latest session, newest first', () => {
+    expect(recentExercises(rows, 10)).toEqual(['Squat', 'Bench Press', 'Row', 'Deadlift'])
   })
 
-  it('returns false when none logged', () => {
-    freezeToday(TODAY)
-    const day = makeDay(['Squat', 'Bench'])
-    expect(isTodayDone([], day)).toBe(false)
+  it('keeps only the first n', () => {
+    expect(recentExercises(rows, 2)).toEqual(['Squat', 'Bench Press'])
   })
 
-  it('returns false when only some exercises are logged (uses .every not .some)', () => {
-    freezeToday(TODAY)
-    const day = makeDay(['Squat', 'Bench', 'Row'])
-    const entries = [makeEntry('1', TODAY, 'Squat'), makeEntry('2', TODAY, 'Bench')]
-    expect(isTodayDone(entries, day)).toBe(false)
-  })
-
-  it('returns true when all exercises are logged today', () => {
-    freezeToday(TODAY)
-    const day = makeDay(['Squat', 'Bench'])
-    const entries = [makeEntry('1', TODAY, 'Squat'), makeEntry('2', TODAY, 'Bench')]
-    expect(isTodayDone(entries, day)).toBe(true)
-  })
-
-  it('ignores entries from other dates', () => {
-    freezeToday(TODAY)
-    const day = makeDay(['Squat'])
-    const entries = [makeEntry('1', '2025-05-31', 'Squat')] // yesterday
-    expect(isTodayDone(entries, day)).toBe(false)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// cycleExerciseProgress
-// ---------------------------------------------------------------------------
-
-describe('cycleExerciseProgress', () => {
-  beforeEach(() => { vi.useFakeTimers() })
-  afterEach(() => { vi.useRealTimers() })
-
-  function makeDay(exercises: string[]): ProgramDay {
-    const blocks: ProgramDayBlock[] = [{
-      blockType: 'weight', name: 'Test Day', sortOrder: 0, supersets: [],
-      exercises: exercises.map((exercise, j) => ({ exercise, trainingTag: 'STRENGTH', sortOrder: j })),
-    }]
-    return { name: 'Test Day', ...deriveFlat(blocks), blocks }
-  }
-
-  it('returns empty array when no exercises in cycle days', () => {
-    const cycle = { startDate: '2025-01-01', endDate: '2025-02-01', days: [] }
-    expect(cycleExerciseProgress([], cycle)).toEqual([])
-  })
-
-  it('skips exercises with no logged data in range', () => {
-    const cycle = { startDate: '2025-01-01', endDate: '2025-02-01', days: [makeDay(['Squat'])] }
-    expect(cycleExerciseProgress([], cycle)).toEqual([])
-  })
-
-  it('computes first/last/delta from logged entries within the date range', () => {
-    const cycle = { startDate: '2025-01-01', endDate: '2025-02-01', days: [makeDay(['Squat'])] }
-    const weights = [
-      makeEntry('1', '2025-01-05', 'Squat'),
-      { id: '2', date: '2025-01-20', exercise: 'Squat', sets: [{ weight: 120, reps: 5 }] },
-    ]
-    const result = cycleExerciseProgress(weights, cycle)
-    expect(result).toHaveLength(1)
-    expect(result[0].exercise).toBe('Squat')
-    expect(result[0].maxWeight).toMatchObject({ first: 100, last: 120, delta: 20 })
-    expect(result[0].maxWeight.series).toEqual([{ x: '2025-01-05', y: 100 }, { x: '2025-01-20', y: 120 }])
-  })
-
-  it('reports the peak value even when it falls between first and last', () => {
-    const cycle = { startDate: '2025-01-01', endDate: '2025-02-01', days: [makeDay(['Squat'])] }
-    const weights: WeightEntry[] = [
-      { id: '1', date: '2025-01-05', exercise: 'Squat', sets: [{ weight: 100, reps: 5 }] },
-      { id: '2', date: '2025-01-12', exercise: 'Squat', sets: [{ weight: 130, reps: 5 }] }, // peak, mid-cycle
-      { id: '3', date: '2025-01-20', exercise: 'Squat', sets: [{ weight: 115, reps: 5 }] },
-    ]
-    const result = cycleExerciseProgress(weights, cycle)
-    expect(result[0].maxWeight).toMatchObject({ first: 100, last: 115, peak: 130, delta: 15 })
-  })
-
-  it('computes volume (weight × reps summed per session) alongside max weight', () => {
-    const cycle = { startDate: '2025-01-01', endDate: '2025-02-01', days: [makeDay(['Squat'])] }
-    const weights: WeightEntry[] = [
-      { id: '1', date: '2025-01-05', exercise: 'Squat', sets: [{ weight: 100, reps: 5 }, { weight: 80, reps: 8 }] },
-      { id: '2', date: '2025-01-20', exercise: 'Squat', sets: [{ weight: 120, reps: 5 }] },
-    ]
-    const result = cycleExerciseProgress(weights, cycle)
-    expect(result[0].volume.series).toEqual([{ x: '2025-01-05', y: 1140 }, { x: '2025-01-20', y: 600 }])
-    expect(result[0].volume).toMatchObject({ first: 1140, last: 600, delta: -540 })
-  })
-
-  it('excludes entries outside the cycle date range', () => {
-    const cycle = { startDate: '2025-01-10', endDate: '2025-01-20', days: [makeDay(['Squat'])] }
-    const weights = [
-      makeEntry('1', '2025-01-05', 'Squat'), // before range
-      makeEntry('2', '2025-01-25', 'Squat'), // after range
-    ]
-    expect(cycleExerciseProgress(weights, cycle)).toEqual([])
-  })
-
-  it('falls back to today() as the end date when endDate is null (ongoing cycle)', () => {
-    freezeToday('2025-01-15')
-    const cycle = { startDate: '2025-01-01', endDate: null, days: [makeDay(['Squat'])] }
-    const weights = [
-      makeEntry('1', '2025-01-10', 'Squat'),
-      makeEntry('2', '2025-01-20', 'Squat'), // after "today", should be excluded
-    ]
-    const result = cycleExerciseProgress(weights, cycle)
-    expect(result[0].maxWeight.series).toEqual([{ x: '2025-01-10', y: 100 }])
-  })
-
-  it('uses the max weight within a session for the maxWeight series value', () => {
-    const cycle = { startDate: '2025-01-01', endDate: '2025-02-01', days: [makeDay(['Squat'])] }
-    const weights: WeightEntry[] = [
-      { id: '1', date: '2025-01-05', exercise: 'Squat', sets: [{ weight: 80, reps: 8 }, { weight: 100, reps: 3 }] },
-    ]
-    expect(cycleExerciseProgress(weights, cycle)[0].maxWeight.first).toBe(100)
+  it('returns nothing when nothing is logged', () => {
+    expect(recentExercises([], 8)).toEqual([])
   })
 })
 
@@ -681,16 +412,3 @@ describe('formatDurationMins / parseDurationMins', () => {
   })
 })
 
-describe('defaultProgram', () => {
-  // tekio.rfcs/rfcs/done/0071-retire-flat-exercises-fallback.md: the default
-  // program is written in the one shape a program day has — blocks — so no
-  // reader needs a flat-list fallback for it.
-  it('gives every day one weight block, with the flat view derived from it', () => {
-    for (const day of defaultProgram().days) {
-      expect(day.blocks).toHaveLength(1)
-      expect(day.blocks[0].blockType).toBe('weight')
-      expect(day.blocks[0].exercises.map(e => e.sortOrder)).toEqual(day.exercises.map((_, i) => i))
-      expect({ exercises: day.exercises, supersets: day.supersets }).toEqual(deriveFlat(day.blocks))
-    }
-  })
-})

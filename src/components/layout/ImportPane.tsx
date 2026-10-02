@@ -9,7 +9,7 @@ import { saveSportEntry } from '../../lib/db/sport'
 import { saveDonationEntry } from '../../lib/db/donations'
 import { saveWaterEntry } from '../../lib/db/water'
 import { saveSleepEntry, saveSaunaEntry, saveColdEntry } from '../../lib/db/recovery'
-import type { WeightEntry, BodyweightEntry, CardioEntry, MobilityEntry, SportEntry, DonationEntry, WaterEntry, SleepEntry, SaunaEntry, ColdEntry, Program } from '../../types'
+import type { WeightEntry, BodyweightEntry, CardioEntry, MobilityEntry, SportEntry, DonationEntry, WaterEntry, SleepEntry, SaunaEntry, ColdEntry } from '../../types'
 import { Btn } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { FIELD } from '../ui/Input'
@@ -115,10 +115,6 @@ export function ImportPane({ onClose }: ImportPaneProps) {
         mobility: newMobility, sports: newSports, donations: newDonations,
         water: newWater, sleep: newSleep, sauna: newSauna, cold: newCold,
       })
-
-      if (p.program && store.programs.length === 0) {
-        await store.saveActiveProgram(p.program as Program)
-      }
 
       store.setToast('Data imported!')
       return true

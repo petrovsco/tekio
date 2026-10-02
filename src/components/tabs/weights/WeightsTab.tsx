@@ -1,7 +1,7 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, cycleInfo, deloadSets, groupBy, isDeloadDate, isTodayDone, lastPerformance, programMode, bestOneRM, isSetPR, weightsPickerNames, uniqSorted } from '../../../lib/utils'
+import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, recentExercises } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
@@ -14,9 +14,10 @@ import { toSetStr, parseSets } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
-import { TodaysPlan } from './TodaysPlan'
-import { SupersetLogger } from './SupersetLogger'
-import type { WeightEntry, LiftSet } from '../../../types'
+import type { WeightEntry } from '../../../types'
+
+/** How many recent exercises get a one-tap chip. */
+const RECENT_CHIPS = 8
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -25,8 +26,6 @@ export function WeightsTab() {
   const [revealed, setRevealed] = useState(1)
   const [selEx, setSelEx] = useState('')
   const [chartMetric, setChartMetric] = useState<'maxWeight' | 'volume'>('maxWeight')
-  const [ssExercises, setSsExercises] = useState<[string, string] | null>(null)
-  const [ssInitialSets, setSsInitialSets] = useState<{ sets0?: LiftSet[]; sets1?: LiftSet[] } | null>(null)
   // The 1RM is answered on demand and never at rest (roadmap 067). The answer
   // belongs to the exact set it was asked about, so the ask carries that set's
   // identity: edit the exercise or any number and the ask no longer matches,
@@ -36,40 +35,23 @@ export function WeightsTab() {
   const weights = useAppStore(s => s.weights)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const exerciseAliases = useAppStore(s => s.exerciseAliases)
-  const programs = useAppStore(s => s.programs)
   const addWeightEntry = useAppStore(s => s.addWeightEntry)
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
-  const advanceActiveProgram = useAppStore(s => s.advanceActiveProgram)
   const withToast = useAppStore(s => s.withToast)
-
-  // Auto-advance sequential (legacy index-mode) programs when today's day is done.
-  // Weekday-pinned and flexible programs derive their day from the calendar/checklist
-  // instead, so there's no index to advance.
-  useEffect(() => {
-    for (const ap of programs) {
-      if (cycleInfo(ap).isComplete) continue
-      if (programMode(ap) !== 'index') continue
-      const day = ap.days[ap.currentDayIndex % ap.days.length]
-      if (!day || day.exercises.length === 0) continue
-      if (isTodayDone(weights, day) && ap.lastAdvancedDate !== today()) {
-        const newIndex = (ap.currentDayIndex + 1) % ap.days.length
-        advanceActiveProgram(ap.userProgramId, newIndex, today())
-      }
-    }
-  }, [weights])
 
   // This component holds the log form's state as well as the history read, so
   // every keystroke re-renders it. Everything derived from `weights` is memoised
   // on `weights` so a keystroke recomputes none of it (roadmap 048 B7).
   const exercises = useMemo(() => uniqSorted(weights.map(d => d.exercise)), [weights])
   const pickerNames = useMemo(() => weightsPickerNames(weights, exerciseMuscles), [weights, exerciseMuscles])
+  // The chips are the one-tap start for a lift, so they hold only the most
+  // recent few: every exercise ever logged was a cloud that only grew
+  // (tekio.rfcs/rfcs/0034-v2-1-candidates-tbc.md). Anything older is one
+  // autocomplete pick away, and the pick fills its last sets the same way.
+  const chipNames = useMemo(() => recentExercises(weights, RECENT_CHIPS), [weights])
 
-  const isAnyDeload = programs.some(ap => isDeloadDate(ap.startDate, today()))
-
-  // A session counts as deload if it falls in *any* active program's deload week.
-  const programStartDates = programs.map(ap => ap.startDate)
-  const getLastPerf = (n: string) => lastPerformance(weights, n, programStartDates)
+  const getLastPerf = (n: string) => lastPerformance(weights, n)
 
   const lastPerf = getLastPerf(ex)
 
@@ -94,18 +76,10 @@ export function WeightsTab() {
   const answer = (state: 'asking' | 'toFailure' | 'submax') => () => setAsk({ key: askKey, state })
 
   const handleSelectEx = (n: string) => {
-    setEx(n); setSelEx(n); setSsExercises(null)
+    setEx(n); setSelEx(n)
     const p = getLastPerf(n)
     if (p) { setSets(toSetStr(p.sets)); setRevealed(p.sets.length) }
     else { setSets([{ weight: '', reps: '' }]); setRevealed(1) }
-  }
-
-  const handlePickWithSets = (n: string, computedSets: LiftSet[]) => {
-    setSsExercises(null)
-    setEx(n); setSelEx(n)
-    setSets(toSetStr(computedSets))
-    setRevealed(computedSets.length)
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
   }
 
   const revealNext = () => {
@@ -132,16 +106,7 @@ export function WeightsTab() {
     }, 'Exercise saved!')
   }
 
-  const saveSS = async (entries: Array<Omit<WeightEntry, 'id'>>) => {
-    await withToast(async () => {
-      await Promise.all(entries.map(e => addWeightEntry(e)))
-      setSsExercises(null); setSsInitialSets(null)
-    }, 'Superset saved!')
-  }
-
   const chartEx = selEx || exercises[0] || ''
-  // For chart, find the program that tracks the chart exercise (or first program)
-  const chartProgram = programs.find(ap => ap.days.some(d => d.exercises.includes(chartEx))) ?? programs[0]
   const chartData = useMemo(() => weights
     .filter(d => d.exercise === chartEx)
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -149,8 +114,7 @@ export function WeightsTab() {
       date: d.date.slice(5),
       maxWeight: Math.max(...d.sets.map(s => s.weight)),
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
-      deload: chartProgram ? isDeloadDate(chartProgram.startDate, d.date) : false,
-    })), [weights, chartEx, chartProgram])
+    })), [weights, chartEx])
 
   const recentGrouped = useMemo(() => {
     const sorted = [...weights].sort((a, b) => b.date.localeCompare(a.date))
@@ -178,51 +142,15 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      {programs
-        .filter(ap => !cycleInfo(ap).isComplete)
-        .map(ap => (
-          <TodaysPlan
-            key={ap.userProgramId}
-            program={ap}
-            onPickSingle={n => { setSsExercises(null); handleSelectEx(n); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50) }}
-            onPickSingleWithSets={handlePickWithSets}
-            onPickSuperset={exArr => { setSsInitialSets(null); setSsExercises(exArr); setEx(''); setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50) }}
-            onPickSupersetDeload={exArr => {
-              // One deload model, from lib/utils — this used to re-implement it
-              // with a bare 0.7 and disagree with the plan preview beside it.
-              const prescribe = (n: string) => {
-                const p = getLastPerf(n)
-                return p && deloadSets(p.sets)
-              }
-              setSsInitialSets({ sets0: prescribe(exArr[0]), sets1: prescribe(exArr[1]) })
-              setSsExercises(exArr); setEx('')
-              setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50)
-            }}
-          />
-        ))}
-
-      {ssExercises && (
-        <SupersetLogger
-          exercises={ssExercises}
-          date={date}
-          programStartDate={chartProgram?.startDate}
-          isDeload={isAnyDeload}
-          initialSets0={ssInitialSets?.sets0}
-          initialSets1={ssInitialSets?.sets1}
-          onSave={saveSS}
-          onCancel={() => { setSsExercises(null); setSsInitialSets(null) }}
-        />
-      )}
-
-      {!ssExercises && (
-        <Card>
+      <Card>
           <SecTitle>Log Exercise</SecTitle>
           <div className="flex flex-col gap-2.5 mb-3">
             <div className="flex flex-col gap-1">
               <label className={FIELD_LABEL}>Exercise</label>
               <SmartInput
                 value={ex}
-                onChange={v => { setEx(v); if (!v) setSsExercises(null) }}
+                onChange={setEx}
+                onPick={handleSelectEx}
                 suggestions={pickerNames}
                 aliases={exerciseAliases}
                 placeholder="e.g. Bench Press"
@@ -299,12 +227,11 @@ export function WeightsTab() {
           )}
 
           <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
-        </Card>
-      )}
+      </Card>
 
-      {exercises.length > 0 && (
+      {chipNames.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {exercises.map(e => (
+          {chipNames.map(e => (
             <Chip key={e} active={selEx === e} onClick={() => handleSelectEx(e)}>{e}</Chip>
           ))}
         </div>
@@ -340,13 +267,8 @@ export function WeightsTab() {
               dataKey={chartMetric}
               stroke={CHART.line}
               activeDot={hoverDot(CHART.line)}
-              // No resting dots (§9) — the only marked points are the deload
-              // sessions, and a single point is exactly what the accent is for.
-              dot={(props: { cx?: number; cy?: number; payload?: { deload?: boolean }; index?: number }) => {
-                const { cx, cy, payload, index } = props
-                if (cx == null || cy == null || !payload?.deload) return <g key={index} />
-                return <circle key={index} cx={cx} cy={cy} r={3.5} fill={CHART.accent} />
-              }}
+              // No resting dots (§9).
+              dot={false}
             />
           </ChartFrame>
         </Card>

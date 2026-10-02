@@ -13,7 +13,6 @@ import type {
   SleepEntry,
   SaunaEntry,
   ColdEntry,
-  Program,
   EditModalTarget,
   ExerciseAlias,
 } from '../types'
@@ -27,17 +26,6 @@ import {
   deleteWeightEntry,
   updateWeightEntry,
 } from '../lib/db/weights'
-import {
-  loadProgramData,
-  saveProgram,
-  advanceProgram,
-  pauseProgram,
-  hardDeleteProgram,
-  restartProgram,
-  resumeProgram,
-  setWeekOverride,
-} from '../lib/db/program'
-import { activeVariantWeekdays, startOfWeek, today } from '../lib/utils'
 import { loadBodyweight, saveBodyweightEntry, deleteBodyweightEntry, updateBodyweightEntry } from '../lib/db/bodyweight'
 import { loadCardio, saveCardioEntry, deleteCardioEntry, updateCardioEntry } from '../lib/db/cardio'
 import { loadMobility, saveMobilityEntry, deleteMobilityEntry, updateMobilityEntry } from '../lib/db/mobility'
@@ -50,7 +38,7 @@ import {
   loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
 import { usePrefs } from './prefs'
-import type { LiftSet, DayOfWeek } from '../types'
+import type { LiftSet } from '../types'
 
 interface AppStore extends AppState {
   loading: boolean
@@ -72,14 +60,7 @@ interface AppStore extends AppState {
   removeWeightEntry: (id: string) => Promise<void>
   editWeightEntry: (id: string, patch: { sets: LiftSet[]; date?: string }) => Promise<void>
 
-  // Programs
-  saveActiveProgram: (program: Program, programId?: string, userProgramId?: string) => Promise<void>
-  advanceActiveProgram: (userProgramId: string, newIndex: number, date: string) => Promise<void>
-  restartActiveProgram: (userProgramId: string, startDate: string) => Promise<void>
-  pauseActiveProgram: (userProgramId: string) => Promise<void>
-  resumeActiveProgram: (userProgramId: string) => Promise<void>
-  removeProgram: (programId: string, userProgramId: string) => Promise<void>
-  toggleWeekVariant: (userProgramId: string, dayOfWeek: DayOfWeek, variantActive: boolean) => Promise<void>
+
 
   // Bodyweight
   addBodyweightEntry: (entry: Omit<BodyweightEntry, 'id'>) => Promise<void>
@@ -127,7 +108,7 @@ interface AppStore extends AppState {
   editColdEntry: (id: string, patch: Omit<ColdEntry, 'id'>) => Promise<void>
 
   // Exercise catalogue
-  /** exercise id → name, for the Admin mapping editor and the assistant's name resolution. */
+  /** exercise id → name, for the Admin mapping editor. */
   exerciseNames: Record<string, string>
   /** exercise name (lowercased) → adaptation override, for the adaptation dashboard. */
   exerciseAdaptations: Record<string, Adaptation>
@@ -256,9 +237,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   sleep: [],
   sauna: [],
   cold: [],
-  programs: [],
-  programHistory: [],
-  weekOverrides: [],
   muscleGroups: [],
   exerciseMuscles: [],
   exerciseNames: {},
@@ -308,9 +286,8 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, programData, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
+      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
         loadWeights(),
-        loadProgramData(),
         loadBodyweight(),
         loadCardio(),
         loadMobility(),
@@ -344,9 +321,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
         sleep,
         sauna,
         cold,
-        programs: programData.active,
-        programHistory: programData.cycles,
-        weekOverrides: programData.overrides,
         adaptationTargets,
         exerciseAliases,
       })
@@ -376,65 +350,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set(s => ({
       weights: patchId(s.weights, id, { sets: patch.sets, ...(patch.date ? { date: patch.date } : {}) }),
     }))
-  },
-
-  // ── Programs ─────────────────────────────────────────────────────────────────
-  saveActiveProgram: async (program, programId, userProgramId) => {
-    const result = await saveProgram(program, programId, userProgramId)
-    set(s => {
-      const others = s.programs.filter(p => p.userProgramId !== result.userProgramId)
-      return { programs: [...others, result] }
-    })
-  },
-  advanceActiveProgram: async (userProgramId, newIndex, date) => {
-    await advanceProgram(userProgramId, newIndex, date)
-    set(s => ({
-      programs: s.programs.map(p =>
-        p.userProgramId === userProgramId
-          ? { ...p, currentDayIndex: newIndex, lastAdvancedDate: date }
-          : p
-      ),
-    }))
-  },
-  restartActiveProgram: async (userProgramId, startDate) => {
-    await restartProgram(userProgramId, startDate)
-    const { cycles: programHistory } = await loadProgramData()
-    set(s => ({
-      programs: s.programs.map(p =>
-        p.userProgramId === userProgramId
-          ? { ...p, startDate, currentDayIndex: 0, lastAdvancedDate: startDate }
-          : p
-      ),
-      programHistory,
-    }))
-  },
-  pauseActiveProgram: async (userProgramId) => {
-    await pauseProgram(userProgramId)
-    const { cycles: programHistory } = await loadProgramData()
-    set(s => ({ programs: s.programs.filter(p => p.userProgramId !== userProgramId), programHistory }))
-  },
-  resumeActiveProgram: async (userProgramId) => {
-    await resumeProgram(userProgramId)
-    const { active, cycles } = await loadProgramData()
-    set({ programs: active, programHistory: cycles })
-  },
-  removeProgram: async (programId, userProgramId) => {
-    await hardDeleteProgram(programId, userProgramId)
-    set(s => ({
-      programs: s.programs.filter(p => p.userProgramId !== userProgramId),
-      programHistory: s.programHistory.filter(c => c.userProgramId !== userProgramId),
-      weekOverrides: s.weekOverrides.filter(o => o.userProgramId !== userProgramId),
-    }))
-  },
-  toggleWeekVariant: async (userProgramId, dayOfWeek, variantActive) => {
-    const weekStartDate = startOfWeek(today())
-    await setWeekOverride(userProgramId, weekStartDate, dayOfWeek, variantActive)
-    set(s => {
-      const others = s.weekOverrides.filter(
-        o => !(o.userProgramId === userProgramId && o.weekStartDate === weekStartDate && o.dayOfWeek === dayOfWeek),
-      )
-      return { weekOverrides: [...others, { userProgramId, weekStartDate, dayOfWeek, variantActive }] }
-    })
   },
 
   // ── Bodyweight ───────────────────────────────────────────────────────────────
@@ -541,28 +456,3 @@ export const useAppStore = create<AppStore>((set, get) => ({
     })
   },
 }))
-
-
-// ── Derived store hooks ───────────────────────────────────────────────────────
-
-/**
- * This week's base ⇄ variant choice for one enrolment.
- *
- * WeightsTab and ProgramTab each used to wire this by hand — read
- * `weekOverrides`, filter it for the programme, close a `toggleWeekVariant`
- * over the same id — and then thread the pair down as props (roadmap 048 B8).
- *
- * Both selectors return a *stored* reference. The derived `Set` is built in the
- * caller's render, never inside a selector: a selector that returns a fresh
- * object on every call has a new identity every time Zustand compares it, which
- * is an endless re-render.
- */
-export function useVariantWeek(userProgramId: string) {
-  const weekOverrides = useAppStore(s => s.weekOverrides)
-  const toggleWeekVariant = useAppStore(s => s.toggleWeekVariant)
-  return {
-    variantWeekdays: activeVariantWeekdays(weekOverrides, userProgramId),
-    setVariant: (dayOfWeek: DayOfWeek, variantActive: boolean) =>
-      toggleWeekVariant(userProgramId, dayOfWeek, variantActive),
-  }
-}

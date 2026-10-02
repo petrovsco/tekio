@@ -6,8 +6,8 @@ import {
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
-import { cycleInfo, today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
-import { CYCLE, RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
+import { today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
+import { RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { coverageLine, coverageParts } from '../adaptations/labels'
@@ -44,9 +44,8 @@ function verdictCopy(args: {
   gaps: MuscleState[]
   recoveringShorts: string[]
   minDaysSince: number | null
-  isDeload: boolean
 }): { text: string; sub: string } {
-  const { zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince, isDeload } = args
+  const { zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince } = args
 
   if (zeroData) {
     return {
@@ -70,13 +69,6 @@ function verdictCopy(args: {
 
   const names = gaps.slice(0, 2).map(m => shortLower(m.name))
   const list = joinNames(names)
-  if (isDeload) {
-    return {
-      text: list ? `Deload week — ${list} at half volume.` : 'Deload week — half volume.',
-      sub: `Week ${CYCLE} of the cycle. The gap stays the same; the volume cap is the only change.`,
-    }
-  }
-
   const text = list
     ? `Push. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
     : `Push. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
@@ -119,7 +111,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const donations = useAppStore(s => s.donations)
   const water = useAppStore(s => s.water)
   const bodyweight = useAppStore(s => s.bodyweight)
-  const programs = useAppStore(s => s.programs)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const muscleGroups = useAppStore(s => s.muscleGroups)
   const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
@@ -168,12 +159,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const gated = verdict.mode === 'hold'
   const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
 
-  const program = programs[0] ?? null
-  const { week, isDeload, isComplete } = cycleInfo(program)
-  const cycleLabel = !program
-    ? 'No active program'
-    : isComplete ? 'Cycle complete'
-    : `Week ${week} of ${CYCLE}${isDeload ? ' · DELOAD' : ''}`
 
   const recoveringShorts = states.filter(s => s.leaf && s.recovering).map(s => shortLower(s.name))
   const minDaysSince = states.reduce<number | null>(
@@ -182,7 +167,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   )
 
   const { text: verdictText, sub: verdictSub } = verdictCopy({
-    zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince, isDeload,
+    zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince,
   })
 
   const gateCols: GateCol[] = [
@@ -265,9 +250,8 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   return (
     <div className="text-ink" onPointerDown={prefetch}>
       {/* Header */}
-      <div className="flex items-baseline justify-between pb-2">
+      <div className="flex items-baseline pb-2">
         <span className="text-[15px] font-bold tracking-[0.14em]">TEKIŌ</span>
-        <span className="text-[11px] text-ink-2 tracking-[0.04em]">{cycleLabel}</span>
       </div>
 
       {/* Verdict — readiness gates the instruction; the sub names the top gap */}

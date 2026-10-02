@@ -16,7 +16,6 @@ export function BottomNav({ tab, setTab, onMore, hidden }: BottomNavProps) {
     { key: 'Home', icon: 'home', label: 'Home' },
     { key: 'Weights', icon: 'weights', label: 'Weights' },
     { key: 'Cardio', icon: 'cardio', label: 'Cardio' },
-    { key: 'Program', icon: 'program', label: 'Program' },
   ]
   // Where-you-are is not urgency, so the active tab is ink rather than the
   // accent (design-system §1 — the accent keeps its one meaning).

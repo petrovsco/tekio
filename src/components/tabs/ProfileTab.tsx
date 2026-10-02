@@ -24,7 +24,6 @@ import { useHrMax } from '../../hooks/useHrMax'
 import { HR_MAX_WINDOW_MONTHS, HR_MAX_FORMULA_INTERCEPT, HR_MAX_FORMULA_SLOPE } from '../../lib/hrMax'
 import { Icon, type IconName } from '../ui/Icon'
 import { Toggle } from '../ui/Fields'
-import { AssistantSettings } from './AssistantSettings'
 import { ImportPane } from '../layout/ImportPane'
 import { ExportPane } from '../layout/ExportPane'
 import type { SectionConfig } from '../../lib/db/sectionConfig'
@@ -199,7 +198,6 @@ export function ProfileTab() {
         </div>
       </Card>
 
-      <AssistantSettings />
 
       <div>
         <SecTitle>Sections</SecTitle>

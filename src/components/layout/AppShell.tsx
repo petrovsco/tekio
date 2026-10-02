@@ -1,14 +1,11 @@
 import { useState, useEffect, useRef, lazy, Suspense, type ReactNode } from 'react'
 import { useAppStore } from '../../store/app'
-import { cycleInfo } from '../../lib/utils'
-import { DeloadBadge } from '../ui/Badges'
 import { Icon } from '../ui/Icon'
 import { Toast } from '../ui/Toast'
 import { Drawer } from './Drawer'
 import { BottomNav } from './BottomNav'
 import { EnvBanner } from './EnvBanner'
 import { IS_PRODUCTION } from '../../lib/env'
-import { AssistantFab } from '../assistant/AssistantFab'
 
 // T2 — on intent (roadmap 018 unit 5). The edit form is reached from every
 // surface but only ever after a tap, so it is a lazy chunk prefetched on the
@@ -20,7 +17,6 @@ const EditModal = lazy(() => import('../ui/EditModal').then(m => ({ default: m.E
 const TAB_TITLES: Record<string, string> = {
   Home: 'Home',
   Adaptations: 'Adaptations',
-  Program: 'Program',
   Weights: 'Weights',
   'Body Weight': 'Body Weight',
   Cardio: 'Cardio',
@@ -39,9 +35,7 @@ interface AppShellProps {
 export function AppShell({ tab, setTab, children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [inputFocused, setInputFocused] = useState(false)
-  const programs = useAppStore(s => s.programs)
   const editing = useAppStore(s => s.editModal)
-  const { isDeload, week } = cycleInfo(programs[0] ?? null)
   const prefetched = useRef(false)
 
   useEffect(() => {
@@ -59,9 +53,6 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
   // The env banner (roadmap 037) is sticky at top-0 too, so the header parks
   // under it rather than sharing the slot and being covered.
   const stickyTop = IS_PRODUCTION ? 'top-0' : 'top-6'
-  // Deload does not recolour the header. The accent has exactly one meaning
-  // (action / urgency, design-system §1) and a deload week is a fact about the
-  // cycle, not an urgency — so it is stated as a label, not painted on the bar.
   const headerClass = `bg-white border-b border-chrome sticky ${stickyTop} z-50`
 
   // The SIGNAL Home surface carries its own header (TEKIŌ + cycle label) and
@@ -109,7 +100,6 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
             {TAB_TITLES[tab] ?? tab}
           </h1>
           <div className="flex items-center gap-2 justify-end">
-            {isDeload && <DeloadBadge week={week} />}
             {tab !== 'Profile' && (
               <button
                 onClick={() => setTab('Profile')}
@@ -129,7 +119,6 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
         {children}
       </main>
 
-      <AssistantFab hidden={inputFocused} />
 
       <BottomNav tab={tab} setTab={setTab} onMore={() => setDrawerOpen(true)} hidden={inputFocused} />
     </div>

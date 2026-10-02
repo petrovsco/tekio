@@ -7,8 +7,6 @@
 // the same URL and the same two headers — so this is that client, without the
 // 177 kB of login, WebSocket and file-storage code the app never reaches.
 //
-// The one edge-function call left is a plain `fetch` in `assistant/client.ts`.
-//
 // When auth lands (roadmap 003) `@supabase/auth-js` comes back — but lazily, on
 // the sign-in path, rather than in the chunk that paints Home.
 import { PostgrestClient } from '@supabase/postgrest-js'
@@ -22,7 +20,7 @@ const baseUrl = supabaseUrl.endsWith('/') ? supabaseUrl : supabaseUrl + '/'
 
 /** Sent on every request. With no session, `supabase-js` sends the anon key as
  *  the bearer token too; RLS is wide open, so this is what it already did. */
-export const supabaseHeaders: Record<string, string> = {
+const supabaseHeaders: Record<string, string> = {
   apikey: supabaseAnonKey,
   Authorization: `Bearer ${supabaseAnonKey}`,
 }
@@ -30,5 +28,3 @@ export const supabaseHeaders: Record<string, string> = {
 export const supabase = new PostgrestClient(new URL('rest/v1', baseUrl).href, {
   headers: supabaseHeaders,
 })
-
-export const functionsUrl = new URL('functions/v1/', baseUrl).href

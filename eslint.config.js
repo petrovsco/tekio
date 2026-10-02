@@ -68,13 +68,6 @@ export default tseslint.config(
     rules: { 'react-hooks/refs': 'warn' },
   },
   {
-    files: ['src/components/tabs/AssistantSettings.tsx'],
-    // Seeds two editable fields from async-loaded status. Setting state in an
-    // effect is the ordinary way to do that; the alternative is a `key` or the
-    // adjust-during-render dance, neither clearer here.
-    rules: { 'react-hooks/set-state-in-effect': 'warn' },
-  },
-  {
     // Tests get the Vitest globals and are allowed to be blunt.
     files: ['src/test/**/*.{ts,tsx}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },

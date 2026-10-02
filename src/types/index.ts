@@ -1,6 +1,6 @@
 // `import type` of two value bindings, used only under `typeof`. It is erased at
 // build, so this does not close a runtime cycle with `constants/app.ts`, which
-// type-imports `CardioFormat` and `DayOfWeek` back from here.
+// type-imports `CardioFormat` back from here.
 import type { CARDIO_TYPES, DONATION_TYPES } from '../constants/app'
 
 export interface LiftSet {
@@ -229,101 +229,6 @@ export interface DonationEntry {
   notes: string
 }
 
-export type BlockType = 'warmup' | 'weight' | 'mobility' | 'sport' | 'conditioning' | 'recovery'
-
-export type TrainingTag =
-  | 'STRENGTH' | 'POWER' | 'PREHAB' | 'CORE' | 'CONDITIONING'
-  | 'MOBILITY' | 'WARMUP' | 'RECOVERY' | 'SKILL'
-
-export type DayOfWeek =
-  | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'
-
-export interface ProgramDayExercisePrescription {
-  id?: string
-  exercise: string
-  trainingTag: TrainingTag
-  sortOrder: number
-  notes?: string
-  durationText?: string
-  tempo?: string
-  setsText?: string
-  repsText?: string
-  weightText?: string
-}
-
-export interface ProgramDayBlock {
-  id?: string
-  blockType: BlockType
-  name: string
-  scheduledTime?: string
-  durationMinutes?: number
-  notes?: string
-  sortOrder: number
-  exercises: ProgramDayExercisePrescription[]
-  supersets: [string, string][]
-}
-
-export interface ProgramDay {
-  id?: string
-  name: string
-  exercises: string[]
-  supersets: [string, string][]
-  /** null = not pinned to a weekday (Adjustment-phase days, ordered by queueOrder instead) */
-  dayOfWeek?: DayOfWeek | null
-  queueOrder?: number | null
-  isVariant?: boolean
-  variantGroupKey?: string | null
-  /** The day itself; `exercises`/`supersets` above are derived from its weight-type block(s) (`deriveFlat`) */
-  blocks: ProgramDayBlock[]
-}
-
-export interface ProgramPhase {
-  id?: string
-  name: string
-  sortOrder: number
-  durationWeeks: number | null
-  goal: string
-  days: ProgramDay[]
-}
-
-export interface Program {
-  name: string
-  startDate: string
-  currentDayIndex: number
-  lastAdvancedDate: string
-  days: ProgramDay[]
-  /** Richer phase/block structure backing `days` above; absent for not-yet-migrated programs */
-  phases?: ProgramPhase[]
-  weeklyPrinciples?: Record<string, string | number>
-}
-
-export interface ActiveProgram extends Program {
-  programId: string
-  userProgramId: string
-  currentPhaseId?: string | null
-  /** Deload is a user-committed state, not automatically derived from elapsed time */
-  deloadCommittedDate?: string | null
-}
-
-export interface ProgramCycle {
-  id: string
-  userProgramId: string
-  programId: string
-  programName: string
-  cycleNumber: number
-  startDate: string
-  endDate: string | null
-  status: 'active' | 'paused' | 'completed' | 'abandoned'
-  days: ProgramDay[]
-}
-
-export interface ProgramWeekOverride {
-  userProgramId: string
-  weekStartDate: string
-  dayOfWeek: DayOfWeek
-  variantActive: boolean
-}
-
 export interface AppState {
   weights: WeightEntry[]
   bodyweight: BodyweightEntry[]
@@ -336,9 +241,6 @@ export interface AppState {
   sleep: SleepEntry[]
   sauna: SaunaEntry[]
   cold: ColdEntry[]
-  programs: ActiveProgram[]
-  programHistory: ProgramCycle[]
-  weekOverrides: ProgramWeekOverride[]
   muscleGroups: MuscleGroup[]
   exerciseMuscles: ExerciseMuscleLink[]
 }

@@ -13,7 +13,6 @@ const AdaptationsTab = lazy(() => import('./components/tabs/AdaptationsTab').the
 const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').then(m => ({ default: m.WeightsTab })))
 const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(m => ({ default: m.CardioTab })))
 const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(m => ({ default: m.MobilityTab })))
-const ProgramTab = lazy(() => import('./components/tabs/ProgramTab').then(m => ({ default: m.ProgramTab })))
 const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(m => ({ default: m.ProfileTab })))
 const AdminTab = lazy(() => import('./components/tabs/AdminTab').then(m => ({ default: m.AdminTab })))
 
@@ -22,7 +21,7 @@ const AdminTab = lazy(() => import('./components/tabs/AdminTab').then(m => ({ de
 // destinations went. Habits, shelved by the same ledger, was deleted 2026-09-05
 // (roadmap 035) — three sections, one slot of R1 headroom.
 type DrawerTab = 'Weights' | 'Cardio' | 'Mobility'
-type Tab = 'Home' | 'Adaptations' | 'Program' | 'Profile' | 'Admin' | DrawerTab
+type Tab = 'Home' | 'Adaptations' | 'Profile' | 'Admin' | DrawerTab
 
 function TabContent(
   { tab, setTab, focusMuscle }: { tab: Tab; setTab: (t: string, muscle?: string) => void; focusMuscle: string | null },
@@ -30,7 +29,6 @@ function TabContent(
   switch (tab) {
     case 'Home': return <HomeTab setTab={setTab} />
     case 'Adaptations': return <AdaptationsTab setTab={setTab} initialMuscle={focusMuscle} />
-    case 'Program': return <ProgramTab />
     case 'Weights': return <WeightsTab />
     case 'Cardio': return <CardioTab />
     case 'Mobility': return <MobilityTab />

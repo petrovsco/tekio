@@ -21,10 +21,10 @@ const variantClasses: Record<Variant, string> = {
  *  this way; each site adds its own padding and display, because they are not
  *  the same box — a grid cell is not an inline chip, and Tailwind gives no
  *  order guarantee when two utilities set the same property. */
-export const ACT_TONE =
+const ACT_TONE =
   'text-[11px] font-semibold text-ink bg-white border border-line rounded-[3px] hover:border-ink cursor-pointer transition-colors'
 
-/** `ACT_TONE` in the inline chip box that three of its four sites want. */
+/** `ACT_TONE` in the inline chip box the prefill sites want. */
 export const ACT_CHIP = `inline-flex items-center gap-0.5 px-2.5 py-[3px] ${ACT_TONE}`
 
 interface BtnProps extends ButtonHTMLAttributes<HTMLButtonElement> {

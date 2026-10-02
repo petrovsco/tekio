@@ -1,46 +1,6 @@
-import type { CardioFormat, DayOfWeek } from '../types'
+import type { CardioFormat } from '../types'
 
 export const USER_ID = 'a0000000-0000-0000-0000-000000000001'
-
-/** Monday-first, which is what `weekdayOf` rotates the JS day index into and
- *  what the program editor pins days against. Lives here rather than in
- *  `constants/program.ts` so `lib/utils.ts` can read it without pulling the
- *  program editor's block and tag tables onto the first paint. */
-export const DAYS_OF_WEEK: DayOfWeek[] = [
-  'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
-]
-
-/**
- * 6 weeks: 5 loading weeks and 1 deload week. This is a convention at the centre
- * of reported practice (a survey found 5.6 ± 2.3 weeks; a Delphi panel said
- * 4–6), and no trial has tested deload frequency. Doctrine R2's 6-week shelf
- * clock only borrows the number. See
- * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
- */
-export const CYCLE = 6
-
-/**
- * Deload week within the cycle (1-based) — the last week of every cycle.
- * Placement is a convention: no trial compares where a deload goes, and the end
- * of the block is the default the expert literature names (Bell 2023/2025). See
- * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
- *
- * Equal to `CYCLE` in value but not in meaning: one says how long a block is,
- * the other says where the deload sits inside it, and the inventory tracks them
- * as two claims (rows 5.1 and 5.3). Deriving it keeps the deload on the last
- * week if the cycle length ever moves.
- */
-export const DELOAD_WEEK = CYCLE
-
-/**
- * Deload dose: reps are scaled to 70% of the last session, load unchanged.
- * `reps`-only is what the app applies and what `programs.deload_strategy`
- * persists. 0.7 cuts volume by about 30% at held load, the low end of the
- * 25–50% range in the strength-taper and deload literature (Travis 2020;
- * Bell 2025). No trial has tested the dose itself. See
- * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
- */
-export const DELOAD_REP_FACTOR = 0.7
 
 export const WATER_GOAL_ML = 2500
 

@@ -1,15 +1,4 @@
-import type {
-  WeightEntry, Program, ProgramDay, ProgramDayBlock, ProgramWeekOverride, MobilityEntry,
-  DayOfWeek, ExerciseMuscleLink, LiftSet,
-} from '../types'
-import { CYCLE, DELOAD_WEEK, DELOAD_REP_FACTOR, DAYS_OF_WEEK } from '../constants/app'
-
-export type GroupedExercise =
-  | { type: 'single'; exercises: [string] }
-  | { type: 'superset'; exercises: [string, string] }
-
-export const uid = (): string =>
-  Date.now().toString(36) + Math.random().toString(36).slice(2)
+import type { WeightEntry, MobilityEntry, ExerciseMuscleLink } from '../types'
 
 export const today = (): string =>
   new Date().toISOString().slice(0, 10)
@@ -90,152 +79,39 @@ export function withinTimeFrame(date: string, frame: TimeFrame, ref: string = to
   return date >= cutoff.toISOString().slice(0, 10)
 }
 
-export const r05 = (v: number): number => Math.round(v * 2) / 2
-
-export interface CycleInfo {
-  week: number
-  isDeload: boolean
-  isComplete: boolean
-}
-
-export function cycleInfo(p: Program | null | undefined): CycleInfo {
-  if (!p?.startDate) return { week: 1, isDeload: false, isComplete: false }
-  const days = Math.max(0, daysBetween(p.startDate, today()))
-  const weekCount = Math.floor(days / 7) // 0-based completed-week count
-  // Once all CYCLE weeks (including deload) have elapsed, the program is done
-  if (weekCount >= CYCLE) return { week: CYCLE, isDeload: false, isComplete: true }
-  const wc = weekCount + 1 // 1-based current week number (1 … CYCLE)
-  return { week: wc, isDeload: wc === DELOAD_WEEK, isComplete: false }
-}
-
-/** Whether `d` falls in the deload week of the cycle that began on `startDate`.
- *  Same week count as {@link cycleInfo}: one cycle, no wrap — a cycle that has
- *  run past its last week is complete, and only a restart (a new `startDate`)
- *  begins the next one. */
-export function isDeloadDate(startDate: string | null | undefined, d: string): boolean {
-  if (!startDate) return false
-  const days = Math.max(0, daysBetween(startDate, d))
-  return Math.floor(days / 7) + 1 === DELOAD_WEEK
-}
-
 /**
- * A deload session's prescribed sets: reps scaled by {@link DELOAD_REP_FACTOR}
- * (min 1), load unchanged. The single deload model — the plan preview and the
- * "Deload ↓" button must not disagree. See
- * tekio.rfcs/rfcs/done/0013-cycle-deload-grounding.md#grounding
+ * The most recent session logged for an exercise — what the log form prefills
+ * from. Matching is case-insensitive and trims the name, so a half-typed
+ * exercise in the log form still finds its history.
  */
-export function deloadSets(lastSets: LiftSet[]): LiftSet[] {
-  return lastSets.map(s => ({
-    weight: r05(s.weight),
-    reps: Math.max(1, Math.round(s.reps * DELOAD_REP_FACTOR)),
-  }))
-}
-
-/**
- * The most recent session logged for an exercise, ignoring deload sessions.
- *
- * Deload weeks are excluded because this is the value the next session is
- * planned from — a light week must not become the new baseline. `startDates`
- * is a list, not one date, because a date counts as deload if it falls in the
- * deload week of *any* active program: WeightsTab has several in scope, the
- * plan components have one. Matching is case-insensitive and trims the name,
- * so a half-typed exercise in the log form still finds its history.
- */
-export function lastPerformance(
-  weights: WeightEntry[],
-  exercise: string,
-  startDates: (string | null | undefined)[] = [],
-): WeightEntry | undefined {
+export function lastPerformance(weights: WeightEntry[], exercise: string): WeightEntry | undefined {
   const name = exercise.trim().toLowerCase()
   if (!name) return undefined
   let best: WeightEntry | undefined
   for (const d of weights) {
     if (d.exercise.toLowerCase() !== name) continue
-    if (startDates.some(sd => isDeloadDate(sd, d.date))) continue
     if (!best || d.date.localeCompare(best.date) > 0) best = d
   }
   return best
+}
+
+/** The `n` exercises logged most recently, newest first — the Weights chips. */
+export function recentExercises(weights: WeightEntry[], n: number): string[] {
+  const last = new Map<string, string>()
+  for (const d of weights) {
+    const seen = last.get(d.exercise)
+    if (!seen || d.date > seen) last.set(d.exercise, d.date)
+  }
+  return [...last.entries()]
+    .sort((a, b) => b[1].localeCompare(a[1]) || a[0].localeCompare(b[0]))
+    .slice(0, n)
+    .map(([name]) => name)
 }
 
 export function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
   const m = new Map(existing.map((e) => [e.id, e]))
   incoming.forEach((e) => m.set(e.id, e))
   return [...m.values()]
-}
-
-/**
- * The flat `exercises` / `supersets` view of a day, read off its weight blocks.
- * Three surfaces need it — the JSON importer, the loader and the editor — so it
- * lives here rather than in `programImport.ts`: the loader runs at bootstrap and
- * importing from the parser would drag it into the first-paint chunk.
- */
-export function deriveFlat(blocks: ProgramDayBlock[]): { exercises: string[]; supersets: [string, string][] } {
-  const weightBlocks = blocks.filter(b => b.blockType === 'weight')
-  return {
-    exercises: weightBlocks.flatMap(b => b.exercises.map(e => e.exercise)),
-    supersets: weightBlocks.flatMap(b => b.supersets),
-  }
-}
-
-export function getGrouped(day: Pick<ProgramDay, 'exercises' | 'supersets'> | null | undefined): GroupedExercise[] {
-  if (!day) return []
-  const ss = day.supersets ?? []
-  const used = new Set<string>()
-  const groups: GroupedExercise[] = []
-  for (const ex of day.exercises ?? []) {
-    if (used.has(ex)) continue
-    const pair = ss.find(p => p.includes(ex))
-    if (pair) {
-      const partner = pair.find(e => e !== ex)
-      if (partner && day.exercises.includes(partner) && !used.has(partner)) {
-        groups.push({ type: 'superset', exercises: [ex, partner] })
-        used.add(ex); used.add(partner); continue
-      }
-    }
-    groups.push({ type: 'single', exercises: [ex] })
-    used.add(ex)
-  }
-  return groups
-}
-
-export function sessionDates(weights: WeightEntry[], exArr: string[]): string[] {
-  const m: Record<string, Set<string>> = {}
-  weights.forEach(w => {
-    if (!m[w.date]) m[w.date] = new Set()
-    m[w.date].add(w.exercise.toLowerCase())
-  })
-  return Object.entries(m)
-    .filter(([, s]) => exArr.some(e => s.has(e.toLowerCase())))
-    .map(([d]) => d)
-    .sort((a, b) => b.localeCompare(a))
-}
-
-export function defaultProgram(): Program {
-  return {
-    name: '5-Day High Efficiency Split',
-    startDate: today(),
-    currentDayIndex: 0,
-    lastAdvancedDate: today(),
-    days: [
-      weightDay('Day 1 — Squat + Bench + Curls', ['Back Squat', 'Bench Press', 'Bicep Curls'], [['Bench Press', 'Bicep Curls']]),
-      weightDay('Day 2 — Deadlift + Rows + Calves', ['Deadlift', 'Rows', 'Calf Raises', 'Reverse Fly'], [['Calf Raises', 'Reverse Fly']]),
-      weightDay('Day 3 — OHP + Pull-ups + Triceps', ['Overhead Press', 'Pull-ups', 'Tricep Extensions'], []),
-      weightDay('Day 4 — Squat + Bench + Curls', ['Back Squat', 'Bench Press', 'Bicep Curls'], [['Bench Press', 'Bicep Curls']]),
-      weightDay('Day 5 — Rows + Deadlift + Triceps', ['Rows', 'Deadlift', 'Tricep Extensions', 'Calf Raises'], [['Tricep Extensions', 'Calf Raises']]),
-    ],
-  }
-}
-
-/** A day of one weight block — the shape `saveDayBlocks` writes. */
-function weightDay(name: string, exercises: string[], supersets: [string, string][]): ProgramDay {
-  const block: ProgramDayBlock = {
-    blockType: 'weight',
-    name,
-    sortOrder: 0,
-    exercises: exercises.map((exercise, j) => ({ exercise, trainingTag: 'STRENGTH', sortOrder: j })),
-    supersets,
-  }
-  return { name, ...deriveFlat([block]), blocks: [block] }
 }
 
 // ── One-rep-max estimation ────────────────────────────────────────────────────
@@ -349,146 +225,6 @@ export function calcPace(mins: number, distKm: number): string {
   return `${m}:${String(s).padStart(2, '0')}/km`
 }
 
-interface MetricSeries {
-  series: { x: string; y: number }[]
-  first: number
-  last: number
-  peak: number
-  delta: number
-}
-
-export interface ExerciseProgress {
-  exercise: string
-  maxWeight: MetricSeries
-  volume: MetricSeries
-}
-
-function toMetricSeries(points: { x: string; y: number }[]): MetricSeries {
-  return {
-    series: points,
-    first: points[0]?.y ?? 0,
-    last: points[points.length - 1]?.y ?? 0,
-    peak: points.length > 0 ? Math.max(...points.map(p => p.y)) : 0,
-    delta: (points[points.length - 1]?.y ?? 0) - (points[0]?.y ?? 0),
-  }
-}
-
-export function cycleExerciseProgress(
-  weights: WeightEntry[],
-  cycle: { startDate: string; endDate: string | null; days: ProgramDay[] }
-): ExerciseProgress[] {
-  const exerciseNames = [...new Set(cycle.days.flatMap(d => d.exercises))]
-  const end = cycle.endDate ?? today()
-
-  return exerciseNames
-    .map(exercise => {
-      const entries = weights
-        .filter(w =>
-          w.exercise.toLowerCase() === exercise.toLowerCase() &&
-          w.date >= cycle.startDate &&
-          w.date <= end
-        )
-        .sort((a, b) => a.date.localeCompare(b.date))
-
-      const maxWeight = toMetricSeries(entries.map(w => ({ x: w.date, y: Math.max(...w.sets.map(s => s.weight)) })))
-      const volume = toMetricSeries(entries.map(w => ({ x: w.date, y: w.sets.reduce((a, s) => a + s.weight * s.reps, 0) })))
-
-      return { exercise, maxWeight, volume }
-    })
-    .filter(p => p.maxWeight.series.length > 0)
-}
-
-export function isTodayDone(
-  weights: WeightEntry[],
-  day: ProgramDay | null | undefined,
-): boolean {
-  return (day?.exercises ?? []).every((ex) =>
-    weights.some((w) => w.date === today() && w.exercise === ex),
-  )
-}
-
-// ── Day resolution (block-aware programs) ─────────────────────────────────────
-
-/** Weekday name for a date string (defaults to today). `DAYS_OF_WEEK` starts on
- *  Monday, which is why the JS day index is rotated by 6. */
-export function weekdayOf(s: string = today()): DayOfWeek {
-  const jsDay = new Date(s).getDay() // 0 = Sunday … 6 = Saturday
-  return DAYS_OF_WEEK[(jsDay + 6) % 7]
-}
-
-export type ProgramMode = 'weekday' | 'flexible' | 'index'
-
-/**
- * How "today's day" is chosen for a program:
- * - `weekday`  — at least one day is pinned to a day-of-week → pick by calendar.
- * - `flexible` — a phased program with no pinned days (Adjustment) → weekly checklist.
- * - `index`    — legacy flat program → sequential `currentDayIndex`.
- */
-export function programMode(program: Program): ProgramMode {
-  const days = program.days ?? []
-  if (days.some(d => d.dayOfWeek)) return 'weekday'
-  if (program.phases && program.phases.length > 0) return 'flexible'
-  return 'index'
-}
-
-/**
- * Resolves the single day to show today for `weekday`/`index` modes (null = rest).
- * In weekday mode, `variantWeekdays` selects the variant day instead of the base
- * for any weekday the user has toggled on for the current week.
- */
-export function resolveTodayDay(
-  program: Program,
-  date: string = today(),
-  variantWeekdays?: Set<DayOfWeek>,
-): ProgramDay | null {
-  const days = program.days ?? []
-  if (days.length === 0) return null
-  const mode = programMode(program)
-  if (mode === 'index') {
-    return days[program.currentDayIndex % days.length] ?? null
-  }
-  if (mode === 'weekday') {
-    const wd = weekdayOf(date)
-    const matches = days.filter(d => d.dayOfWeek === wd)
-    if (matches.length === 0) return null
-    if (variantWeekdays?.has(wd)) {
-      return matches.find(d => d.isVariant) ?? matches.find(d => !d.isVariant) ?? matches[0]
-    }
-    return matches.find(d => !d.isVariant) ?? matches[0]
-  }
-  return null // flexible mode is handled by the weekly checklist
-}
-
-/** Weekdays whose variant is toggled on for a program (overrides are current-week). */
-export function activeVariantWeekdays(
-  overrides: ProgramWeekOverride[],
-  userProgramId: string,
-): Set<DayOfWeek> {
-  return new Set(
-    overrides
-      .filter(o => o.userProgramId === userProgramId && o.variantActive)
-      .map(o => o.dayOfWeek),
-  )
-}
-
-export interface VariantGroup {
-  weekday: DayOfWeek
-  base: ProgramDay | null
-  variant: ProgramDay
-}
-
-/** Weekdays that have a stored variant day, paired with their base day (if any). */
-export function variantGroups(program: Program): VariantGroup[] {
-  const days = program.days ?? []
-  return days
-    .filter(d => d.isVariant && d.dayOfWeek)
-    .map(v => ({
-      weekday: v.dayOfWeek as DayOfWeek,
-      base: days.find(d => !d.isVariant && d.dayOfWeek === v.dayOfWeek) ?? null,
-      variant: v,
-    }))
-}
-
 export const WEEKLY_STRETCH_TARGET_MIN = 5
 
 /** Sums mobility minutes per muscle group within [weekStartDate, date]. */
@@ -507,19 +243,6 @@ export function weeklyMuscleVolume(
     }
   }
   return out
-}
-
-/** True when every weight exercise of `day` was logged within [weekStartDate, today]. */
-export function isDayDoneInWeek(
-  weights: WeightEntry[],
-  day: ProgramDay,
-  weekStartDate: string,
-  date: string = today(),
-): boolean {
-  if (day.exercises.length === 0) return false
-  return day.exercises.every(ex =>
-    weights.some(w => w.exercise === ex && w.date >= weekStartDate && w.date <= date),
-  )
 }
 
 // ── Muscle stimulus accounting ────────────────────────────────────────────────

@@ -66,7 +66,3 @@ export async function getOrCreateExerciseRow(name: string): Promise<{ id: string
   return { id: data.id, name: canonical }
 }
 
-/** The id alone, for the callers that do not display the name back. */
-export async function getOrCreateExercise(name: string): Promise<string> {
-  return (await getOrCreateExerciseRow(name)).id
-}

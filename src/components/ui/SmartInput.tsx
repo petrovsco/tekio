@@ -7,6 +7,9 @@ import type { ExerciseAlias } from '../../types'
 interface SmartInputProps {
   value: string
   onChange: (val: string) => void
+  /** Fired after `onChange` when a suggestion is picked from the list, never
+   *  on a keystroke — so a picker can load what it knows about that name. */
+  onPick?: (val: string) => void
   suggestions: string[]
   /**
    * Other spellings that should find these suggestions (roadmap 044). Passed
@@ -60,7 +63,7 @@ function match(suggestions: string[], aliases: ExerciseAlias[], typed: string): 
   return out.slice(0, 8)
 }
 
-export function SmartInput({ value, onChange, suggestions, aliases = [], placeholder, className = '', onFocus, onBlur, onKeyDown }: SmartInputProps) {
+export function SmartInput({ value, onChange, onPick, suggestions, aliases = [], placeholder, className = '', onFocus, onBlur, onKeyDown }: SmartInputProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -93,7 +96,7 @@ export function SmartInput({ value, onChange, suggestions, aliases = [], placeho
             <button
               key={m.name}
               type="button"
-              onMouseDown={e => { e.preventDefault(); onChange(m.name); setOpen(false) }}
+              onMouseDown={e => { e.preventDefault(); onChange(m.name); onPick?.(m.name); setOpen(false) }}
               className="w-full text-left px-2.5 py-2 text-xs text-ink hover:bg-hairline cursor-pointer transition-colors"
             >
               {m.name}

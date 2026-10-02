@@ -37,7 +37,6 @@ export function ExportPane({ onClose }: ExportPaneProps) {
       sleep: f(store.sleep),
       sauna: f(store.sauna),
       cold: f(store.cold),
-      programs: store.programs,
     }
     const json = JSON.stringify(filtered, null, 2)
 

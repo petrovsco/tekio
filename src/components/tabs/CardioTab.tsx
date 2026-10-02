@@ -4,7 +4,6 @@ import { Toggle } from '../ui/Fields'
 import { CardioLogForm } from './cardio/CardioLogForm'
 import { SportLogForm } from './cardio/SportLogForm'
 import { Progress } from './cardio/Progress'
-import { SessionsPerWeek } from './cardio/SessionsPerWeek'
 import { SessionList } from './cardio/SessionList'
 import { LENSES, type Lens } from './cardio/lens'
 
@@ -49,8 +48,6 @@ export function CardioTab() {
       {/* Keyed by the lens: a chip or drill-down picked under Sport names
           nothing under Cardio, so each lens starts from its own All. */}
       <Progress key={`p-${lens}`} lens={lens} />
-
-      <SessionsPerWeek key={`w-${lens}`} lens={lens} />
 
       <SessionList lens={lens} />
     </div>

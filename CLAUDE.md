@@ -146,7 +146,7 @@ that loads when you open a chart costs the first paint nothing. It fails at
 baseline + 5 %. Run `npm run build` first; re-baseline with `perf:update` in the
 same commit as the change that moved the number, and say why.
 [scripts/perf-baseline.json](scripts/perf-baseline.json) is the committed
-record: **352.47 kB first paint, 1490 ms to the Home read** (2026-09-08). That
+record: **321.55 kB first paint** (2026-10-02, after Program and the assistant left) **and 1490 ms to the Home read** (2026-09-08). That
 second number is the one doctrine §6 cares about — it is measured after
 `bootstrap()` has returned, not at DOMContentLoaded — and it is wall-clock
 against the live database, so read the trend, not the digit.
@@ -171,26 +171,24 @@ The app is hardcoded to one user: `USER_ID` in [src/constants/app.ts](src/consta
 
 Two Zustand stores:
 
-- **`useAppStore`** ([src/store/app.ts](src/store/app.ts)) — holds all domain data (weights, bodyweight, cardio, mobility, skills, donations, programs) plus CRUD actions and `bootstrap()` which loads everything in parallel on startup. Also owns the global `editModal` and `toast` state.
+- **`useAppStore`** ([src/store/app.ts](src/store/app.ts)) — holds all domain data (weights, bodyweight, cardio, mobility, sports, donations, water, sleep, sauna, cold) plus CRUD actions and `bootstrap()` which loads everything in parallel on startup. Also owns the global `editModal` and `toast` state.
 - **`usePrefs`** ([src/store/prefs.ts](src/store/prefs.ts)) — controls which sections appear in the drawer menu / home tab, and their sort order. Loaded as part of `bootstrap()`.
 
 ### Data layer (`src/lib/db/`)
 
 One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. Key points:
 
-- **Weights** ([src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExercise`. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`.
-- **Programs** ([src/lib/db/program.ts](src/lib/db/program.ts)): `programs` + `program_days` + `program_day_exercises` + `program_supersets`. User enrollment lives in `user_programs` (status: `'active' | 'paused'`). Only `'active'` programs are loaded into the store on bootstrap.
+- **Weights** ([src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExerciseRow`. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`.
 - **Section config** ([src/lib/db/sectionConfig.ts](src/lib/db/sectionConfig.ts)): `user_section_config` table. On first load, defaults are seeded via upsert with `ignoreDuplicates: true`.
 
-### Cycle / deload logic
+### No programs, no cycle
 
-Programs run in 6-week cycles. Week 6 is the deload week. All cycle math lives in [src/lib/utils.ts](src/lib/utils.ts):
-
-- `cycleInfo(program)` — returns `{ week, isDeload, isComplete }` based on days elapsed since `startDate`.
-- `isDeloadDate(startDate, date)` — checks if a specific date falls in a deload week (used for chart dot styling).
-- The constant `CYCLE = 6` lives in `src/constants/app.ts`; `src/lib/utils.ts` imports it from there.
-
-When all of today's exercises are logged, `WeightsTab` auto-advances the program to the next day.
+The Program feature — training plans, the 6-week cycle, the week-6 deload,
+Today's Plan on Weights — was removed in 2.1.17 to be rebuilt later
+(`tekio.rfcs/rfcs/0087-remove-program.md`). Home and Adaptations never read
+it: their windows are their own (`MUSCLE_WINDOW_DAYS`). Its tables stay in the
+database until the 2.2.0 release sweep, because the build on `master` still
+reads them.
 
 ### Routing and navigation
 
@@ -198,7 +196,7 @@ There is no router. Navigation is purely state-based: `tab` state in `App.tsx` d
 
 ### UI components
 
-Reusable primitives in [src/components/ui/](src/components/ui/): `Card`, `Button` (with `Btn`, `DelBtn`, `EditBtn`), `Input` (`Inp`), `Modal`, `SmartInput` (autocomplete), `HistoryList` (filterable list), `Chip`, `Toast`, `EditModal` (unified edit form for all entry types), `MiniChart`, `SetsGrid`.
+Reusable primitives in [src/components/ui/](src/components/ui/): `Card`, `Button` (with `Btn`, `DelBtn`, `EditBtn`), `Input` (`Inp`), `Modal`, `SmartInput` (autocomplete), `HistoryList` (filterable list), `Chip`, `Toast`, `EditModal` (unified edit form for all entry types), `SetsGrid`.
 
 `EditModal` is a single component that handles editing for all entry types using the `EditModalTarget` discriminated union from [src/types/index.ts](src/types/index.ts).
 

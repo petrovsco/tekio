@@ -12,6 +12,7 @@ import { SelEl } from '../../ui/Input'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
 import { lensSessions, sessionLabel, type Lens } from './lens'
+import { WinLossRecord } from './WinLossRecord'
 
 type Second = 'pace' | 'avgHr'
 
@@ -134,6 +135,8 @@ export function Progress({ lens }: { lens: Lens }) {
           </div>
         </div>
       </div>
+      {/* Keyed by the sport, so a competitor picked for one starts fresh on the next. */}
+      {lens === 'sport' && filter !== 'All' && <WinLossRecord key={filter} sport={filter} />}
       <ChartFrame data={chartData} empty={emptyMsg}>
         <XAxis dataKey="key" tickFormatter={labelOf} {...CHART_AXIS} />
         <YAxis yAxisId="duration" width={durationAxisWidth} {...CHART_AXIS} />
