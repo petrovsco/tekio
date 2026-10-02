@@ -108,11 +108,14 @@ export function cycleInfo(p: Program | null | undefined): CycleInfo {
   return { week: wc, isDeload: wc === DELOAD_WEEK, isComplete: false }
 }
 
+/** Whether `d` falls in the deload week of the cycle that began on `startDate`.
+ *  Same week count as {@link cycleInfo}: one cycle, no wrap — a cycle that has
+ *  run past its last week is complete, and only a restart (a new `startDate`)
+ *  begins the next one. */
 export function isDeloadDate(startDate: string | null | undefined, d: string): boolean {
   if (!startDate) return false
   const days = Math.max(0, daysBetween(startDate, d))
-  const wc = (Math.floor(days / 7) % (CYCLE + 1)) + 1
-  return wc === DELOAD_WEEK
+  return Math.floor(days / 7) + 1 === DELOAD_WEEK
 }
 
 /**

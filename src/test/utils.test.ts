@@ -374,6 +374,13 @@ describe('cycleInfo', () => {
 // ---------------------------------------------------------------------------
 
 describe('isDeloadDate', () => {
+  it('does not wrap past the cycle — weeks 7 and 13 are not deloads, as cycleInfo says', () => {
+    // +42 days = week 7 (cycle complete); +84 days = week 13, which a 7-week wrap marked as deload
+    expect(isDeloadDate('2025-01-01', '2025-02-12')).toBe(false)
+    expect(isDeloadDate('2025-01-01', '2025-03-26')).toBe(false)
+    expect(isDeloadDate('2025-01-01', '2025-02-19')).toBe(false) // +49, a 6-week wrap's next deload
+  })
+
   it('returns false when startDate is null or undefined', () => {
     expect(isDeloadDate(null, '2025-01-06')).toBe(false)
     expect(isDeloadDate(undefined, '2025-01-06')).toBe(false)
