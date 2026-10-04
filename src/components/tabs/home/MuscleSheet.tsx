@@ -112,7 +112,7 @@ export default function MuscleSheet({
 
   const verdict = daysSince === null
     ? {
-        text: 'Never trained.', invert: true, icon: 'M12 5v14M5 12h14',
+        text: 'Never trained.', invert: true, icon: 'M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z',
         sub: `Zero sets in the last ${MUSCLE_WINDOW_DAYS} days and no logged history — the biggest kind of gap.`,
       }
     : recovering
@@ -127,7 +127,7 @@ export default function MuscleSheet({
           }
         : fill < GAP_CUTOFF
           ? {
-              text: 'Train it.', invert: true, icon: 'M12 5v14M5 12h14',
+              text: 'Train it.', invert: true, icon: 'M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z',
               sub: `Fully recovered and under target: ${fmtSets(sets)} sets in ${MUSCLE_WINDOW_DAYS} days, last stimulus ${daysSince} d ago.`,
             }
           : {
@@ -298,7 +298,7 @@ export default function MuscleSheet({
           onClick={() => setRows(rs => [...rs, rs.length ? { ...rs[rs.length - 1] } : { reps: 8, weight: 0 }])}
           className="w-full min-h-[44px] mt-2 border border-dashed border-[#c9c9c7] rounded-[3px] text-[13px] font-semibold text-ink-2 cursor-pointer"
         >
-          + Same again
+          + Add a set
         </button>
         <div className="text-[10px] text-ink-3 mt-2 text-pretty">
           Saves to today’s session. Reps are what classify the sets into an adaptation.
@@ -454,10 +454,10 @@ export default function MuscleSheet({
           onClick={onOpenAdaptations}
           className="mt-2 w-full flex items-center justify-between min-h-[44px] border border-line rounded-[3px] px-2.5 bg-white text-left cursor-pointer"
         >
-          <span className="text-[10px] text-ink-2">
-            Why this gap — see {muscle} across the four qualities
+          <span className="text-[12px] text-ink-2">
+            What to do about it: {muscle} on Adaptations
           </span>
-          <Icon name="arrowRight" size={12} className="text-ink-2 shrink-0" />
+          <Icon name="arrowRight" size={14} className="text-ink-2 shrink-0" />
         </button>
       )}
 

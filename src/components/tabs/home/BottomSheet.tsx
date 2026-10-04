@@ -117,7 +117,7 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
       />
       <div
         ref={panelRef}
-        className={`relative w-full min-w-0 sm:max-w-[480px] bg-white text-ink border-t-2 sm:border-2 border-ink sm:rounded-[6px] sm:!max-h-[85vh] sm:!h-auto sm:!transform-none flex flex-col overflow-hidden ${
+        className={`relative w-full min-w-0 sm:max-w-[480px] bg-white text-ink border-t sm:border-2 border-ink sm:rounded-[6px] sm:!max-h-[85vh] sm:!h-auto sm:!transform-none flex flex-col overflow-hidden ${
           full ? 'rounded-none' : 'rounded-t-[6px]'
         } ${dragging ? '' : 'transition-[transform,max-height,height] duration-200 ease-out motion-reduce:transition-none'}`}
         style={{ height: panelHeight, maxHeight, transform }}

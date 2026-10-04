@@ -16,7 +16,8 @@ interface ModalProps {
  * - Renders into document.body via a portal
  * - Closes on Escape key or backdrop click
  * - Full-screen on mobile, centred card on sm+
- * - SIGNAL sheet geometry (design-system §2): 2px ink border, 6px radius,
+ * - SIGNAL sheet geometry (design-system §2): 1px ink top edge on a phone,
+ *   2px ink border as a centred card, 6px radius,
  *   rgba(26,26,26,0.34) scrim. Home's own sheets use BottomSheet; this is the
  *   shell-wide equivalent for everything reached from a tab.
  * - Scrollable content area; header/footer stay fixed
@@ -53,7 +54,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
       <div className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative w-full min-w-0 sm:max-w-md max-h-[92vh] bg-white text-ink rounded-t-[6px] sm:rounded-[6px] border-2 border-ink flex flex-col overflow-hidden">
+      <div className="relative w-full min-w-0 sm:max-w-md max-h-[92vh] bg-white text-ink rounded-t-[6px] sm:rounded-[6px] border-t sm:border-2 border-ink flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-hairline flex-shrink-0">
           <h2 className="text-[17px] font-bold tracking-[-0.01em]">{title}</h2>
