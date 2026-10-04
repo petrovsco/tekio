@@ -9,7 +9,7 @@
 // considered and ruled out", which is what stops it being re-added by hand.
 //
 // See tekio.rfcs/grounding/0074-exercise-catalogue.md#pattern-link-sets for the
-// sources, the verdict of each pattern and the ten forks (inventory D46–D55).
+// sources, the verdict of each pattern and the ten forks (inventory D48–D57).
 
 /** The leaf muscle groups of `muscle_groups`, by name. */
 export const MUSCLES = [
@@ -164,7 +164,7 @@ export const MOVEMENT_PATTERNS = {
   },
 
   // ── Trunk, carries, Olympic lifts (run T) ─────────────────────────────────
-  // The bracing rule (D53): level 1 goes to the muscle resisting the pattern's
+  // The bracing rule (D55): level 1 goes to the muscle resisting the pattern's
   // external moment, even held still; a muscle only stiffening the trunk is 3.
   spinalFlexion: {
     name: 'Spinal Flexion',
