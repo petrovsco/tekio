@@ -145,7 +145,7 @@ Check the logs, then confirm rows landed in `sleep_logs` / `cardio_sessions` /
 GitHub's `schedule:` trigger is best-effort and has started these jobs hours
 late, so the daily run is started from the database instead (RFC 0077). Two
 `pg_cron` jobs call `public.dispatch_garmin_sync()`
-([migration](../../supabase/migrations/20260929080000_garmin_sync_dispatch_cron.sql)),
+([migration](../../supabase/migrations/20260929071908_garmin_sync_dispatch_cron.sql)),
 which asks GitHub for a `workflow_dispatch` on `develop`: activities at
 **08:00 Europe/Sofia**, sleep at **08:10** — apart, because both rotate the
 same Garmin token. Each job is scheduled at 05 and 06 UTC and the function keeps
