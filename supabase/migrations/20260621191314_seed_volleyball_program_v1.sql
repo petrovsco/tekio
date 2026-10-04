@@ -1,3 +1,5 @@
+-- Guarded 2026-10-04 (RFC 0016): skips on a database without the owner's
+-- profile, so the history replays from empty. Live behaviour is unchanged.
 do $$
 declare
   v_user uuid := 'a0000000-0000-0000-0000-000000000001';
@@ -5,6 +7,9 @@ declare
   v_b1 uuid; v_b2 uuid; v_b3 uuid; v_b4 uuid; v_b5 uuid;
   v_a uuid; v_bb uuid;
 begin
+  if not exists (select 1 from public.user_profiles where id = v_user) then
+    return;
+  end if;
   insert into exercises(user_id, name, is_system)
   select v_user, x, false from unnest(array[
     'Shoulder CARs','Hip CARs','Band Dislocate','Leg Swings','Goblet Squat','Pogo Hop',

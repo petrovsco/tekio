@@ -17,7 +17,7 @@ alter table public.sleep_logs
   add column if not exists source text not null default 'manual'
     check (source in ('manual', 'garmin'));
 
-comment on column public.sleep_logs.sleep_score is 'Garmin objective Sleep Score (0–100), null for manual-only nights.';
+comment on column public.sleep_logs.sleep_score is 'Garmin objective Sleep Score (0-100), null for manual-only nights.';
 comment on column public.sleep_logs.sleep_score_qualifier is 'Garmin categorical label: EXCELLENT / GOOD / FAIR / POOR.';
 comment on column public.sleep_logs.source is 'Row provenance: manual (hand-logged) or garmin (daily sync).';
 

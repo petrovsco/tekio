@@ -1,3 +1,5 @@
+-- Guarded 2026-10-04 (RFC 0016): skips on a database without the owner's
+-- profile, so the history replays from empty. Live behaviour is unchanged.
 -- 1. Recovery/mobility exercises (6 new + 2 existing habit names), idempotent by name
 with new_ex(name) as (values
   ('Standing Hip Openers'),('Elephant Walks'),
@@ -7,7 +9,8 @@ with new_ex(name) as (values
 insert into public.exercises (user_id, name, is_system)
 select 'a0000000-0000-0000-0000-000000000001'::uuid, n.name, false
 from new_ex n
-where not exists (select 1 from public.exercises e where lower(e.name) = lower(n.name));
+where not exists (select 1 from public.exercises e where lower(e.name) = lower(n.name))
+  and exists (select 1 from public.user_profiles where id = 'a0000000-0000-0000-0000-000000000001');
 
 -- 2. Multi-group muscle mappings (primary L1 + secondary L2/L3), all recovery
 with links(exercise, muscle, lvl, contribution) as (values
@@ -67,7 +70,8 @@ select 'a0000000-0000-0000-0000-000000000001'::uuid, h.name, '🧘', 'daily',
 from newh h
 cross join base
 join public.muscle_groups m on m.name = h.muscle
-where not exists (
+where exists (select 1 from public.user_profiles where id = 'a0000000-0000-0000-0000-000000000001')
+  and not exists (
   select 1 from public.habits x
   where x.user_id = 'a0000000-0000-0000-0000-000000000001'::uuid
     and lower(x.name) = lower(h.name)

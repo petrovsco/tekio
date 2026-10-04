@@ -20,6 +20,6 @@ create table if not exists public.integration_tokens (
 comment on table public.integration_tokens is
   'Rotating third-party auth tokens for the sync jobs. service_role only (RLS on, no policies).';
 comment on column public.integration_tokens.token is
-  'Opaque blob owned by the client library — stored verbatim, never parsed by the app.';
+  'Opaque blob owned by the client library - stored verbatim, never parsed by the app.';
 
 alter table public.integration_tokens enable row level security;
