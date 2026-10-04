@@ -13,6 +13,7 @@
 
 import { MOVEMENT_PATTERNS, type LinkSet, type PatternKey } from './movementPatterns'
 import { normaliseExerciseName as key } from '../lib/exerciseName'
+import type { ExerciseAlias } from '../types'
 
 export interface CatalogueEntry {
   /** Canonical name, as `exercises.name` spells it. */
@@ -428,6 +429,22 @@ export const EXERCISE_CATALOGUE: CatalogueEntry[] = [
   { name: 'Dumbbell Snatch', pattern: 'olympic', aliases: ['Single-Arm Dumbbell Snatch'], links: { Glutes: 1, Quadriceps: 1, Hamstrings: 2, 'Upper Back / Traps': 2, Erectors: 2, 'Anterior Deltoid': 3 }, reason: 'The overhead receive is an isometric hold, not a press' },
   { name: 'Kettlebell Clean', pattern: 'olympic', aliases: ['KB Clean'] },
 ]
+
+/** Every catalogue name, for the Weights picker. */
+export const CATALOGUE_NAMES: string[] = EXERCISE_CATALOGUE.map(e => e.name)
+
+/** The catalogue's spellings in the shape the picker and resolver already
+ *  read. They come after the database's aliases, so a spelling on file wins. */
+export const CATALOGUE_ALIASES: ExerciseAlias[] = EXERCISE_CATALOGUE.flatMap(e =>
+  (e.aliases ?? []).map(alias => ({ alias, canonicalName: e.name, isOwn: false })),
+)
+
+const byKey = new Map<string, CatalogueEntry>()
+for (const e of EXERCISE_CATALOGUE) for (const s of [e.name, ...(e.aliases ?? [])]) byKey.set(key(s), e)
+
+/** The entry a name or one of its spellings means, ignoring case and
+ *  punctuation the way every other exercise match does. */
+export const catalogueEntryFor = (name: string): CatalogueEntry | undefined => byKey.get(key(name))
 
 /**
  * The standing check (RFC 0074 §5): everything wrong with a catalogue, as

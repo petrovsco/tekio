@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { EXERCISE_CATALOGUE, catalogueProblems, linksFor, type CatalogueEntry } from '../constants/exerciseCatalogue'
+import { EXERCISE_CATALOGUE, catalogueEntryFor, catalogueProblems, linksFor, type CatalogueEntry } from '../constants/exerciseCatalogue'
 import { MOVEMENT_PATTERNS, MUSCLES } from '../constants/movementPatterns'
+import { MOVEMENT_AREAS } from '../constants/movementQuestion'
 
 describe('the exercise catalogue (RFC 0074 standing check)', () => {
   it('has no problems', () => {
@@ -42,5 +43,23 @@ describe('catalogueProblems catches a planted bad link', () => {
   it('two spellings of one name', () => {
     expect(catalogueProblems([base, { name: 'Hammer Curl', pattern: 'elbowFlexion', aliases: ['machine-curl'] }]))
       .toEqual(['"machine-curl" (an alias of Hammer Curl) collides with Machine Curl'])
+  })
+})
+
+describe('the movement question', () => {
+  it('offers every pattern exactly once', () => {
+    const offered = MOVEMENT_AREAS.flatMap(a => a.choices.map(c => c.pattern)).sort()
+    expect(offered).toEqual(Object.keys(MOVEMENT_PATTERNS).sort())
+  })
+})
+
+describe('catalogueEntryFor', () => {
+  it('finds a lift by its name or a spelling, ignoring case and punctuation', () => {
+    expect(catalogueEntryFor('back squat')?.name).toBe('Back Squat')
+    expect(catalogueEntryFor('Barbell-Back-Squat')?.name).toBe('Back Squat')
+  })
+
+  it('knows nothing about a name it does not list', () => {
+    expect(catalogueEntryFor('Zercher Wheelbarrow Press')).toBeUndefined()
   })
 })

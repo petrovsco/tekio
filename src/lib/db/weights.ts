@@ -1,6 +1,7 @@
 import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WeightEntry, LiftSet } from '../../types'
+import type { PatternKey } from '../../constants/movementPatterns'
 import { withOrigin } from '../env'
 // One resolver for every write path (roadmap 044) — a second copy here is how
 // the alias fix would silently miss half the ways a set gets logged.
@@ -73,15 +74,18 @@ export async function loadWeights(): Promise<WeightEntry[]> {
   return entries
 }
 
+/** `linked` is true when this save created the exercise and wrote its muscle
+ *  links (RFC 0074), so the caller knows the muscle read must be reloaded. */
 export async function saveWeightEntry(
-  entry: Omit<WeightEntry, 'id'> & { id?: string }
-): Promise<WeightEntry> {
+  entry: Omit<WeightEntry, 'id'> & { id?: string },
+  pattern?: PatternKey,
+): Promise<{ entry: WeightEntry; linked: boolean }> {
   // The row, not just its id: what the user typed may be an alias, and the
   // entry handed back seeds the in-memory log. Returning the typed spelling
   // would leave the muscle read blind to this set until the next reload —
   // exactly the split roadmap 044 closes.
   const [exercise, sessionId] = await Promise.all([
-    getOrCreateExerciseRow(entry.exercise),
+    getOrCreateExerciseRow(entry.exercise, { link: true, pattern }),
     getOrCreateSession(entry.date),
   ])
   const exerciseId = exercise.id
@@ -116,7 +120,10 @@ export async function saveWeightEntry(
     if (setsErr) throw setsErr
   }
 
-  return { id: se.id, date: entry.date, exercise: exercise.name, sets: entry.sets, supersetId: entry.supersetId }
+  return {
+    entry: { id: se.id, date: entry.date, exercise: exercise.name, sets: entry.sets, supersetId: entry.supersetId },
+    linked: exercise.linked,
+  }
 }
 
 export async function deleteWeightEntry(id: string): Promise<void> {

@@ -15,6 +15,10 @@ import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
 import type { WeightEntry } from '../../../types'
+import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor } from '../../../constants/exerciseCatalogue'
+import type { PatternKey } from '../../../constants/movementPatterns'
+import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
+import { MovementQuestion } from './MovementQuestion'
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -42,9 +46,32 @@ export function WeightsTab() {
   // on `weights` so a keystroke recomputes none of it (roadmap 048 B7).
   const exercises = useMemo(() => uniqSorted(weights.map(d => d.exercise)), [weights])
   const pickerNames = useMemo(() => weightsPickerNames(weights, exerciseMuscles), [weights, exerciseMuscles])
+  // RFC 0074: the catalogue's lifts are offered after the ones already on
+  // file, so an empty field still opens on what this user actually trains.
+  const suggestions = useMemo(() => {
+    const own = new Set(pickerNames.map(normaliseExerciseName))
+    return [...pickerNames, ...CATALOGUE_NAMES.filter(n => !own.has(normaliseExerciseName(n))).sort()]
+  }, [pickerNames])
+  const aliases = useMemo(() => [...exerciseAliases, ...CATALOGUE_ALIASES], [exerciseAliases])
   const getLastPerf = (n: string) => lastPerformance(weights, n)
 
   const lastPerf = getLastPerf(ex)
+
+  // The movement question (RFC 0074) is for a name nothing knows. Its answer
+  // belongs to the name it was given for, the way the 1RM ask below does: edit
+  // the name and the answer no longer applies, with no effect resetting it.
+  // While the name is still being typed, a partial that the picker can still
+  // complete is not a new lift; the question waits until nothing matches or
+  // the sets are being entered.
+  const nameKey = normaliseExerciseName(ex)
+  const stillTyping = suggestions.some(n => normaliseExerciseName(n).includes(nameKey))
+    || aliases.some(a => normaliseExerciseName(a.alias).includes(nameKey))
+  const unknownName = nameKey !== ''
+    && !resolveExerciseName(ex, pickerNames, aliases)
+    && !catalogueEntryFor(ex)
+    && (!stillTyping || sets.some(s => s.weight !== '' || s.reps !== ''))
+  const [movement, setMovement] = useState<{ key: string; pattern: PatternKey | null } | null>(null)
+  const pattern = unknownName && movement?.key === nameKey ? movement.pattern : null
 
   const typedSets = useMemo(() => parseSets(sets, revealed), [sets, revealed])
 
@@ -92,8 +119,8 @@ export function WeightsTab() {
     const vs = parseSets(sets, revealed)
     if (!vs.length) return
     await withToast(async () => {
-      await addWeightEntry({ date, exercise: ex.trim(), sets: vs })
-      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1)
+      await addWeightEntry({ date, exercise: ex.trim(), sets: vs }, pattern ?? undefined)
+      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null)
     }, 'Exercise saved!')
   }
 
@@ -142,11 +169,18 @@ export function WeightsTab() {
                 value={ex}
                 onChange={setEx}
                 onPick={handleSelectEx}
-                suggestions={pickerNames}
-                aliases={exerciseAliases}
+                suggestions={suggestions}
+                aliases={aliases}
                 placeholder="e.g. Bench Press"
               />
             </div>
+            {unknownName && (
+              <MovementQuestion
+                key={nameKey}
+                value={pattern}
+                onChange={p => setMovement({ key: nameKey, pattern: p })}
+              />
+            )}
             {lastPerf && (
               <div className="px-2.5 py-2 bg-hairline rounded-[3px] text-[11px] text-ink-2">
                 <span className="font-bold text-ink">Last ({lastPerf.date}):</span>{' '}
@@ -169,7 +203,7 @@ export function WeightsTab() {
           {(prSet || oneRmCandidate) && (
             <div className="flex flex-col gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
               {/* A personal best is a stated fact, not an urgency, so it takes
-                  the outline tone (design-system §1) — like SS and DELOAD. */}
+                  the outline tone (design-system §1) — like SS. */}
               {prSet && (
                 <div className="flex items-center justify-between gap-2">
                   <span className={FIELD_LABEL}>Personal best</span>

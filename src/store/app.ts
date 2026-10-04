@@ -37,6 +37,7 @@ import {
 } from '../lib/db/recovery'
 import { usePrefs } from './prefs'
 import type { LiftSet } from '../types'
+import type { PatternKey } from '../constants/movementPatterns'
 
 interface AppStore extends AppState {
   loading: boolean
@@ -54,7 +55,9 @@ interface AppStore extends AppState {
   bootstrap: () => Promise<void>
 
   // Weights
-  addWeightEntry: (entry: Omit<WeightEntry, 'id'>) => Promise<void>
+  /** `pattern` answers the movement question for a name nothing knows yet
+   *  (RFC 0074); it is ignored when the name resolves to a known lift. */
+  addWeightEntry: (entry: Omit<WeightEntry, 'id'>, pattern?: PatternKey) => Promise<void>
   removeWeightEntry: (id: string) => Promise<void>
   editWeightEntry: (id: string, patch: { sets: LiftSet[]; date?: string }) => Promise<void>
 
@@ -313,9 +316,12 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // ── Weights ──────────────────────────────────────────────────────────────────
   // Written out rather than spread: `editWeightEntry` takes sets plus an optional
   // date, not a whole entry.
-  addWeightEntry: async (entry) => {
-    const saved = await saveWeightEntry(entry)
-    set(s => ({ weights: insert(s.weights, saved) }))
+  addWeightEntry: async (entry, pattern) => {
+    const { entry: saved, linked } = await saveWeightEntry(entry, pattern)
+    // A first log of a catalogue lift writes its links; without the reload the
+    // set would count for nothing on the muscle read until the next start.
+    const exerciseMuscles = linked ? await loadExerciseMuscleLinks() : undefined
+    set(s => ({ weights: insert(s.weights, saved), ...(exerciseMuscles ? { exerciseMuscles } : {}) }))
   },
   removeWeightEntry: async (id) => {
     await deleteWeightEntry(id)
