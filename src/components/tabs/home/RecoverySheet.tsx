@@ -236,7 +236,7 @@ export default function RecoverySheet({ sys, onClose, onOpenProfile }: RecoveryS
         <Icon name="arrowRight" size={18} className="text-ink-2 rotate-180" />
       </button>
       <span className="grow min-w-0 truncate text-[10px] font-bold tracking-[0.12em] text-ink-3">{title}</span>
-      <button onClick={onClose} aria-label="Close" className="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-end cursor-pointer">
+      <button onClick={onClose} aria-label="Close" className="min-w-[44px] min-h-[44px] flex items-center justify-end cursor-pointer">
         <Icon name="close" size={18} className="text-ink-2" />
       </button>
     </div>

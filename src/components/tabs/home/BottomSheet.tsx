@@ -164,7 +164,7 @@ function SheetClose({ onClose }: { onClose: () => void }) {
     <button
       onClick={onClose}
       aria-label="Close"
-      className="min-w-[44px] min-h-[44px] -my-3 -mr-2 flex items-center justify-end cursor-pointer"
+      className="min-w-[44px] min-h-[44px] -my-3 flex items-center justify-end cursor-pointer"
     >
       <Icon name="close" size={18} className="text-ink-2" />
     </button>

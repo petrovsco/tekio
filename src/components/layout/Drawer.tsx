@@ -72,7 +72,7 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
           <button
             onClick={onClose}
             aria-label="Close menu"
-            className="w-11 h-11 -my-2 -mr-3 flex items-center justify-end text-ink-2 hover:text-ink cursor-pointer"
+            className="w-11 h-11 -my-2 flex items-center justify-end text-ink-2 hover:text-ink cursor-pointer"
           >
             <Icon name="close" />
           </button>

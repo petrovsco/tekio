@@ -191,7 +191,7 @@ export default function MuscleSheet({
         <Icon name="arrowRight" size={18} className="text-ink-2 rotate-180" />
       </button>
       <span className="grow min-w-0 truncate text-[10px] font-bold tracking-[0.12em] text-ink-3">{title}</span>
-      <button onClick={onClose} aria-label="Close" className="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-end cursor-pointer">
+      <button onClick={onClose} aria-label="Close" className="min-w-[44px] min-h-[44px] flex items-center justify-end cursor-pointer">
         <Icon name="close" size={18} className="text-ink-2" />
       </button>
     </div>
@@ -454,23 +454,33 @@ function Stepper({ value, unit, step, label, numeric, onChange }: {
   numeric?: boolean
   onChange: (v: number) => void
 }) {
+  // What the field shows while it is being typed in. An emptied field stays
+  // empty, rather than snapping to 0 and putting a 0 in front of the next digit.
+  const [draft, setDraft] = useState<string | null>(null)
+  const bump = (d: number) => { setDraft(null); onChange(+(value + d).toFixed(2)) }
   const btn = 'w-9 h-11 shrink-0 flex items-center justify-center text-[18px] font-bold cursor-pointer'
   return (
     <div className="flex items-center h-11 border border-line rounded-[3px] min-w-0">
-      <button onClick={() => onChange(+(value - step).toFixed(2))} aria-label={`Less, ${label}`} className={btn}>−</button>
+      <button onClick={() => bump(-step)} aria-label={`Less, ${label}`} className={btn}>−</button>
       <label className="grow min-w-0 flex items-baseline justify-center gap-0.5">
         <input
           type="number"
           inputMode={numeric ? 'numeric' : 'decimal'}
           step={step}
-          value={value}
-          onChange={e => onChange(+e.target.value || 0)}
+          value={draft ?? String(value)}
+          onChange={e => {
+            const typed = e.target.value
+            setDraft(typed)
+            if (typed === '') onChange(0)
+            else if (Number.isFinite(+typed)) onChange(+typed)
+          }}
+          onBlur={() => setDraft(null)}
           aria-label={label}
           className="w-full min-w-0 h-11 text-center text-[15px] font-bold bg-transparent outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
         />
         <span className="text-[10px] text-ink-3 shrink-0 pr-0.5">{unit}</span>
       </label>
-      <button onClick={() => onChange(+(value + step).toFixed(2))} aria-label={`More, ${label}`} className={btn}>+</button>
+      <button onClick={() => bump(step)} aria-label={`More, ${label}`} className={btn}>+</button>
     </div>
   )
 }
