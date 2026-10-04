@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { LiftSet } from '../../../types'
 import { useAppStore } from '../../../store/app'
 import {
@@ -19,6 +19,12 @@ import { QUALITY_SHORT } from '../adaptations/labels'
 
 const fmtDay = (date: string): string =>
   new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+
+const FOOT_BTN = 'w-full min-h-[48px] rounded-[3px] text-[14px] font-bold cursor-pointer disabled:opacity-45'
+const FOOT_BTN_SOLID = `${FOOT_BTN} border border-ink bg-ink text-white`
+const FOOT_BTN_OUTLINE = `${FOOT_BTN} border border-ink bg-white text-ink`
+/** How long "N sets saved · Undo" stays up after a save. */
+const SAVED_NOTE_MS = 6000
 
 const fmtKg = (w: number): string => (w === 0 ? 'BW' : `${fmtSets(w)} kg`)
 
@@ -83,11 +89,21 @@ export default function MuscleSheet({
     [weights, exerciseMuscles, muscle, exerciseAdaptations, shapes],
   )
 
-  const [logOpen, setLogOpen] = useState(false)
+  // The sheet in steps (RFC 0100): the read, then which exercise, then its
+  // sets. A save lands back on the exercise list, ready for the next one.
+  const [step, setStep] = useState<'read' | 'pick' | 'sets'>('read')
   // The picked exercise travels by name, not index — saving re-ranks sources.
   const [pickedName, setPickedName] = useState<string | null>(null)
   const [rows, setRows] = useState<LiftSet[]>([])
-  const [savedCount, setSavedCount] = useState<number | null>(null)
+  const [query, setQuery] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState<{ id: string; exercise: string; count: number } | null>(null)
+  const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
+  useEffect(() => {
+    if (!saved) return
+    const t = window.setTimeout(() => setSaved(null), SAVED_NOTE_MS)
+    return () => window.clearTimeout(t)
+  }, [saved])
 
   const sets = state?.sets ?? 0
   const daysSince = state?.daysSince ?? null
@@ -125,23 +141,186 @@ export default function MuscleSheet({
   const weekScale = Math.max(WEEKLY_SET_FLOOR, ...weeks)
   const fedBy = sources.filter(s => s.windowSets > 0).sort((a, b) => b.windowSets - a.windowSets)
 
-  const pick = (s: MuscleSource) => {
-    setPickedName(s.exercise)
-    setRows(s.lastSets.map(r => ({ ...r })))
-    setSavedCount(null)
+  // Every exercise that can feed this muscle: the ones logged, most recent
+  // first, then the linked ones never logged, primary movers first.
+  const choices = useMemo(() => {
+    const logged = sources.map(s => ({ exercise: s.exercise, source: s as MuscleSource | null }))
+    const seen = new Set(logged.map(c => c.exercise.toLowerCase()))
+    const linked = exerciseMuscles
+      .filter(l => l.group === muscle && l.contribution === 'stimulus' && !seen.has(l.exercise.toLowerCase()))
+      .sort((a, b) => a.level - b.level || a.exercise.localeCompare(b.exercise))
+      .filter(l => !seen.has(l.exercise.toLowerCase()) && seen.add(l.exercise.toLowerCase()))
+      .map(l => ({ exercise: l.exercise, source: null }))
+    return [...logged, ...linked]
+  }, [sources, exerciseMuscles, muscle])
+  const q = query.trim().toLowerCase()
+  const shown = q ? choices.filter(c => c.exercise.toLowerCase().includes(q)) : choices
+
+  const pick = (exercise: string, source: MuscleSource | null) => {
+    setPickedName(exercise)
+    // Prefilled from last time; an exercise never logged starts at one
+    // bodyweight set for the stepper to move.
+    setRows(source ? source.lastSets.map(r => ({ ...r })) : [{ reps: 8, weight: 0 }])
+    setStep('sets')
   }
-  const editRow = (i: number, patch: Partial<LiftSet>) => {
+  const editRow = (i: number, patch: Partial<LiftSet>) =>
     setRows(rs => rs.map((r, j) => (j === i ? { ...r, ...patch } : r)))
-    setSavedCount(null)
-  }
   const save = async () => {
-    if (!pickedName || rows.length === 0) return
-    await addWeightEntry({ date: today(), exercise: pickedName, sets: rows })
-    setSavedCount(rows.length)
+    if (!pickedName || rows.length === 0 || saving) return
+    setSaving(true)
+    try {
+      const entry = await addWeightEntry({ date: today(), exercise: pickedName, sets: rows })
+      setSaved({ id: entry.id, exercise: pickedName, count: rows.length })
+      setPickedName(null)
+      setQuery('')
+      setStep('pick')
+    } finally {
+      setSaving(false)
+    }
+  }
+  const undo = async () => {
+    if (!saved) return
+    setSaved(null)
+    await removeWeightEntry(saved.id)
+  }
+
+  const savedNote = saved && (
+    <div className="flex items-center justify-between gap-2 min-h-[44px] mb-2 pl-3 rounded-[3px] bg-ink text-white text-[13px]" role="status">
+      <span className="min-w-0 truncate">{saved.exercise}: {saved.count} sets saved</span>
+      <button onClick={undo} className="min-h-[44px] px-3.5 font-bold underline cursor-pointer">Undo</button>
+    </div>
+  )
+
+  const stepHeader = (title: string, back: () => void) => (
+    <div className="flex items-center gap-1">
+      <button onClick={back} aria-label="Back" className="min-w-[44px] min-h-[44px] -ml-3 flex items-center justify-center cursor-pointer">
+        <Icon name="arrowRight" size={18} className="text-ink-2 rotate-180" />
+      </button>
+      <span className="grow min-w-0 truncate text-[10px] font-bold tracking-[0.12em] text-ink-3">{title}</span>
+      <button onClick={onClose} aria-label="Close" className="min-w-[44px] min-h-[44px] -mr-2 flex items-center justify-end cursor-pointer">
+        <Icon name="close" size={18} className="text-ink-2" />
+      </button>
+    </div>
+  )
+
+  if (step === 'pick') {
+    const loggedToday = (c: { source: MuscleSource | null }) => c.source?.lastDate === today()
+    return (
+      <BottomSheet
+        onClose={onClose}
+        label={`Log sets for ${muscle}`}
+        footer={<>{savedNote}<button onClick={() => setStep('read')} className={FOOT_BTN_OUTLINE}>Done</button></>}
+      >
+        {stepHeader(saved || choices.some(loggedToday) ? `ADD ANOTHER FOR ${muscle.toUpperCase()}` : `LOG SETS FOR ${muscle.toUpperCase()}`, () => setStep('read'))}
+        <label className="flex items-center gap-2 min-h-[44px] mt-1 mb-1.5 px-2.5 border border-ink rounded-[3px]">
+          <Icon name="search" size={14} className="text-ink-3 shrink-0" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search exercises"
+            aria-label="Search exercises"
+            className="grow min-w-0 bg-transparent outline-none text-[14px] py-2"
+          />
+        </label>
+        {shown.map(c => (
+          <button
+            key={c.exercise}
+            onClick={() => pick(c.exercise, c.source)}
+            className="w-full flex items-center gap-2 min-h-[52px] border-b border-line text-left cursor-pointer"
+          >
+            <span className="grow min-w-0">
+              <span className="block text-[14px] font-bold truncate">{c.exercise}</span>
+              <span className="block text-[11px] text-ink-2">
+                {c.source
+                  ? `${loggedToday(c) ? 'today' : `last ${fmtDay(c.source.lastDate)}`} · ${schemeLabel(c.source.lastSets)}`
+                  : 'not logged yet'}
+              </span>
+            </span>
+            {loggedToday(c)
+              ? <span className="text-[10px] font-bold tracking-[0.08em] text-signal shrink-0">TODAY ✓</span>
+              : <Icon name="arrowRight" size={14} className="text-ink-3 shrink-0" />}
+          </button>
+        ))}
+        {shown.length === 0 && (
+          <div className="py-3 text-[12px] text-ink-2 text-pretty">
+            {q ? `Nothing known by that name feeds ${muscle}.` : `Nothing in your log feeds ${muscle} yet.`}
+          </div>
+        )}
+        {/* The full catalogue arrives with RFC 0074; until then a new name is
+            logged on Weights, where the movement question can classify it. */}
+        <button
+          onClick={onSearchExercises}
+          className="w-full flex items-center gap-2 min-h-[48px] mt-2 px-2.5 border border-chrome rounded-[3px] text-ink-2 text-[13px] cursor-pointer"
+        >
+          <Icon name="weights" size={14} className="text-ink-2" />
+          {q ? `Log “${query.trim()}” on Weights` : 'A different exercise — open Weights'}
+        </button>
+      </BottomSheet>
+    )
+  }
+
+  if (step === 'sets' && pickedName) {
+    return (
+      <BottomSheet
+        onClose={onClose}
+        label={`${pickedName} sets`}
+        footer={
+          <button onClick={save} disabled={saving || rows.length === 0} className={FOOT_BTN_SOLID}>
+            {saving ? 'Saving…' : `Save ${rows.length} ${rows.length === 1 ? 'set' : 'sets'}`}
+          </button>
+        }
+      >
+        {stepHeader(pickedName.toUpperCase(), () => setStep('pick'))}
+        <div className="text-[11px] text-ink-3 mb-1">
+          {sources.some(s => s.exercise === pickedName) ? 'From last time. Step the numbers to today’s.' : 'Step the numbers to what you did.'}
+        </div>
+        {rows.map((r, i) => (
+          <div key={i} className="grid grid-cols-[34px_1fr_1fr_36px] gap-2 items-center min-h-[52px] border-b border-line">
+            <span className="text-[10px] text-ink-3 tracking-[0.06em]">SET {i + 1}</span>
+            <Stepper
+              value={r.reps} unit="reps" step={1} label={`Set ${i + 1} reps`} numeric
+              onChange={v => editRow(i, { reps: Math.max(0, Math.floor(v)) })}
+            />
+            <Stepper
+              value={r.weight} unit="kg" step={2.5} label={`Set ${i + 1} weight`}
+              onChange={v => editRow(i, { weight: Math.max(0, v) })}
+            />
+            <button
+              onClick={() => setRows(rs => rs.filter((_, j) => j !== i))}
+              aria-label={`Remove set ${i + 1}`}
+              className="w-9 h-11 flex items-center justify-center cursor-pointer"
+            >
+              <Icon name="close" size={14} className="text-ink-3" />
+            </button>
+          </div>
+        ))}
+        <button
+          onClick={() => setRows(rs => [...rs, rs.length ? { ...rs[rs.length - 1] } : { reps: 8, weight: 0 }])}
+          className="w-full min-h-[44px] mt-2 border border-dashed border-[#c9c9c7] rounded-[3px] text-[13px] font-semibold text-ink-2 cursor-pointer"
+        >
+          + Same again
+        </button>
+        <div className="text-[10px] text-ink-3 mt-2 text-pretty">
+          Saves to today’s session. Reps are what classify the sets into an adaptation.
+        </div>
+      </BottomSheet>
+    )
   }
 
   return (
-    <BottomSheet onClose={onClose} label={muscle}>
+    <BottomSheet
+      onClose={onClose}
+      label={muscle}
+      footer={
+        <>
+          {savedNote}
+          <button onClick={() => setStep('pick')} className={`${FOOT_BTN_SOLID} flex items-center justify-center gap-[7px]`}>
+            <Icon name="plus" size={16} />
+            Log sets for {muscle}
+          </button>
+        </>
+      }
+    >
       {/* identity */}
       <SheetHeader title={muscle} onClose={onClose} />
 
@@ -233,8 +412,7 @@ export default function MuscleSheet({
           Each count sits on its own window target, so the number is a
           judgement and not arithmetic left to the reader (064). Same ramp as
           the body map: these are muscle numbers, and the ramp is a muscle
-          rule (063). Hidden while the log flow is open: capture takes the room. */}
-      {!logOpen && (
+          rule (063). */}
         <div className="mt-2.5">
           <div className="flex items-baseline gap-1.5 mb-[5px]">
             <span className="text-[8px] font-bold tracking-[0.12em] text-ink-3">QUALITY MIX, LAST {MUSCLE_WINDOW_DAYS} DAYS</span>
@@ -267,15 +445,14 @@ export default function MuscleSheet({
             })}
           </div>
         </div>
-      )}
 
       {/* The door to the explanation — Home answers, Adaptations explains (062).
           Carries this muscle across so the drill-down opens where the question
           was asked. Absent when the sheet was opened from Adaptations. */}
-      {!logOpen && onOpenAdaptations && (
+      {onOpenAdaptations && (
         <button
           onClick={onOpenAdaptations}
-          className="mt-2 w-full flex items-center justify-between border border-line rounded-[3px] px-2 py-[7px] bg-white text-left cursor-pointer"
+          className="mt-2 w-full flex items-center justify-between min-h-[44px] border border-line rounded-[3px] px-2.5 bg-white text-left cursor-pointer"
         >
           <span className="text-[10px] text-ink-2">
             Why this gap — see {muscle} across the four qualities
@@ -284,122 +461,36 @@ export default function MuscleSheet({
         </button>
       )}
 
-      {/* inline capture — the JIT rule made concrete */}
-      <div className="mt-3 border-t border-line pt-2.5">
-        {!logOpen ? (
-          <button
-            onClick={() => setLogOpen(true)}
-            className="w-full flex items-center justify-center gap-[7px] min-h-[46px] border border-ink rounded-[3px] bg-ink text-white cursor-pointer"
-          >
-            <Icon name="plus" size={16} />
-            <span className="text-[13px] font-bold tracking-[0.02em]">Log sets for {muscle}</span>
-          </button>
-        ) : (
-          <div className="border border-ink rounded-[3px] px-2.5 pt-[9px] pb-2.5">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-bold tracking-[0.1em]">LOG SETS — WHICH EXERCISE?</span>
-              <span className="grow" />
-              <button
-                onClick={() => { setLogOpen(false); setPickedName(null); setSavedCount(null) }}
-                aria-label="Close log flow"
-                className="min-w-[44px] min-h-[30px] flex items-center justify-end cursor-pointer"
-              >
-                <Icon name="close" size={14} className="text-ink-2" />
-              </button>
-            </div>
-
-            {sources.length === 0 ? (
-              <div className="mt-[7px] px-2.5 py-[9px] border border-dashed border-[#c9c9c7] rounded-[3px] text-[11px] text-ink-2 text-pretty">
-                Nothing in your log has ever fed this muscle — there is no exercise to repeat. Pick one from the exercise list below.
-              </div>
-            ) : (
-              <div className="flex flex-col gap-[5px] mt-[7px]">
-                {sources.slice(0, 3).map(s => {
-                  const isPicked = s.exercise === pickedName
-                  return (
-                    <button
-                      key={s.exercise}
-                      onClick={() => pick(s)}
-                      className={`flex items-center gap-2 min-h-[46px] border border-ink rounded-[3px] px-2.5 py-[5px] text-left cursor-pointer ${
-                        isPicked ? 'bg-ink text-white' : 'bg-white text-ink'
-                      }`}
-                    >
-                      <span className="grow">
-                        <span className="block text-[13px] font-bold">{s.exercise}</span>
-                        <span className="block text-[9px] opacity-75">last {fmtDay(s.lastDate)} · {schemeLabel(s.lastSets)}</span>
-                      </span>
-                      <span className="text-[9px] font-bold tracking-[0.06em]">{isPicked ? 'PICKED' : 'REPEAT'}</span>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-
-            <button
-              onClick={onSearchExercises}
-              className="w-full flex items-center gap-1.5 min-h-[40px] mt-[5px] px-2.5 border border-chrome rounded-[3px] text-ink-2 cursor-pointer"
-            >
-              <Icon name="search" size={13} className="text-ink-2" />
-              <span className="text-[11px]">Something else — search the exercise list</span>
-            </button>
-
-            {pickedName && rows.length > 0 && (
-              <div className="mt-2 border-t border-line pt-2">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-[10px] font-bold tracking-[0.08em]">{pickedName}</span>
-                  <span className="text-[9px] text-ink-3">prefilled from last time — tap a number to change it</span>
-                </div>
-                <div className="flex flex-col gap-1 mt-1.5">
-                  {rows.map((r, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[12px]">
-                      <span className="text-[9px] text-ink-3 tracking-[0.06em] w-[34px]">SET {i + 1}</span>
-                      <input
-                        type="number"
-                        inputMode="numeric"
-                        value={r.reps}
-                        onChange={e => editRow(i, { reps: Math.max(0, Math.floor(+e.target.value || 0)) })}
-                        className="font-bold border border-chrome rounded-[3px] px-2 py-[3px] w-[58px] text-center bg-white"
-                        aria-label={`Set ${i + 1} reps`}
-                      />
-                      <span className="text-ink-3">reps ×</span>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        step="0.5"
-                        value={r.weight}
-                        onChange={e => editRow(i, { weight: Math.max(0, +e.target.value || 0) })}
-                        className="font-bold border border-chrome rounded-[3px] px-2 py-[3px] w-[58px] text-center bg-white"
-                        aria-label={`Set ${i + 1} weight`}
-                      />
-                      <span className="text-ink-3">kg</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex gap-1.5 mt-2">
-                  <button
-                    onClick={() => setRows(rs => [...rs, { ...rs[rs.length - 1] }])}
-                    className="grow flex items-center justify-center gap-[5px] min-h-[44px] border border-ink rounded-[3px] text-[12px] font-bold cursor-pointer"
-                  >
-                    <Icon name="plus" size={13} className="text-ink" />
-                    Same again
-                  </button>
-                  <button
-                    onClick={save}
-                    className="grow flex items-center justify-center min-h-[44px] border border-ink rounded-[3px] bg-ink text-white text-[12px] font-bold cursor-pointer"
-                  >
-                    Save {rows.length} sets
-                  </button>
-                </div>
-                <div className="text-[10px] text-ink-2 mt-1.5 text-pretty">
-                  {savedCount !== null
-                    ? `${savedCount} sets saved to today's session — ${muscle} just re-shaded on the map.`
-                    : `Save writes ${rows.length} sets to today's session. Reps are what classify them into an adaptation.`}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
     </BottomSheet>
+  )
+}
+
+/** − value + around a typed field, every part a full thumb's height. */
+function Stepper({ value, unit, step, label, numeric, onChange }: {
+  value: number
+  unit: string
+  step: number
+  label: string
+  numeric?: boolean
+  onChange: (v: number) => void
+}) {
+  const btn = 'w-9 h-11 shrink-0 flex items-center justify-center text-[18px] font-bold cursor-pointer'
+  return (
+    <div className="flex items-center h-11 border border-line rounded-[3px] min-w-0">
+      <button onClick={() => onChange(+(value - step).toFixed(2))} aria-label={`Less, ${label}`} className={btn}>−</button>
+      <label className="grow min-w-0 flex items-baseline justify-center gap-0.5">
+        <input
+          type="number"
+          inputMode={numeric ? 'numeric' : 'decimal'}
+          step={step}
+          value={value}
+          onChange={e => onChange(+e.target.value || 0)}
+          aria-label={label}
+          className="w-full min-w-0 h-11 text-center text-[15px] font-bold bg-transparent outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+        />
+        <span className="text-[10px] text-ink-3 shrink-0 pr-0.5">{unit}</span>
+      </label>
+      <button onClick={() => onChange(+(value + step).toFixed(2))} aria-label={`More, ${label}`} className={btn}>+</button>
+    </div>
   )
 }

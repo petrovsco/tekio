@@ -54,7 +54,8 @@ interface AppStore extends AppState {
   bootstrap: () => Promise<void>
 
   // Weights
-  addWeightEntry: (entry: Omit<WeightEntry, 'id'>) => Promise<void>
+  /** Resolves to the saved entry, so a caller can offer Undo on its id. */
+  addWeightEntry: (entry: Omit<WeightEntry, 'id'>) => Promise<WeightEntry>
   removeWeightEntry: (id: string) => Promise<void>
   editWeightEntry: (id: string, patch: { sets: LiftSet[]; date?: string }) => Promise<void>
 
@@ -316,6 +317,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   addWeightEntry: async (entry) => {
     const saved = await saveWeightEntry(entry)
     set(s => ({ weights: insert(s.weights, saved) }))
+    return saved
   },
   removeWeightEntry: async (id) => {
     await deleteWeightEntry(id)

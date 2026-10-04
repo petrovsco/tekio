@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useId, type MouseEvent } from 'react'
 import type { MuscleState } from '../../../lib/fusedRead'
 import { GAP_CUTOFF } from '../../../lib/adaptations'
 import { fmtSets } from '../../../lib/utils'
@@ -167,9 +167,21 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMap
 
   const callouts = zeroData ? [] : placeCallouts(gaps, unit)
 
+  // Most zones are 3–16 px wide on a phone, and a fingertip lands 6–8 px from
+  // where it aims, so a tap on a bare zone missed half the time (RFC 0100). One
+  // handler for the whole map: an exact hit wins, otherwise the muscle most of
+  // the nearest ring of sample points lands on, out to a fingertip's reach.
+  const onTap = onPick && ((e: MouseEvent<SVGSVGElement>) => {
+    const muscle = nearestPick(e.clientX, e.clientY)
+    if (muscle) onPick(muscle)
+  })
+
   return (
     <div>
-      <svg viewBox="0 0 336 224" className="block w-full h-auto" role="img" aria-label="Muscle gap map">
+      <svg
+        viewBox="0 0 336 224" className="block w-full h-auto" role="img" aria-label="Muscle gap map"
+        onClick={onTap} style={onPick && { cursor: 'pointer' }}
+      >
         <defs>
           <pattern id={hatchId} width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
             <line x1="0" y1="0" x2="0" y2="4" stroke="#ffffff" strokeWidth="1.6" />
@@ -177,18 +189,14 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMap
         </defs>
         <text x="117" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">FRONT</text>
         <text x="215" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">BACK</text>
-        <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} onPick={onPick} />
-        <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} onPick={onPick} />
+        <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} />
+        <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} />
         {callouts.map(c => {
           const lineX = c.side === 'L' ? 83 : 251
           const textX = c.side === 'L' ? 80 : 254
           const anchor = c.side === 'L' ? 'end' : 'start'
           return (
-            <g
-              key={c.key}
-              onClick={onPick && (() => onPick(c.key))}
-              style={onPick && { cursor: 'pointer' }}
-            >
+            <g key={c.key} data-pick={c.key}>
               <line x1={lineX} y1={c.labelY} x2={c.dotX} y2={c.dotY} stroke="#6b6b6b" strokeWidth="1" />
               <circle cx={c.dotX} cy={c.dotY} r="2.3" fill="#ffffff" stroke="#c2410c" strokeWidth="1.2" />
               <text
@@ -225,7 +233,7 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMap
 }
 
 function Figure({
-  zones, fig, abs, resolve, clipId, hatchId, onPick,
+  zones, fig, abs, resolve, clipId, hatchId,
 }: {
   zones: Zone[]
   fig: 'front' | 'back'
@@ -233,7 +241,6 @@ function Figure({
   resolve: (zone: Zone) => { fill: string; recovering: boolean; pick: string }
   clipId: string
   hatchId: string
-  onPick?: (muscle: string) => void
 }) {
   const t = FIG[fig]
   return (
@@ -249,11 +256,7 @@ function Figure({
         {zones.map(zone => {
           const { fill, recovering, pick } = resolve(zone)
           return (
-            <g
-              key={zone.muscle}
-              onClick={onPick && (() => onPick(pick))}
-              style={onPick && { cursor: 'pointer' }}
-            >
+            <g key={zone.muscle} data-pick={pick}>
               <g fill={fill} stroke="#ffffff" strokeWidth="0.7">
                 <path d={zone.d} />
                 {zone.mirrored && <path d={zone.d} transform={MIRROR} />}
@@ -273,4 +276,30 @@ function Figure({
       </g>
     </g>
   )
+}
+
+/** How far from the finger a tap still finds a muscle, in CSS px. */
+const TAP_REACH_PX = 14
+const TAP_RINGS = [4, 8, 11, TAP_REACH_PX]
+const TAP_SPOKES = 12
+
+function pickAt(x: number, y: number): string | null {
+  const el = document.elementFromPoint(x, y)
+  return el?.closest('[data-pick]')?.getAttribute('data-pick') ?? null
+}
+
+/** The muscle under the finger, or the one most of the nearest ring hits. */
+function nearestPick(x: number, y: number): string | null {
+  const exact = pickAt(x, y)
+  if (exact) return exact
+  for (const r of TAP_RINGS) {
+    const tally = new Map<string, number>()
+    for (let i = 0; i < TAP_SPOKES; i++) {
+      const a = (2 * Math.PI * i) / TAP_SPOKES
+      const hit = pickAt(x + r * Math.cos(a), y + r * Math.sin(a))
+      if (hit) tally.set(hit, (tally.get(hit) ?? 0) + 1)
+    }
+    if (tally.size > 0) return [...tally].sort((p, q) => q[1] - p[1])[0][0]
+  }
+  return null
 }
