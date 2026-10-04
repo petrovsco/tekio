@@ -10,9 +10,11 @@ import type { PatternKey } from '../../../constants/movementPatterns'
  * with a lift it is like. The answer decides which muscles the new exercise
  * counts for. Skipping it still saves; the lift is then unmapped.
  */
-export function MovementQuestion({ value, onChange }: {
+export function MovementQuestion({ value, onChange, thumb }: {
   value: PatternKey | null
   onChange: (pattern: PatternKey | null) => void
+  /** Every control a full thumb's height, for the muscle sheet (RFC 0100). */
+  thumb?: boolean
 }) {
   const [picked, setPicked] = useState<string | null>(null)
   const area = picked ?? MOVEMENT_AREAS.find(a => a.choices.some(c => c.pattern === value))?.label ?? null
@@ -30,8 +32,9 @@ export function MovementQuestion({ value, onChange }: {
         {MOVEMENT_AREAS.map(a => (
           <Chip
             key={a.label}
-            small
+            small={!thumb}
             active={a.label === area}
+            className={thumb ? 'min-h-[44px]' : ''}
             onClick={() => { setPicked(a.label); onChange(null) }}
           >
             {a.label}
@@ -47,7 +50,7 @@ export function MovementQuestion({ value, onChange }: {
                 key={c.pattern}
                 onClick={() => onChange(on ? null : c.pattern)}
                 aria-pressed={on}
-                className={`flex flex-col items-start text-left px-2 py-1.5 rounded-[3px] border cursor-pointer transition-colors ${
+                className={`flex flex-col items-start text-left px-2 py-1.5 ${thumb ? 'min-h-[48px] justify-center' : ''} rounded-[3px] border cursor-pointer transition-colors ${
                   on ? 'bg-ink border-ink' : 'bg-white border-line hover:border-ink'
                 }`}
               >

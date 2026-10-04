@@ -196,7 +196,6 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
               <MuscleSheet
                 muscle={sheet.muscle}
                 onClose={() => setSheet(null)}
-                onSearchExercises={() => { setSheet(null); setTab('Weights') }}
               />
             ))}
       </Suspense>

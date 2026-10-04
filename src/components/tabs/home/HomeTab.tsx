@@ -462,7 +462,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
               <MuscleSheet
                 muscle={sheet.muscle}
                 onClose={() => setSheet(null)}
-                onSearchExercises={() => { setSheet(null); setTab('Weights') }}
               />
             ))}
       </Suspense>

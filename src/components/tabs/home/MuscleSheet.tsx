@@ -12,6 +12,10 @@ import { Icon } from '../../ui/Icon'
 import { GAP_CUTOFF, targetShape } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
+import { EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor } from '../../../constants/exerciseCatalogue'
+import { MOVEMENT_PATTERNS, type PatternKey } from '../../../constants/movementPatterns'
+import { normaliseExerciseName as norm, resolveExerciseName } from '../../../lib/exerciseName'
+import { MovementQuestion } from '../weights/MovementQuestion'
 
 // The muscle drill-in (T2, roadmap 018 unit 3): what a tap on the map reveals.
 // Logging goes through an exercise on purpose — sets classify into adaptations
@@ -41,19 +45,19 @@ function schemeLabel(sets: LiftSet[]): string {
 interface MuscleSheetProps {
   muscle: string
   onClose: () => void
-  /** The T3 escape: nothing here fits, go search the exercise list. */
-  onSearchExercises: () => void
 }
 
-export default function MuscleSheet({
-  muscle, onClose, onSearchExercises,
-}: MuscleSheetProps) {
+/** Does this muscle appear in a link set? Link sets are keyed by leaf name. */
+const feedsIn = (links: Record<string, unknown>, muscle: string) => links[muscle] !== undefined
+
+export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
   const weights = useAppStore(s => s.weights)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const muscleGroups = useAppStore(s => s.muscleGroups)
   const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
   const adaptationTargets = useAppStore(s => s.adaptationTargets)
   const addWeightEntry = useAppStore(s => s.addWeightEntry)
+  const exerciseAliases = useAppStore(s => s.exerciseAliases)
 
   const state = useMemo(
     () => muscleStates(weights, exerciseMuscles, muscleGroups).find(s => s.name === muscle),
@@ -90,6 +94,8 @@ export default function MuscleSheet({
   const [pickedName, setPickedName] = useState<string | null>(null)
   const [rows, setRows] = useState<LiftSet[]>([])
   const [query, setQuery] = useState('')
+  // The movement question's answer for a name nothing knows (RFC 0074).
+  const [pattern, setPattern] = useState<PatternKey | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState<{ id: string; exercise: string; count: number } | null>(null)
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
@@ -136,22 +142,50 @@ export default function MuscleSheet({
   const fedBy = sources.filter(s => s.windowSets > 0).sort((a, b) => b.windowSets - a.windowSets)
 
   // Every exercise that can feed this muscle: the ones logged, most recent
-  // first, then the linked ones never logged, primary movers first.
+  // first, then the linked ones never logged, primary movers first, then the
+  // catalogue's lifts for it (RFC 0074) the same way.
   const choices = useMemo(() => {
-    const logged = sources.map(s => ({ exercise: s.exercise, source: s as MuscleSource | null }))
-    const seen = new Set(logged.map(c => c.exercise.toLowerCase()))
+    const logged = sources.map(s => ({ exercise: s.exercise, source: s as MuscleSource | null, feeds: true }))
+    const seen = new Set(logged.map(c => norm(c.exercise)))
+    const fresh = (name: string) => !seen.has(norm(name)) && !!seen.add(norm(name))
     const linked = exerciseMuscles
-      .filter(l => l.group === muscle && l.contribution === 'stimulus' && !seen.has(l.exercise.toLowerCase()))
+      .filter(l => l.group === muscle && l.contribution === 'stimulus')
       .sort((a, b) => a.level - b.level || a.exercise.localeCompare(b.exercise))
-      .filter(l => !seen.has(l.exercise.toLowerCase()) && seen.add(l.exercise.toLowerCase()))
-      .map(l => ({ exercise: l.exercise, source: null }))
-    return [...logged, ...linked]
+      .filter(l => fresh(l.exercise))
+      .map(l => ({ exercise: l.exercise, source: null, feeds: true }))
+    const catalogue = EXERCISE_CATALOGUE
+      .map(e => ({ name: e.name, level: (linksFor(e) as Record<string, number>)[muscle] }))
+      .filter(e => e.level !== undefined)
+      .sort((a, b) => a.level - b.level || a.name.localeCompare(b.name))
+      .filter(e => fresh(e.name))
+      .map(e => ({ exercise: e.name, source: null, feeds: true }))
+    return [...logged, ...linked, ...catalogue]
   }, [sources, exerciseMuscles, muscle])
-  const q = query.trim().toLowerCase()
-  const shown = q ? choices.filter(c => c.exercise.toLowerCase().includes(q)) : choices
+
+  // Search covers the whole catalogue and everything on file, by name or by
+  // any of its spellings; a match that does not train this muscle says so.
+  const aliases = useMemo(() => [...exerciseAliases, ...CATALOGUE_ALIASES], [exerciseAliases])
+  const ownNames = useMemo(() => [...new Set(weights.map(w => w.exercise))], [weights])
+  const q = norm(query)
+  const shown = useMemo(() => {
+    if (!q) return choices
+    const spellings = new Map<string, string[]>()
+    for (const a of aliases) spellings.set(norm(a.canonicalName), [...(spellings.get(norm(a.canonicalName)) ?? []), norm(a.alias)])
+    const hit = (name: string) => norm(name).includes(q) || (spellings.get(norm(name)) ?? []).some(sp => sp.includes(q))
+    const seen = new Set(choices.map(c => norm(c.exercise)))
+    const others = [...ownNames, ...EXERCISE_CATALOGUE.map(e => e.name)]
+      .filter(n => !seen.has(norm(n)) && !!seen.add(norm(n)))
+      .sort((a, b) => a.localeCompare(b))
+      .map(n => ({ exercise: n, source: null, feeds: false }))
+    return [...choices, ...others].filter(c => hit(c.exercise))
+  }, [q, choices, aliases, ownNames])
+  // A typed name nothing knows: on file, an alias, or in the catalogue.
+  const known = (name: string) => !!resolveExerciseName(name, ownNames, aliases) || !!catalogueEntryFor(name)
+  const newName = q && !known(query) ? query.trim() : null
 
   const pick = (exercise: string, source: MuscleSource | null) => {
     setPickedName(exercise)
+    setPattern(null)
     // Prefilled from last time; an exercise never logged starts at one
     // bodyweight set for the stepper to move.
     setRows(source ? source.lastSets.map(r => ({ ...r })) : [{ reps: 8, weight: 0 }])
@@ -163,7 +197,7 @@ export default function MuscleSheet({
     if (!pickedName || rows.length === 0 || saving) return
     setSaving(true)
     try {
-      const entry = await addWeightEntry({ date: today(), exercise: pickedName, sets: rows })
+      const entry = await addWeightEntry({ date: today(), exercise: pickedName, sets: rows }, pattern ?? undefined)
       setSaved({ id: entry.id, exercise: pickedName, count: rows.length })
       setPickedName(null)
       setQuery('')
@@ -227,7 +261,7 @@ export default function MuscleSheet({
               <span className="block text-[11px] text-ink-2">
                 {c.source
                   ? `${loggedToday(c) ? 'today' : `last ${fmtDay(c.source.lastDate)}`} · ${schemeLabel(c.source.lastSets)}`
-                  : 'not logged yet'}
+                  : c.feeds ? 'not logged yet' : `does not count for ${muscle}`}
               </span>
             </span>
             {loggedToday(c)
@@ -235,20 +269,18 @@ export default function MuscleSheet({
               : <Icon name="arrowRight" size={14} className="text-ink-3 shrink-0" />}
           </button>
         ))}
-        {shown.length === 0 && (
-          <div className="py-3 text-[12px] text-ink-2 text-pretty">
-            {q ? `Nothing known by that name feeds ${muscle}.` : `Nothing in your log feeds ${muscle} yet.`}
-          </div>
+        {shown.length === 0 && !newName && (
+          <div className="py-3 text-[12px] text-ink-2 text-pretty">Nothing in your log feeds {muscle} yet.</div>
         )}
-        {/* The full catalogue arrives with RFC 0074; until then a new name is
-            logged on Weights, where the movement question can classify it. */}
-        <button
-          onClick={onSearchExercises}
-          className="w-full flex items-center gap-2 min-h-[48px] mt-2 px-2.5 border border-chrome rounded-[3px] text-ink-2 text-[13px] cursor-pointer"
-        >
-          <Icon name="weights" size={14} className="text-ink-2" />
-          {q ? `Log “${query.trim()}” on Weights` : 'A different exercise — open Weights'}
-        </button>
+        {newName && (
+          <button
+            onClick={() => pick(newName, null)}
+            className="w-full flex items-center gap-2 min-h-[52px] mt-2 px-2.5 border border-ink rounded-[3px] text-[13px] font-semibold text-left cursor-pointer"
+          >
+            <Icon name="plus" size={14} className="shrink-0" />
+            <span className="min-w-0 truncate">Log “{newName}” as a new exercise</span>
+          </button>
+        )}
       </BottomSheet>
     )
   }
@@ -265,6 +297,14 @@ export default function MuscleSheet({
         }
       >
         {stepHeader(pickedName.toUpperCase(), () => setStep('pick'))}
+        {!known(pickedName) && (
+          <div className="mb-2">
+            <MovementQuestion value={pattern} onChange={setPattern} thumb />
+            {pattern && !feedsIn(MOVEMENT_PATTERNS[pattern].links, muscle) && (
+              <div className="mt-1 text-[11px] text-ink-2">That movement does not count for {muscle}.</div>
+            )}
+          </div>
+        )}
         <div className="text-[11px] text-ink-3 mb-1">
           {sources.some(s => s.exercise === pickedName) ? 'From last time. Step the numbers to today’s.' : 'Step the numbers to what you did.'}
         </div>
