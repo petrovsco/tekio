@@ -23,15 +23,12 @@ const METHOD_NAME = { overnight_hrv: 'overnight HRV' } as const
 
 /** Where today's readiness came from — one tap from the card (0085). */
 function ReadinessSource({ sys, onOpenProfile }: { sys: SystemicReadiness; onOpenProfile: () => void }) {
-  const z = sys.z
   return (
     <div className="mb-3 pb-2.5 border-b border-line text-[12px] leading-[1.45]">
-      {sys.method && sys.band && z !== null ? (
+      {sys.method && sys.band && sys.recent !== null && sys.normal !== null ? (
         <>
           <div><b>{BAND_WORD[sys.band]}</b> · from {METHOD_NAME[sys.method]}</div>
-          <div className="text-ink-2">
-            This week: {Math.abs(z) < 0.05 ? 'at your normal' : `${Math.abs(z).toFixed(1)} SD ${z < 0 ? 'under' : 'over'} your normal`}
-          </div>
+          <div className="text-ink-2">HRV this week {sys.recent} ms · your normal {sys.normal} ms</div>
         </>
       ) : (
         <div className="text-ink-2">No reading yet: needs 14 nights of HRV.</div>

@@ -373,6 +373,10 @@ export interface ReadinessReading {
   score: number
   /** Distance from the person's own baseline, in their own SD units. */
   z: number
+  /** The recent value and the person's normal, in the method's own unit
+   * (ms for HRV) — what the explanation shows instead of z. */
+  recent: number
+  normal: number
 }
 
 /** The band a baseline distance falls in (HRV_BAND_Z: the trialled tiers). */
@@ -414,7 +418,10 @@ export function overnightHrvReading(sleep: SleepEntry[], date: string = today())
   const mean = avg(baseline)
   const sd = Math.max(Math.sqrt(avg(baseline.map(v => (v - mean) ** 2))), HRV_LN_SD_FLOOR)
   const z = (avg(rolling) - mean) / sd
-  return { method: 'overnight_hrv', band: bandForZ(z), score: clamp(Math.round(50 + 50 * z), 0, 100), z }
+  return {
+    method: 'overnight_hrv', band: bandForZ(z), score: clamp(Math.round(50 + 50 * z), 0, 100), z,
+    recent: Math.round(Math.exp(avg(rolling))), normal: Math.round(Math.exp(mean)),
+  }
 }
 
 export interface SystemicReadiness {
@@ -424,6 +431,9 @@ export interface SystemicReadiness {
   method: ReadinessMethod | null
   /** The reading's distance from the person's own baseline, in their SD units. */
   z: number | null
+  /** The reading's recent value and the person's normal, in its own unit. */
+  recent: number | null
+  normal: number | null
   /** Last night's device sleep score, if fresh — shown, never part of readiness (0085). */
   sleepScore: number | null
   /** Last night's overnight HRV in ms, if fresh. */
@@ -448,6 +458,8 @@ export function systemicReadiness(sleep: SleepEntry[], date: string = today()): 
     band: reading?.band ?? null,
     method: reading?.method ?? null,
     z: reading?.z ?? null,
+    recent: reading?.recent ?? null,
+    normal: reading?.normal ?? null,
     sleepScore,
     hrv,
   }

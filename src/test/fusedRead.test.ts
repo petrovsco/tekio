@@ -370,6 +370,8 @@ describe('overnightHrvReading', () => {
     expect(r?.z).toBeCloseTo(0, 5)
     expect(r?.score).toBe(50)
     expect(r?.band).toBe('ok')
+    expect(r?.recent).toBe(80) // geometric means, rounded to whole ms
+    expect(r?.normal).toBe(80)
   })
 
   it('reads in log space: the baseline mean is geometric, not arithmetic', () => {
