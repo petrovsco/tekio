@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, fusedVerdict,
+  donationStatus, fusedVerdict, checkInTotal,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict, type ReadinessBand,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
@@ -12,6 +12,8 @@ import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { coverageLine, coverageParts } from '../adaptations/labels'
 import { Icon } from '../../ui/Icon'
+import { usePrefs } from '../../../store/prefs'
+import { METHOD_LABEL } from '../../../constants/readiness'
 import type { FoldKind } from './FoldSheet'
 import type { WholeBodyQuality } from './QualitySheet'
 
@@ -71,8 +73,10 @@ function verdictCopy(args: {
       const when = fmtAgo(don.daysSince)
       return { text, sub: `Full blood donation ${when} — the 48 h acute window (PLACEHOLDER) gates the day.` }
     }
-    const facts = sys.hrv != null ? `HRV ${sys.hrv}` : `Readiness ${sys.readiness}`
-    return { text, sub: `${facts} — this week sits well under your own normal.` }
+    const sub = sys.method === 'check_in'
+      ? "Today's check-in sits well under your usual."
+      : `${sys.method === 'morning_hrv' ? 'Morning HRV' : 'HRV'} this week sits well under your own normal.`
+    return { text, sub }
   }
 
   const names = gaps.slice(0, 2).map(m => shortLower(m.name))
@@ -111,6 +115,8 @@ interface GateCol {
   value: string
   pct: number
   tone: keyof typeof TONE
+  /** A typed reading still to give today: the value reads as a prompt. */
+  ask?: boolean
 }
 
 export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => void }) {
@@ -146,7 +152,12 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   )
   const { hrMax } = useHrMax()
   const qualities = useMemo(() => qualityStates(cardio, sports, undefined, hrMax), [cardio, sports, hrMax])
-  const sys = useMemo(() => systemicReadiness(sleep), [sleep])
+  const readinessInputs = useAppStore(s => s.readinessInputs)
+  const readinessMethod = usePrefs(s => s.readinessMethod)
+  const sys = useMemo(
+    () => systemicReadiness(sleep, today(), readinessInputs, readinessMethod),
+    [sleep, readinessInputs, readinessMethod],
+  )
   const don = useMemo(() => donationStatus(donations), [donations])
 
   // The seven-quality coverage read, the same call the Adaptations tab makes
@@ -178,19 +189,40 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince,
   })
 
-  const gateCols: GateCol[] = [
-    sys.sleepScore != null
-      ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink' }
-      : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' },
-    sys.hrv != null
-      ? { label: 'HRV', value: String(sys.hrv), pct: sys.readiness ?? 0, tone: 'ink' }
-      : { label: 'HRV', value: '—', pct: 0, tone: 'off' },
-  ]
+  // The card's two columns follow the method the verdict reads from (0092).
+  // A typed method still waiting for today's answer asks for it, in the
+  // accent: action lives there (design-system §1).
+  const sleepCol: GateCol = sys.sleepScore != null
+    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink' }
+    : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' }
+  // Today's typed answer for the method being read, shown even before the
+  // baseline can turn it into a band.
+  const typedToday = readinessInputs.find(e => e.date === date)
+  const colMethod = sys.method ?? sys.chosen
+  const readingCol: GateCol =
+    sys.awaitingInput
+      ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', pct: 0, tone: 'off', ask: true }
+      : colMethod === 'check_in'
+        ? { label: 'CHECK-IN', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', pct: sys.method === 'check_in' ? sys.readiness ?? 0 : 0, tone: sys.method === 'check_in' ? 'ink' : 'off' }
+        : colMethod === 'morning_hrv'
+          ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', pct: sys.method === 'morning_hrv' ? sys.readiness ?? 0 : 0, tone: sys.method === 'morning_hrv' ? 'ink' : 'off' }
+          : sys.hrv != null
+            ? { label: 'HRV', value: String(sys.hrv), pct: sys.readiness ?? 0, tone: 'ink' }
+            : { label: 'HRV', value: '—', pct: 0, tone: 'off' }
+  const gateCols: GateCol[] = colMethod === 'overnight_hrv' || colMethod === null
+    ? [sleepCol, readingCol]
+    : [readingCol, sleepCol]
+  // One note line inside the card, only on the days a note fires; it never
+  // moves the band (0092).
+  const noteLine = [
+    sys.notes.restingHrAbove !== null ? `Resting HR +${sys.notes.restingHrAbove} bpm` : null,
+    sys.notes.shortNight !== null ? `short night, ${sys.notes.shortNight.toFixed(1)} h` : null,
+  ].filter(Boolean).join(' · ')
 
   const banner = gated
     ? verdict.cause === 'donation'
       ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window (PLACEHOLDER) holds today. The gaps below stay open.`
-      : `HRV is well under your own normal this week. The gaps below stay open — today just isn't the day to close them.`
+      : `${sys.method === 'check_in' ? "Today's check-in is well under your usual" : sys.method === 'morning_hrv' ? 'Morning HRV is well under your own normal this week' : 'HRV is well under your own normal this week'}. The gaps below stay open — today just isn't the day to close them.`
     : null
 
   // The two folds as T2 stat tiles (unit 3): bodyweight and blood donation,
@@ -269,6 +301,11 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         <div className={`flex items-center gap-1.5 px-2.5 pt-[7px] pb-[5px] border-b ${gated ? 'border-invert-line' : 'border-line'}`}>
           <Icon name="heart" size={13} />
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
+          {sys.method && sys.method !== 'overnight_hrv' && (
+            <span className={`text-[9px] font-bold tracking-[0.1em] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>
+              · {METHOD_LABEL[sys.method].toUpperCase()}
+            </span>
+          )}
           <span className="grow" />
           <span className="text-[13px] font-bold tracking-[0.06em]">{sys.band ? BAND_LABEL[sys.band] : '—'}</span>
           {/* sauna / cold / manual sleep live behind this tap — the card that
@@ -284,7 +321,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           {gateCols.map(col => (
             <div key={col.label} className="grow basis-0 pr-2">
               <div className={`text-[9px] tracking-[0.05em] mb-[3px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.label}</div>
-              <div className="text-xs font-semibold">{col.value}</div>
+              <div className={`text-xs font-semibold ${col.ask && !gated ? 'text-signal' : ''}`}>{col.value}</div>
               <div className={`h-[3px] mt-1 rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
                 <div
                   className="h-[3px] rounded-sm"
@@ -294,7 +331,15 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             </div>
           ))}
         </div>
+        {noteLine && (
+          <div className={`px-2.5 pb-[7px] -mt-0.5 text-[10px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{noteLine}. A note; the verdict is unchanged.</div>
+        )}
       </button>
+      {sys.method === 'check_in' && (
+        <p className="text-[10px] leading-[1.35] text-ink-3 mt-1">
+          Less certain than HRV. A 1-minute morning HRV reading would read your body directly.
+        </p>
+      )}
 
       {/* Gate banner — held days only */}
       {banner && (
@@ -404,7 +449,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         {sheet && ('fold' in sheet
           ? <FoldSheet kind={sheet.fold} onClose={() => setSheet(null)} />
           : 'recovery' in sheet
-            ? <RecoverySheet sys={sys} onClose={() => setSheet(null)} onOpenProfile={() => { setSheet(null); setTab('Profile') }} />
+            ? <RecoverySheet sys={sys} onClose={() => setSheet(null)} onOpenProfile={() => { setSheet(null); setTab('Profile', 'readiness') }} />
             : 'quality' in sheet
               ? (
                 <QualitySheet
