@@ -2,12 +2,12 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict,
+  donationStatus, fusedVerdict,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
-import { RECOVER_DAYS, WATER_GOAL_ML, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
+import { RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { coverageLine, coverageParts } from '../adaptations/labels'
@@ -109,7 +109,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const sports = useAppStore(s => s.sports)
   const sleep = useAppStore(s => s.sleep)
   const donations = useAppStore(s => s.donations)
-  const water = useAppStore(s => s.water)
   const bodyweight = useAppStore(s => s.bodyweight)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const muscleGroups = useAppStore(s => s.muscleGroups)
@@ -139,7 +138,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const qualities = useMemo(() => qualityStates(cardio, sports, undefined, hrMax), [cardio, sports, hrMax])
   const sys = useMemo(() => systemicReadiness(sleep), [sleep])
   const don = useMemo(() => donationStatus(donations), [donations])
-  const wat = useMemo(() => waterStatus(water), [water])
 
   // The seven-quality coverage read, the same call the Adaptations tab makes
   // (roadmap 062): Home names every quality that is untouched or short, by
@@ -177,16 +175,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     sys.hrv != null
       ? { label: 'HRV', value: String(sys.hrv), pct: sys.hrvScore ?? 0, tone: 'ink' }
       : { label: 'HRV', value: '—', pct: 0, tone: 'off' },
-    wat.daysSince === 0
-      ? { label: 'WATER', value: `${(wat.lastDayMl / 1000).toFixed(1)} L`, pct: Math.min(100, Math.round((100 * wat.lastDayMl) / WATER_GOAL_ML)), tone: 'ink' }
-      : wat.daysSince !== null
-        ? { label: 'WATER', value: `${wat.daysSince}d old`, pct: 10, tone: 'mid' }
-        : { label: 'WATER', value: '—', pct: 0, tone: 'off' },
-    don.acuteHold
-      ? { label: 'BLOOD', value: fmtAgo(don.daysSince), pct: 8, tone: 'accent' }
-      : don.aerobicSuppressed
-        ? { label: 'BLOOD', value: fmtAgo(don.daysSince), pct: Math.round((100 * (don.daysSince ?? 0)) / DONATION_SUPPRESSION.aerobicTailDays), tone: 'accent' }
-        : { label: 'BLOOD', value: 'clear', pct: 100, tone: 'ink' },
   ]
 
   const banner = gated
@@ -195,16 +183,12 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       : `Readiness ${sys.readiness} is below the push threshold (PLACEHOLDER). The gaps below stay open — today just isn't the day to close them.`
     : null
 
-  // The three folds as T2 stat tiles (unit 3): a readiness input each, never a
-  // destination (P3). Tap reveals the capture sheet; the T1 read never reflows.
+  // The two folds as T2 stat tiles (unit 3): bodyweight and blood donation,
+  // never a destination (P3). Blood sits here rather than on the readiness
+  // card: it is logged a few times a year, sleep and HRV every day. Tap reveals the capture sheet; the T1 read never reflows.
   const latestBw = bodyweight[0] ?? null
   const bwDays = latestBw ? daysBetween(latestBw.date, today()) : null
   const foldTiles: { kind: FoldKind; label: string; value: string; note: string; accent?: boolean }[] = [
-    wat.daysSince === null
-      ? { kind: 'water', label: 'WATER', value: '—', note: 'tap to log' }
-      : wat.daysSince === 0
-        ? { kind: 'water', label: 'WATER', value: `${(wat.lastDayMl / 1000).toFixed(1)} L`, note: 'today' }
-        : { kind: 'water', label: 'WATER', value: `${(wat.lastDayMl / 1000).toFixed(1)} L`, note: `stale ${wat.daysSince}d`, accent: true },
     latestBw
       ? { kind: 'weight', label: 'WEIGHT', value: `${latestBw.weight.toFixed(1)} kg`, note: bwDays === 0 ? 'today' : bwDays === 1 ? 'yesterday' : `${bwDays} d ago` }
       : { kind: 'weight', label: 'WEIGHT', value: '—', note: 'tap to log' },
@@ -277,7 +261,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
           <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
-          {/* water / sauna / cold / manual sleep live behind this tap — the card that
+          {/* sauna / cold / manual sleep live behind this tap — the card that
               raises "can I push?" is where the input belongs (P1) */}
           <span
             aria-hidden
@@ -391,7 +375,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         </div>
       </div>
 
-      {/* Readiness inputs — the three folds as tappable stats (T2) */}
+      {/* The two folds as tappable stats (T2): weight and blood */}
       <div className="mt-2 flex gap-1.5">
         {foldTiles.map(t => (
           <button

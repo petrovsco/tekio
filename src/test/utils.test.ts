@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { lastPerformance, recentExercises, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
+import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
 import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -300,30 +300,6 @@ describe('lastPerformance', () => {
   it('returns undefined for a blank name or an exercise never logged', () => {
     expect(lastPerformance(rows, '   ')).toBeUndefined()
     expect(lastPerformance(rows, 'Deadlift')).toBeUndefined()
-  })
-})
-
-describe('recentExercises', () => {
-  const w = (exercise: string, date: string): WeightEntry =>
-    ({ id: exercise + date, exercise, date, sets: [{ weight: 60, reps: 8 }] })
-  const rows = [
-    w('Squat', '2025-03-01'),
-    w('Bench Press', '2025-03-04'),
-    w('Squat', '2025-03-05'),
-    w('Deadlift', '2025-02-01'),
-    w('Row', '2025-03-04'),
-  ]
-
-  it('orders by each exercise’s latest session, newest first', () => {
-    expect(recentExercises(rows, 10)).toEqual(['Squat', 'Bench Press', 'Row', 'Deadlift'])
-  })
-
-  it('keeps only the first n', () => {
-    expect(recentExercises(rows, 2)).toEqual(['Squat', 'Bench Press'])
-  })
-
-  it('returns nothing when nothing is logged', () => {
-    expect(recentExercises([], 8)).toEqual([])
   })
 })
 

@@ -33,7 +33,6 @@ export function ExportPane({ onClose }: ExportPaneProps) {
       mobility: f(store.mobility),
       sports: f(store.sports),
       donations: f(store.donations),
-      water: f(store.water),
       sleep: f(store.sleep),
       sauna: f(store.sauna),
       cold: f(store.cold),

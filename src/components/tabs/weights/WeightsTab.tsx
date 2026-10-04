@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, recentExercises } from '../../../lib/utils'
+import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
@@ -15,9 +15,6 @@ import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
 import type { WeightEntry } from '../../../types'
-
-/** How many recent exercises get a one-tap chip. */
-const RECENT_CHIPS = 8
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -45,12 +42,6 @@ export function WeightsTab() {
   // on `weights` so a keystroke recomputes none of it (roadmap 048 B7).
   const exercises = useMemo(() => uniqSorted(weights.map(d => d.exercise)), [weights])
   const pickerNames = useMemo(() => weightsPickerNames(weights, exerciseMuscles), [weights, exerciseMuscles])
-  // The chips are the one-tap start for a lift, so they hold only the most
-  // recent few: every exercise ever logged was a cloud that only grew
-  // (tekio.rfcs/rfcs/0034-v2-1-candidates-tbc.md). Anything older is one
-  // autocomplete pick away, and the pick fills its last sets the same way.
-  const chipNames = useMemo(() => recentExercises(weights, RECENT_CHIPS), [weights])
-
   const getLastPerf = (n: string) => lastPerformance(weights, n)
 
   const lastPerf = getLastPerf(ex)
@@ -228,14 +219,6 @@ export function WeightsTab() {
 
           <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
       </Card>
-
-      {chipNames.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {chipNames.map(e => (
-            <Chip key={e} active={selEx === e} onClick={() => handleSelectEx(e)}>{e}</Chip>
-          ))}
-        </div>
-      )}
 
       {exercises.length > 0 && (
         <Card>

@@ -168,12 +168,6 @@ export interface SportTypeInfo {
 /** What a brand-new sport needs beyond its name — the rest of {@link SportTypeInfo}. */
 export type NewSportFlags = Omit<SportTypeInfo, 'name'>
 
-export interface WaterEntry {
-  id: string
-  date: string
-  amountMl: number
-}
-
 // ── Recovery / Readiness axis ───────────────────────────────────────────────
 // Modalities that sit *parallel* to the seven Galpin adaptations (recovery is
 // deliberately not an eighth adaptation). Each is a simple user-scoped log.
@@ -237,7 +231,6 @@ export interface AppState {
   sports: SportEntry[]
   sportTypes: SportTypeInfo[]
   donations: DonationEntry[]
-  water: WaterEntry[]
   sleep: SleepEntry[]
   sauna: SaunaEntry[]
   cold: ColdEntry[]
@@ -253,7 +246,6 @@ export type EditModalTarget =
   | { type: 'mobility'; record: MobilityEntry }
   | { type: 'sport'; record: SportEntry }
   | { type: 'donation'; record: DonationEntry }
-  | { type: 'water'; record: WaterEntry }
   | { type: 'sleep'; record: SleepEntry }
   | { type: 'sauna'; record: SaunaEntry }
   | { type: 'cold'; record: ColdEntry }

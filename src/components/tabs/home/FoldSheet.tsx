@@ -1,13 +1,13 @@
 import { useAppStore } from '../../../store/app'
-import { WATER_GOAL_ML, DONATION_SUPPRESSION } from '../../../constants/app'
+import { DONATION_SUPPRESSION } from '../../../constants/app'
 import { today } from '../../../lib/utils'
 import { BottomSheet, SheetHeader, Chip, Recent, StepperCapture } from './BottomSheet'
 
-// The three folded captures (WATER / WEIGHT / BLOOD) as one T2 bottom sheet
-// (roadmap 018 unit 3, design-system §8). Water and blood are readiness
-// inputs, weight is a Home stat — none of them is a destination (doctrine P3).
+// The two folded captures (WEIGHT / BLOOD) as one T2 bottom sheet
+// (roadmap 018 unit 3, design-system §8). Blood is a readiness
+// input, weight is a Home stat — none of them is a destination (doctrine P3).
 
-export type FoldKind = 'water' | 'weight' | 'blood'
+export type FoldKind = 'weight' | 'blood'
 
 interface FoldSheetProps {
   kind: FoldKind
@@ -15,7 +15,6 @@ interface FoldSheetProps {
 }
 
 const TITLES: Record<FoldKind, string> = {
-  water: 'LOG WATER',
   weight: 'LOG WEIGHT',
   blood: 'LOG BLOOD',
 }
@@ -24,40 +23,9 @@ export default function FoldSheet({ kind, onClose }: FoldSheetProps) {
   return (
     <BottomSheet onClose={onClose} label={TITLES[kind]}>
       <SheetHeader eyebrow={TITLES[kind]} onClose={onClose} className="mb-2" />
-      {kind === 'water' && <WaterCapture />}
       {kind === 'weight' && <WeightCapture onClose={onClose} />}
       {kind === 'blood' && <BloodCapture onClose={onClose} />}
     </BottomSheet>
-  )
-}
-
-/** Also rendered by RecoverySheet: WATER is a column on the readiness card,
- *  so the card's own sheet has to take it too. */
-export function WaterCapture() {
-  const water = useAppStore(s => s.water)
-  const addWaterEntry = useAppStore(s => s.addWaterEntry)
-  const openEditModal = useAppStore(s => s.openEditModal)
-  const todayEntries = water.filter(w => w.date === today())
-  const todayMl = todayEntries.reduce((s, w) => s + w.amountMl, 0)
-
-  return (
-    <div>
-      <div className="flex gap-1.5 flex-wrap">
-        {[50, 200, 500].map(ml => (
-          <Chip key={ml} onClick={() => addWaterEntry({ date: today(), amountMl: ml })}>
-            +{ml} ml
-          </Chip>
-        ))}
-      </div>
-      <div className="text-[12px] font-semibold mt-2.5">
-        today {(todayMl / 1000).toFixed(1)} L
-        <span className="text-ink-2 font-normal"> · goal {(WATER_GOAL_ML / 1000).toFixed(1)} L</span>
-      </div>
-      <Recent entries={todayEntries} label={e => `${e.amountMl} ml`} onEdit={e => openEditModal({ type: 'water', record: e })} />
-      <div className="text-[9px] text-ink-3 mt-1.5">
-        An FRS input, not a score — each tap logs immediately.
-      </div>
-    </div>
   )
 }
 

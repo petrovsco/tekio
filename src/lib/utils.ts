@@ -95,19 +95,6 @@ export function lastPerformance(weights: WeightEntry[], exercise: string): Weigh
   return best
 }
 
-/** The `n` exercises logged most recently, newest first — the Weights chips. */
-export function recentExercises(weights: WeightEntry[], n: number): string[] {
-  const last = new Map<string, string>()
-  for (const d of weights) {
-    const seen = last.get(d.exercise)
-    if (!seen || d.date > seen) last.set(d.exercise, d.date)
-  }
-  return [...last.entries()]
-    .sort((a, b) => b[1].localeCompare(a[1]) || a[0].localeCompare(b[0]))
-    .slice(0, n)
-    .map(([name]) => name)
-}
-
 export function mergeById<T extends { id: string }>(existing: T[], incoming: T[]): T[] {
   const m = new Map(existing.map((e) => [e.id, e]))
   incoming.forEach((e) => m.set(e.id, e))

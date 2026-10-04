@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import {
   muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, waterStatus, fusedVerdict, HISTORY_WEEKS,
+  donationStatus, fusedVerdict, HISTORY_WEEKS,
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
 import { PUSH_THRESHOLD, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
 import type { TargetUnit } from '../lib/adaptations'
 import type {
-  Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry, WaterEntry,
+  Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry,
   ExerciseMuscleLink, MuscleGroup,
 } from '../types'
 
@@ -407,7 +407,7 @@ describe('systemicReadiness', () => {
 })
 
 // ---------------------------------------------------------------------------
-// donationStatus + waterStatus
+// donationStatus
 // ---------------------------------------------------------------------------
 
 const donation = (date: string, type: 'Full Blood' | 'Plasma' = 'Full Blood'): DonationEntry => ({
@@ -441,20 +441,6 @@ describe('donationStatus', () => {
     const s = donationStatus([], TODAY)
     expect(s.daysSince).toBeNull()
     expect(s.eligibleInDays).toBe(0)
-  })
-})
-
-describe('waterStatus', () => {
-  const water = (date: string, amountMl: number): WaterEntry => ({ id: `${date}-${amountMl}`, date, amountMl })
-
-  it('sums the most recent logged day and reports staleness', () => {
-    const s = waterStatus([water(ago(15), 400), water(ago(15), 300), water(ago(40), 2000)], TODAY)
-    expect(s.daysSince).toBe(15)
-    expect(s.lastDayMl).toBe(700)
-  })
-
-  it('is null when never logged', () => {
-    expect(waterStatus([], TODAY).daysSince).toBeNull()
   })
 })
 

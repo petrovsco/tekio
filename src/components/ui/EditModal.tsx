@@ -22,7 +22,6 @@ import type {
   MobilityEntry,
   SportEntry,
   DonationEntry,
-  WaterEntry,
   SleepEntry,
   SaunaEntry,
   ColdEntry,
@@ -548,34 +547,6 @@ function DonationForm({ record, onClose }: FormProps<DonationEntry>) {
   )
 }
 
-// ── WaterForm ─────────────────────────────────────────────────────────────────
-
-function WaterForm({ record, onClose }: FormProps<WaterEntry>) {
-  const editWaterEntry = useAppStore(s => s.editWaterEntry)
-  const [date, setDate] = useState(record.date)
-  const [amount, setAmount] = useState(String(record.amountMl))
-
-  useSave(onClose, !!amount, () =>
-    editWaterEntry(record.id, { date, amountMl: +amount }))
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-2.5">
-        <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
-        <Inp
-          label="Amount (ml)"
-          type="number"
-          value={amount}
-          onChange={e => setAmount(e.target.value)}
-          step="10"
-          min="0"
-          placeholder="250"
-        />
-      </div>
-    </div>
-  )
-}
-
 // ── Recovery: delete affordance ─────────────────────────────────────────────
 
 /**
@@ -694,7 +665,6 @@ const TITLES: Record<EditModalTarget['type'], string> = {
   mobility: 'Edit Mobility Session',
   sport: 'Edit Sport Session',
   donation: 'Edit Donation',
-  water: 'Edit Water Entry',
   sleep: 'Edit Sleep',
   sauna: 'Edit Sauna Session',
   cold: 'Edit Cold Session',
@@ -727,7 +697,6 @@ export function EditModal() {
       {editModal?.type === 'mobility' && <MobilityForm record={editModal.record} onClose={closeEditModal} />}
       {editModal?.type === 'sport' && <SportForm record={editModal.record} onClose={closeEditModal} />}
       {editModal?.type === 'donation' && <DonationForm record={editModal.record} onClose={closeEditModal} />}
-      {editModal?.type === 'water' && <WaterForm record={editModal.record} onClose={closeEditModal} />}
       {editModal?.type === 'sleep' && <SleepForm record={editModal.record} onClose={closeEditModal} />}
       {editModal?.type === 'sauna' && <SaunaForm record={editModal.record} onClose={closeEditModal} />}
       {editModal?.type === 'cold' && <ColdForm record={editModal.record} onClose={closeEditModal} />}

@@ -171,7 +171,7 @@ The app is hardcoded to one user: `USER_ID` in [src/constants/app.ts](src/consta
 
 Two Zustand stores:
 
-- **`useAppStore`** ([src/store/app.ts](src/store/app.ts)) — holds all domain data (weights, bodyweight, cardio, mobility, sports, donations, water, sleep, sauna, cold) plus CRUD actions and `bootstrap()` which loads everything in parallel on startup. Also owns the global `editModal` and `toast` state.
+- **`useAppStore`** ([src/store/app.ts](src/store/app.ts)) — holds all domain data (weights, bodyweight, cardio, mobility, sports, donations, sleep, sauna, cold) plus CRUD actions and `bootstrap()` which loads everything in parallel on startup. Also owns the global `editModal` and `toast` state.
 - **`usePrefs`** ([src/store/prefs.ts](src/store/prefs.ts)) — controls which sections appear in the drawer menu / home tab, and their sort order. Loaded as part of `bootstrap()`.
 
 ### Data layer (`src/lib/db/`)

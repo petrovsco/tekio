@@ -1,5 +1,5 @@
 import type {
-  Adaptation, WeightEntry, CardioEntry, SportEntry, DonationEntry, WaterEntry,
+  Adaptation, WeightEntry, CardioEntry, SportEntry, DonationEntry,
   SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet,
 } from '../types'
 import {
@@ -459,26 +459,6 @@ export function donationStatus(donations: DonationEntry[], date: string = today(
     aerobicSuppressed: daysSince !== null && daysSince <= DONATION_SUPPRESSION.aerobicTailDays,
     eligibleInDays,
   }
-}
-
-export interface WaterStatus {
-  /** Most recent day with a log; null = never. */
-  lastDate: string | null
-  daysSince: number | null
-  /** Total ml logged on that day. */
-  lastDayMl: number
-}
-
-export function waterStatus(water: WaterEntry[], date: string = today()): WaterStatus {
-  let lastDate: string | null = null
-  for (const w of water) {
-    if (w.date > date) continue
-    if (!lastDate || w.date > lastDate) lastDate = w.date
-  }
-  const lastDayMl = lastDate
-    ? water.filter(w => w.date === lastDate).reduce((s, w) => s + w.amountMl, 0)
-    : 0
-  return { lastDate, daysSince: lastDate ? daysBetween(lastDate, date) : null, lastDayMl }
 }
 
 export interface FusedVerdict {

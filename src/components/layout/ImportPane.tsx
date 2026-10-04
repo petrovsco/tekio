@@ -7,9 +7,8 @@ import { saveCardioEntry } from '../../lib/db/cardio'
 import { saveMobilityEntry } from '../../lib/db/mobility'
 import { saveSportEntry } from '../../lib/db/sport'
 import { saveDonationEntry } from '../../lib/db/donations'
-import { saveWaterEntry } from '../../lib/db/water'
 import { saveSleepEntry, saveSaunaEntry, saveColdEntry } from '../../lib/db/recovery'
-import type { WeightEntry, BodyweightEntry, CardioEntry, MobilityEntry, SportEntry, DonationEntry, WaterEntry, SleepEntry, SaunaEntry, ColdEntry } from '../../types'
+import type { WeightEntry, BodyweightEntry, CardioEntry, MobilityEntry, SportEntry, DonationEntry, SleepEntry, SaunaEntry, ColdEntry } from '../../types'
 import { Btn } from '../ui/Button'
 import { Modal } from '../ui/Modal'
 import { FIELD } from '../ui/Input'
@@ -59,9 +58,8 @@ export function ImportPane({ onClose }: ImportPaneProps) {
       const existingMDates = new Set(store.mobility.map(m => m.date))
       const existingSkKeys = new Set(store.sports.map(s => `${s.date}:${s.sport}`))
       const existingDKeys = new Set(store.donations.map(d => `${d.date}:${d.type}`))
-      const existingWaterKeys = new Set(store.water.map(w => `${w.date}:${w.amountMl}`))
       // Sleep is one row per night (upsert on date); sauna/cold can repeat per day,
-      // so key those on date+duration like water does.
+      // so key those on date+duration.
       const existingSleepDates = new Set(store.sleep.map(s => s.date))
       const existingSaunaKeys = new Set(store.sauna.map(s => `${s.date}:${s.duration}`))
       const existingColdKeys = new Set(store.cold.map(c => `${c.date}:${c.duration}`))
@@ -75,7 +73,6 @@ export function ImportPane({ onClose }: ImportPaneProps) {
         .map(s => ({ ...s, sport: (s.sport ?? s.skill) as SportEntry['sport'] }))
       const newInSports = inSports.filter(s => !existingSkKeys.has(`${s.date}:${s.sport}`))
       const newInDonations = ((p.donations as DonationEntry[]) || []).filter(d => !existingDKeys.has(`${d.date}:${d.type}`))
-      const newInWater = ((p.water as WaterEntry[]) || []).filter(w => !existingWaterKeys.has(`${w.date}:${w.amountMl}`))
       const newInSleep = ((p.sleep as SleepEntry[]) || []).filter(s => !existingSleepDates.has(s.date))
       const newInSauna = ((p.sauna as SaunaEntry[]) || []).filter(s => !existingSaunaKeys.has(`${s.date}:${s.duration}`))
       const newInCold = ((p.cold as ColdEntry[]) || []).filter(c => !existingColdKeys.has(`${c.date}:${c.duration}`))
@@ -86,7 +83,6 @@ export function ImportPane({ onClose }: ImportPaneProps) {
       const newMobility: MobilityEntry[] = mergeById(store.mobility, newInMobility)
       const newSports: SportEntry[] = mergeById(store.sports, newInSports)
       const newDonations: DonationEntry[] = mergeById(store.donations, newInDonations)
-      const newWater: WaterEntry[] = mergeById(store.water, newInWater)
       const newSleep: SleepEntry[] = mergeById(store.sleep, newInSleep)
       const newSauna: SaunaEntry[] = mergeById(store.sauna, newInSauna)
       const newCold: ColdEntry[] = mergeById(store.cold, newInCold)
@@ -104,7 +100,6 @@ export function ImportPane({ onClose }: ImportPaneProps) {
         ...newInMobility.map(m => saveMobilityEntry(m)),
         ...newInSports.map(s => saveSportEntry(s)),
         ...newInDonations.map(d => saveDonationEntry(d)),
-        ...newInWater.map(w => saveWaterEntry(w)),
         ...newInSleep.map(s => saveSleepEntry(s)),
         ...newInSauna.map(s => saveSaunaEntry(s)),
         ...newInCold.map(c => saveColdEntry(c)),
@@ -113,7 +108,7 @@ export function ImportPane({ onClose }: ImportPaneProps) {
       store.replaceLists({
         weights: newWeights, bodyweight: newBodyweight, cardio: newCardio,
         mobility: newMobility, sports: newSports, donations: newDonations,
-        water: newWater, sleep: newSleep, sauna: newSauna, cold: newCold,
+        sleep: newSleep, sauna: newSauna, cold: newCold,
       })
 
       store.setToast('Data imported!')

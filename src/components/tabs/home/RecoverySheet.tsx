@@ -2,9 +2,8 @@ import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { startOfWeek, today } from '../../../lib/utils'
 import { BottomSheet, SheetHeader, CaptureLabel, Chip, Recent, StepperCapture } from './BottomSheet'
-import { WaterCapture } from './FoldSheet'
 
-// The systemic-recovery captures (SAUNA / COLD / WATER / SLEEP) as one T2 sheet
+// The systemic-recovery captures (SAUNA / COLD / SLEEP) as one T2 sheet
 // (roadmap 018 unit 4). They used to live on RecoveryCard, which the fused
 // Home replaced; the gate card is what raises the question "can I push?", so
 // the control appears there (P1) and recovery stays a dimension of the read
@@ -48,11 +47,6 @@ export default function RecoverySheet({ onClose }: RecoverySheetProps) {
         onLog={min => addColdEntry({ date: today(), duration: min, tempC: 10 })}
         onEdit={e => openEditModal({ type: 'cold', record: e })}
       />
-
-      <div className="border-t border-line pt-2.5 mb-2.5">
-        <CaptureLabel label="WATER" meta={null} />
-        <WaterCapture />
-      </div>
 
       <StepperCapture
         className="border-t border-line pt-2.5"

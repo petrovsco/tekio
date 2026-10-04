@@ -9,7 +9,6 @@ import type {
   SportEntry,
   NewSportFlags,
   DonationEntry,
-  WaterEntry,
   SleepEntry,
   SaunaEntry,
   ColdEntry,
@@ -31,7 +30,6 @@ import { loadCardio, saveCardioEntry, deleteCardioEntry, updateCardioEntry } fro
 import { loadMobility, saveMobilityEntry, deleteMobilityEntry, updateMobilityEntry } from '../lib/db/mobility'
 import { loadSports, loadSportTypes, saveSportEntry, deleteSportEntry, updateSportEntry } from '../lib/db/sport'
 import { loadDonations, saveDonationEntry, deleteDonationEntry, updateDonationEntry } from '../lib/db/donations'
-import { loadWater, saveWaterEntry, deleteWaterEntry, updateWaterEntry } from '../lib/db/water'
 import {
   loadSleep, saveSleepEntry, updateSleepEntry, deleteSleepEntry,
   loadSauna, saveSaunaEntry, updateSaunaEntry, deleteSaunaEntry,
@@ -86,11 +84,6 @@ interface AppStore extends AppState {
   addDonationEntry: (entry: Omit<DonationEntry, 'id'>) => Promise<void>
   removeDonationEntry: (id: string) => Promise<void>
   editDonationEntry: (id: string, patch: Omit<DonationEntry, 'id'>) => Promise<void>
-
-  // Water
-  addWaterEntry: (entry: Omit<WaterEntry, 'id'>) => Promise<void>
-  removeWaterEntry: (id: string) => Promise<void>
-  editWaterEntry: (id: string, patch: Omit<WaterEntry, 'id'>) => Promise<void>
 
   // Recovery — Sleep
   addSleepEntry: (entry: Omit<SleepEntry, 'id'>) => Promise<void>
@@ -153,7 +146,7 @@ function applyMuscleTags(entries: MobilityEntry[], tagged: MobilityEntry['exerci
 // Ten of the store's lists are the same thing: entries the user logs, each with
 // an `id` and a `date`, held newest first. Their add / remove / edit actions were
 // written out ten times, and they had drifted — sleep, sauna, cold and bodyweight
-// re-sorted after a write, cardio, donations, water, sports and mobility did not,
+// re-sorted after a write, cardio, donations, sports and mobility did not,
 // so a back-dated cardio session jumped to the top of its history instead of
 // landing on its own date. These four helpers are the one definition of what a
 // logged list does, and every action below is built from them (roadmap 048
@@ -193,8 +186,8 @@ type ListActions<N extends string, T extends Dated> =
 
 /** The `add<Name>Entry` / `remove<Name>Entry` / `edit<Name>Entry` triplet for one
  *  logged list: write to the database, then put the result in its place. Spread
- *  into the store; a domain with an extra rule (mobility's tag propagation,
- *  water's same-day merge) writes that action out after the spread instead. */
+ *  into the store; a domain with an extra rule (mobility's tag propagation)
+ *  writes that action out after the spread instead. */
 function listActions<K extends ListKey, N extends string>(
   set: (fn: (s: AppStore) => Partial<AppStore>) => void,
   key: K,
@@ -233,7 +226,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   sports: [],
   sportTypes: [],
   donations: [],
-  water: [],
   sleep: [],
   sauna: [],
   cold: [],
@@ -286,7 +278,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, water, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
+      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
         loadWeights(),
         loadBodyweight(),
         loadCardio(),
@@ -297,7 +289,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
         loadSports(),
         loadSportTypes(),
         loadDonations(),
-        loadWater(),
         loadSleep(),
         loadSauna(),
         loadCold(),
@@ -317,7 +308,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
         sports,
         sportTypes,
         donations,
-        water,
         sleep,
         sauna,
         cold,
@@ -407,25 +397,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   ...listActions(set, 'donations', 'Donation', {
     save: saveDonationEntry, del: deleteDonationEntry, update: updateDonationEntry,
   }),
-
-  // ── Water ────────────────────────────────────────────────────────────────────
-  ...listActions(set, 'water', 'Water', {
-    save: saveWaterEntry, del: deleteWaterEntry, update: updateWaterEntry,
-  }),
-  // Replaces the spread's `addWaterEntry`: a second glass on a day already logged
-  // tops that day up rather than starting a second row.
-  addWaterEntry: async (entry) => {
-    const existing = get().water.find(w => w.date === entry.date)
-    if (existing) {
-      await get().editWaterEntry(existing.id, {
-        date: existing.date,
-        amountMl: existing.amountMl + entry.amountMl,
-      })
-      return
-    }
-    const saved = await saveWaterEntry(entry)
-    set(s => ({ water: insert(s.water, saved) }))
-  },
 
   // ── Recovery: Sleep ──────────────────────────────────────────────────────────
   ...listActions(set, 'sleep', 'Sleep', {
