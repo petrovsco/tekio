@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from '../../ui/Icon'
+import { useKeyboardInset, revealFocusedField } from '../../../hooks/useKeyboardInset'
 
 // The SIGNAL bottom sheet (design-system §§2, 8): T2 capture and drill-ins
 // open over a scrim so the T1 read never reflows (P1). The old ui/Modal stays
@@ -32,6 +33,7 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
   const panelRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
   const drag = useRef<{ y0: number; t: number; y: number; t0: number } | null>(null)
+  const keyboard = useKeyboardInset()
   const [dy, setDy] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [full, setFull] = useState(false)
@@ -99,13 +101,15 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
   const up = Math.max(0, -dy)
   const stretch = fits ? Math.min(24, up / 4) : up
   const panelHeight = full ? 'calc(100dvh - env(safe-area-inset-top))' : undefined
-  const maxHeight = full ? undefined : `calc(85dvh + ${stretch}px)`
+  // `min(…, 100%)`: the container shrinks above an open keyboard, and so does the panel.
+  const maxHeight = full ? undefined : `min(calc(85dvh + ${stretch}px), 100%)`
   const transform = closing ? 'translateY(100%)' : `translateY(${down}px)`
   const fade = closing ? 0 : 1 - Math.min(0.7, down / 600)
 
   return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
+      style={{ bottom: keyboard }}
       role="dialog"
       aria-modal="true"
       aria-label={label}
@@ -120,7 +124,8 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
         className={`relative w-full min-w-0 sm:max-w-[480px] bg-white text-ink border-t sm:border-2 border-ink sm:rounded-[6px] sm:!max-h-[85vh] sm:!h-auto sm:!transform-none flex flex-col overflow-hidden ${
           full ? 'rounded-none' : 'rounded-t-[6px]'
         } ${dragging ? '' : 'transition-[transform,max-height,height] duration-200 ease-out motion-reduce:transition-none'}`}
-        style={{ height: panelHeight, maxHeight, transform }}
+        style={{ height: full ? `min(${panelHeight}, 100%)` : undefined, maxHeight, transform }}
+        onFocus={revealFocusedField}
       >
         {/* The handle's touch zone is the full width and 28 px tall; the bar
             inside it is only the visual. */}

@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from './Icon'
+import { useKeyboardInset, revealFocusedField } from '../../hooks/useKeyboardInset'
 
 interface ModalProps {
   open: boolean
@@ -23,6 +24,7 @@ interface ModalProps {
  * - Scrollable content area; header/footer stay fixed
  */
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
+  const keyboard = useKeyboardInset()
   useEffect(() => {
     if (!open) return
 
@@ -46,6 +48,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center"
+      style={{ bottom: keyboard }}
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -54,7 +57,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
       <div className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" onClick={onClose} />
 
       {/* Panel */}
-      <div className="relative w-full min-w-0 sm:max-w-md max-h-[92vh] bg-white text-ink rounded-t-[6px] sm:rounded-[6px] border-t sm:border-2 border-ink flex flex-col overflow-hidden">
+      <div className="relative w-full min-w-0 sm:max-w-md max-h-[min(92vh,100%)] bg-white text-ink rounded-t-[6px] sm:rounded-[6px] border-t sm:border-2 border-ink flex flex-col overflow-hidden" onFocus={revealFocusedField}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-hairline flex-shrink-0">
           <h2 className="text-[17px] font-bold tracking-[-0.01em]">{title}</h2>
