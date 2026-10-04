@@ -43,16 +43,10 @@ interface MuscleSheetProps {
   onClose: () => void
   /** The T3 escape: nothing here fits, go search the exercise list. */
   onSearchExercises: () => void
-  /**
-   * The door to the explanation (roadmap 064). Home passes it so a gap can be
-   * walked to the read that says what to do about it, carrying this muscle.
-   * Adaptations does not — the sheet is already open *on* that read.
-   */
-  onOpenAdaptations?: () => void
 }
 
 export default function MuscleSheet({
-  muscle, onClose, onSearchExercises, onOpenAdaptations,
+  muscle, onClose, onSearchExercises,
 }: MuscleSheetProps) {
   const weights = useAppStore(s => s.weights)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
@@ -446,20 +440,6 @@ export default function MuscleSheet({
           </div>
         </div>
 
-      {/* The door to the explanation — Home answers, Adaptations explains (062).
-          Carries this muscle across so the drill-down opens where the question
-          was asked. Absent when the sheet was opened from Adaptations. */}
-      {onOpenAdaptations && (
-        <button
-          onClick={onOpenAdaptations}
-          className="mt-2 w-full flex items-center justify-between min-h-[44px] border border-line rounded-[3px] px-2.5 bg-white text-left cursor-pointer"
-        >
-          <span className="text-[12px] text-ink-2">
-            What to do about it: {muscle} on Adaptations
-          </span>
-          <Icon name="arrowRight" size={14} className="text-ink-2 shrink-0" />
-        </button>
-      )}
 
     </BottomSheet>
   )

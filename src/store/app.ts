@@ -65,12 +65,12 @@ interface AppStore extends AppState {
 
 
   // Bodyweight
-  addBodyweightEntry: (entry: Omit<BodyweightEntry, 'id'>) => Promise<void>
+  addBodyweightEntry: (entry: Omit<BodyweightEntry, 'id'>) => Promise<BodyweightEntry>
   removeBodyweightEntry: (id: string) => Promise<void>
   editBodyweightEntry: (id: string, patch: Omit<BodyweightEntry, 'id'>) => Promise<void>
 
   // Cardio
-  addCardioEntry: (entry: Omit<CardioEntry, 'id'>) => Promise<void>
+  addCardioEntry: (entry: Omit<CardioEntry, 'id'>) => Promise<CardioEntry>
   removeCardioEntry: (id: string) => Promise<void>
   editCardioEntry: (id: string, patch: Omit<CardioEntry, 'id'>) => Promise<void>
 
@@ -85,7 +85,7 @@ interface AppStore extends AppState {
   editSportEntry: (id: string, patch: Omit<SportEntry, 'id'>, newSportFlags?: NewSportFlags) => Promise<void>
 
   // Donations
-  addDonationEntry: (entry: Omit<DonationEntry, 'id'>) => Promise<void>
+  addDonationEntry: (entry: Omit<DonationEntry, 'id'>) => Promise<DonationEntry>
   removeDonationEntry: (id: string) => Promise<void>
   editDonationEntry: (id: string, patch: Omit<DonationEntry, 'id'>) => Promise<void>
 
@@ -95,17 +95,18 @@ interface AppStore extends AppState {
   logCheckIn: (date: string, answers: CheckInAnswers) => Promise<void>
 
   // Recovery — Sleep
-  addSleepEntry: (entry: Omit<SleepEntry, 'id'>) => Promise<void>
+  addSleepEntry: (entry: Omit<SleepEntry, 'id'>) => Promise<SleepEntry>
   removeSleepEntry: (id: string) => Promise<void>
   editSleepEntry: (id: string, patch: Omit<SleepEntry, 'id'>) => Promise<void>
 
   // Recovery — Sauna
-  addSaunaEntry: (entry: Omit<SaunaEntry, 'id'>) => Promise<void>
+  /** Resolves to the saved entry, so a caller can offer Undo on its id. */
+  addSaunaEntry: (entry: Omit<SaunaEntry, 'id'>) => Promise<SaunaEntry>
   removeSaunaEntry: (id: string) => Promise<void>
   editSaunaEntry: (id: string, patch: Omit<SaunaEntry, 'id'>) => Promise<void>
 
   // Recovery — Cold
-  addColdEntry: (entry: Omit<ColdEntry, 'id'>) => Promise<void>
+  addColdEntry: (entry: Omit<ColdEntry, 'id'>) => Promise<ColdEntry>
   removeColdEntry: (id: string) => Promise<void>
   editColdEntry: (id: string, patch: Omit<ColdEntry, 'id'>) => Promise<void>
 
@@ -182,7 +183,7 @@ interface ListDb<T extends Dated> {
 }
 
 type ListActions<N extends string, T extends Dated> =
-  Record<`add${N}Entry`, (entry: Omit<T, 'id'>) => Promise<void>> &
+  Record<`add${N}Entry`, (entry: Omit<T, 'id'>) => Promise<T>> &
   Record<`remove${N}Entry`, (id: string) => Promise<void>> &
   Record<`edit${N}Entry`, (id: string, patch: Omit<T, 'id'>) => Promise<void>>
 
@@ -208,6 +209,7 @@ function listActions<K extends ListKey, N extends string>(
     [`add${name}Entry`]: async (entry: Omit<T, 'id'>) => {
       const saved = await db.save(entry)
       write(xs => insert(xs, saved))
+      return saved
     },
     [`remove${name}Entry`]: async (id: string) => {
       await db.del(id)
