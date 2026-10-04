@@ -28,7 +28,7 @@ function ReadinessSource({ sys, onOpenProfile }: { sys: SystemicReadiness; onOpe
       {sys.method && sys.band && sys.recent !== null && sys.normal !== null ? (
         <>
           <div><b>{BAND_WORD[sys.band]}</b> · from {METHOD_NAME[sys.method]}</div>
-          <div className="text-ink-2">HRV this week {sys.recent} ms · your normal {sys.normal} ms</div>
+          <div className="text-ink-2">HRV this week {sys.recent} ms · your normal {sys.normal.low}–{sys.normal.high} ms</div>
         </>
       ) : (
         <div className="text-ink-2">No reading yet: needs 14 nights of HRV.</div>

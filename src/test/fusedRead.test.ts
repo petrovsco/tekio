@@ -371,7 +371,14 @@ describe('overnightHrvReading', () => {
     expect(r?.score).toBe(50)
     expect(r?.band).toBe('ok')
     expect(r?.recent).toBe(80) // geometric means, rounded to whole ms
-    expect(r?.normal).toBe(80)
+    // the normal range is the baseline ± the moderate line (0.5 SD), in ms
+    expect(r?.normal).toEqual({ low: 77, high: 82 })
+  })
+
+  it('puts a week just under the normal range in moderate', () => {
+    const r = overnightHrvReading(hrvHistory(76), TODAY)!
+    expect(r.recent).toBeLessThan(r.normal.low)
+    expect(r.band).toBe('moderate')
   })
 
   it('reads in log space: the baseline mean is geometric, not arithmetic', () => {
