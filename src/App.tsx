@@ -32,7 +32,7 @@ function TabContent(
     case 'Weights': return <WeightsTab />
     case 'Cardio': return <CardioTab />
     case 'Mobility': return <MobilityTab />
-    case 'Profile': return <ProfileTab />
+    case 'Profile': return <ProfileTab focus={focusMuscle} />
     // Recovery, Donations and Body Weight have no tab — they are reads and
     // captures on Home — and Habits and Water have none because they are
     // deleted. Fall
@@ -44,9 +44,10 @@ function TabContent(
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('Home')
-  // What a destination change carries with it. Today that is one muscle, so a
-  // gap tapped on Home opens Adaptations already on that muscle (roadmap 064)
-  // instead of on the tab's default. Cleared by any navigation that omits it,
+  // What a destination change carries with it: one muscle, so a gap tapped on
+  // Home opens Adaptations already on that muscle (roadmap 064) instead of on
+  // the tab's default; or a Profile card, so the readiness sheet's link opens
+  // Profile on its method card (RFC 0092). Cleared by any navigation that omits it,
   // so the drawer and the bottom nav always land on the plain tab.
   const [focusMuscle, setFocusMuscle] = useState<string | null>(null)
   const loading = useAppStore(s => s.loading)

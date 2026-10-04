@@ -58,11 +58,42 @@ export const DONATION_ELIGIBILITY_DAYS: Record<string, number> = {
  * see tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
 export const RECOVER_DAYS = 2
 
-/** 33 — convention only (industry red/yellow boundary; Whoop red ≤33): no
- * literature supports an absolute cutoff — the grounded method is
- * baseline-relative (7d rolling < baseline − 0.5×SD, Vesterinen 2016), see
- * tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
-export const PUSH_THRESHOLD = 33
+/** −0.5 / −1 SD — partially supported: the trialled three-tier rule cuts the
+ * 7-day rolling LnRMSSD against the person's own baseline — within 0.5 SD the
+ * session runs as planned, 0.5–1 SD it runs lighter, beyond 1 SD it is active
+ * recovery (DeBlauw 2021; Nuuttila 2022 the same shape). One-sided here, a
+ * recorded departure: HRV above baseline never lowers the band. Each value is
+ * the bottom edge of the band above it — z < −1 low, −1 ≤ z < −0.5 moderate,
+ * z ≥ −0.5 ok. See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding
+ * and tekio.rfcs/grounding/0085-readiness-inputs.md#grounding */
+export const HRV_BAND_Z = { moderate: -0.5, low: -1 } as const
+
+/** The check-in's lines — convention, by analogy to the HRV trials' own-baseline
+ * reading; the five-item 1–5 form is McLean 2010's. Today's total (5–25) is
+ * placed against the person's own 28 days before it, in SD units: moderate
+ * below −1 SD and at least 2 points under the mean, low below −2 SD and at
+ * least 4 points under. The point floors keep a very steady answerer (SD near
+ * 1) from dropping a band on a one-point dip. 14 check-ins before a verdict.
+ * See tekio.rfcs/grounding/0092-readiness-method.md */
+export const CHECK_IN_BAND = {
+  moderate: { z: -1, points: 2 },
+  low: { z: -2, points: 4 },
+  baselineDays: 28,
+  minEntries: 14,
+} as const
+
+/** Resting HR note: last night at least own 30-night mean + 1 SD and at least
+ * 5 bpm above it. Convention — resting HR is weak alone (Bosquet 2008), which
+ * is why it is a note and never moves the band; own baseline (Quer 2020).
+ * See tekio.rfcs/grounding/0092-readiness-method.md */
+export const RESTING_HR_NOTE = { sd: 1, bpm: 5, baselineDays: 30, minNights: 14 } as const
+
+/** Short-night note: under 6 h of device-measured sleep. Partially supported —
+ * acute sleep loss impairs performance (Craven 2022), 6 h nights accrue
+ * deficits (Van Dongen 2003); the exact cut is convention. Device duration
+ * only: typed duration overestimates (Lauderdale 2008).
+ * See tekio.rfcs/grounding/0092-readiness-method.md */
+export const SHORT_NIGHT_HOURS = 6
 
 /** staleness: vo2max 14 d, endurance 14 d, anaerobic 28 d — detraining onset in
  * trained adults (Coyle 1984; Houmard 1992; Madsen 1993; Simoneau 1987;
@@ -110,8 +141,8 @@ export const DONATION_SUPPRESSION = { acuteHours: 48, aerobicTailDays: 21 } as c
 // with RecoveryCard (roadmap 014 step 3, 018 unit 4). They rolled five weekly
 // adherence targets — sleep .45 / mobility .15 / sauna .15 / cold .15 /
 // habits .10 — into one "readiness %". The fused Home replaced that with
-// `systemicReadiness()` in src/lib/fusedRead.ts: last night's sleep score
-// blended with a baseline-relative HRV sub-score. So the weights were not
+// `systemicReadiness()` in src/lib/fusedRead.ts: a baseline-relative HRV read
+// (since 0085 HRV alone; the device sleep score left the number). So the weights were not
 // reweighted, they were retired — the number they produced measured adherence
 // to a recovery routine, not recovery state. The before/after comparison on
 // real data is in tekio.rfcs/rfcs/done/0014-doctrine-ledger-execution.md.

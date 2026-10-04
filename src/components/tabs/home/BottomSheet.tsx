@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from '../../ui/Icon'
 
@@ -8,14 +8,37 @@ import { Icon } from '../../ui/Icon'
 // From `sm` up it is a centred card instead, the same breakpoint and geometry
 // as ui/Modal: a sheet stretched edge to edge on a desktop reads as one long
 // line per row, and the grab handle means nothing without a thumb.
+//
+// On a phone the handle drags (RFC 0100): the panel follows the finger, a
+// release past a quarter of its height (or a flick) closes it, and a drag up
+// opens it full screen — only when its content is taller than the panel, since
+// otherwise full screen would add nothing but white space.
 
 interface BottomSheetProps {
   onClose: () => void
   label: string
   children: ReactNode
+  /** Pinned under the scroll area, so the action it holds is always on screen. */
+  footer?: ReactNode
 }
 
-export function BottomSheet({ onClose, label, children }: BottomSheetProps) {
+/** Past this much travel up, a release opens the sheet full screen. */
+const OPEN_FULL_PX = 48
+/** A release this fast downward closes, whatever the distance (px per ms). */
+const FLICK_SPEED = 0.6
+const CLOSE_MS = 180
+
+export function BottomSheet({ onClose, label, children, footer }: BottomSheetProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ y0: number; t: number; y: number; t0: number } | null>(null)
+  const [dy, setDy] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const [full, setFull] = useState(false)
+  const [closing, setClosing] = useState(false)
+  // Whether the content already fits, read when a drag starts.
+  const [fits, setFits] = useState(true)
+
   useEffect(() => {
     const prev = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -29,6 +52,57 @@ export function BottomSheet({ onClose, label, children }: BottomSheetProps) {
     }
   }, [onClose])
 
+  const close = () => {
+    setClosing(true)
+    window.setTimeout(onClose, CLOSE_MS)
+  }
+
+  const onDown = (e: PointerEvent<HTMLDivElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId)
+    drag.current = { y0: e.clientY, y: e.clientY, t: e.timeStamp, t0: e.timeStamp }
+    const scroller = scrollRef.current
+    setFits(!scroller || scroller.scrollHeight <= scroller.clientHeight + 1)
+    setDragging(true)
+  }
+  const onMove = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current
+    if (!d) return
+    d.y = e.clientY
+    d.t = e.timeStamp
+    setDy(e.clientY - d.y0)
+  }
+  const onUp = () => {
+    const d = drag.current
+    drag.current = null
+    setDragging(false)
+    if (!d) return
+    const moved = d.y - d.y0
+    const speed = moved / Math.max(1, d.t - d.t0)
+    const panelH = panelRef.current?.offsetHeight ?? 0
+    setDy(0)
+    const flick = moved > 12 && speed > FLICK_SPEED
+    if (full) {
+      // Full screen steps down to the resting size first; only a long drag
+      // or a flick goes straight to closed.
+      if (flick || moved > panelH / 2) close()
+      else if (moved > OPEN_FULL_PX) setFull(false)
+    } else if (flick || moved > panelH / 4) {
+      close()
+    } else if (moved < -OPEN_FULL_PX && !fits) {
+      setFull(true)
+    }
+  }
+
+  // While dragging down the panel slides; dragging up stretches it, and a
+  // panel whose content already fits only gives a little before springing back.
+  const down = Math.max(0, dy)
+  const up = Math.max(0, -dy)
+  const stretch = fits ? Math.min(24, up / 4) : up
+  const panelHeight = full ? 'calc(100dvh - env(safe-area-inset-top))' : undefined
+  const maxHeight = full ? undefined : `calc(85dvh + ${stretch}px)`
+  const transform = closing ? 'translateY(100%)' : `translateY(${down}px)`
+  const fade = closing ? 0 : 1 - Math.min(0.7, down / 600)
+
   return createPortal(
     <div
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
@@ -36,14 +110,46 @@ export function BottomSheet({ onClose, label, children }: BottomSheetProps) {
       aria-modal="true"
       aria-label={label}
     >
-      <div className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" onClick={onClose} />
       <div
-        className="relative w-full min-w-0 sm:max-w-[480px] bg-white text-ink border-t-2 sm:border-2 border-ink rounded-t-[6px] sm:rounded-[6px] max-h-[85vh] overflow-y-auto overflow-x-hidden px-4 pt-[10px] sm:pt-4"
-        // safe-area-inset-bottom has no utility class in this app — inline it.
-        style={{ paddingBottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+        className={`absolute inset-0 bg-[rgba(26,26,26,0.34)] ${dragging ? '' : 'transition-opacity duration-200'}`}
+        style={{ opacity: fade }}
+        onClick={close}
+      />
+      <div
+        ref={panelRef}
+        className={`relative w-full min-w-0 sm:max-w-[480px] bg-white text-ink border-t sm:border-2 border-ink sm:rounded-[6px] sm:!max-h-[85vh] sm:!h-auto sm:!transform-none flex flex-col overflow-hidden ${
+          full ? 'rounded-none' : 'rounded-t-[6px]'
+        } ${dragging ? '' : 'transition-[transform,max-height,height] duration-200 ease-out motion-reduce:transition-none'}`}
+        style={{ height: panelHeight, maxHeight, transform }}
       >
-        <div className="sm:hidden w-[34px] h-[3px] bg-chrome rounded-[2px] mx-auto mb-[10px]" />
-        {children}
+        {/* The handle's touch zone is the full width and 28 px tall; the bar
+            inside it is only the visual. */}
+        <div
+          className="sm:hidden shrink-0 h-[28px] flex items-center justify-center touch-none cursor-grab"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+          aria-hidden
+        >
+          <div className="w-[34px] h-[3px] bg-chrome rounded-[2px]" />
+        </div>
+        <div
+          ref={scrollRef}
+          className="overflow-y-auto overflow-x-hidden overscroll-contain px-4 sm:pt-4 min-h-0 grow"
+          // safe-area-inset-bottom has no utility class in this app — inline it.
+          style={{ paddingBottom: footer ? '12px' : 'calc(16px + env(safe-area-inset-bottom))' }}
+        >
+          {children}
+        </div>
+        {footer && (
+          <div
+            className="shrink-0 px-4 pt-2.5 border-t border-line bg-white"
+            style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
+          >
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body,

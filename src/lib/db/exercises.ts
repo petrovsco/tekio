@@ -84,24 +84,45 @@ export async function getOrCreateExerciseRow(
     .single()
   if (error) throw error
 
+  const pattern = entry?.pattern ?? opts.pattern
+  if (opts.link && pattern) await tagPattern(data.id, pattern)
   const links = !opts.link ? null
     : entry ? catalogue.linksFor(entry)
     : opts.pattern ? catalogue.linksFor({ name: canonical, pattern: opts.pattern })
     : null
-  const linked = links ? await writeLinks(data.id, links) : false
+  // A catalogue entry's links are the committed audit's; a pattern alone is the
+  // user naming the movement (RFC 0074 §1).
+  const linked = links ? await writeLinks(data.id, links, entry ? 'catalogue' : 'editor') : false
   return { id: data.id, name: canonical, linked }
+}
+
+/** Record a new lift's movement pattern, so every mapped lift names one
+ *  (RFC 0074). The patterns table is keyed by the same `PatternKey`. */
+async function tagPattern(exerciseId: string, pattern: PatternKey): Promise<void> {
+  const { data, error } = await supabase.from('movement_patterns').select('id').eq('key', pattern).maybeSingle()
+  if (error) throw error
+  if (!data) return
+  const { error: upErr } = await supabase
+    .from('exercises')
+    .update({ movement_pattern_id: data.id })
+    .eq('id', exerciseId)
+    .is('movement_pattern_id', null)
+  if (upErr) throw upErr
 }
 
 /** Write a new exercise's muscle links. Role follows level, as on every
  *  existing row: a prime mover is `primary`, anything else `secondary`. */
-async function writeLinks(exerciseId: string, links: LinkSet): Promise<boolean> {
+async function writeLinks(exerciseId: string, links: LinkSet, source: 'catalogue' | 'editor'): Promise<boolean> {
   const names = Object.keys(links)
   if (!names.length) return false
   const { data: groups, error } = await supabase.from('muscle_groups').select('id, name').in('name', names)
   if (error) throw error
   const rows = (groups ?? []).map(g => {
     const level = links[g.name as keyof LinkSet]!
-    return { exercise_id: exerciseId, muscle_group_id: g.id, level, role: level === 1 ? 'primary' : 'secondary', contribution: 'stimulus' }
+    return withOrigin({
+      exercise_id: exerciseId, muscle_group_id: g.id, level,
+      role: level === 1 ? 'primary' : 'secondary', contribution: 'stimulus', source,
+    })
   })
   const { error: insErr } = await supabase
     .from('exercise_muscle_groups')

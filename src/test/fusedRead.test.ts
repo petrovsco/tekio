@@ -1,15 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import {
   muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, fusedVerdict, HISTORY_WEEKS,
+  donationStatus, fusedVerdict, overnightHrvReading, bandForZ, HISTORY_WEEKS,
+  morningHrvReading, checkInReading, checkInTotal, readinessNotes, autoReadinessMethod, overnightConnected,
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
-import { PUSH_THRESHOLD, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
+import { HRV_BAND_Z, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
 import type { TargetUnit } from '../lib/adaptations'
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry,
-  ExerciseMuscleLink, MuscleGroup,
+  ExerciseMuscleLink, MuscleGroup, ReadinessInput, CheckInAnswers,
 } from '../types'
 
 const TODAY = '2026-08-30'
@@ -356,53 +357,260 @@ const night = (date: string, score?: number, hrv?: number): SleepEntry => ({
   id: date, date, hours: 7.5, score, hrv, source: 'garmin',
 })
 
-describe('systemicReadiness', () => {
-  it('scores 50/50 sleep + HRV, with a steady HRV series at baseline (50)', () => {
-    const sleep = Array.from({ length: 10 }, (_, i) => night(ago(i), 70, 80))
-    const r = systemicReadiness(sleep, TODAY)
-    expect(r.basis).toBe('sleep+hrv')
-    expect(r.hrvScore).toBe(50)
-    expect(r.readiness).toBe(60) // (70 + 50) / 2
-    expect(r.hrv).toBe(80)
+/** Invented nights: a baseline alternating 75 / 85 ms (ln SD ≈ 0.0626) from
+ * day 7 back, and a rolling week of `week` ms on days 0–6. */
+const hrvHistory = (week: number, baselineNights = 30): SleepEntry[] => [
+  ...Array.from({ length: 7 }, (_, i) => night(ago(i), 70, week)),
+  ...Array.from({ length: baselineNights }, (_, i) => night(ago(i + 7), 70, i % 2 ? 75 : 85)),
+]
+
+describe('overnightHrvReading', () => {
+  it('reads a week at the baseline mean as ok, score 50', () => {
+    const r = overnightHrvReading(hrvHistory(Math.sqrt(75 * 85)), TODAY)
+    expect(r?.method).toBe('overnight_hrv')
+    expect(r?.z).toBeCloseTo(0, 5)
+    expect(r?.score).toBe(50)
+    expect(r?.band).toBe('ok')
+    expect(r?.recent).toBe(80) // geometric means, rounded to whole ms
+    // the normal range is the baseline ± the moderate line (0.5 SD), in ms
+    expect(r?.normal).toEqual({ low: 77, high: 82 })
   })
 
-  it('gates on a sustained HRV drop plus poor sleep', () => {
-    const sleep = [
-      ...Array.from({ length: 3 }, (_, i) => night(ago(i), 52, 60)),
-      ...Array.from({ length: 27 }, (_, i) => night(ago(i + 3), 75, 80)),
-    ]
-    const r = systemicReadiness(sleep, TODAY)
-    expect(r.hrvScore).toBeLessThan(20)
-    expect(r.readiness).toBeLessThan(PUSH_THRESHOLD)
+  it('puts a week just under the normal range in moderate', () => {
+    const r = overnightHrvReading(hrvHistory(76), TODAY)!
+    expect(r.recent).toBeLessThan(r.normal.low)
+    expect(r.band).toBe('moderate')
+  })
+
+  it('reads in log space: the baseline mean is geometric, not arithmetic', () => {
+    // ln-mean of 75/85 is ln(79.84); a week at 80 ms sits just above it
+    expect(overnightHrvReading(hrvHistory(80), TODAY)!.z).toBeGreaterThan(0)
+    expect(overnightHrvReading(hrvHistory(79.5), TODAY)!.z).toBeLessThan(0)
+  })
+
+  it('steadies between 0.5 and 1 SD under, holds beyond 1 SD', () => {
+    const sd = Math.abs(Math.log(85) - Math.log(75)) / 2
+    const mean = (Math.log(75) + Math.log(85)) / 2
+    const at = (z: number) => overnightHrvReading(hrvHistory(Math.exp(mean + z * sd)), TODAY)!
+    expect(at(-0.4).band).toBe('ok')
+    expect(at(-0.7).band).toBe('moderate')
+    expect(at(-1.3).band).toBe('low')
+    expect(at(-1.3).score).toBe(0)
+  })
+
+  it('never lowers the band for HRV above baseline (one-sided)', () => {
+    const r = overnightHrvReading(hrvHistory(100), TODAY)!
+    expect(r.band).toBe('ok')
+    expect(r.score).toBe(100)
+  })
+
+  it('keeps the current week out of the baseline', () => {
+    // a week 1.2 SD down reads low; were the week pooled into the baseline it
+    // would pull the mean towards itself and read about −0.96, moderate
+    const sd = Math.abs(Math.log(85) - Math.log(75)) / 2
+    const mean = (Math.log(75) + Math.log(85)) / 2
+    const r = overnightHrvReading(hrvHistory(Math.exp(mean - 1.2 * sd)), TODAY)!
+    expect(r.z).toBeCloseTo(-1.2, 5)
+    expect(r.band).toBe('low')
   })
 
   it('barely moves on a single bad night', () => {
-    const sleep = [
-      night(ago(0), 73, 60),
-      ...Array.from({ length: 20 }, (_, i) => night(ago(i + 1), 73, 80)),
-    ]
-    const r = systemicReadiness(sleep, TODAY)
-    expect(r.readiness).toBeGreaterThan(PUSH_THRESHOLD)
+    const g = Math.sqrt(75 * 85)
+    const sleep = [night(ago(0), 70, 60), ...hrvHistory(g).slice(1)]
+    expect(overnightHrvReading(sleep, TODAY)!.band).not.toBe('low')
   })
 
-  it('degrades to sleep-only without an HRV baseline', () => {
-    const sleep = [night(ago(0), 73, 80), night(ago(1), 80, 82)] // only 2 samples
-    const r = systemicReadiness(sleep, TODAY)
-    expect(r.basis).toBe('sleep')
-    expect(r.readiness).toBe(73)
-    expect(r.hrvScore).toBeNull()
-    expect(r.hrv).toBe(80) // raw value still surfaces for the gate card
+  it('gives no reading before 14 baseline nights', () => {
+    expect(overnightHrvReading(hrvHistory(80, 13), TODAY)).toBeNull()
+    expect(overnightHrvReading(hrvHistory(80, 14), TODAY)).not.toBeNull()
   })
 
-  it('returns none when the last night is too old', () => {
-    const sleep = Array.from({ length: 10 }, (_, i) => night(ago(i + 2), 70, 80))
-    const r = systemicReadiness(sleep, TODAY)
-    expect(r.basis).toBe('none')
+  it('gives no reading when last night has no HRV', () => {
+    const sleep = hrvHistory(80).filter(e => e.date !== ago(0) && e.date !== ago(1))
+    expect(overnightHrvReading(sleep, TODAY)).toBeNull()
+  })
+})
+
+describe('bandForZ', () => {
+  it('cuts at the trialled tiers, edges inclusive upward', () => {
+    expect(HRV_BAND_Z).toEqual({ moderate: -0.5, low: -1 })
+    expect(bandForZ(-0.5)).toBe('ok')
+    expect(bandForZ(-0.51)).toBe('moderate')
+    expect(bandForZ(-1)).toBe('moderate')
+    expect(bandForZ(-1.01)).toBe('low')
+  })
+})
+
+describe('systemicReadiness', () => {
+  it('reads HRV alone: the sleep score is shown, never counted', () => {
+    const g = Math.sqrt(75 * 85)
+    const good = systemicReadiness(hrvHistory(g).map(e => ({ ...e, score: 95 })), TODAY)
+    const bad = systemicReadiness(hrvHistory(g).map(e => ({ ...e, score: 20 })), TODAY)
+    expect(good.readiness).toBe(50)
+    expect(bad.readiness).toBe(50)
+    expect(bad.sleepScore).toBe(20)
+    expect(bad.band).toBe('ok')
+    expect(bad.method).toBe('overnight_hrv')
+  })
+
+  it('has no readiness without an HRV baseline, but still surfaces last night', () => {
+    const r = systemicReadiness([night(ago(0), 73, 80), night(ago(1), 80, 82)], TODAY)
     expect(r.readiness).toBeNull()
+    expect(r.band).toBeNull()
+    expect(r.sleepScore).toBe(73)
+    expect(r.hrv).toBe(80)
   })
 
-  it('returns none with no data at all', () => {
+  it('returns nothing with no data at all', () => {
     expect(systemicReadiness([], TODAY).readiness).toBeNull()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// The typed rungs and the notes (RFC 0092) — every figure invented
+// ---------------------------------------------------------------------------
+
+const morning = (date: string, ms: number): ReadinessInput => ({ id: `m${date}`, date, morningHrv: ms })
+/** Invented morning readings, the same shape as hrvHistory. */
+const morningHistory = (week: number, baselineDays = 30): ReadinessInput[] => [
+  ...Array.from({ length: 7 }, (_, i) => morning(ago(i), week)),
+  ...Array.from({ length: baselineDays }, (_, i) => morning(ago(i + 7), i % 2 ? 60 : 70)),
+]
+
+describe('morningHrvReading', () => {
+  it('reads typed mornings with the overnight math, on their own baseline', () => {
+    const r = morningHrvReading(morningHistory(Math.sqrt(60 * 70)), TODAY)!
+    expect(r.method).toBe('morning_hrv')
+    expect(r.z).toBeCloseTo(0, 5)
+    expect(r.band).toBe('ok')
+    const sd = Math.abs(Math.log(70) - Math.log(60)) / 2
+    const mean = (Math.log(60) + Math.log(70)) / 2
+    expect(morningHrvReading(morningHistory(Math.exp(mean - 0.7 * sd)), TODAY)!.band).toBe('moderate')
+    expect(morningHrvReading(morningHistory(Math.exp(mean - 1.3 * sd)), TODAY)!.band).toBe('low')
+  })
+
+  it('needs this morning typed, and 14 baseline readings', () => {
+    expect(morningHrvReading(morningHistory(65).filter(e => e.date !== TODAY), TODAY)).toBeNull()
+    expect(morningHrvReading(morningHistory(65, 13), TODAY)).toBeNull()
+    expect(morningHrvReading(morningHistory(65, 14), TODAY)).not.toBeNull()
+  })
+
+  it('never reads overnight HRV, and overnight never reads it', () => {
+    expect(morningHrvReading([], TODAY)).toBeNull()
+    expect(overnightHrvReading([], TODAY)).toBeNull()
+    const sleepOnly = hrvHistory(80)
+    expect(systemicReadiness(sleepOnly, TODAY, [], 'morning_hrv').method).toBeNull()
+  })
+})
+
+const answers = (n: number): CheckInAnswers => ({ energy: n, soreness: n, sleepQuality: n, stress: n, mood: n })
+const checkIn = (date: string, a: CheckInAnswers): ReadinessInput => ({ id: `c${date}`, date, checkIn: a })
+/** Invented check-ins: 20 days alternating totals of 18 and 20 (mean 19, SD 1), then today. */
+const checkInHistory = (todayAnswers: CheckInAnswers, days = 20): ReadinessInput[] => [
+  checkIn(TODAY, todayAnswers),
+  ...Array.from({ length: days }, (_, i) =>
+    checkIn(ago(i + 1), i % 2 ? { ...answers(4) } : { ...answers(4), mood: 2 })),
+]
+
+describe('checkInReading', () => {
+  it('sums five items, 5 the good end', () => {
+    expect(checkInTotal(answers(5))).toBe(25)
+    expect(checkInTotal({ energy: 1, soreness: 2, sleepQuality: 3, stress: 4, mood: 5 })).toBe(15)
+  })
+
+  it('reads ok at the usual total and above it', () => {
+    expect(checkInReading(checkInHistory({ ...answers(4), mood: 3 }), TODAY)!.band).toBe('ok')
+    expect(checkInReading(checkInHistory(answers(5)), TODAY)!.band).toBe('ok')
+  })
+
+  it('needs both the SD line and the point floor to drop a band', () => {
+    // mean 19, SD 1: a total of 17 is −2 SD but only 2 points under → moderate, not low
+    const r17 = checkInReading(checkInHistory({ ...answers(4), mood: 1 }), TODAY)!
+    expect(r17.recent).toBe(17)
+    expect(r17.band).toBe('moderate')
+    // 18 is −1 SD but 1 point under → ok
+    expect(checkInReading(checkInHistory({ ...answers(4), mood: 2 }), TODAY)!.band).toBe('ok')
+    // 15 is −4 SD and 4 points under → low
+    expect(checkInReading(checkInHistory(answers(3)), TODAY)!.band).toBe('low')
+  })
+
+  it('gives the normal range in points, edges at the moderate line', () => {
+    const r = checkInReading(checkInHistory(answers(4)), TODAY)!
+    expect(r.normal).toEqual({ low: 17, high: 21 })
+  })
+
+  it('needs today answered and 14 earlier check-ins', () => {
+    expect(checkInReading(checkInHistory(answers(4)).slice(1), TODAY)).toBeNull()
+    expect(checkInReading(checkInHistory(answers(4), 13), TODAY)).toBeNull()
+    expect(checkInReading(checkInHistory(answers(4), 14), TODAY)).not.toBeNull()
+  })
+})
+
+describe('method choice and fallback', () => {
+  it('picks the best rung with data when none is picked', () => {
+    expect(autoReadinessMethod(hrvHistory(80), [], TODAY)).toBe('overnight_hrv')
+    expect(autoReadinessMethod([], morningHistory(65), TODAY)).toBe('morning_hrv')
+    expect(autoReadinessMethod([], checkInHistory(answers(4)), TODAY)).toBe('check_in')
+    expect(autoReadinessMethod([], [], TODAY)).toBeNull()
+  })
+
+  it('counts a device connected only with a night in the last 3 days', () => {
+    expect(overnightConnected([night(ago(2), 70, 80)], TODAY)).toBe(true)
+    expect(overnightConnected([night(ago(3), 70, 80)], TODAY)).toBe(false)
+  })
+
+  it('falls to a lower rung only when that rung has its own reading', () => {
+    const inputs = checkInHistory({ ...answers(4), mood: 1 })
+    const r = systemicReadiness([], TODAY, inputs, 'morning_hrv')
+    expect(r.chosen).toBe('morning_hrv')
+    expect(r.method).toBe('check_in')
+    expect(r.band).toBe('moderate')
+    // never upward: a check-in pick does not read overnight HRV
+    expect(systemicReadiness(hrvHistory(80), TODAY, [], 'check_in').method).toBeNull()
+  })
+
+  it('asks for today’s typed reading and reports the baseline progress', () => {
+    const r = systemicReadiness([], TODAY, morningHistory(65, 3).slice(1), 'morning_hrv')
+    expect(r.awaitingInput).toBe(true)
+    expect(r.band).toBeNull()
+    expect(r.progress).toEqual({ have: 9, need: 21 })
+  })
+
+  it('says when overnight has no device', () => {
+    const r = systemicReadiness([], TODAY, [], 'overnight_hrv')
+    expect(r.connected).toBe(false)
+    expect(r.picked).toBe(true)
+    expect(r.band).toBeNull()
+  })
+})
+
+describe('readinessNotes', () => {
+  const rhrNight = (date: string, rhr: number, hours = 7.5, source: 'garmin' | 'manual' = 'garmin'): SleepEntry => ({
+    id: date, date, hours, restingHr: rhr, source,
+  })
+  /** Invented nights: resting HR alternating 50 / 52 for 20 nights, then last night. */
+  const rhrHistory = (last: number, hours = 7.5, source: 'garmin' | 'manual' = 'garmin') => [
+    rhrNight(ago(0), last, hours, source),
+    ...Array.from({ length: 20 }, (_, i) => rhrNight(ago(i + 1), i % 2 ? 50 : 52)),
+  ]
+
+  it('notes a resting HR at least 5 bpm and 1 SD above the norm', () => {
+    expect(readinessNotes(rhrHistory(57), TODAY).restingHrAbove).toBe(6)
+    expect(readinessNotes(rhrHistory(55), TODAY).restingHrAbove).toBeNull()
+  })
+
+  it('notes a short night from the device only', () => {
+    expect(readinessNotes(rhrHistory(51, 5.5), TODAY).shortNight).toBe(5.5)
+    expect(readinessNotes(rhrHistory(51, 6), TODAY).shortNight).toBeNull()
+    expect(readinessNotes(rhrHistory(51, 5, 'manual'), TODAY).shortNight).toBeNull()
+  })
+
+  it('never changes the band', () => {
+    const sleep = hrvHistory(Math.sqrt(75 * 85)).map((e, i) => ({ ...e, restingHr: i === 0 ? 70 : 50, hours: i === 0 ? 4 : 7.5 }))
+    const r = systemicReadiness(sleep, TODAY)
+    expect(r.notes.restingHrAbove).not.toBeNull()
+    expect(r.notes.shortNight).toBe(4)
+    expect(r.band).toBe('ok')
   })
 })
 
@@ -449,9 +657,10 @@ describe('donationStatus', () => {
 // ---------------------------------------------------------------------------
 
 describe('fusedVerdict', () => {
-  it('holds below the push threshold, pushes at it', () => {
-    expect(fusedVerdict(PUSH_THRESHOLD - 1)).toEqual({ mode: 'hold', cause: 'readiness' })
-    expect(fusedVerdict(PUSH_THRESHOLD)).toEqual({ mode: 'push', cause: null })
+  it('holds a low band, steadies a moderate one, pushes an ok one', () => {
+    expect(fusedVerdict('low')).toEqual({ mode: 'hold', cause: 'readiness' })
+    expect(fusedVerdict('moderate')).toEqual({ mode: 'steady', cause: 'readiness' })
+    expect(fusedVerdict('ok')).toEqual({ mode: 'push', cause: null })
   })
 
   it('cannot gate without readiness data', () => {
@@ -460,6 +669,6 @@ describe('fusedVerdict', () => {
 
   it('holds on an acute donation regardless of readiness', () => {
     const d = donationStatus([donation(ago(0))], TODAY)
-    expect(fusedVerdict(90, d)).toEqual({ mode: 'hold', cause: 'donation' })
+    expect(fusedVerdict('ok', d)).toEqual({ mode: 'hold', cause: 'donation' })
   })
 })

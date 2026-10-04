@@ -223,6 +223,25 @@ export interface DonationEntry {
   notes: string
 }
 
+/** The five check-in answers, each 1–5 with 5 always the good end (RFC 0092). */
+export interface CheckInAnswers {
+  energy: number
+  soreness: number
+  sleepQuality: number
+  stress: number
+  mood: number
+}
+
+/** One morning's typed readiness inputs (readiness_inputs, RFC 0092). Morning
+ *  HRV and the check-in are separate methods with separate baselines. */
+export interface ReadinessInput {
+  id: string
+  date: string
+  /** rMSSD in ms from a phone-camera app or chest strap, on waking. */
+  morningHrv?: number
+  checkIn?: CheckInAnswers
+}
+
 export interface AppState {
   weights: WeightEntry[]
   bodyweight: BodyweightEntry[]

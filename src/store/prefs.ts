@@ -2,10 +2,11 @@ import { create } from 'zustand'
 import type { SectionConfig } from '../lib/db/sectionConfig'
 import { loadSectionConfig, updateSectionField, saveSectionConfig } from '../lib/db/sectionConfig'
 import {
-  loadProfile, updateWeekStartDay, updateHrMax, updateBirthDate,
+  loadProfile, updateWeekStartDay, updateHrMax, updateBirthDate, updateReadinessMethod,
 } from '../lib/db/user'
 import type { WeekStartDay } from '../lib/utils'
 import type { HrMaxSource } from '../lib/hrMax'
+import type { ReadinessMethod } from '../lib/fusedRead'
 
 interface PrefsStore {
   sections: SectionConfig[]
@@ -15,12 +16,15 @@ interface PrefsStore {
   hrMaxSource: HrMaxSource | null
   /** ISO date; the age estimate of HRmax needs it. */
   birthDate: string | null
+  /** The readiness method picked in Profile; null = the best one with data (RFC 0092). */
+  readinessMethod: ReadinessMethod | null
   loadPrefs: () => Promise<void>
   setSection: (key: string, patch: Partial<Pick<SectionConfig, 'showInMenu'>>) => Promise<void>
   reorderSections: (newOrder: string[]) => Promise<void>
   setWeekStartDay: (value: WeekStartDay) => Promise<void>
   setHrMaxStored: (value: number | null, source: HrMaxSource) => Promise<void>
   setBirthDate: (value: string | null) => Promise<void>
+  setReadinessMethod: (value: ReadinessMethod | null) => Promise<void>
 }
 
 export const usePrefs = create<PrefsStore>((set, get) => ({
@@ -29,6 +33,7 @@ export const usePrefs = create<PrefsStore>((set, get) => ({
   hrMaxStored: null,
   hrMaxSource: null,
   birthDate: null,
+  readinessMethod: null,
 
   loadPrefs: async () => {
     const [sections, profile] = await Promise.all([loadSectionConfig(), loadProfile()])
@@ -69,5 +74,10 @@ export const usePrefs = create<PrefsStore>((set, get) => ({
   setBirthDate: async (value) => {
     set({ birthDate: value })
     await updateBirthDate(value)
+  },
+
+  setReadinessMethod: async (value) => {
+    set({ readinessMethod: value })
+    await updateReadinessMethod(value)
   },
 }))
