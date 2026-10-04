@@ -263,15 +263,14 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           the instruction, never the facts */}
       <button
         onClick={() => setSheet({ recovery: true })}
-        aria-label="Log recovery inputs"
+        aria-label="How readiness was read, and recovery inputs"
         className={`mt-3 block w-full text-left rounded-[3px] border border-ink cursor-pointer ${gated ? 'bg-ink text-white' : 'bg-white'}`}
       >
         <div className={`flex items-center gap-1.5 px-2.5 pt-[7px] pb-[5px] border-b ${gated ? 'border-invert-line' : 'border-line'}`}>
           <Icon name="heart" size={13} />
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
-          {sys.band && <span className="text-[10px] font-bold tracking-[0.1em]">{BAND_LABEL[sys.band]}</span>}
-          <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
+          <span className="text-[13px] font-bold tracking-[0.06em]">{sys.band ? BAND_LABEL[sys.band] : '—'}</span>
           {/* sauna / cold / manual sleep live behind this tap — the card that
               raises "can I push?" is where the input belongs (P1) */}
           <span
@@ -405,7 +404,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         {sheet && ('fold' in sheet
           ? <FoldSheet kind={sheet.fold} onClose={() => setSheet(null)} />
           : 'recovery' in sheet
-            ? <RecoverySheet onClose={() => setSheet(null)} />
+            ? <RecoverySheet sys={sys} onClose={() => setSheet(null)} onOpenProfile={() => { setSheet(null); setTab('Profile') }} />
             : 'quality' in sheet
               ? (
                 <QualitySheet

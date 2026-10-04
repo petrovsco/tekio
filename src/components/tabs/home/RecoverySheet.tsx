@@ -1,6 +1,8 @@
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { startOfWeek, today } from '../../../lib/utils'
+import { HRV_BAND_Z } from '../../../constants/app'
+import type { SystemicReadiness } from '../../../lib/fusedRead'
 import { BottomSheet, SheetHeader, CaptureLabel, Chip, Recent, StepperCapture } from './BottomSheet'
 
 // The systemic-recovery captures (SAUNA / COLD / SLEEP) as one T2 sheet
@@ -10,10 +12,48 @@ import { BottomSheet, SheetHeader, CaptureLabel, Chip, Recent, StepperCapture } 
 // rather than a destination (P5).
 
 interface RecoverySheetProps {
+  sys: SystemicReadiness
   onClose: () => void
+  /** Where the readiness method is chosen. Opens Profile; RFC 0092 adds the
+   * method card there. */
+  onOpenProfile: () => void
 }
 
-export default function RecoverySheet({ onClose }: RecoverySheetProps) {
+const BAND_WORD = { low: 'Low', moderate: 'Moderate', ok: 'OK' } as const
+const METHOD_NAME = { overnight_hrv: 'Overnight HRV, synced from your watch' } as const
+
+/** How far this week sits from the person's own normal, in words. */
+function distanceWords(z: number): string {
+  const swings = Math.abs(z).toFixed(1)
+  if (Math.abs(z) < 0.05) return 'right at your own normal'
+  return `${swings} of your usual night-to-night swing (1 SD) ${z < 0 ? 'under' : 'over'} your own normal`
+}
+
+/** Where today's readiness came from — one tap from the card (0085). */
+function ReadinessSource({ sys, onOpenProfile }: { sys: SystemicReadiness; onOpenProfile: () => void }) {
+  const rule = `OK down to ${Math.abs(HRV_BAND_Z.moderate)} of a swing under (or anywhere above), Moderate down to ${Math.abs(HRV_BAND_Z.low)} swing under, Low beyond that.`
+  return (
+    <div className="mb-3 pb-2.5 border-b border-line">
+      {sys.method && sys.z !== null ? (
+        <p className="text-[11px] leading-[1.4] text-ink-2 text-pretty">
+          <b className="text-ink">{sys.band ? BAND_WORD[sys.band] : ''}.</b> From{' '}
+          <b className="text-ink">{METHOD_NAME[sys.method]}</b>. Your last 7 nights sit{' '}
+          {distanceWords(sys.z)} (the 60 nights before them). {rule}
+        </p>
+      ) : (
+        <p className="text-[11px] leading-[1.4] text-ink-2 text-pretty">
+          <b className="text-ink">No reading yet.</b> Readiness reads overnight HRV against your own normal, and needs 14
+          nights of it plus last night's before it can say anything.
+        </p>
+      )}
+      <button onClick={onOpenProfile} className="mt-1.5 text-[11px] text-signal font-semibold cursor-pointer">
+        Readiness method · Profile →
+      </button>
+    </div>
+  )
+}
+
+export default function RecoverySheet({ sys, onClose, onOpenProfile }: RecoverySheetProps) {
   const sauna = useAppStore(s => s.sauna)
   const cold = useAppStore(s => s.cold)
   const sleep = useAppStore(s => s.sleep)
@@ -29,8 +69,10 @@ export default function RecoverySheet({ onClose }: RecoverySheetProps) {
   const coldWk = cold.filter(e => inWeek(e.date))
 
   return (
-    <BottomSheet onClose={onClose} label="RECOVERY INPUTS">
-      <SheetHeader eyebrow="RECOVERY INPUTS" onClose={onClose} className="mb-2" />
+    <BottomSheet onClose={onClose} label="READINESS AND RECOVERY INPUTS">
+      <SheetHeader eyebrow="READINESS" onClose={onClose} className="mb-2" />
+
+      <ReadinessSource sys={sys} onOpenProfile={onOpenProfile} />
 
       <SessionRow
         label="SAUNA"

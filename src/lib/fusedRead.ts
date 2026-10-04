@@ -422,6 +422,8 @@ export interface SystemicReadiness {
   readiness: number | null
   band: ReadinessBand | null
   method: ReadinessMethod | null
+  /** The reading's distance from the person's own baseline, in their SD units. */
+  z: number | null
   /** Last night's device sleep score, if fresh — shown, never part of readiness (0085). */
   sleepScore: number | null
   /** Last night's overnight HRV in ms, if fresh. */
@@ -445,6 +447,7 @@ export function systemicReadiness(sleep: SleepEntry[], date: string = today()): 
     readiness: reading?.score ?? null,
     band: reading?.band ?? null,
     method: reading?.method ?? null,
+    z: reading?.z ?? null,
     sleepScore,
     hrv,
   }
