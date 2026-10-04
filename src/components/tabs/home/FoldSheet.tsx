@@ -83,7 +83,7 @@ function BloodCapture({ onClose }: { onClose: () => void }) {
       <div className="text-[9px] text-ink-3 mt-2 text-pretty">
         A full donation holds training for {DONATION_SUPPRESSION.acuteHours} h and
         suppresses aerobic work for ~{DONATION_SUPPRESSION.aerobicTailDays} d
-        (PLACEHOLDER) — it lands on the readiness gate, not on the map.
+        — it lands on the readiness gate, not on the map.
       </div>
     </div>
   )

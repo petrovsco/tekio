@@ -69,7 +69,7 @@ function verdictCopy(args: {
     const text = 'Hold. Walk or mobility only.'
     if (verdict.cause === 'donation') {
       const when = fmtAgo(don.daysSince)
-      return { text, sub: `Full blood donation ${when} — the 48 h acute window (PLACEHOLDER) gates the day.` }
+      return { text, sub: `Full blood donation ${when} — the 48 h acute window gates the day.` }
     }
     const facts = sys.hrv != null ? `HRV ${sys.hrv}` : `Readiness ${sys.readiness}`
     return { text, sub: `${facts} — this week sits well under your own normal.` }
@@ -87,12 +87,12 @@ function verdictCopy(args: {
       : `${cap(shortLower(m.name))}: ${fmtSets(m.sets)} sets in ${MUSCLE_WINDOW_DAYS} days.`)
   if (recoveringShorts.length > 0) {
     const who = recoveringShorts.length > 3 ? `${recoveringShorts.length} muscles` : joinNames(recoveringShorts)
-    facts.push(`${cap(who)} still recovering (PLACEHOLDER: ${RECOVER_DAYS} days).`)
+    facts.push(`${cap(who)} still recovering (${RECOVER_DAYS} days).`)
   } else if (minDaysSince !== null) {
     facts.push(`Nothing is sore — last stimulus ${fmtAgo(minDaysSince)}.`)
   }
   if (don.aerobicSuppressed && !don.acuteHold) {
-    facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (PLACEHOLDER: ~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
+    facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
   }
   if (verdict.mode === 'steady') facts.unshift(STEADY_NOTE)
   return { text, sub: facts.join(' ') }
@@ -189,7 +189,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
 
   const banner = gated
     ? verdict.cause === 'donation'
-      ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window (PLACEHOLDER) holds today. The gaps below stay open.`
+      ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window holds today. The gaps below stay open.`
       : `HRV is well under your own normal this week. The gaps below stay open — today just isn't the day to close them.`
     : null
 
@@ -203,9 +203,9 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       ? { kind: 'weight', label: 'WEIGHT', value: `${latestBw.weight.toFixed(1)} kg`, note: bwDays === 0 ? 'today' : bwDays === 1 ? 'yesterday' : `${bwDays} d ago` }
       : { kind: 'weight', label: 'WEIGHT', value: '—', note: 'tap to log' },
     don.acuteHold
-      ? { kind: 'blood', label: 'BLOOD', value: don.daysSince === 0 ? 'today' : `${don.daysSince} d`, note: '48 h hold · PLACEHOLDER', accent: true }
+      ? { kind: 'blood', label: 'BLOOD', value: don.daysSince === 0 ? 'today' : `${don.daysSince} d`, note: '48 h hold', accent: true }
       : don.aerobicSuppressed
-        ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: 'aerobic tail · PLACEHOLDER', accent: true }
+        ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: 'aerobic tail', accent: true }
         : don.daysSince !== null
           ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: don.eligibleInDays > 0 ? `eligible in ${don.eligibleInDays} d` : 'eligible' }
           : { kind: 'blood', label: 'BLOOD', value: '—', note: 'tap to log' },

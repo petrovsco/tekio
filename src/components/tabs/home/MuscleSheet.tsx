@@ -118,7 +118,7 @@ export default function MuscleSheet({
     : recovering
       ? {
           text: 'Recently hit — leave it.', invert: false, icon: 'M9 6v12M15 6v12',
-          sub: `Last stimulus ${fmtAgo(daysSince)} — inside the ${RECOVER_DAYS * 24} h recovery window (PLACEHOLDER).`,
+          sub: `Last stimulus ${fmtAgo(daysSince)} — inside the ${RECOVER_DAYS * 24} h recovery window.`,
         }
       : fill >= 1
         ? {
@@ -360,7 +360,7 @@ export default function MuscleSheet({
             <div className="h-[5px] bg-ink rounded-[2px]" style={{ width: `${recPct}%` }} />
           </div>
           <div className="text-[9px] text-ink-3 mt-1">
-            recovered after {RECOVER_DAYS * 24} h <strong className="text-ink">PLACEHOLDER</strong>
+            recovered after {RECOVER_DAYS * 24} h
           </div>
         </div>
       </div>
