@@ -1,4 +1,4 @@
--- tekio.rfcs/rfcs/0092-readiness-method-in-profile.md: the readiness method a
+-- tekio.rfcs/rfcs/done/0092-readiness-method-in-profile.md: the readiness method a
 -- person chose in Profile, and the two typed readiness inputs (a 1-minute
 -- morning HRV reading, and a five-item how-you-feel check-in).
 --
