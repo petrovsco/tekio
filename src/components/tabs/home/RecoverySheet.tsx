@@ -1,7 +1,6 @@
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { startOfWeek, today } from '../../../lib/utils'
-import { HRV_BAND_Z } from '../../../constants/app'
 import type { SystemicReadiness } from '../../../lib/fusedRead'
 import { BottomSheet, SheetHeader, CaptureLabel, Chip, Recent, StepperCapture } from './BottomSheet'
 
@@ -20,34 +19,25 @@ interface RecoverySheetProps {
 }
 
 const BAND_WORD = { low: 'Low', moderate: 'Moderate', ok: 'OK' } as const
-const METHOD_NAME = { overnight_hrv: 'Overnight HRV, synced from your watch' } as const
-
-/** How far this week sits from the person's own normal, in words. */
-function distanceWords(z: number): string {
-  const swings = Math.abs(z).toFixed(1)
-  if (Math.abs(z) < 0.05) return 'right at your own normal'
-  return `${swings} of your usual night-to-night swing (1 SD) ${z < 0 ? 'under' : 'over'} your own normal`
-}
+const METHOD_NAME = { overnight_hrv: 'overnight HRV' } as const
 
 /** Where today's readiness came from — one tap from the card (0085). */
 function ReadinessSource({ sys, onOpenProfile }: { sys: SystemicReadiness; onOpenProfile: () => void }) {
-  const rule = `OK down to ${Math.abs(HRV_BAND_Z.moderate)} of a swing under (or anywhere above), Moderate down to ${Math.abs(HRV_BAND_Z.low)} swing under, Low beyond that.`
+  const z = sys.z
   return (
-    <div className="mb-3 pb-2.5 border-b border-line">
-      {sys.method && sys.z !== null ? (
-        <p className="text-[11px] leading-[1.4] text-ink-2 text-pretty">
-          <b className="text-ink">{sys.band ? BAND_WORD[sys.band] : ''}.</b> From{' '}
-          <b className="text-ink">{METHOD_NAME[sys.method]}</b>. Your last 7 nights sit{' '}
-          {distanceWords(sys.z)} (the 60 nights before them). {rule}
-        </p>
+    <div className="mb-3 pb-2.5 border-b border-line text-[12px] leading-[1.45]">
+      {sys.method && sys.band && z !== null ? (
+        <>
+          <div><b>{BAND_WORD[sys.band]}</b> · from {METHOD_NAME[sys.method]}</div>
+          <div className="text-ink-2">
+            This week: {Math.abs(z) < 0.05 ? 'at your normal' : `${Math.abs(z).toFixed(1)} SD ${z < 0 ? 'under' : 'over'} your normal`}
+          </div>
+        </>
       ) : (
-        <p className="text-[11px] leading-[1.4] text-ink-2 text-pretty">
-          <b className="text-ink">No reading yet.</b> Readiness reads overnight HRV against your own normal, and needs 14
-          nights of it plus last night's before it can say anything.
-        </p>
+        <div className="text-ink-2">No reading yet: needs 14 nights of HRV.</div>
       )}
-      <button onClick={onOpenProfile} className="mt-1.5 text-[11px] text-signal font-semibold cursor-pointer">
-        Readiness method · Profile →
+      <button onClick={onOpenProfile} className="mt-1 text-[11px] text-signal font-semibold cursor-pointer">
+        Change method in Profile →
       </button>
     </div>
   )
