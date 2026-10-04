@@ -395,7 +395,7 @@ export function bandForZ(z: number): ReadinessBand {
  * lower its own bar; 14 baseline nights before any verdict. Single bad nights
  * barely move it — the literature calls them too noisy to act on. The 0–100
  * score is 50 + 50 × z, clamped: 50 = at baseline, 0 = a rolling mean 1 SD or
- * more below. See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding */
+ * more below. See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding */
 const HRV_ROLLING_DAYS = 7
 const HRV_BASELINE_DAYS = 60
 const MIN_HRV_BASELINE_NIGHTS = 14

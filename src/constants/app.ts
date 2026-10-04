@@ -64,7 +64,7 @@ export const RECOVER_DAYS = 2
  * recovery (DeBlauw 2021; Nuuttila 2022 the same shape). One-sided here, a
  * recorded departure: HRV above baseline never lowers the band. Each value is
  * the bottom edge of the band above it — z < −1 low, −1 ≤ z < −0.5 moderate,
- * z ≥ −0.5 ok. See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding
+ * z ≥ −0.5 ok. See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding
  * and tekio.rfcs/grounding/0085-readiness-inputs.md#grounding */
 export const HRV_BAND_Z = { moderate: -0.5, low: -1 } as const
 

@@ -42,7 +42,7 @@ const BAND_LABEL: Record<ReadinessBand, string> = { low: 'LOW', moderate: 'MODER
  * lighter, never rest — reps and load cut (DeBlauw 2021), or volume cut and the
  * intervals dropped (Nuuttila 2022). No percentage: each trial's 25% was its
  * chosen step, not a tested dose.
- * See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding */
+ * See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding */
 const STEADY_NOTE = 'Lighter today: no intervals or max efforts.'
 
 /** The gated instruction plus the top gap as its reason — all editorial text
