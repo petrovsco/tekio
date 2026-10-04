@@ -97,7 +97,7 @@ export interface MuscleGroup {
   parentId?: string | null
 }
 
-export type MuscleContribution = 'stimulus' | 'recovery'
+type MuscleContribution = 'stimulus' | 'recovery'
 
 /** A link between an exercise and a muscle group, weighted by impact level (1 = most direct). */
 export interface ExerciseMuscleLink {

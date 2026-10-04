@@ -177,7 +177,10 @@ export function ProfileTab() {
             </Btn>
           </div>
         )}
-        <div className="grid grid-cols-2 gap-2.5">
+        {/* items-end keeps the two inputs on one line even if a label wraps on
+            a narrow phone; the short label means it does not. The status line
+            above already says where a typed number comes from. */}
+        <div className="grid grid-cols-2 gap-2.5 items-end">
           <Inp
             label="Birth date"
             type="date"
@@ -185,7 +188,7 @@ export function ProfileTab() {
             onChange={e => { const v = e.target.value || null; if (v !== birthDate) setBirthDate(v) }}
           />
           <Inp
-            label="Another device or a test (bpm)"
+            label="Measured max (bpm)"
             type="number"
             inputMode="numeric"
             min={1}

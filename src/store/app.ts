@@ -101,18 +101,11 @@ interface AppStore extends AppState {
   editColdEntry: (id: string, patch: Omit<ColdEntry, 'id'>) => Promise<void>
 
   // Exercise catalogue
-  /** exercise id → name, for the Admin mapping editor. */
-  exerciseNames: Record<string, string>
   /** exercise name (lowercased) → adaptation override, for the adaptation dashboard. */
   exerciseAdaptations: Record<string, Adaptation>
 
-  /** Refresh muscle groups, exercise→muscle links and exercise names (after mapping edits). */
-  reloadMuscleData: () => Promise<void>
-
   /** Server-side per-adaptation weekly targets (override built-in defaults). */
   adaptationTargets: AdaptationTargetMap
-  /** Refresh adaptation targets after an admin edit. */
-  reloadAdaptationTargets: () => Promise<void>
 
   /** Other spellings of an exercise name, so one search finds one movement (roadmap 044). */
   exerciseAliases: ExerciseAlias[]
@@ -231,7 +224,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
   cold: [],
   muscleGroups: [],
   exerciseMuscles: [],
-  exerciseNames: {},
   exerciseAdaptations: {},
   adaptationTargets: {},
   exerciseAliases: [],
@@ -303,7 +295,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
         mobility,
         muscleGroups,
         exerciseMuscles,
-        exerciseNames: Object.fromEntries(exercises.map(e => [e.id, e.name])),
         exerciseAdaptations: adaptationMap(exercises),
         sports,
         sportTypes,
@@ -317,11 +308,6 @@ export const useAppStore = create<AppStore>((set, get) => ({
     } finally {
       set({ loading: false })
     }
-  },
-
-  reloadAdaptationTargets: async () => {
-    const adaptationTargets = await loadAdaptationTargets()
-    set({ adaptationTargets })
   },
 
   // ── Weights ──────────────────────────────────────────────────────────────────
@@ -412,18 +398,4 @@ export const useAppStore = create<AppStore>((set, get) => ({
   ...listActions(set, 'cold', 'Cold', {
     save: saveColdEntry, del: deleteColdEntry, update: updateColdEntry,
   }),
-
-  reloadMuscleData: async () => {
-    const [muscleGroups, exerciseMuscles, exercises] = await Promise.all([
-      loadMuscleGroups(),
-      loadExerciseMuscleLinks(),
-      loadExercises(),
-    ])
-    set({
-      muscleGroups,
-      exerciseMuscles,
-      exerciseNames: Object.fromEntries(exercises.map(e => [e.id, e.name])),
-      exerciseAdaptations: adaptationMap(exercises),
-    })
-  },
 }))

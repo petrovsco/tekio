@@ -91,7 +91,6 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
         {/* Profile & Settings */}
         <GroupLabel>Account</GroupLabel>
         <NavItem icon="profile" label="Profile & Settings" active={tab === 'Profile'} onClick={go('Profile')} />
-        <NavItem icon="admin" label="Admin" active={tab === 'Admin'} onClick={go('Admin')} />
         <div className="h-4" />
       </div>
     </>

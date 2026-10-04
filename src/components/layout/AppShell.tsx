@@ -23,7 +23,6 @@ const TAB_TITLES: Record<string, string> = {
   Mobility: 'Mobility',
   Donations: 'Blood Donations',
   Profile: 'Profile & Settings',
-  Admin: 'Admin',
 }
 
 interface AppShellProps {
