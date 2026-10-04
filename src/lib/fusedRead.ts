@@ -22,8 +22,7 @@ export type { MuscleQuality }
 // unit-testable without the store.
 
 /** Weekly bars the muscle sheet draws: history, not a claim. The fill itself
- *  is judged over MUSCLE_WINDOW_DAYS (roadmap 039 §6.6) and owes nothing to
- *  the program's CYCLE. */
+ *  is judged over MUSCLE_WINDOW_DAYS (roadmap 039 §6.6). */
 export const HISTORY_WEEKS = 6
 
 /** YYYY-MM-DD `n` days after `date` (negative = before). */

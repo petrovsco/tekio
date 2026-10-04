@@ -8,11 +8,11 @@ export interface SectionConfig {
 }
 
 // Three menu sections, one slot of headroom — doctrine R1's cap of four, met
-// for the first time (roadmap 014). Body Weight, Donations, Water and Recovery
-// are gone from this list because they are no longer destinations: they read
-// and capture on Home. Habits is gone because it was deleted (doctrine R2,
-// roadmap 035, 2026-09-05). Their live rows survive in the DB and are simply
-// ignored — App.tsx falls back to Home for any key it cannot render.
+// for the first time (roadmap 014). Body Weight, Donations and Recovery are
+// gone from this list because they are no longer destinations: they read and
+// capture on Home. Habits and Water are gone because they were deleted (roadmap
+// 035, 2026-09-05; RFC 0089, 2026-10-04). Their live rows survive in the DB and
+// are simply ignored — App.tsx falls back to Home for any key it cannot render.
 //
 // `show_in_home` died with OverviewTab: the fused Home is not a list of section
 // cards, so nothing reads it. The app stopped writing and selecting it (roadmap

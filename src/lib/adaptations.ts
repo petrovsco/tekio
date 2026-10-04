@@ -180,9 +180,9 @@ export interface MuscleStimulus {
 
 /**
  * Level-weighted resistance stimulus per muscle group inside the inclusive date
- * window [from, to]. Home's map (the 42-day cycle window) and the Adaptations
- * tab (week-to-date) both read this — one accounting; the window is the only
- * thing that differs, and each surface names its window on screen. Only
+ * window [from, to]. Home's map and the Adaptations tab both read this over the
+ * same MUSCLE_WINDOW_DAYS window — one accounting, and each surface names its
+ * window on screen. Only
  * `stimulus` links count; recovery links never add sets. A power set (override
  * or keyword) counts in `byQuality.power` only, never in `total` — see
  * tekio.rfcs/grounding/039-adaptations-read.md#grounding (S3). An override

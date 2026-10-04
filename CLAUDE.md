@@ -146,7 +146,7 @@ that loads when you open a chart costs the first paint nothing. It fails at
 baseline + 5 %. Run `npm run build` first; re-baseline with `perf:update` in the
 same commit as the change that moved the number, and say why.
 [scripts/perf-baseline.json](scripts/perf-baseline.json) is the committed
-record: **321.55 kB first paint** (2026-10-02, after Program and the assistant left) **and 1490 ms to the Home read** (2026-09-08). That
+record: **315.66 kB first paint** (2026-10-04, after water, the Weights chips and Admin left) **and 1039 ms to the Home read** (2026-09-08). That
 second number is the one doctrine §6 cares about — it is measured after
 `bootstrap()` has returned, not at DOMContentLoaded — and it is wall-clock
 against the live database, so read the trend, not the digit.
@@ -185,7 +185,7 @@ One file per domain. Each file talks directly to Supabase — no ORM, no reposit
 
 The Program feature — training plans, the 6-week cycle, the week-6 deload,
 Today's Plan on Weights — was removed in 2.1.17 to be rebuilt later
-(`tekio.rfcs/rfcs/0087-remove-program.md`). Home and Adaptations never read
+(`tekio.rfcs/rfcs/done/0087-remove-program.md`). Home and Adaptations never read
 it: their windows are their own (`MUSCLE_WINDOW_DAYS`). Its tables stay in the
 database until the 2.2.0 release sweep, because the build on `master` still
 reads them.

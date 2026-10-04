@@ -15,10 +15,11 @@ const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(m => ({ 
 const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(m => ({ default: m.MobilityTab })))
 const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(m => ({ default: m.ProfileTab })))
 
-// Body Weight, Donations and Water folded onto Home 2026-08-31 (doctrine §5,
+// Body Weight and Donations folded onto Home 2026-08-31 (doctrine §5,
 // roadmap 014): capture and correction moved into the T2 sheets, the
 // destinations went. Habits, shelved by the same ledger, was deleted 2026-09-05
-// (roadmap 035) — three sections, one slot of R1 headroom.
+// (roadmap 035), and Water, folded with them, was deleted 2026-10-04 (RFC 0089)
+// — three sections, one slot of R1 headroom.
 type DrawerTab = 'Weights' | 'Cardio' | 'Mobility'
 type Tab = 'Home' | 'Adaptations' | 'Profile' | DrawerTab
 
@@ -32,8 +33,9 @@ function TabContent(
     case 'Cardio': return <CardioTab />
     case 'Mobility': return <MobilityTab />
     case 'Profile': return <ProfileTab />
-    // Recovery, Water, Donations and Body Weight have no tab — they are reads
-    // and captures on Home — and Habits has none because it is deleted. Fall
+    // Recovery, Donations and Body Weight have no tab — they are reads and
+    // captures on Home — and Habits and Water have none because they are
+    // deleted. Fall
     // back to Home so a stray section-config row left over in the DB can never
     // render a blank screen.
     default: return <HomeTab setTab={setTab} />

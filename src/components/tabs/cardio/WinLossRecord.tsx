@@ -19,7 +19,7 @@ function RecordStat({ label, value }: { label: string; value: number }) {
  * The win/loss/tie record for one named sport that tracks a competitor. It
  * belongs to one sport, so Progress shows it only once a sport chip is picked.
  * It lived on the Sessions per week card until that chart was cut
- * (tekio.rfcs/rfcs/0034-v2-1-candidates-tbc.md): Home already reads session
+ * (tekio.rfcs/rfcs/done/0034-v2-1-candidates-tbc.md): Home already reads session
  * counts against their targets, and the record was the one thing it held that
  * nothing else shows.
  */

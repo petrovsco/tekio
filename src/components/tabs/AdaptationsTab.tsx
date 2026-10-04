@@ -19,7 +19,7 @@ import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL, coverageL
 // The Adaptations drill-down (roadmap 031): a second Home. One body map with a
 // four-way quality toggle for the muscle-linked four, one effort spectrum for
 // the whole-body three, and a header line for the whole window. Same rolling
-// 14-day window as Home (031 §7 decision 1; 039 §6.6) — never the program cycle.
+// 14-day window as Home (031 §7 decision 1; 039 §6.6).
 // The rx and the per-muscle detail are T2 sheets, one tap away on the read.
 
 const RxSheet = lazy(() => import('./adaptations/RxSheet'))

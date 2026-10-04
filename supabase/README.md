@@ -140,5 +140,5 @@ end $$;
 
 None. The two that existed (`assistant-chat` and `assistant-settings`) were
 deleted with the in-app assistant on 2026-10-02
-(`tekio.rfcs/rfcs/0034-v2-1-candidates-tbc.md`). The `assistant_settings` table
+(`tekio.rfcs/rfcs/done/0034-v2-1-candidates-tbc.md`). The `assistant_settings` table
 they read waits for the 2.2.0 release sweep.

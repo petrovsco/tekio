@@ -2,10 +2,10 @@ import { usePrefs } from '../../store/prefs'
 import { Icon, type IconName } from '../ui/Icon'
 import { FIELD_LABEL } from '../ui/Input'
 
-// Only sections that still have a destination. Body Weight, Donations, Water
-// and Recovery folded onto Home (doctrine §5) and Habits was deleted (roadmap
-// 035) — a leftover config row for one of them must not put its entry back in
-// the menu.
+// Only sections that still have a destination. Body Weight, Donations and
+// Recovery folded onto Home (doctrine §5); Habits (roadmap 035) and Water (RFC
+// 0089) were deleted — a leftover config row for one of them must not put its
+// entry back in the menu.
 const NAV_META: Record<string, { icon: IconName; label: string }> = {
   Weights:      { icon: 'weights', label: 'Weights' },
   Cardio:       { icon: 'cardio', label: 'Cardio' },
