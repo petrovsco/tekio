@@ -54,7 +54,7 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
   const stickyTop = IS_PRODUCTION ? 'top-0' : 'top-6'
   const headerClass = `bg-white border-b border-chrome sticky ${stickyTop} z-50`
 
-  // The SIGNAL Home surface carries its own header (TEKIŌ + cycle label) and
+  // The SIGNAL Home surface carries its own header (the TEKIŌ wordmark) and
   // paper ground; the shell chrome would double it. Drawer and Profile stay
   // reachable via the bottom nav's More on Home.
   const isHome = tab === 'Home'

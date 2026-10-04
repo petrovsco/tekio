@@ -94,8 +94,7 @@ export const WEEKLY_SET_FLOOR = 10
 export const MUSCLE_WINDOW_DAYS = 14
 
 /** 20 — WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7: the hard-set target the muscle map fills against. Rate
- * grounded in 010 D10, pooling in 039 S3, window in 039 S12. The program's CYCLE plays no part — Home and the
- * Adaptations reads never hang on the program (039 §6.6). */
+ * grounded in 010 D10, pooling in 039 S3, window in 039 S12. A rolling window, never a training cycle (039 §6.6). */
 export const MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR * MUSCLE_WINDOW_DAYS / 7
 
 /** 48 h acute, 21 d aerobic tail (range 14–28 d) — whole blood only, aerobic
