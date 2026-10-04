@@ -14,6 +14,8 @@ import type {
   ColdEntry,
   EditModalTarget,
   ExerciseAlias,
+  ReadinessInput,
+  CheckInAnswers,
 } from '../types'
 import { getOrCreateUser } from '../lib/db/user'
 import { loadExerciseAliases } from '../lib/db/exercises'
@@ -35,6 +37,7 @@ import {
   loadSauna, saveSaunaEntry, updateSaunaEntry, deleteSaunaEntry,
   loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
+import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
 import { usePrefs } from './prefs'
 import type { LiftSet } from '../types'
 
@@ -85,6 +88,11 @@ interface AppStore extends AppState {
   addDonationEntry: (entry: Omit<DonationEntry, 'id'>) => Promise<void>
   removeDonationEntry: (id: string) => Promise<void>
   editDonationEntry: (id: string, patch: Omit<DonationEntry, 'id'>) => Promise<void>
+
+  // Readiness — the typed inputs (RFC 0092), one row per morning
+  readinessInputs: ReadinessInput[]
+  logMorningHrv: (date: string, ms: number) => Promise<void>
+  logCheckIn: (date: string, answers: CheckInAnswers) => Promise<void>
 
   // Recovery — Sleep
   addSleepEntry: (entry: Omit<SleepEntry, 'id'>) => Promise<void>
@@ -221,6 +229,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   sportTypes: [],
   donations: [],
   sleep: [],
+  readinessInputs: [],
   sauna: [],
   cold: [],
   muscleGroups: [],
@@ -271,7 +280,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases] = await Promise.all([
+      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs] = await Promise.all([
         loadWeights(),
         loadBodyweight(),
         loadCardio(),
@@ -287,6 +296,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         loadCold(),
         loadAdaptationTargets(),
         loadExerciseAliases(),
+        loadReadinessInputs(),
         usePrefs.getState().loadPrefs(),
       ])
       set({
@@ -305,10 +315,21 @@ export const useAppStore = create<AppStore>((set, get) => ({
         cold,
         adaptationTargets,
         exerciseAliases,
+        readinessInputs,
       })
     } finally {
       set({ loading: false })
     }
+  },
+
+  // ── Readiness inputs ───────────────────────────────────────────────────────
+  logMorningHrv: async (date, ms) => {
+    const saved = await saveMorningHrv(date, ms)
+    set(s => ({ readinessInputs: insert(s.readinessInputs, saved) }))
+  },
+  logCheckIn: async (date, answers) => {
+    const saved = await saveCheckIn(date, answers)
+    set(s => ({ readinessInputs: insert(s.readinessInputs, saved) }))
   },
 
   // ── Weights ──────────────────────────────────────────────────────────────────

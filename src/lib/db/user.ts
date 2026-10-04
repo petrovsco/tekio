@@ -2,6 +2,7 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import type { WeekStartDay } from '../utils'
 import type { HrMaxSource } from '../hrMax'
+import { READINESS_METHODS, type ReadinessMethod } from '../fusedRead'
 
 export async function getOrCreateUser(): Promise<void> {
   const { error } = await supabase
@@ -22,12 +23,14 @@ export interface UserProfile {
   hrMaxStored: number | null
   hrMaxSource: HrMaxSource | null
   birthDate: string | null
+  /** The readiness method picked in Profile; null = automatic (RFC 0092). */
+  readinessMethod: ReadinessMethod | null
 }
 
 export async function loadProfile(): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('user_profiles')
-    .select('week_start_day, hr_max_override, hr_max_source, birth_date')
+    .select('week_start_day, hr_max_override, hr_max_source, birth_date, readiness_method')
     .eq('id', USER_ID)
     .single()
   if (error) throw error
@@ -39,6 +42,9 @@ export async function loadProfile(): Promise<UserProfile> {
     // A source with no number would print "from your tracker" beside nothing.
     hrMaxSource: hrMax == null ? null : source,
     birthDate: data.birth_date ?? null,
+    readinessMethod: (READINESS_METHODS as readonly string[]).includes(data.readiness_method ?? '')
+      ? data.readiness_method as ReadinessMethod
+      : null,
   }
 }
 
@@ -63,6 +69,14 @@ export async function updateBirthDate(value: string | null): Promise<void> {
   const { error } = await supabase
     .from('user_profiles')
     .update({ birth_date: value })
+    .eq('id', USER_ID)
+  if (error) throw error
+}
+
+export async function updateReadinessMethod(value: ReadinessMethod | null): Promise<void> {
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({ readiness_method: value })
     .eq('id', USER_ID)
   if (error) throw error
 }

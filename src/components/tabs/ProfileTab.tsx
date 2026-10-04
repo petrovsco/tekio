@@ -27,6 +27,7 @@ import { Toggle } from '../ui/Fields'
 import { ImportPane } from '../layout/ImportPane'
 import { ExportPane } from '../layout/ExportPane'
 import type { SectionConfig } from '../../lib/db/sectionConfig'
+import { ReadinessMethodCard } from './profile/ReadinessMethodCard'
 
 // A section is named by the same stroke icon the nav uses for it (§7) — the
 // emoji that used to sit here was app chrome, not content.
@@ -97,7 +98,7 @@ function SortableRow({ section }: { section: SectionConfig }) {
 
 // ─── ProfileTab ──────────────────────────────────────────────────────────────
 
-export function ProfileTab() {
+export function ProfileTab({ focus = null }: { focus?: string | null }) {
   const {
     sections, reorderSections, weekStartDay, setWeekStartDay,
     setHrMaxStored, setBirthDate,
@@ -155,6 +156,8 @@ export function ProfileTab() {
           onPick={setWeekStartDay}
         />
       </Card>
+
+      <ReadinessMethodCard focus={focus === 'readiness'} />
 
       <Card>
         <SecTitle>Max heart rate</SecTitle>
