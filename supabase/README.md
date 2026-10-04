@@ -16,7 +16,7 @@ MCP (2026-05 to 2026-09) were pulled down on 2026-10-04 with
 for each one; that includes the two data migrations
 (`migrate_5day_split_to_blocks`, `seed_volleyball_program_v1`). The files
 written by hand before then were renamed to the versions the server stamped.
-`tekio.rfcs/rfcs/0016-supabase-migration-baseline.md` has the history.
+`tekio.rfcs/rfcs/done/0016-supabase-migration-baseline.md` has the history.
 
 To re-check that the files and the live schema agree (needs Docker running,
 because the CLI replays the files into a throwaway local Postgres):
