@@ -3,7 +3,7 @@ import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, fusedVerdict,
-  type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
+  type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict, type ReadinessBand,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
@@ -34,6 +34,17 @@ const joinNames = (names: string[]): string =>
 
 const shortLower = (name: string): string => muscleShort(name).toLowerCase()
 
+/** The readiness card's band, beside its number (0085). */
+const BAND_LABEL: Record<ReadinessBand, string> = { low: 'LOW', moderate: 'MODERATE', ok: 'OK' }
+
+/** What a moderate band changes: the effort, not the gaps. Partially supported:
+ * in both trialled three-tier rules the middle tier was the planned session,
+ * lighter, never rest — reps and load cut (DeBlauw 2021), or volume cut and the
+ * intervals dropped (Nuuttila 2022). No percentage: each trial's 25% was its
+ * chosen step, not a tested dose.
+ * See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding */
+const STEADY_NOTE = 'Lighter today: no intervals or max efforts.'
+
 /** The gated instruction plus the top gap as its reason — all editorial text
  *  for the verdict block lives here, the numbers come from the fused read. */
 function verdictCopy(args: {
@@ -60,18 +71,16 @@ function verdictCopy(args: {
       const when = fmtAgo(don.daysSince)
       return { text, sub: `Full blood donation ${when} — the 48 h acute window (PLACEHOLDER) gates the day.` }
     }
-    const parts = []
-    if (sys.sleepScore != null) parts.push(`Sleep ${sys.sleepScore}`)
-    if (sys.hrv != null) parts.push(`HRV ${sys.hrv}`)
-    const facts = parts.length > 0 ? parts.join(' and ') : `Readiness ${sys.readiness}`
-    return { text, sub: `${facts} — a bad night overrides the plan.` }
+    const facts = sys.hrv != null ? `HRV ${sys.hrv}` : `Readiness ${sys.readiness}`
+    return { text, sub: `${facts} — this week sits well under your own normal.` }
   }
 
   const names = gaps.slice(0, 2).map(m => shortLower(m.name))
   const list = joinNames(names)
+  const lead = verdict.mode === 'steady' ? 'Steady' : 'Push'
   const text = list
-    ? `Push. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
-    : `Push. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
+    ? `${lead}. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
+    : `${lead}. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
   const facts = gaps.slice(0, 2).map(m =>
     m.daysSince === null
       ? `${cap(shortLower(m.name))}: never trained.`
@@ -85,6 +94,7 @@ function verdictCopy(args: {
   if (don.aerobicSuppressed && !don.acuteHold) {
     facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (PLACEHOLDER: ~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
   }
+  if (verdict.mode === 'steady') facts.unshift(STEADY_NOTE)
   return { text, sub: facts.join(' ') }
 }
 
@@ -153,7 +163,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   )
   const missing = coverageParts(coverage)
 
-  const verdict = fusedVerdict(sys.readiness, don)
+  const verdict = fusedVerdict(sys.band, don)
   const gated = verdict.mode === 'hold'
   const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
 
@@ -173,14 +183,14 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink' }
       : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' },
     sys.hrv != null
-      ? { label: 'HRV', value: String(sys.hrv), pct: sys.hrvScore ?? 0, tone: 'ink' }
+      ? { label: 'HRV', value: String(sys.hrv), pct: sys.readiness ?? 0, tone: 'ink' }
       : { label: 'HRV', value: '—', pct: 0, tone: 'off' },
   ]
 
   const banner = gated
     ? verdict.cause === 'donation'
       ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window (PLACEHOLDER) holds today. The gaps below stay open.`
-      : `Readiness ${sys.readiness} is below the push threshold (PLACEHOLDER). The gaps below stay open — today just isn't the day to close them.`
+      : `HRV is well under your own normal this week. The gaps below stay open — today just isn't the day to close them.`
     : null
 
   // The two folds as T2 stat tiles (unit 3): bodyweight and blood donation,
@@ -260,6 +270,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <Icon name="heart" size={13} />
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
           <span className="grow" />
+          {sys.band && <span className="text-[10px] font-bold tracking-[0.1em]">{BAND_LABEL[sys.band]}</span>}
           <span className="text-[17px] font-bold tracking-[-0.02em]">{sys.readiness ?? '—'}</span>
           {/* sauna / cold / manual sleep live behind this tap — the card that
               raises "can I push?" is where the input belongs (P1) */}

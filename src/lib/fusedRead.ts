@@ -3,7 +3,7 @@ import type {
   SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet,
 } from '../types'
 import {
-  RECOVER_DAYS, PUSH_THRESHOLD, QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
+  RECOVER_DAYS, HRV_BAND_Z, QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
   MUSCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
 } from '../constants/app'
 import { LEVEL_WEIGHT, today, daysBetween, groupBy } from './utils'
@@ -358,35 +358,79 @@ export function muscleQualityMix(
 
 // ── Systemic: readiness + verdict ───────────────────────────────────────────
 
-/** Baseline-relative HRV scoring (the grounded method — Vesterinen 2016,
- * Buchheit 2014): the 7-day rolling mean is placed against a 60-day baseline
- * in SD units. 50 = at baseline; a rolling mean 1 SD below scores 0. Single
- * bad nights barely move it — the literature calls them too noisy to act on.
- * The 0–100 shape and the 50/50 blend with sleep are convention, see
- * tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
+/** Systemic readiness in three bands: low holds, moderate steadies, ok pushes. */
+export type ReadinessBand = 'low' | 'moderate' | 'ok'
+
+/** How a readiness band was measured. One calculator per method (0085); the
+ * typed morning HRV and the check-in join here in 0092. */
+type ReadinessMethod = 'overnight_hrv'
+
+/** What every readiness calculator returns, whatever it measured: the band,
+ * plus the 0–100 score the card prints (50 = the person's own normal). */
+export interface ReadinessReading {
+  method: ReadinessMethod
+  band: ReadinessBand
+  score: number
+  /** Distance from the person's own baseline, in their own SD units. */
+  z: number
+}
+
+/** The band a baseline distance falls in (HRV_BAND_Z: the trialled tiers). */
+export function bandForZ(z: number): ReadinessBand {
+  if (z < HRV_BAND_Z.low) return 'low'
+  if (z < HRV_BAND_Z.moderate) return 'moderate'
+  return 'ok'
+}
+
+/** Baseline-relative HRV (the grounded method — Vesterinen 2016, Buchheit
+ * 2014, DeBlauw 2021): the 7-night rolling mean of ln HRV is placed against the
+ * 60 nights before that week, in SD units. Log, because every trial read
+ * LnRMSSD; the current week stays out of the baseline so a bad week does not
+ * lower its own bar; 14 baseline nights before any verdict. Single bad nights
+ * barely move it — the literature calls them too noisy to act on. The 0–100
+ * score is 50 + 50 × z, clamped: 50 = at baseline, 0 = a rolling mean 1 SD or
+ * more below. See tekio.rfcs/rfcs/0085-push-gate-own-baseline.md#grounding */
 const HRV_ROLLING_DAYS = 7
 const HRV_BASELINE_DAYS = 60
-const MIN_HRV_BASELINE_SAMPLES = 7
-/** SD floor as a fraction of the baseline mean — guards a near-zero SD while
- * the Garmin history is still short. */
-const HRV_SD_FLOOR = 0.05
+const MIN_HRV_BASELINE_NIGHTS = 14
+/** SD floor in ln units (≈ 5 % of the raw value) — guards a near-zero SD on a
+ * very flat history. */
+const HRV_LN_SD_FLOOR = 0.05
+
+/** The overnight HRV calculator: a reading, or null without last night's HRV
+ * or without 14 baseline nights. */
+export function overnightHrvReading(sleep: SleepEntry[], date: string = today()): ReadinessReading | null {
+  const nights = sleep.filter(e => e.hrv != null && e.hrv > 0 && e.date <= date)
+  if (!nights.some(e => daysBetween(e.date, date) <= 1)) return null
+  const lnOf = (e: SleepEntry) => Math.log(e.hrv as number)
+  const rolling = nights.filter(e => daysBetween(e.date, date) < HRV_ROLLING_DAYS).map(lnOf)
+  const baseline = nights
+    .filter(e => {
+      const d = daysBetween(e.date, date)
+      return d >= HRV_ROLLING_DAYS && d < HRV_ROLLING_DAYS + HRV_BASELINE_DAYS
+    })
+    .map(lnOf)
+  if (rolling.length === 0 || baseline.length < MIN_HRV_BASELINE_NIGHTS) return null
+  const mean = avg(baseline)
+  const sd = Math.max(Math.sqrt(avg(baseline.map(v => (v - mean) ** 2))), HRV_LN_SD_FLOOR)
+  const z = (avg(rolling) - mean) / sd
+  return { method: 'overnight_hrv', band: bandForZ(z), score: clamp(Math.round(50 + 50 * z), 0, 100), z }
+}
 
 export interface SystemicReadiness {
-  /** 0–100 composite; null when nothing fresh enough to score. */
+  /** 0–100 score of the reading; null when nothing can be read. */
   readiness: number | null
-  basis: 'sleep+hrv' | 'sleep' | 'hrv' | 'none'
-  /** Last night's Garmin sleep score, if fresh (≤ 1 day old). */
+  band: ReadinessBand | null
+  method: ReadinessMethod | null
+  /** Last night's device sleep score, if fresh — shown, never part of readiness (0085). */
   sleepScore: number | null
   /** Last night's overnight HRV in ms, if fresh. */
   hrv: number | null
-  /** Baseline-relative HRV sub-score 0–100; null without a fresh value + baseline. */
-  hrvScore: number | null
 }
 
 /**
- * The systemic gate's number: last night's sleep score blended 50/50 with the
- * baseline-relative HRV sub-score. Degrades honestly — sleep-only without an
- * HRV baseline, null without a fresh night at all. Advisory input to
+ * The systemic gate: the best readiness method the person supplies. Today
+ * that is overnight HRV alone; no reading, no verdict. Advisory input to
  * {@link fusedVerdict}; never splits per adaptation (doctrine P5).
  */
 export function systemicReadiness(sleep: SleepEntry[], date: string = today()): SystemicReadiness {
@@ -396,38 +440,14 @@ export function systemicReadiness(sleep: SleepEntry[], date: string = today()): 
     .sort((a, b) => b.date.localeCompare(a.date))
   const sleepScore = fresh.find(e => e.score != null)?.score ?? null
   const hrv = fresh.find(e => e.hrv != null)?.hrv ?? null
-
-  let hrvScore: number | null = null
-  if (hrv !== null) {
-    const series = sleep.filter(e =>
-      e.hrv != null && e.date <= date && daysBetween(e.date, date) < HRV_BASELINE_DAYS)
-    if (series.length >= MIN_HRV_BASELINE_SAMPLES) {
-      const vals = series.map(e => e.hrv as number)
-      const mean = avg(vals)
-      const sd = Math.max(
-        Math.sqrt(avg(vals.map(v => (v - mean) ** 2))),
-        HRV_SD_FLOOR * mean,
-      )
-      const rolling = series
-        .filter(e => daysBetween(e.date, date) < HRV_ROLLING_DAYS)
-        .map(e => e.hrv as number)
-      if (rolling.length > 0) {
-        hrvScore = clamp(Math.round(50 + 50 * ((avg(rolling) - mean) / sd)), 0, 100)
-      }
-    }
+  const reading = overnightHrvReading(sleep, date)
+  return {
+    readiness: reading?.score ?? null,
+    band: reading?.band ?? null,
+    method: reading?.method ?? null,
+    sleepScore,
+    hrv,
   }
-
-  const basis =
-    sleepScore !== null && hrvScore !== null ? 'sleep+hrv'
-    : sleepScore !== null ? 'sleep'
-    : hrvScore !== null ? 'hrv'
-    : 'none'
-  const readiness =
-    basis === 'sleep+hrv' ? Math.round(((sleepScore as number) + (hrvScore as number)) / 2)
-    : basis === 'sleep' ? sleepScore
-    : basis === 'hrv' ? hrvScore
-    : null
-  return { readiness, basis, sleepScore, hrv, hrvScore }
 }
 
 export interface DonationStatus {
@@ -461,17 +481,19 @@ export function donationStatus(donations: DonationEntry[], date: string = today(
 }
 
 export interface FusedVerdict {
-  mode: 'push' | 'hold'
-  /** What flipped it to hold; null on a push day. */
+  /** hold on a low band (or an acute donation), steady on a moderate one, push otherwise. */
+  mode: 'push' | 'steady' | 'hold'
+  /** What held or steadied the day; null on a push day. */
   cause: 'readiness' | 'donation' | null
 }
 
 /**
- * The gated instruction. Advisory only — it changes the instruction, never the
- * facts, and capture never locks. Missing readiness data cannot gate.
+ * The day's instruction. Readiness and an acute donation gate it; they never
+ * erase facts, and capture never locks. Missing readiness data cannot gate.
  */
-export function fusedVerdict(readiness: number | null, donation?: DonationStatus): FusedVerdict {
+export function fusedVerdict(band: ReadinessBand | null, donation?: DonationStatus): FusedVerdict {
   if (donation?.acuteHold) return { mode: 'hold', cause: 'donation' }
-  if (readiness !== null && readiness < PUSH_THRESHOLD) return { mode: 'hold', cause: 'readiness' }
+  if (band === 'low') return { mode: 'hold', cause: 'readiness' }
+  if (band === 'moderate') return { mode: 'steady', cause: 'readiness' }
   return { mode: 'push', cause: null }
 }
