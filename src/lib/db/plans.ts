@@ -61,6 +61,15 @@ export async function savePlan(plan: { date: string; exercise: string; targets: 
   return mapRow(data as PlanRow)
 }
 
+/** Change what a plan says: its day, its exercise, its targets. */
+export async function updatePlan(id: string, patch: { date: string; exercise: string; targets: LiftSet[] }): Promise<void> {
+  const { error } = await supabase
+    .from('planned_exercises')
+    .update({ plan_date: patch.date, exercise: patch.exercise, target_sets: patch.targets })
+    .eq('id', id)
+  if (error) throw error
+}
+
 /** The plan became logged work: point it at the entry it became. */
 export async function markPlanLogged(id: string, sessionExerciseId: string): Promise<void> {
   const { error } = await supabase

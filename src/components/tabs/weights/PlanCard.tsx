@@ -3,6 +3,7 @@ import { useAppStore } from '../../../store/app'
 import { today, daysBetween } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { DelBtn, ACT_CHIP } from '../../ui/Button'
+import { Icon } from '../../ui/Icon'
 import { MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import type { PlannedExercise } from '../../../types'
 
@@ -31,7 +32,10 @@ function TargetSets({ plan }: { plan: PlannedExercise }) {
  * only saving the form makes it work. Later days are listed so a plan made
  * ahead can be checked; earlier days' unlogged plans get one quiet line.
  */
-export function PlanCard({ onLog }: { onLog: (plan: PlannedExercise) => void }) {
+export function PlanCard({ onLog, onEdit }: {
+  onLog: (plan: PlannedExercise) => void
+  onEdit: (plan: PlannedExercise) => void
+}) {
   const plans = useAppStore(s => s.plans)
   const removePlan = useAppStore(s => s.removePlan)
   const withToast = useAppStore(s => s.withToast)
@@ -65,6 +69,15 @@ export function PlanCard({ onLog }: { onLog: (plan: PlannedExercise) => void }) 
         {!p.loggedAs && !when && (
           <button className={ACT_CHIP} onClick={() => onLog(p)}>Log</button>
         )}
+        {!p.loggedAs && (
+          <button
+            aria-label="Edit plan"
+            onClick={() => onEdit(p)}
+            className="w-7 h-7 flex items-center justify-center text-ink-3 hover:text-ink rounded-[2px] cursor-pointer transition-colors"
+          >
+            <Icon name="edit" size={13} />
+          </button>
+        )}
         {!p.loggedAs && <DelBtn label="Remove plan" onClick={() => remove(p.id)} />}
       </div>
     </div>
@@ -72,7 +85,8 @@ export function PlanCard({ onLog }: { onLog: (plan: PlannedExercise) => void }) 
 
   return (
     <Card>
-      <SecTitle>Plan</SecTitle>
+      <SecTitle>Planned</SecTitle>
+      <span className={MICRO_LABEL}>Today</span>
       {todays.length > 0
         ? todays.map(p => row(p))
         : <p className="text-[11px] text-ink-3 py-1">Nothing planned today.</p>}

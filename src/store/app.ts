@@ -39,7 +39,7 @@ import {
   loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
-import { loadPlans, savePlan, markPlanLogged, deletePlan } from '../lib/db/plans'
+import { loadPlans, savePlan, updatePlan, markPlanLogged, deletePlan } from '../lib/db/plans'
 import { usePrefs } from './prefs'
 import type { LiftSet } from '../types'
 import type { PatternKey } from '../constants/movementPatterns'
@@ -72,6 +72,7 @@ interface AppStore extends AppState {
   plans: PlannedExercise[]
   addPlan: (plan: Omit<PlannedExercise, 'id' | 'plannedBy' | 'loggedAs'>) => Promise<void>
   removePlan: (id: string) => Promise<void>
+  editPlan: (id: string, patch: Pick<PlannedExercise, 'date' | 'exercise' | 'targets'>) => Promise<void>
   /** The plan was logged as the weight entry `entryId`. */
   markPlanLogged: (id: string, entryId: string) => Promise<void>
 
@@ -385,6 +386,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
   removePlan: async (id) => {
     await deletePlan(id)
     set(s => ({ plans: dropId(s.plans, id) }))
+  },
+  editPlan: async (id, patch) => {
+    await updatePlan(id, patch)
+    set(s => ({ plans: patchId(s.plans, id, patch) }))
   },
   markPlanLogged: async (id, entryId) => {
     await markPlanLogged(id, entryId)

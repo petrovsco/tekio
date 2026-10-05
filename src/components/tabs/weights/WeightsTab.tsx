@@ -47,6 +47,10 @@ export function WeightsTab() {
   // The plan the form was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
   const [fromPlan, setFromPlan] = useState<PlannedExercise | null>(null)
+  // The plan being edited: the form shows it, and saving rewrites the plan
+  // rather than logging anything.
+  const [editingPlan, setEditingPlan] = useState<PlannedExercise | null>(null)
+  const editPlan = useAppStore(s => s.editPlan)
 
   // This component holds the log form's state as well as the history read, so
   // every keystroke re-renders it. Everything derived from `weights` is memoised
@@ -144,11 +148,33 @@ export function WeightsTab() {
     }, 'Planned')
   }
 
-  const logFromPlan = (p: PlannedExercise) => {
-    setEx(p.exercise); setSelEx(p.exercise); setDate(today()); setFromPlan(p)
+  const clearForm = () => {
+    setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null)
+    setFromPlan(null); setEditingPlan(null); setDate(today())
+  }
+
+  const fillFromPlan = (p: PlannedExercise) => {
+    setEx(p.exercise); setSelEx(p.exercise)
     if (p.targets.length) { setSets(toSetStr(p.targets)); setRevealed(p.targets.length) }
     else { setSets([{ weight: '', reps: '' }]); setRevealed(1) }
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const logFromPlan = (p: PlannedExercise) => {
+    fillFromPlan(p); setDate(today()); setFromPlan(p); setEditingPlan(null)
+  }
+
+  const startEditPlan = (p: PlannedExercise) => {
+    fillFromPlan(p); setDate(p.date); setEditingPlan(p); setFromPlan(null)
+  }
+
+  const savePlanEdit = async () => {
+    if (!editingPlan || !ex.trim() || !canPlan) return
+    const vs = parseSets(sets, revealed)
+    await withToast(async () => {
+      await editPlan(editingPlan.id, { date, exercise: ex.trim(), targets: vs })
+      clearForm()
+    }, 'Plan updated')
   }
 
   const chartEx = selEx || exercises[0] || ''
@@ -187,10 +213,15 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PlanCard onLog={logFromPlan} />
+      <PlanCard onLog={logFromPlan} onEdit={startEditPlan} />
 
-      <div ref={formRef} className="scroll-mt-16"><Card>
-          <SecTitle>Log Exercise</SecTitle>
+      <div ref={formRef} className="scroll-mt-24"><Card>
+          <SecTitle>{editingPlan ? 'Edit plan' : 'Log Exercise'}</SecTitle>
+          {editingPlan && (
+            <p className="text-[11px] text-ink-2 mb-2.5">
+              Changes the plan, not your log. Pick a later date to move it.
+            </p>
+          )}
           {fromPlan && (
             <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-[#c9c9c7] rounded-[3px]">
               <span className="text-[11px] text-ink-2">From today's plan: <span className="font-bold text-ink">{fromPlan.exercise}</span></span>
@@ -235,7 +266,7 @@ export function WeightsTab() {
             />
           </div>
 
-          {(prSet || oneRmCandidate) && (
+          {!editingPlan && (prSet || oneRmCandidate) && (
             <div className="flex flex-col gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
               {/* A personal best is a stated fact, not an urgency, so it takes
                   the outline tone (design-system §1) — like SS. */}
@@ -286,12 +317,19 @@ export function WeightsTab() {
             </div>
           )}
 
-          <div className="flex gap-2">
-            <Btn onClick={addEntry} className="flex-1">Save exercise</Btn>
-            {!fromPlan && (
-              <Btn variant="secondary" onClick={planEntry} disabled={!canPlan || !ex.trim()}>Plan it</Btn>
-            )}
-          </div>
+          {editingPlan ? (
+            <div className="flex gap-2">
+              <Btn onClick={savePlanEdit} disabled={!canPlan || !ex.trim()} className="flex-1">Save plan</Btn>
+              <Btn variant="secondary" onClick={clearForm}>Cancel</Btn>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Btn onClick={addEntry} className="flex-1">Save exercise</Btn>
+              {!fromPlan && (
+                <Btn variant="secondary" onClick={planEntry} disabled={!canPlan || !ex.trim()}>Plan it</Btn>
+              )}
+            </div>
+          )}
       </Card></div>
 
       {exercises.length > 0 && (
