@@ -47,9 +47,9 @@ export function WeightsTab() {
   // The plan the form was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
   const [fromPlan, setFromPlan] = useState<PlannedExercise | null>(null)
-  // The plan being edited: the form shows it, and saving rewrites the plan
-  // rather than logging anything.
-  const [editingPlan, setEditingPlan] = useState<PlannedExercise | null>(null)
+  // The form in plan mode (RFC 0098): `plan` null writes a new plan, a plan
+  // rewrites that one. Either way saving logs nothing.
+  const [planning, setPlanning] = useState<{ plan: PlannedExercise | null } | null>(null)
   const editPlan = useAppStore(s => s.editPlan)
 
   // This component holds the log form's state as well as the history read, so
@@ -139,18 +139,9 @@ export function WeightsTab() {
   // A plan is written from the same form: the date may be today or later, never
   // earlier — work on a past day either happened, and is logged, or it did not.
   const canPlan = date >= today()
-  const planEntry = async () => {
-    if (!ex.trim() || !canPlan) return
-    const vs = parseSets(sets, revealed)
-    await withToast(async () => {
-      await addPlan({ date, exercise: ex.trim(), targets: vs })
-      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null); setFromPlan(null)
-    }, 'Planned')
-  }
-
   const clearForm = () => {
     setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null)
-    setFromPlan(null); setEditingPlan(null); setDate(today())
+    setFromPlan(null); setPlanning(null); setDate(today())
   }
 
   const fillFromPlan = (p: PlannedExercise) => {
@@ -161,20 +152,27 @@ export function WeightsTab() {
   }
 
   const logFromPlan = (p: PlannedExercise) => {
-    fillFromPlan(p); setDate(today()); setFromPlan(p); setEditingPlan(null)
+    fillFromPlan(p); setDate(today()); setFromPlan(p); setPlanning(null)
   }
 
   const startEditPlan = (p: PlannedExercise) => {
-    fillFromPlan(p); setDate(p.date); setEditingPlan(p); setFromPlan(null)
+    fillFromPlan(p); setDate(p.date); setPlanning({ plan: p }); setFromPlan(null)
   }
 
-  const savePlanEdit = async () => {
-    if (!editingPlan || !ex.trim() || !canPlan) return
+  const startNewPlan = () => {
+    clearForm(); setPlanning({ plan: null })
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  const savePlan = async () => {
+    if (!planning || !ex.trim() || !canPlan) return
     const vs = parseSets(sets, revealed)
+    const editing = planning.plan
     await withToast(async () => {
-      await editPlan(editingPlan.id, { date, exercise: ex.trim(), targets: vs })
+      if (editing) await editPlan(editing.id, { date, exercise: ex.trim(), targets: vs })
+      else await addPlan({ date, exercise: ex.trim(), targets: vs })
       clearForm()
-    }, 'Plan updated')
+    }, editing ? 'Plan updated' : 'Planned')
   }
 
   const chartEx = selEx || exercises[0] || ''
@@ -213,17 +211,19 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PlanCard onLog={logFromPlan} onEdit={startEditPlan} />
+      <PlanCard onLog={logFromPlan} onEdit={startEditPlan} onAdd={startNewPlan} />
 
-      <div ref={formRef} className="scroll-mt-24"><Card>
-          <SecTitle>{editingPlan ? 'Edit plan' : 'Log Exercise'}</SecTitle>
-          {editingPlan && (
+      <div ref={formRef} className="scroll-mt-24"><Card className={planning ? '!bg-planned-tint !border-planned' : ''}>
+          <SecTitle>{planning ? (planning.plan ? 'Edit plan' : 'Plan an exercise') : 'Log Exercise'}</SecTitle>
+          {planning && (
             <p className="text-[11px] text-ink-2 mb-2.5">
-              Changes the plan, not your log. Pick a later date to move it.
+              {planning.plan
+                ? 'Changes the plan, not your log. Pick a later date to move it.'
+                : 'For today or a later day. Nothing counts until you log it.'}
             </p>
           )}
           {fromPlan && (
-            <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-[#c9c9c7] rounded-[3px]">
+            <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-planned bg-planned-tint rounded-[3px]">
               <span className="text-[11px] text-ink-2">From today's plan: <span className="font-bold text-ink">{fromPlan.exercise}</span></span>
               <button className="text-[11px] text-ink-3 hover:text-ink cursor-pointer" onClick={() => setFromPlan(null)}>Unlink</button>
             </div>
@@ -266,7 +266,7 @@ export function WeightsTab() {
             />
           </div>
 
-          {!editingPlan && (prSet || oneRmCandidate) && (
+          {!planning && (prSet || oneRmCandidate) && (
             <div className="flex flex-col gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
               {/* A personal best is a stated fact, not an urgency, so it takes
                   the outline tone (design-system §1) — like SS. */}
@@ -317,18 +317,13 @@ export function WeightsTab() {
             </div>
           )}
 
-          {editingPlan ? (
+          {planning ? (
             <div className="flex gap-2">
-              <Btn onClick={savePlanEdit} disabled={!canPlan || !ex.trim()} className="flex-1">Save plan</Btn>
+              <Btn onClick={savePlan} disabled={!canPlan || !ex.trim()} className="flex-1">Save plan</Btn>
               <Btn variant="secondary" onClick={clearForm}>Cancel</Btn>
             </div>
           ) : (
-            <div className="flex gap-2">
-              <Btn onClick={addEntry} className="flex-1">Save exercise</Btn>
-              {!fromPlan && (
-                <Btn variant="secondary" onClick={planEntry} disabled={!canPlan || !ex.trim()}>Plan it</Btn>
-              )}
-            </div>
+            <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
           )}
       </Card></div>
 

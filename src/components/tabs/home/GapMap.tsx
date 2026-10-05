@@ -150,9 +150,10 @@ interface GapMapProps {
   planned?: Set<string>
 }
 
-/** The planned outline (RFC 0098): an edge, not a fill, because the fill
- *  channel is stimulus and nothing planned has happened (design-system §1). */
-const PLANNED_EDGE = { stroke: '#1a1a1a', dash: '2 1.4', width: 1.1 } as const
+/** The planned outline (RFC 0098): an edge in the planned yellow, not a fill,
+ *  because the fill channel is stimulus and nothing planned has happened
+ *  (design-system §1). Keep in step with `--color-planned` in index.css. */
+const PLANNED_EDGE = { stroke: '#d4a017', dash: '2 1.2', width: 1.4 } as const
 
 export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets', planned }: GapMapProps) {
   const uid = useId()
@@ -237,7 +238,7 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets', planned 
         {planned && planned.size > 0 && (
           <span className="flex items-center gap-1">
             <svg width="11" height="8" aria-hidden>
-              <rect x="0.6" y="0.6" width="9.8" height="6.8" fill="#ffffff" stroke={PLANNED_EDGE.stroke} strokeWidth="1.1" strokeDasharray={PLANNED_EDGE.dash} />
+              <rect x="0.6" y="0.6" width="9.8" height="6.8" fill="#fdf6dc" stroke={PLANNED_EDGE.stroke} strokeWidth="1.1" strokeDasharray={PLANNED_EDGE.dash} />
             </svg>
             <span className="text-[9px] text-ink-2">planned</span>
           </span>

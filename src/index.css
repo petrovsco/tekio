@@ -38,6 +38,8 @@ html, body {
   --color-ink-3: #8a8a8a;      /* labels */
   --color-ink-4: #a8a8a8;      /* asides / disabled */
   --color-signal: #c2410c;     /* the one accent: action lives here / urgency */
+  --color-planned: #d4a017;    /* planned, not done yet (RFC 0098) */
+  --color-planned-tint: #fdf6dc; /* the planned card's ground */
   --color-line: #e2e2e0;       /* card border */
   --color-hairline: #eeeeec;   /* hairline inside a card */
   --color-chrome: #d6d6d4;     /* chrome hairline (nav border) */

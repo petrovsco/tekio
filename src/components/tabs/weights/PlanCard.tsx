@@ -11,14 +11,14 @@ import type { PlannedExercise } from '../../../types'
  *  off the screen. Display only: a plan never counts, whatever its age. */
 const EXPIRED_SHOWN_DAYS = 7
 
-/** Targets, drawn dashed: a dashed line is a target in this app's visual
- *  language (design-system §9), and these sets have not happened. */
+/** Targets, drawn dashed in the planned yellow (design-system §1): these sets
+ *  have not happened. */
 function TargetSets({ plan }: { plan: PlannedExercise }) {
   if (plan.targets.length === 0) return null
   return (
     <div className="flex flex-wrap gap-1 mt-1">
       {plan.targets.map((s, i) => (
-        <span key={i} className="px-1.5 py-0.5 rounded-[2px] border border-dashed border-[#c9c9c7] text-[10px] text-ink-2 tabular-nums">
+        <span key={i} className="px-1.5 py-0.5 rounded-[2px] border border-dashed border-planned bg-white text-[10px] text-ink-2 tabular-nums">
           {s.weight}kg×{s.reps}
         </span>
       ))}
@@ -32,9 +32,11 @@ function TargetSets({ plan }: { plan: PlannedExercise }) {
  * only saving the form makes it work. Later days are listed so a plan made
  * ahead can be checked; earlier days' unlogged plans get one quiet line.
  */
-export function PlanCard({ onLog, onEdit }: {
+export function PlanCard({ onLog, onEdit, onAdd }: {
   onLog: (plan: PlannedExercise) => void
   onEdit: (plan: PlannedExercise) => void
+  /** Puts the form below into plan mode, for a new plan. */
+  onAdd: () => void
 }) {
   const plans = useAppStore(s => s.plans)
   const removePlan = useAppStore(s => s.removePlan)
@@ -49,8 +51,6 @@ export function PlanCard({ onLog, onEdit }: {
       expired: plans.filter(p => p.date < t && daysBetween(p.date, t) <= EXPIRED_SHOWN_DAYS && !p.loggedAs).sort(byDay),
     }
   }, [plans])
-
-  if (todays.length === 0 && later.length === 0 && expired.length === 0) return null
 
   const remove = (id: string) => withToast(() => removePlan(id), 'Plan removed')
 
@@ -84,7 +84,7 @@ export function PlanCard({ onLog, onEdit }: {
   )
 
   return (
-    <Card>
+    <Card className="!bg-planned-tint !border-planned">
       <SecTitle>Planned</SecTitle>
       <span className={MICRO_LABEL}>Today</span>
       {todays.length > 0
@@ -101,6 +101,9 @@ export function PlanCard({ onLog, onEdit }: {
           Not logged: {expired.map(p => `${p.exercise} (${p.date.slice(5)})`).join(', ')}
         </p>
       )}
+      <button onClick={onAdd} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">
+        + Add to plan
+      </button>
     </Card>
   )
 }
