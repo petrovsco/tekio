@@ -145,9 +145,16 @@ interface GapMapProps {
   /** What `sets` on the states counts, as the callouts print it — "sets" on
    *  Home, the quality's unit on the drill-down (power reads sessions, 0012). */
   unit?: string
+  /** Muscles today's open plan would reach (RFC 0098): outlined, never filled.
+   *  The fill stays logged work only. */
+  planned?: Set<string>
 }
 
-export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMapProps) {
+/** The planned outline (RFC 0098): an edge, not a fill, because the fill
+ *  channel is stimulus and nothing planned has happened (design-system §1). */
+const PLANNED_EDGE = { stroke: '#1a1a1a', dash: '2 1.4', width: 1.1 } as const
+
+export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets', planned }: GapMapProps) {
   const uid = useId()
   const hatchId = `${uid}h`
 
@@ -189,8 +196,8 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMap
         </defs>
         <text x="117" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">FRONT</text>
         <text x="215" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">BACK</text>
-        <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} />
-        <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} />
+        <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} planned={planned} />
+        <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} planned={planned} />
         {callouts.map(c => {
           const lineX = c.side === 'L' ? 83 : 251
           const textX = c.side === 'L' ? 80 : 254
@@ -227,13 +234,21 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets' }: GapMap
           </svg>
           <span className="text-[9px] text-ink-2">still recovering</span>
         </span>
+        {planned && planned.size > 0 && (
+          <span className="flex items-center gap-1">
+            <svg width="11" height="8" aria-hidden>
+              <rect x="0.6" y="0.6" width="9.8" height="6.8" fill="#ffffff" stroke={PLANNED_EDGE.stroke} strokeWidth="1.1" strokeDasharray={PLANNED_EDGE.dash} />
+            </svg>
+            <span className="text-[9px] text-ink-2">planned</span>
+          </span>
+        )}
       </div>
     </div>
   )
 }
 
 function Figure({
-  zones, fig, abs, resolve, clipId, hatchId,
+  zones, fig, abs, resolve, clipId, hatchId, planned,
 }: {
   zones: Zone[]
   fig: 'front' | 'back'
@@ -241,6 +256,7 @@ function Figure({
   resolve: (zone: Zone) => { fill: string; recovering: boolean; pick: string }
   clipId: string
   hatchId: string
+  planned?: Set<string>
 }) {
   const t = FIG[fig]
   return (
@@ -274,6 +290,15 @@ function Figure({
           <path d={ABS_LINES} fill="none" stroke="#ffffff" strokeOpacity={0.5} strokeWidth={0.5} />
         )}
       </g>
+      {/* Outside the clip so the edge is not cut in half at the silhouette;
+          drawn after every fill so a neighbour never covers it. */}
+      {planned && zones.filter(z => planned.has(z.muscle)).map(zone => (
+        <g key={zone.muscle} fill="none" stroke={PLANNED_EDGE.stroke} strokeWidth={PLANNED_EDGE.width}
+          strokeDasharray={PLANNED_EDGE.dash} strokeLinejoin="round" pointerEvents="none">
+          <path d={zone.d} />
+          {zone.mirrored && <path d={zone.d} transform={MIRROR} />}
+        </g>
+      ))}
     </g>
   )
 }

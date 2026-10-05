@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
@@ -11,6 +11,7 @@ import { RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../..
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { coverageLine, coverageParts } from '../adaptations/labels'
+import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
 import { usePrefs } from '../../../store/prefs'
 import { METHOD_LABEL } from '../../../constants/readiness'
@@ -173,6 +174,31 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
   )
   const missing = coverageParts(coverage)
+
+  // RFC 0098's layer: today's open plan as an outline and one line. The fill,
+  // the callouts, the verdict and the line above stay logged work only.
+  // Loaded only on a day with an open plan (P1): the preview needs the
+  // exercise catalogue, which would otherwise ride on Home's first paint.
+  const plans = useAppStore(s => s.plans)
+  const exerciseAliases = useAppStore(s => s.exerciseAliases)
+  const hasOpenPlan = plans.some(p => p.date === date && !p.loggedAs)
+  const [previewFn, setPreviewFn] = useState<{ run: typeof PlanPreviewFn } | null>(null)
+  useEffect(() => {
+    if (hasOpenPlan && !previewFn) import('../../../lib/planPreview').then(m => setPreviewFn({ run: m.planPreview }))
+  }, [hasOpenPlan, previewFn])
+  const preview = useMemo(
+    () => previewFn?.run({ plans, weights, exerciseMuscles, aliases: exerciseAliases, muscleGroups, date }) ?? null,
+    [previewFn, plans, weights, exerciseMuscles, exerciseAliases, muscleGroups, date],
+  )
+  const planLine = useMemo(() => {
+    if (!preview) return null
+    const closes = gaps.filter(g => preview.reached.has(g.name)).map(g => shortLower(g.name))
+    const left = preview.gapsAfter.slice(0, 3).map(g => shortLower(g.name))
+    const after = left.length ? `After it: ${joinNames(left)} still missing.` : 'After it, no muscle gap is left.'
+    return closes.length
+      ? `Today's plan reaches ${joinNames(closes)}. ${after}`
+      : `Today's plan reaches no gap. ${after}`
+  }, [preview, gaps])
 
   const verdict = fusedVerdict(sys.band, don)
   const gated = verdict.mode === 'hold'
@@ -357,7 +383,8 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">WHAT IS MISSING</span>
           <span className="text-[9px] text-ink-4">— ranked on the body · worst first</span>
         </div>
-        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={m => setSheet({ muscle: m })} />
+        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={m => setSheet({ muscle: m })} planned={preview?.reached} />
+        {planLine && <p className="text-[11px] leading-[1.35] text-ink-2 mt-1 text-pretty">{planLine}</p>}
         {/* the seven qualities by name — the sentence the Adaptations header
             prints, from one helper (062). Power is one name in it, not a line
             of its own: it is muscle-linked, so its zero lives here, on the
