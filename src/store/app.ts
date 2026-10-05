@@ -16,6 +16,7 @@ import type {
   ExerciseAlias,
   ReadinessInput,
   CheckInAnswers,
+  PlannedExercise,
 } from '../types'
 import { getOrCreateUser } from '../lib/db/user'
 import { loadExerciseAliases } from '../lib/db/exercises'
@@ -38,6 +39,7 @@ import {
   loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
+import { loadPlans, savePlan, markPlanLogged, deletePlan } from '../lib/db/plans'
 import { usePrefs } from './prefs'
 import type { LiftSet } from '../types'
 import type { PatternKey } from '../constants/movementPatterns'
@@ -64,6 +66,14 @@ interface AppStore extends AppState {
   addWeightEntry: (entry: Omit<WeightEntry, 'id'>, pattern?: PatternKey) => Promise<WeightEntry>
   removeWeightEntry: (id: string) => Promise<void>
   editWeightEntry: (id: string, patch: { sets: LiftSet[]; date?: string }) => Promise<void>
+
+  // Planned exercises (RFC 0098). Held apart from `weights` and never handed to
+  // a read: a plan counts for nothing until it is logged.
+  plans: PlannedExercise[]
+  addPlan: (plan: Omit<PlannedExercise, 'id' | 'plannedBy' | 'loggedAs'>) => Promise<void>
+  removePlan: (id: string) => Promise<void>
+  /** The plan was logged as the weight entry `entryId`. */
+  markPlanLogged: (id: string, entryId: string) => Promise<void>
 
 
 
@@ -235,6 +245,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   donations: [],
   sleep: [],
   readinessInputs: [],
+  plans: [],
   sauna: [],
   cold: [],
   muscleGroups: [],
@@ -285,7 +296,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs] = await Promise.all([
+      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs, plans] = await Promise.all([
         loadWeights(),
         loadBodyweight(),
         loadCardio(),
@@ -302,6 +313,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         loadAdaptationTargets(),
         loadExerciseAliases(),
         loadReadinessInputs(),
+        loadPlans(),
         usePrefs.getState().loadPrefs(),
       ])
       set({
@@ -321,6 +333,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
         adaptationTargets,
         exerciseAliases,
         readinessInputs,
+        plans,
       })
     } finally {
       set({ loading: false })
@@ -350,13 +363,32 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
   removeWeightEntry: async (id) => {
     await deleteWeightEntry(id)
-    set(s => ({ weights: dropId(s.weights, id) }))
+    // The database sets a plan's link to null when its entry goes (on delete
+    // set null); the plan is a plan again, here as there.
+    set(s => ({
+      weights: dropId(s.weights, id),
+      plans: s.plans.map(p => p.loggedAs === id ? { ...p, loggedAs: undefined } : p),
+    }))
   },
   editWeightEntry: async (id, patch) => {
     await updateWeightEntry(id, patch)
     set(s => ({
       weights: patchId(s.weights, id, { sets: patch.sets, ...(patch.date ? { date: patch.date } : {}) }),
     }))
+  },
+
+  // ── Planned exercises ────────────────────────────────────────────────────────
+  addPlan: async (plan) => {
+    const saved = await savePlan(plan)
+    set(s => ({ plans: [...s.plans, saved] }))
+  },
+  removePlan: async (id) => {
+    await deletePlan(id)
+    set(s => ({ plans: dropId(s.plans, id) }))
+  },
+  markPlanLogged: async (id, entryId) => {
+    await markPlanLogged(id, entryId)
+    set(s => ({ plans: patchId(s.plans, id, { loggedAs: entryId }) }))
   },
 
   // ── Bodyweight ───────────────────────────────────────────────────────────────

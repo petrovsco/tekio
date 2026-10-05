@@ -242,6 +242,21 @@ export interface ReadinessInput {
   checkIn?: CheckInAnswers
 }
 
+/** A planned exercise (planned_exercises, RFC 0098): work written ahead of time
+ *  that has not happened yet. Never a `WeightEntry`, and never passed to a read,
+ *  so it cannot count as done. */
+export interface PlannedExercise {
+  id: string
+  date: string
+  exercise: string
+  /** Targets to aim at, not results. Named `targets`, not `sets`, so a plan
+   *  is not structurally a `WeightEntry` and no read will type-check with one. */
+  targets: LiftSet[]
+  plannedBy: 'user' | 'agent'
+  /** The logged entry this plan became; absent while it is still a plan. */
+  loggedAs?: string
+}
+
 export interface AppState {
   weights: WeightEntry[]
   bodyweight: BodyweightEntry[]

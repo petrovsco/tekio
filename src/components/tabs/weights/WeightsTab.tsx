@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted } from '../../../lib/utils'
@@ -14,11 +14,12 @@ import { toSetStr, parseSets } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
-import type { WeightEntry } from '../../../types'
+import type { WeightEntry, PlannedExercise } from '../../../types'
 import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor } from '../../../constants/exerciseCatalogue'
 import type { PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
 import { MovementQuestion } from './MovementQuestion'
+import { PlanCard } from './PlanCard'
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -26,6 +27,7 @@ export function WeightsTab() {
   const [sets, setSets] = useState<SetStr[]>([{ weight: '', reps: '' }])
   const [revealed, setRevealed] = useState(1)
   const [selEx, setSelEx] = useState('')
+  const formRef = useRef<HTMLDivElement>(null)
   const [chartMetric, setChartMetric] = useState<'maxWeight' | 'volume'>('maxWeight')
   // The 1RM is answered on demand and never at rest (roadmap 067). The answer
   // belongs to the exact set it was asked about, so the ask carries that set's
@@ -40,6 +42,11 @@ export function WeightsTab() {
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
   const withToast = useAppStore(s => s.withToast)
+  const addPlan = useAppStore(s => s.addPlan)
+  const markPlanLogged = useAppStore(s => s.markPlanLogged)
+  // The plan the form was filled from (RFC 0098). Saving the form logs the work
+  // and ticks the plan; the numbers may differ from its targets.
+  const [fromPlan, setFromPlan] = useState<PlannedExercise | null>(null)
 
   // This component holds the log form's state as well as the history read, so
   // every keystroke re-renders it. Everything derived from `weights` is memoised
@@ -119,9 +126,29 @@ export function WeightsTab() {
     const vs = parseSets(sets, revealed)
     if (!vs.length) return
     await withToast(async () => {
-      await addWeightEntry({ date, exercise: ex.trim(), sets: vs }, pattern ?? undefined)
-      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null)
+      const saved = await addWeightEntry({ date, exercise: ex.trim(), sets: vs }, pattern ?? undefined)
+      if (fromPlan) await markPlanLogged(fromPlan.id, saved.id)
+      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null); setFromPlan(null)
     }, 'Exercise saved!')
+  }
+
+  // A plan is written from the same form: the date may be today or later, never
+  // earlier — work on a past day either happened, and is logged, or it did not.
+  const canPlan = date >= today()
+  const planEntry = async () => {
+    if (!ex.trim() || !canPlan) return
+    const vs = parseSets(sets, revealed)
+    await withToast(async () => {
+      await addPlan({ date, exercise: ex.trim(), targets: vs })
+      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null); setFromPlan(null)
+    }, 'Planned')
+  }
+
+  const logFromPlan = (p: PlannedExercise) => {
+    setEx(p.exercise); setSelEx(p.exercise); setDate(today()); setFromPlan(p)
+    if (p.targets.length) { setSets(toSetStr(p.targets)); setRevealed(p.targets.length) }
+    else { setSets([{ weight: '', reps: '' }]); setRevealed(1) }
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const chartEx = selEx || exercises[0] || ''
@@ -160,8 +187,16 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <PlanCard onLog={logFromPlan} />
+
+      <div ref={formRef} className="scroll-mt-16"><Card>
           <SecTitle>Log Exercise</SecTitle>
+          {fromPlan && (
+            <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-[#c9c9c7] rounded-[3px]">
+              <span className="text-[11px] text-ink-2">From today's plan: <span className="font-bold text-ink">{fromPlan.exercise}</span></span>
+              <button className="text-[11px] text-ink-3 hover:text-ink cursor-pointer" onClick={() => setFromPlan(null)}>Unlink</button>
+            </div>
+          )}
           <div className="flex flex-col gap-2.5 mb-3">
             <div className="flex flex-col gap-1">
               <label className={FIELD_LABEL}>Exercise</label>
@@ -251,8 +286,13 @@ export function WeightsTab() {
             </div>
           )}
 
-          <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
-      </Card>
+          <div className="flex gap-2">
+            <Btn onClick={addEntry} className="flex-1">Save exercise</Btn>
+            {!fromPlan && (
+              <Btn variant="secondary" onClick={planEntry} disabled={!canPlan || !ex.trim()}>Plan it</Btn>
+            )}
+          </div>
+      </Card></div>
 
       {exercises.length > 0 && (
         <Card>
