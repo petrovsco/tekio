@@ -72,9 +72,10 @@ with the commit. Patch bumps are not tagged.
 | `master` | https://app.tekio.fyi (the old tekio.shamatoff.com redirects here) | production |
 | `develop` | https://stg-app.tekio.fyi (the old stg-tekio.shamatoff.com redirects here) | preview |
 
-`tekio.fyi` and `www.tekio.fyi` send visitors to `app.tekio.fyi` with a
-*temporary* 307 until a landing site exists, so browsers don't cache it. DNS
-lives in the `tekio.fyi` Cloudflare zone as DNS-only CNAMEs to Vercel.
+`tekio.fyi` is the public landing site, served since 2026-10-06 from its own
+repository `petrovsco/tekio.site` by the Vercel project `tekio-site`, and
+`www.tekio.fyi` redirects to it permanently. DNS lives in the `tekio.fyi`
+Cloudflare zone as DNS-only CNAMEs to Vercel.
 
 Both sit behind the same cookie gate in [middleware.ts](middleware.ts) —
 `BASIC_AUTH_ENABLED` is one environment variable covering Preview *and*
@@ -101,12 +102,12 @@ and marking which build wrote a row is
 roadmap/050-release-procedure.md (`tekio.rfcs/rfcs/done/0050-release-procedure.md`).
 The landing site added two actions on 2026-10-02, the plan's tag in step 2 and
 the site's redeploy in step 4; their reasoning is
-`tekio.rfcs/rfcs/0084-public-landing-site.md` §3:
+`tekio.rfcs/rfcs/done/0084-public-landing-site.md` §3:
 
 1. **Pre-flight on `develop`** — `npm run build`, `npm run test`, `npm run check:docs`, and `node scripts/check-links.mjs` in `tekio.rfcs`, all green.
 2. **Registry** — in `tekio.rfcs/rfcs/releases.md` set the release to `released <date>`, and retag or untag every brief still marked `**Release:**` for it that is not in `done/`, saying so in its status line. Then tag that commit in `tekio.rfcs` with the annotated tag `vX.Y.Z` and push the tag: the landing site reads this repo and that one at the newest release tag.
 3. **Version** — bump `package.json` to the release version; commit as `release: X.Y.Z — <theme> (vX.Y.Z)`.
-4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`. Then redeploy the landing site's production (Vercel project `tekio-site`, team `bubolazi-projects`) so it rebuilds against the two new tags: the Vercel connector's `create_deployment` with the site's current production deployment as `deploymentId` and `target: production`, or `vercel redeploy` on that deployment. Nothing else redeploys it, and until the site's first release there is no production deployment to redeploy.
+4. **Ship** — push `develop`, then `git push origin develop:master` (fast-forward; `master` has never carried a merge commit), then the annotated tag `vX.Y.Z`. Then redeploy the landing site's production (Vercel project `tekio-site`, team `bubolazi-projects`) so it rebuilds against the two new tags: the Vercel connector's `create_deployment` with the site's current production deployment as `deploymentId` and `target: production`, or `vercel redeploy` on that deployment. Nothing else redeploys it.
 5. **Verify production** — `vercel inspect app.tekio.fyi` gives the deployment id, and `vercel api "/v13/deployments/<id>?teamId=<team>"` (or, with no CLI installed, the Vercel connector's `get_deployment` on `app.tekio.fyi`, team `bubolazi-projects` — one call) must show `meta.githubCommitSha` equal to `master`, the alias `app.tekio.fyi`, and a 401 from the gate; the gate credentials are Vercel Secrets, so opening the site to read the version at the foot of Profile needs whoever holds them.
 6. **Post-release** — take the briefs that waited on the release off `blocked`; run the release sweep — the release's schema-drops queue (2.1.0's was `tekio.rfcs/rfcs/done/0080-release-2-1-0-schema-drops.md`) as one tracked migration — applied with `apply_migration`, the file is named after the version Supabase stamps on it (`list_migrations`), not one chosen beforehand — under the policy in [supabase/README.md](supabase/README.md#two-builds-one-schema--the-migration-policy) — and never delete rows by their `origin` tag, they are real data; move finished briefs to `done/` and repoint their links.
 7. **Open the next release** section in `releases.md`.
