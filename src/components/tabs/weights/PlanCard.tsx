@@ -35,7 +35,7 @@ function TargetSets({ plan }: { plan: PlannedExercise }) {
 export function PlanCard({ onLog, onEdit, onAdd }: {
   onLog: (plan: PlannedExercise) => void
   onEdit: (plan: PlannedExercise) => void
-  /** Puts the form below into plan mode, for a new plan. */
+  /** Opens the plan sheet, for a new plan. */
   onAdd: () => void
 }) {
   const plans = useAppStore(s => s.plans)

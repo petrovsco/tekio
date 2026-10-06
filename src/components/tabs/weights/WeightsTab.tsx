@@ -20,6 +20,7 @@ import type { PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
 import { MovementQuestion } from './MovementQuestion'
 import { PlanCard } from './PlanCard'
+import { PlanSheet } from './PlanSheet'
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -42,15 +43,12 @@ export function WeightsTab() {
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
   const withToast = useAppStore(s => s.withToast)
-  const addPlan = useAppStore(s => s.addPlan)
   const markPlanLogged = useAppStore(s => s.markPlanLogged)
   // The plan the form was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
   const [fromPlan, setFromPlan] = useState<PlannedExercise | null>(null)
-  // The form in plan mode (RFC 0098): `plan` null writes a new plan, a plan
-  // rewrites that one. Either way saving logs nothing.
-  const [planning, setPlanning] = useState<{ plan: PlannedExercise | null } | null>(null)
-  const editPlan = useAppStore(s => s.editPlan)
+  // The plan sheet (RFC 0098): `plan` absent writes a new plan.
+  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedExercise } | null>(null)
 
   // This component holds the log form's state as well as the history read, so
   // every keystroke re-renders it. Everything derived from `weights` is memoised
@@ -136,14 +134,6 @@ export function WeightsTab() {
     }, 'Exercise saved!')
   }
 
-  // A plan is written from the same form: the date may be today or later, never
-  // earlier — work on a past day either happened, and is logged, or it did not.
-  const canPlan = date >= today()
-  const clearForm = () => {
-    setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null)
-    setFromPlan(null); setPlanning(null); setDate(today())
-  }
-
   const fillFromPlan = (p: PlannedExercise) => {
     setEx(p.exercise); setSelEx(p.exercise)
     if (p.targets.length) { setSets(toSetStr(p.targets)); setRevealed(p.targets.length) }
@@ -152,28 +142,10 @@ export function WeightsTab() {
   }
 
   const logFromPlan = (p: PlannedExercise) => {
-    fillFromPlan(p); setDate(today()); setFromPlan(p); setPlanning(null)
+    fillFromPlan(p); setDate(today()); setFromPlan(p)
   }
 
-  const startEditPlan = (p: PlannedExercise) => {
-    fillFromPlan(p); setDate(p.date); setPlanning({ plan: p }); setFromPlan(null)
-  }
 
-  const startNewPlan = () => {
-    clearForm(); setPlanning({ plan: null })
-    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
-  const savePlan = async () => {
-    if (!planning || !ex.trim() || !canPlan) return
-    const vs = parseSets(sets, revealed)
-    const editing = planning.plan
-    await withToast(async () => {
-      if (editing) await editPlan(editing.id, { date, exercise: ex.trim(), targets: vs })
-      else await addPlan({ date, exercise: ex.trim(), targets: vs })
-      clearForm()
-    }, editing ? 'Plan updated' : 'Planned')
-  }
 
   const chartEx = selEx || exercises[0] || ''
   const chartData = useMemo(() => weights
@@ -211,17 +183,13 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PlanCard onLog={logFromPlan} onEdit={startEditPlan} onAdd={startNewPlan} />
+      <PlanCard onLog={logFromPlan} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
+      {planSheet && (
+        <PlanSheet plan={planSheet.plan} suggestions={suggestions} aliases={aliases} onClose={() => setPlanSheet(null)} />
+      )}
 
-      <div ref={formRef} className="scroll-mt-24"><Card className={planning ? '!bg-planned-tint !border-planned' : ''}>
-          <SecTitle>{planning ? (planning.plan ? 'Edit plan' : 'Plan an exercise') : 'Log Exercise'}</SecTitle>
-          {planning && (
-            <p className="text-[11px] text-ink-2 mb-2.5">
-              {planning.plan
-                ? 'Changes the plan, not your log. Pick a later date to move it.'
-                : 'For today or a later day. Nothing counts until you log it.'}
-            </p>
-          )}
+      <div ref={formRef} className="scroll-mt-24"><Card>
+          <SecTitle>Log Exercise</SecTitle>
           {fromPlan && (
             <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-planned bg-planned-tint rounded-[3px]">
               <span className="text-[11px] text-ink-2">From today's plan: <span className="font-bold text-ink">{fromPlan.exercise}</span></span>
@@ -266,7 +234,7 @@ export function WeightsTab() {
             />
           </div>
 
-          {!planning && (prSet || oneRmCandidate) && (
+          {(prSet || oneRmCandidate) && (
             <div className="flex flex-col gap-2 px-2.5 py-2 bg-hairline rounded-[3px] mb-3">
               {/* A personal best is a stated fact, not an urgency, so it takes
                   the outline tone (design-system §1) — like SS. */}
@@ -317,14 +285,7 @@ export function WeightsTab() {
             </div>
           )}
 
-          {planning ? (
-            <div className="flex gap-2">
-              <Btn onClick={savePlan} disabled={!canPlan || !ex.trim()} className="flex-1">Save plan</Btn>
-              <Btn variant="secondary" onClick={clearForm}>Cancel</Btn>
-            </div>
-          ) : (
-            <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
-          )}
+          <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
       </Card></div>
 
       {exercises.length > 0 && (
