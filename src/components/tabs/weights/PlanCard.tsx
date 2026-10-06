@@ -53,21 +53,24 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
   const removePlan = useAppStore(s => s.removePlan)
   const withToast = useAppStore(s => s.withToast)
 
-  const { todays, later, expired } = useMemo(() => {
+  const { todays, doneToday, later, expired } = useMemo(() => {
     const t = today()
     const byDay = (a: PlannedExercise, b: PlannedExercise) => a.date.localeCompare(b.date)
+    // A logged plan has become work: it leaves the card, and the log form's
+    // history below shows it like any other entry.
+    const open = plans.filter(p => !p.loggedAs)
     return {
-      todays: plans.filter(p => p.date === t),
-      later: plans.filter(p => p.date > t).sort(byDay),
-      expired: plans.filter(p => p.date < t && daysBetween(p.date, t) <= EXPIRED_SHOWN_DAYS && !p.loggedAs).sort(byDay),
+      todays: open.filter(p => p.date === t),
+      doneToday: plans.some(p => p.date === t && p.loggedAs),
+      later: open.filter(p => p.date > t).sort(byDay),
+      expired: open.filter(p => p.date < t && daysBetween(p.date, t) <= EXPIRED_SHOWN_DAYS).sort(byDay),
     }
   }, [plans])
 
   const [folded, setFolded] = useState(readFolded)
   const toggle = () => setFolded(f => { writeFolded(!f); return !f })
-  const openToday = todays.filter(p => !p.loggedAs).length
-  const summary = openToday > 0
-    ? `${openToday} today`
+  const summary = todays.length > 0
+    ? `${todays.length} today`
     : later.length > 0 ? `${later.length} later` : 'nothing planned'
 
   const remove = (id: string) => withToast(() => removePlan(id), 'Plan removed')
@@ -75,28 +78,25 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
   const row = (p: PlannedExercise, when?: string) => (
     <div key={p.id} className="flex items-start justify-between gap-2 py-2 border-b border-hairline last:border-0">
       <div className="min-w-0">
-        <p className={`text-xs font-bold flex items-center gap-1.5 flex-wrap ${p.loggedAs ? 'text-ink-3' : 'text-ink'}`}>
+        <p className="text-xs font-bold flex items-center gap-1.5 flex-wrap text-ink">
           {p.exercise}
-          {p.loggedAs && <MicroLabel>Logged</MicroLabel>}
           {p.plannedBy === 'agent' && <MicroLabel>Agent</MicroLabel>}
         </p>
-        {!p.loggedAs && <TargetSets plan={p} />}
+        <TargetSets plan={p} />
       </div>
       <div className="flex items-center gap-1 shrink-0">
         {when && <span className="text-[11px] text-ink-3 tabular-nums">{when}</span>}
-        {!p.loggedAs && !when && (
+        {!when && (
           <button className={ACT_CHIP} onClick={() => onLog(p)}>Log</button>
         )}
-        {!p.loggedAs && (
-          <button
-            aria-label="Edit plan"
-            onClick={() => onEdit(p)}
-            className="w-7 h-7 flex items-center justify-center text-ink-3 hover:text-ink rounded-[2px] cursor-pointer transition-colors"
-          >
-            <Icon name="edit" size={13} />
-          </button>
-        )}
-        {!p.loggedAs && <DelBtn label="Remove plan" onClick={() => remove(p.id)} />}
+        <button
+          aria-label="Edit plan"
+          onClick={() => onEdit(p)}
+          className="w-7 h-7 flex items-center justify-center text-ink-3 hover:text-ink rounded-[2px] cursor-pointer transition-colors"
+        >
+          <Icon name="edit" size={13} />
+        </button>
+        <DelBtn label="Remove plan" onClick={() => remove(p.id)} />
       </div>
     </div>
   )
@@ -118,7 +118,7 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
       <span className={MICRO_LABEL}>Today</span>
       {todays.length > 0
         ? todays.map(p => row(p))
-        : <p className="text-[11px] text-ink-3 py-1">Nothing planned today.</p>}
+        : <p className="text-[11px] text-ink-3 py-1">{doneToday ? 'All of today\'s plan is logged.' : 'Nothing planned today.'}</p>}
       {later.length > 0 && (
         <div className="mt-3">
           <span className={MICRO_LABEL}>Later</span>
