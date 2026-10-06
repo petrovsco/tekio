@@ -1,11 +1,22 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { today, daysBetween } from '../../../lib/utils'
-import { Card, SecTitle } from '../../ui/Card'
+import { Card } from '../../ui/Card'
+import { FIELD_LABEL } from '../../ui/Input'
 import { DelBtn, ACT_CHIP } from '../../ui/Button'
 import { Icon } from '../../ui/Icon'
 import { MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import type { PlannedExercise } from '../../../types'
+
+/** Where the fold is remembered: a per-device convenience, so a blocked or
+ *  empty storage just opens the card. */
+const FOLD_KEY = 'tekio.planCard.folded'
+const readFolded = (): boolean => {
+  try { return localStorage.getItem(FOLD_KEY) === '1' } catch { return false }
+}
+const writeFolded = (v: boolean) => {
+  try { localStorage.setItem(FOLD_KEY, v ? '1' : '0') } catch { /* stays open next time */ }
+}
 
 /** How many days an unlogged plan stays listed as not logged before it drops
  *  off the screen. Display only: a plan never counts, whatever its age. */
@@ -52,6 +63,13 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
     }
   }, [plans])
 
+  const [folded, setFolded] = useState(readFolded)
+  const toggle = () => setFolded(f => { writeFolded(!f); return !f })
+  const openToday = todays.filter(p => !p.loggedAs).length
+  const summary = openToday > 0
+    ? `${openToday} today`
+    : later.length > 0 ? `${later.length} later` : 'nothing planned'
+
   const remove = (id: string) => withToast(() => removePlan(id), 'Plan removed')
 
   const row = (p: PlannedExercise, when?: string) => (
@@ -85,7 +103,18 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
 
   return (
     <Card className="!bg-planned-tint !border-planned">
-      <SecTitle>Planned</SecTitle>
+      <button
+        onClick={toggle}
+        aria-expanded={!folded}
+        className={`w-full flex items-center justify-between cursor-pointer ${folded ? '' : 'mb-2'}`}
+      >
+        <span className={FIELD_LABEL}>Planned</span>
+        <span className="flex items-center gap-1 text-[11px] text-ink-2">
+          {folded && summary}
+          <Icon name={folded ? 'chevronDown' : 'chevronUp'} size={14} />
+        </span>
+      </button>
+      {!folded && <>
       <span className={MICRO_LABEL}>Today</span>
       {todays.length > 0
         ? todays.map(p => row(p))
@@ -104,6 +133,7 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
       <button onClick={onAdd} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">
         + Add to plan
       </button>
+      </>}
     </Card>
   )
 }
