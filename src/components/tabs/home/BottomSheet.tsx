@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from '
 import { createPortal } from 'react-dom'
 import { Icon } from '../../ui/Icon'
 import { useKeyboardInset, revealFocusedField } from '../../../hooks/useKeyboardInset'
+import { useScrimClose } from '../../../hooks/useScrimClose'
 
 // The SIGNAL bottom sheet (design-system §§2, 8): T2 capture and drill-ins
 // open over a scrim so the T1 read never reflows (P1). The old ui/Modal stays
@@ -58,6 +59,7 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
     setClosing(true)
     window.setTimeout(onClose, CLOSE_MS)
   }
+  const scrim = useScrimClose(close)
 
   const onDown = (e: PointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId)
@@ -113,11 +115,12 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
       role="dialog"
       aria-modal="true"
       aria-label={label}
+      {...scrim.root}
     >
       <div
+        {...scrim.scrim}
         className={`absolute inset-0 bg-[rgba(26,26,26,0.34)] ${dragging ? '' : 'transition-opacity duration-200'}`}
         style={{ opacity: fade }}
-        onClick={close}
       />
       <div
         ref={panelRef}

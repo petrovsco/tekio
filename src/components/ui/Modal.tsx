@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from './Icon'
 import { useKeyboardInset, revealFocusedField } from '../../hooks/useKeyboardInset'
+import { useScrimClose } from '../../hooks/useScrimClose'
 
 interface ModalProps {
   open: boolean
@@ -25,6 +26,7 @@ interface ModalProps {
  */
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   const keyboard = useKeyboardInset()
+  const scrim = useScrimClose(onClose)
   useEffect(() => {
     if (!open) return
 
@@ -52,9 +54,10 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
       role="dialog"
       aria-modal="true"
       aria-label={title}
+      {...scrim.root}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" onClick={onClose} />
+      <div {...scrim.scrim} className="absolute inset-0 bg-[rgba(26,26,26,0.34)]" />
 
       {/* Panel */}
       <div className="relative w-full min-w-0 sm:max-w-md max-h-[min(92vh,100%)] bg-white text-ink rounded-t-[6px] sm:rounded-[6px] border-t sm:border-2 border-ink flex flex-col overflow-hidden" onFocus={revealFocusedField}>
