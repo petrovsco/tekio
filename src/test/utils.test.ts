@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, DATE_DAY_MONTH, DATE_MONTH, DATE_WEEKDAY } from '../lib/utils'
+import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, today } from '../lib/utils'
 import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -390,21 +390,26 @@ describe('formatDurationMins / parseDurationMins', () => {
 
 
 // ---------------------------------------------------------------------------
-// fmtDate — the locale picks the order, the style picks how much
+// fmtDate — day first, month as a word, whatever the browser's language
 // ---------------------------------------------------------------------------
 describe('fmtDate', () => {
-  it('puts the day first where the locale does, and the month first where it does', () => {
-    expect(fmtDate('2026-10-08', undefined, 'en-GB')).toBe('08/10/2026')
-    expect(fmtDate('2026-10-08', undefined, 'en-US')).toBe('10/08/2026')
-    expect(fmtDate('2026-10-08', DATE_DAY_MONTH, 'de-DE')).toBe('08.10.')
+  const thisYear = today().slice(0, 4)
+  it('prints the day, then the month as a word', () => {
+    expect(fmtDate(`${thisYear}-09-08`)).toBe('8 Sept')
+    expect(fmtDate(`${thisYear}-10-08`, { weekday: false, year: 'never' })).toBe('8 Oct')
   })
-  it('reads the stored day as that calendar day, not UTC midnight', () => {
-    expect(fmtDate('2026-01-01', DATE_WEEKDAY, 'en-GB')).toBe('Thu 1 Jan')
+  it('adds the year only when it is not this one, unless told', () => {
+    expect(fmtDate('2025-03-03')).toBe('3 Mar 2025')
+    expect(fmtDate('2026-10-08', { year: 'short' })).toBe("8 Oct '26")
+    expect(fmtDate('2025-03-03', { year: 'never' })).toBe('3 Mar')
+  })
+  it('names the weekday of the calendar day, in any time zone', () => {
+    expect(fmtDate('2026-01-01', { weekday: true, year: 'never' })).toBe('Thu 1 Jan')
   })
   it('formats a month bucket', () => {
-    expect(fmtDate('2026-10', DATE_MONTH, 'en-GB')).toBe('10/2026')
+    expect(fmtDate('2026-10', { year: 'short' })).toBe("Oct '26")
   })
   it('passes anything that is not a date through unchanged', () => {
-    expect(fmtDate('', undefined, 'en-GB')).toBe('')
+    expect(fmtDate('')).toBe('')
   })
 })

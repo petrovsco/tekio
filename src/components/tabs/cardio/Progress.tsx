@@ -4,8 +4,7 @@ import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { CARDIO_TYPES } from '../../../constants/app'
 import {
-  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePoint, uniqSorted, fmtDate,
-  DATE_DAY_MONTH, DATE_SHORT_YEAR, DATE_MONTH, type TimeFrame, type CardioBucket,
+  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePoint, uniqSorted, fmtDate, type TimeFrame, type CardioBucket,
 } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Chip } from '../../ui/Chip'
@@ -75,7 +74,7 @@ export function Progress({ lens }: { lens: Lens }) {
   // years of runs at one point each is a hairball at 390 px.
   const grain = grainForFrame(frame)
   // The year joins the per-session axis label only when the frame actually
-  // spans two; the week and month keys carry it always.
+  // spans two; weeks sit inside this year, and months always carry it.
   const spansYears = new Set(sessions.map(d => d.date.slice(0, 4))).size > 1
   // Per session: two runs on one day (six such dates in the history) are two
   // points, not one category slot shared. The label is the date; the suffix
@@ -92,8 +91,8 @@ export function Progress({ lens }: { lens: Lens }) {
     : rollupCardio(sessions, grain, weekStartDay)
   const labelOf = (key: string) => {
     const hash = key.indexOf('#')
-    if (hash >= 0) return fmtDate(key.slice(0, hash), spansYears ? DATE_SHORT_YEAR : DATE_DAY_MONTH)
-    return fmtDate(key, grain === 'week' ? DATE_SHORT_YEAR : DATE_MONTH)
+    if (hash >= 0) return fmtDate(key.slice(0, hash), { year: spansYears ? 'short' : 'never' })
+    return fmtDate(key, { year: grain === 'week' ? 'never' : 'short' })
   }
   // A rolled-up point is a sum, so its tooltip leads with the count.
   const tooltipLabel = (key: string, payload: ReadonlyArray<{ payload?: CardioBucket }>) => {

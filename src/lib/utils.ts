@@ -39,37 +39,32 @@ export const fmtAgo = (daysSince: number | null): string =>
   daysSince === null ? 'never' : daysSince === 0 ? 'today' : `${daysSince} d ago`
 
 // ─── Dates on screen ─────────────────────────────────────────────────────────
-// Dates are stored as YYYY-MM-DD and printed only through `fmtDate`, in the
-// device's own locale: the caller picks how much to say (one of the styles
-// below), the locale picks the order and the separators — 8/10 in one place,
-// 10/8 in another, 08.10. in a third.
+// Dates are stored as YYYY-MM-DD and printed only through `fmtDate`, in one
+// fixed shape whatever the browser's language: day first, month as a word —
+// "8 Sept", "Wed 8 Oct", "3 Mar 2025". A numeric 08/10 reads as August to half
+// the world and October to the other half; a word cannot be misread.
 
-/** 08/10/2026 — a day in a list row. */
-const DATE_FULL: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' }
-/** 08/10 — a chart axis or a near date, where the year goes without saying. */
-export const DATE_DAY_MONTH: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit' }
-/** 08/10/26 — a chart axis that spans two years. */
-export const DATE_SHORT_YEAR: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' }
-/** 10/2026 — a month bucket. */
-export const DATE_MONTH: Intl.DateTimeFormatOptions = { month: '2-digit', year: 'numeric' }
-/** 8 Oct — a date in a sentence. */
-export const DATE_TEXT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
-/** Wed 8 Oct — a date in a sentence, with its weekday. */
-export const DATE_WEEKDAY: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec']
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-const formatters = new Map<string, Intl.DateTimeFormat>()
+/** How a date carries its year: `auto` only when it is not this year
+ *  (3 Mar 2025), `short` always and abbreviated (8 Oct '26), `never` — for a
+ *  chart axis inside one year. */
+export type DateYear = 'auto' | 'short' | 'never'
 
-/** A stored date (YYYY-MM-DD, or YYYY-MM for a month) in the device's locale.
- *  It is read as that calendar day in local time: `new Date('2026-10-08')` is
- *  UTC midnight, which is still the 7th anywhere west of Greenwich. `locale`
- *  is for tests; the app leaves it to the device. */
-export function fmtDate(date: string, style: Intl.DateTimeFormatOptions = DATE_FULL, locale?: string): string {
+/** A stored date (YYYY-MM-DD, or YYYY-MM for a month bucket) as the app prints
+ *  it: "8 Oct", "Wed 8 Oct", "Oct '26". */
+export function fmtDate(date: string, { weekday = false, year = 'auto' }: { weekday?: boolean; year?: DateYear } = {}): string {
   const [y, m, d] = date.split('-').map(Number)
   if (!y || !m) return date
-  const key = `${locale ?? ''}|${JSON.stringify(style)}`
-  let f = formatters.get(key)
-  if (!f) formatters.set(key, f = new Intl.DateTimeFormat(locale, style))
-  return f.format(new Date(y, m - 1, d || 1))
+  const yearPart = year === 'short' ? ` '${String(y).slice(2)}`
+    : year === 'auto' && String(y) !== today().slice(0, 4) ? ` ${y}`
+    : ''
+  if (!d) return `${MONTHS[m - 1]}${yearPart}`
+  // A calendar day, so the weekday comes from UTC: `new Date('2026-10-08')`
+  // is UTC midnight, and local time would call it the 7th west of Greenwich.
+  const day = weekday ? `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ` : ''
+  return `${day}${d} ${MONTHS[m - 1]}${yearPart}`
 }
 
 const DAY_MS = 86400000

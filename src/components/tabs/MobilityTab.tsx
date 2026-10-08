@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
-import { today, startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN, fmtDate, DATE_DAY_MONTH } from '../../lib/utils'
+import { today, startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN, fmtDate } from '../../lib/utils'
 import { MICRO_LABEL } from '../ui/Badges'
 import { Card, SecTitle } from '../ui/Card'
 import { Inp, SelEl } from '../ui/Input'
@@ -85,7 +85,7 @@ export function MobilityTab() {
     .filter(m => m.exercises.some(e => e.name === chartEx))
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(m => ({
-      date: fmtDate(m.date, DATE_DAY_MONTH),
+      date: fmtDate(m.date, { year: 'never' }),
       duration: m.exercises.find(e => e.name === chartEx)?.duration ?? 0,
     }))
 

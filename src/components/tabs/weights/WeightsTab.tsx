@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate, DATE_DAY_MONTH } from '../../../lib/utils'
+import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
@@ -157,7 +157,7 @@ export function WeightsTab() {
     .filter(d => d.exercise === chartEx)
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(d => ({
-      date: fmtDate(d.date, DATE_DAY_MONTH),
+      date: fmtDate(d.date, { year: 'never' }),
       maxWeight: Math.max(...d.sets.map(s => s.weight)),
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
     })), [weights, chartEx])
