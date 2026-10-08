@@ -1,5 +1,5 @@
 import { useAppStore } from '../../../store/app'
-import { formatDurationMins, calcPace, uniqSorted } from '../../../lib/utils'
+import { formatDurationMins, calcPace, uniqSorted, fmtDate } from '../../../lib/utils'
 import { isThresholdCardio, isThresholdSport } from '../../../lib/adaptations'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { CARDIO_TYPES } from '../../../constants/app'
@@ -51,7 +51,7 @@ function CardioRow({ d, hrMax }: { d: CardioEntry; hrMax: number | null }) {
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions
-          label={d.date}
+          label={fmtDate(d.date)}
           className="ml-2"
           onEdit={() => openEditModal({ type: 'cardio', record: d })}
           onDelete={() => removeCardioEntry(d.id)}
@@ -91,7 +91,7 @@ function SportRow({ d }: { d: SportEntry }) {
           {d.source === 'garmin' && <MicroLabel>Garmin</MicroLabel>}
         </div>
         <RowActions
-          label={d.date}
+          label={fmtDate(d.date)}
           className="ml-2"
           onEdit={() => openEditModal({ type: 'sport', record: d })}
           onDelete={() => removeSportEntry(d.id)}

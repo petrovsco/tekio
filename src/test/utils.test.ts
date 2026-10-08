@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins } from '../lib/utils'
+import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, DATE_DAY_MONTH, DATE_MONTH, DATE_WEEKDAY } from '../lib/utils'
 import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -388,3 +388,23 @@ describe('formatDurationMins / parseDurationMins', () => {
   })
 })
 
+
+// ---------------------------------------------------------------------------
+// fmtDate — the locale picks the order, the style picks how much
+// ---------------------------------------------------------------------------
+describe('fmtDate', () => {
+  it('puts the day first where the locale does, and the month first where it does', () => {
+    expect(fmtDate('2026-10-08', undefined, 'en-GB')).toBe('08/10/2026')
+    expect(fmtDate('2026-10-08', undefined, 'en-US')).toBe('10/08/2026')
+    expect(fmtDate('2026-10-08', DATE_DAY_MONTH, 'de-DE')).toBe('08.10.')
+  })
+  it('reads the stored day as that calendar day, not UTC midnight', () => {
+    expect(fmtDate('2026-01-01', DATE_WEEKDAY, 'en-GB')).toBe('Thu 1 Jan')
+  })
+  it('formats a month bucket', () => {
+    expect(fmtDate('2026-10', DATE_MONTH, 'en-GB')).toBe('10/2026')
+  })
+  it('passes anything that is not a date through unchanged', () => {
+    expect(fmtDate('', undefined, 'en-GB')).toBe('')
+  })
+})

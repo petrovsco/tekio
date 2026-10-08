@@ -6,7 +6,7 @@ import {
   HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource,
 } from '../../../lib/fusedRead'
 import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
-import { today, fmtSets, fmtAgo } from '../../../lib/utils'
+import { today, fmtSets, fmtAgo, fmtDate, DATE_TEXT } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
 import { GAP_CUTOFF, targetShape } from '../../../lib/adaptations'
@@ -21,8 +21,7 @@ import { MovementQuestion } from '../weights/MovementQuestion'
 // Logging goes through an exercise on purpose — sets classify into adaptations
 // by rep range, so a bare set count would write data no read can use.
 
-const fmtDay = (date: string): string =>
-  new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+const fmtDay = (date: string): string => fmtDate(date, DATE_TEXT)
 
 const FOOT_BTN = 'w-full min-h-[48px] rounded-[3px] text-[14px] font-bold cursor-pointer disabled:opacity-45'
 const FOOT_BTN_SOLID = `${FOOT_BTN} border border-ink bg-ink text-white`

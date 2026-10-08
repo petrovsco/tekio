@@ -38,6 +38,40 @@ export const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) :
 export const fmtAgo = (daysSince: number | null): string =>
   daysSince === null ? 'never' : daysSince === 0 ? 'today' : `${daysSince} d ago`
 
+// ─── Dates on screen ─────────────────────────────────────────────────────────
+// Dates are stored as YYYY-MM-DD and printed only through `fmtDate`, in the
+// device's own locale: the caller picks how much to say (one of the styles
+// below), the locale picks the order and the separators — 8/10 in one place,
+// 10/8 in another, 08.10. in a third.
+
+/** 08/10/2026 — a day in a list row. */
+const DATE_FULL: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' }
+/** 08/10 — a chart axis or a near date, where the year goes without saying. */
+export const DATE_DAY_MONTH: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit' }
+/** 08/10/26 — a chart axis that spans two years. */
+export const DATE_SHORT_YEAR: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: '2-digit' }
+/** 10/2026 — a month bucket. */
+export const DATE_MONTH: Intl.DateTimeFormatOptions = { month: '2-digit', year: 'numeric' }
+/** 8 Oct — a date in a sentence. */
+export const DATE_TEXT: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short' }
+/** Wed 8 Oct — a date in a sentence, with its weekday. */
+export const DATE_WEEKDAY: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short' }
+
+const formatters = new Map<string, Intl.DateTimeFormat>()
+
+/** A stored date (YYYY-MM-DD, or YYYY-MM for a month) in the device's locale.
+ *  It is read as that calendar day in local time: `new Date('2026-10-08')` is
+ *  UTC midnight, which is still the 7th anywhere west of Greenwich. `locale`
+ *  is for tests; the app leaves it to the device. */
+export function fmtDate(date: string, style: Intl.DateTimeFormatOptions = DATE_FULL, locale?: string): string {
+  const [y, m, d] = date.split('-').map(Number)
+  if (!y || !m) return date
+  const key = `${locale ?? ''}|${JSON.stringify(style)}`
+  let f = formatters.get(key)
+  if (!f) formatters.set(key, f = new Intl.DateTimeFormat(locale, style))
+  return f.format(new Date(y, m - 1, d || 1))
+}
+
 const DAY_MS = 86400000
 
 /** Whole days from `from` to `to` (both YYYY-MM-DD; positive when to > from).

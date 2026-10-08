@@ -1,6 +1,6 @@
 import { useAppStore } from '../../../store/app'
 import { DONATION_SUPPRESSION } from '../../../constants/app'
-import { today } from '../../../lib/utils'
+import { today, fmtDate, DATE_DAY_MONTH } from '../../../lib/utils'
 import { BottomSheet, SheetHeader, Chip, Recent, StepperCapture } from './BottomSheet'
 
 // The two folded captures (WEIGHT / BLOOD) as one T2 bottom sheet
@@ -49,12 +49,12 @@ function WeightCapture({ onClose }: { onClose: () => void }) {
       recent={
         <Recent
           entries={bodyweight.slice(0, 4)}
-          label={e => `${e.date.slice(5)} · ${e.weight.toFixed(1)}`}
+          label={e => `${fmtDate(e.date, DATE_DAY_MONTH)} · ${e.weight.toFixed(1)}`}
           onEdit={e => openEditModal({ type: 'bodyweight', record: e })}
         />
       }
       note={last
-        ? `prefilled from ${last.date} (${last.weight.toFixed(1)} kg) — step to today, then log`
+        ? `prefilled from ${fmtDate(last.date)} (${last.weight.toFixed(1)} kg) — step to today, then log`
         : 'no entries yet — step to today, then log'}
     />
   )
@@ -77,7 +77,7 @@ function BloodCapture({ onClose }: { onClose: () => void }) {
       </Chip>
       <Recent
         entries={donations.slice(0, 3)}
-        label={e => `${e.date} · ${e.type}`}
+        label={e => `${fmtDate(e.date)} · ${e.type}`}
         onEdit={e => openEditModal({ type: 'donation', record: e })}
       />
       <div className="text-[9px] text-ink-3 mt-2 text-pretty">

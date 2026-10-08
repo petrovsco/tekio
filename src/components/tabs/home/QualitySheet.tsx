@@ -5,7 +5,7 @@ import { muscleWindow } from '../../../lib/fusedRead'
 import { classifyCardioAdaptations, classifySportAdaptations, type AdaptationSummary } from '../../../lib/adaptations'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
-import { today, daysBetween, fmtAgo, formatDurationMins } from '../../../lib/utils'
+import { today, daysBetween, fmtAgo, formatDurationMins, fmtDate, DATE_WEEKDAY } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { QUALITY_SHORT } from '../adaptations/labels'
 
@@ -24,10 +24,7 @@ type Row =
 /** "Tue 3 Mar", with the year once the date is not in the current one — the
  *  last eligible session can sit a year or more back. */
 const fmtDay = (date: string): string =>
-  new Date(date).toLocaleDateString('en-GB', {
-    weekday: 'short', day: 'numeric', month: 'short',
-    ...(date.slice(0, 4) !== today().slice(0, 4) ? { year: 'numeric' } : {}),
-  })
+  fmtDate(date, date.slice(0, 4) !== today().slice(0, 4) ? { ...DATE_WEEKDAY, year: 'numeric' } : DATE_WEEKDAY)
 
 interface QualitySheetProps {
   quality: WholeBodyQuality

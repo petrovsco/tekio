@@ -4,7 +4,8 @@ import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { CARDIO_TYPES } from '../../../constants/app'
 import {
-  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePoint, uniqSorted, type TimeFrame, type CardioBucket,
+  TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePoint, uniqSorted, fmtDate,
+  DATE_DAY_MONTH, DATE_SHORT_YEAR, DATE_MONTH, type TimeFrame, type CardioBucket,
 } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Chip } from '../../ui/Chip'
@@ -82,7 +83,7 @@ export function Progress({ lens }: { lens: Lens }) {
   // ones included.
   const chartData: CardioBucket[] = grain === 'session'
     ? sessions.map((d, i) => ({
-        key: `${spansYears ? d.date.slice(2) : d.date.slice(5)}#${i}`,
+        key: `${d.date}#${i}`,
         sessions: 1,
         ...(d.duration ? { duration: +d.duration.toFixed(2) } : {}),
         ...(d.distance && d.duration ? { distance: d.distance, pace: +(d.duration / d.distance).toFixed(2) } : {}),
@@ -91,8 +92,8 @@ export function Progress({ lens }: { lens: Lens }) {
     : rollupCardio(sessions, grain, weekStartDay)
   const labelOf = (key: string) => {
     const hash = key.indexOf('#')
-    if (hash >= 0) return key.slice(0, hash)
-    return grain === 'week' ? key.slice(2) : key
+    if (hash >= 0) return fmtDate(key.slice(0, hash), spansYears ? DATE_SHORT_YEAR : DATE_DAY_MONTH)
+    return fmtDate(key, grain === 'week' ? DATE_SHORT_YEAR : DATE_MONTH)
   }
   // A rolled-up point is a sum, so its tooltip leads with the count.
   const tooltipLabel = (key: string, payload: ReadonlyArray<{ payload?: CardioBucket }>) => {

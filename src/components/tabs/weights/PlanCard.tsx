@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { today, daysBetween } from '../../../lib/utils'
+import { today, daysBetween, fmtDate, DATE_DAY_MONTH } from '../../../lib/utils'
 import { Card } from '../../ui/Card'
 import { FIELD_LABEL } from '../../ui/Input'
 import { DelBtn, ACT_CHIP } from '../../ui/Button'
@@ -122,12 +122,12 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
       {later.length > 0 && (
         <div className="mt-3">
           <span className={MICRO_LABEL}>Later</span>
-          {later.map(p => row(p, p.date.slice(5)))}
+          {later.map(p => row(p, fmtDate(p.date, DATE_DAY_MONTH)))}
         </div>
       )}
       {expired.length > 0 && (
         <p className="mt-2 text-[10px] text-ink-3 leading-snug">
-          Not logged: {expired.map(p => `${p.exercise} (${p.date.slice(5)})`).join(', ')}
+          Not logged: {expired.map(p => `${p.exercise} (${fmtDate(p.date, DATE_DAY_MONTH)})`).join(', ')}
         </p>
       )}
       <button onClick={onAdd} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">

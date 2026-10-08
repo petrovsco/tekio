@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted } from '../../../lib/utils'
+import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate, DATE_DAY_MONTH } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
@@ -157,7 +157,7 @@ export function WeightsTab() {
     .filter(d => d.exercise === chartEx)
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(d => ({
-      date: d.date.slice(5),
+      date: fmtDate(d.date, DATE_DAY_MONTH),
       maxWeight: Math.max(...d.sets.map(s => s.weight)),
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
     })), [weights, chartEx])
@@ -222,7 +222,7 @@ export function WeightsTab() {
             )}
             {lastPerf && (
               <div className="px-2.5 py-2 bg-hairline rounded-[3px] text-[11px] text-ink-2">
-                <span className="font-bold text-ink">Last ({lastPerf.date}):</span>{' '}
+                <span className="font-bold text-ink">Last ({fmtDate(lastPerf.date)}):</span>{' '}
                 {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
               </div>
             )}
@@ -347,7 +347,7 @@ export function WeightsTab() {
                     <SSBadge />
                     <span className={MICRO_LABEL}>Superset</span>
                     <RowActions
-                      label={g.entries[0].date}
+                      label={fmtDate(g.entries[0].date)}
                       className="ml-auto"
                       onEdit={() => openEditModal({ type: 'weight-superset', record: [g.entries[0], g.entries[1]] })}
                       onDelete={() => g.entries.forEach(e => removeWeightEntry(e.id))}
@@ -380,7 +380,7 @@ export function WeightsTab() {
                   </div>
                 </div>
                 <RowActions
-                  label={entry.date}
+                  label={fmtDate(entry.date)}
                   className="ml-2 mt-0.5"
                   onEdit={() => openEditModal({ type: 'weight', record: entry })}
                   onDelete={() => removeWeightEntry(entry.id)}

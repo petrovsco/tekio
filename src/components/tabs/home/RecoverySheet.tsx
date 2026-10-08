@@ -1,6 +1,6 @@
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
-import { startOfWeek, today } from '../../../lib/utils'
+import { startOfWeek, today, fmtDate, DATE_WEEKDAY } from '../../../lib/utils'
 import { Fragment, useEffect, useState, type ReactNode } from 'react'
 import type { SystemicReadiness } from '../../../lib/fusedRead'
 import type { CheckInAnswers, SleepEntry } from '../../../types'
@@ -460,5 +460,4 @@ function EntryList<T extends { id: string }>({ title, entries, label, onEdit }: 
   )
 }
 
-const fmtDay = (date: string): string =>
-  new Date(date).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
+const fmtDay = (date: string): string => fmtDate(date, DATE_WEEKDAY)
