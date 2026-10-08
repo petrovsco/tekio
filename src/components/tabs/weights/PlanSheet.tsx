@@ -6,7 +6,7 @@ import { Inp, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { SmartInput } from '../../ui/SmartInput'
 import { SetsGrid } from '../../ui/SetsGrid'
-import { toSetStr, parseSets, type SetStr } from '../../../lib/sets'
+import { toSetStr, parseSets, setsProblem, type SetStr } from '../../../lib/sets'
 import type { ExerciseAlias, PlannedExercise } from '../../../types'
 
 /**
@@ -31,7 +31,7 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   const [sets, setSets] = useState<SetStr[]>(plan?.targets.length ? toSetStr(plan.targets) : [{ weight: '', reps: '' }])
   const [revealed, setRevealed] = useState(plan?.targets.length || 1)
 
-  const valid = ex.trim() !== '' && date >= today()
+  const valid = ex.trim() !== '' && date >= today() && !setsProblem(sets, revealed)
 
   const save = async () => {
     if (!valid) return

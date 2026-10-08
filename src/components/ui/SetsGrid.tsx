@@ -1,7 +1,7 @@
 import { MICRO_LABEL } from './Badges'
 import { DelBtn } from './Button'
 import { FIELD } from './Input'
-import type { SetStr } from '../../lib/sets'
+import { setsProblem, type SetStr } from '../../lib/sets'
 
 interface SetsGridProps {
   sets: SetStr[]
@@ -16,6 +16,7 @@ interface SetsGridProps {
  */
 export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: SetsGridProps) {
   const visible = sets.slice(0, revealed)
+  const problem = setsProblem(sets, revealed)
 
   return (
     <div>
@@ -41,8 +42,10 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
             value={s.reps}
             onChange={e => onUpdate(i, 'reps', e.target.value)}
             type="number"
+            inputMode="numeric"
             placeholder="10"
             min="1"
+            step="1"
             className={FIELD}
           />
           <div>
@@ -50,6 +53,8 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
           </div>
         </div>
       ))}
+
+      {problem && <p role="alert" className="text-[11px] font-semibold text-signal mb-1">{problem}</p>}
 
       <button onClick={onRevealNext} className="text-[11px] font-semibold text-ink underline underline-offset-2 mt-1 cursor-pointer">
         {revealed < sets.length

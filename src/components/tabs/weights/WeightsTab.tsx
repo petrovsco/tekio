@@ -10,7 +10,7 @@ import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
-import { toSetStr, parseSets } from '../../../lib/sets'
+import { toSetStr, parseSets, setsProblem } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
@@ -43,6 +43,7 @@ export function WeightsTab() {
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
   const withToast = useAppStore(s => s.withToast)
+  const setToast = useAppStore(s => s.setToast)
   const markPlanLogged = useAppStore(s => s.markPlanLogged)
   // The plan the form was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
@@ -125,8 +126,10 @@ export function WeightsTab() {
 
   const addEntry = async () => {
     if (!ex.trim()) return
+    const problem = setsProblem(sets, revealed)
+    if (problem) { setToast(problem); return }
     const vs = parseSets(sets, revealed)
-    if (!vs.length) return
+    if (!vs.length) { setToast('Add at least one set with weight and reps.'); return }
     await withToast(async () => {
       const saved = await addWeightEntry({ date, exercise: ex.trim(), sets: vs }, pattern ?? undefined)
       if (fromPlan) await markPlanLogged(fromPlan.id, saved.id)

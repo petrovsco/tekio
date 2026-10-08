@@ -7,6 +7,7 @@ import { withOrigin } from '../env'
 // the alias fix would silently miss half the ways a set gets logged.
 import { getOrCreateExerciseRow } from './exercises'
 import { userRows, deleteRow } from './_rows'
+import { liftSetProblem } from '../sets'
 
 async function getOrCreateSession(date: string): Promise<string> {
   const { data: existing } = await supabase
@@ -80,6 +81,12 @@ export async function saveWeightEntry(
   entry: Omit<WeightEntry, 'id'> & { id?: string },
   pattern?: PatternKey,
 ): Promise<{ entry: WeightEntry; linked: boolean }> {
+  // Nothing is written unless every set can be: an entry is never stored
+  // without its sets, and never with a set the table would refuse.
+  if (entry.sets.length === 0) throw new Error('An exercise needs at least one set.')
+  const problem = entry.sets.map(liftSetProblem).find(Boolean)
+  if (problem) throw new Error(problem)
+
   // The row, not just its id: what the user typed may be an alias, and the
   // entry handed back seeds the in-memory log. Returning the typed spelling
   // would leave the muscle read blind to this set until the next reload —
@@ -117,7 +124,12 @@ export async function saveWeightEntry(
         reps: s.reps,
       }))
     )
-    if (setsErr) throw setsErr
+    if (setsErr) {
+      // No entry without its sets: a failed save must not leave an empty
+      // exercise in the day's history for each retry.
+      await supabase.from('session_exercises').delete().eq('id', se.id)
+      throw setsErr
+    }
   }
 
   return {
@@ -143,6 +155,12 @@ export async function updateWeightEntry(
   id: string,
   patch: { sets: LiftSet[]; date?: string }
 ): Promise<void> {
+  // Check before the delete below: a refused insert after it would leave the
+  // entry with no sets at all.
+  if (patch.sets.length === 0) throw new Error('An exercise needs at least one set.')
+  const problem = patch.sets.map(liftSetProblem).find(Boolean)
+  if (problem) throw new Error(problem)
+
   // Replace all sets for this session_exercise
   await supabase.from('session_sets').delete().eq('session_exercise_id', id)
   if (patch.sets.length > 0) {

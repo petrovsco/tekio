@@ -3,7 +3,7 @@ import { parseDurationMins, formatDurationMins, calcPace, uniqSorted } from '../
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
-import { toSetStr, parseSets } from '../../lib/sets'
+import { toSetStr, parseSets, setsProblem } from '../../lib/sets'
 import type { SetStr } from '../../lib/sets'
 import { Inp, SelEl, FIELD_LABEL } from './Input'
 import { FieldLabel, Toggle, Rating } from './Fields'
@@ -99,7 +99,10 @@ function useSets(initial: LiftSet[]) {
     setRevealed(n)
   }
 
-  return { sets, revealed, update, remove, revealNext, parsed: parseSets(sets, revealed) }
+  const parsed = parseSets(sets, revealed)
+  // Savable only with at least one set and none the table would refuse.
+  const ok = parsed.length > 0 && !setsProblem(sets, revealed)
+  return { sets, revealed, update, remove, revealNext, parsed, ok }
 }
 
 // ── Save/Cancel footer ────────────────────────────────────────────────────────
@@ -120,7 +123,7 @@ function WeightForm({ record, onClose }: FormProps<WeightEntry>) {
   const [date, setDate] = useState(record.date)
   const s = useSets(record.sets)
 
-  useSave(onClose, s.parsed.length > 0, () =>
+  useSave(onClose, s.ok, () =>
     editWeightEntry(record.id, { sets: s.parsed, date }))
 
   return (
@@ -144,7 +147,7 @@ function SupersetForm({ record, onClose }: FormProps<[WeightEntry, WeightEntry]>
   const s0 = useSets(first.sets)
   const s1 = useSets(second.sets)
 
-  useSave(onClose, s0.parsed.length > 0 && s1.parsed.length > 0, async () => {
+  useSave(onClose, s0.ok && s1.ok, async () => {
     await Promise.all([
       editWeightEntry(first.id, { sets: s0.parsed, date }),
       editWeightEntry(second.id, { sets: s1.parsed, date }),
