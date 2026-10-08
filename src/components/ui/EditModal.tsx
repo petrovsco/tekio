@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useSyncExternalStore } from 'react'
 import { parseDurationMins, formatDurationMins, calcPace, uniqSorted } from '../../lib/utils'
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
@@ -44,7 +44,21 @@ import type {
  * thing React's own rules tell you not to build (`react-hooks/refs`), and it
  * cost every form an extra prop.
  */
-const saveSlot = { run: () => {} }
+const saveSlot = {
+  run: () => {},
+  /** Whether the live form can save; the footer dims Save when it cannot. */
+  ready: true,
+  listeners: new Set<() => void>(),
+  setReady(ready: boolean) {
+    if (ready === saveSlot.ready) return
+    saveSlot.ready = ready
+    saveSlot.listeners.forEach(l => l())
+  },
+  subscribe(l: () => void) {
+    saveSlot.listeners.add(l)
+    return () => { saveSlot.listeners.delete(l) }
+  },
+}
 
 /** Every form takes the record it edits and the modal's close. */
 type FormProps<T> = { record: T; onClose: () => void }
@@ -68,6 +82,7 @@ type FormProps<T> = { record: T; onClose: () => void }
 function useSave(onClose: () => void, ready: boolean, write: () => Promise<void>) {
   const withToast = useAppStore(s => s.withToast)
   useEffect(() => {
+    saveSlot.setReady(ready)
     saveSlot.run = () => {
       if (!ready) return
       void withToast(async () => {
@@ -108,10 +123,11 @@ function useSets(initial: LiftSet[]) {
 // ── Save/Cancel footer ────────────────────────────────────────────────────────
 
 function Footer({ onCancel, onSave }: { onCancel: () => void; onSave: () => void }) {
+  const ready = useSyncExternalStore(saveSlot.subscribe, () => saveSlot.ready)
   return (
     <div className="flex gap-2">
       <Btn variant="secondary" onClick={onCancel} className="flex-1">Cancel</Btn>
-      <Btn onClick={onSave} className="flex-1">Save</Btn>
+      <Btn onClick={onSave} disabled={!ready} className="flex-1">Save</Btn>
     </div>
   )
 }

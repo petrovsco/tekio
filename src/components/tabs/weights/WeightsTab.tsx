@@ -10,7 +10,7 @@ import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
-import { toSetStr, parseSets, setsProblem } from '../../../lib/sets'
+import { toSetStr, parseSets, setsProblem, liftSetProblem } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
@@ -83,7 +83,9 @@ export function WeightsTab() {
   const [movement, setMovement] = useState<{ key: string; pattern: PatternKey | null } | null>(null)
   const pattern = unknownName && movement?.key === nameKey ? movement.pattern : null
 
-  const typedSets = useMemo(() => parseSets(sets, revealed), [sets, revealed])
+  // Only sets that could be saved feed the previews below: an invalid set is
+  // neither a personal best nor a 1RM input.
+  const typedSets = useMemo(() => parseSets(sets, revealed).filter(s => !liftSetProblem(s)), [sets, revealed])
 
   // What the typed sets could support if asked — computed, but not shown until
   // it is. `null` when no set is inside the grounded rep window.
