@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Icon } from '../../ui/Icon'
 import { useKeyboardInset, revealFocusedField } from '../../../hooks/useKeyboardInset'
 import { useScrimClose } from '../../../hooks/useScrimClose'
+import { useScrollLock } from '../../../hooks/useScrollLock'
 
 // The SIGNAL bottom sheet (design-system §§2, 8): T2 capture and drill-ins
 // open over a scrim so the T1 read never reflows (P1). The old ui/Modal stays
@@ -42,17 +43,15 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
   // Whether the content already fits, read when a drag starts.
   const [fits, setFits] = useState(true)
 
+  const rootRef = useRef<HTMLDivElement>(null)
+  useScrollLock(rootRef)
+
   useEffect(() => {
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', handler)
-    return () => {
-      document.body.style.overflow = prev
-      document.removeEventListener('keydown', handler)
-    }
+    return () => document.removeEventListener('keydown', handler)
   }, [onClose])
 
   const close = () => {
@@ -110,6 +109,7 @@ export function BottomSheet({ onClose, label, children, footer }: BottomSheetPro
 
   return createPortal(
     <div
+      ref={rootRef}
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center sm:p-4"
       style={{ bottom: keyboard }}
       role="dialog"

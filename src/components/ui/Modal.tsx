@@ -1,8 +1,9 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { Icon } from './Icon'
 import { useKeyboardInset, revealFocusedField } from '../../hooks/useKeyboardInset'
 import { useScrimClose } from '../../hooks/useScrimClose'
+import { useScrollLock } from '../../hooks/useScrollLock'
 
 interface ModalProps {
   open: boolean
@@ -27,28 +28,24 @@ interface ModalProps {
 export function Modal({ open, onClose, title, children, footer }: ModalProps) {
   const keyboard = useKeyboardInset()
   const scrim = useScrimClose(onClose)
+  const rootRef = useRef<HTMLDivElement>(null)
+  useScrollLock(rootRef, open)
   useEffect(() => {
     if (!open) return
-
-    // Prevent body from scrolling (including horizontal) while modal is open
-    const prev = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
 
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose()
     }
     document.addEventListener('keydown', handler)
 
-    return () => {
-      document.body.style.overflow = prev
-      document.removeEventListener('keydown', handler)
-    }
+    return () => document.removeEventListener('keydown', handler)
   }, [open, onClose])
 
   if (!open) return null
 
   return createPortal(
     <div
+      ref={rootRef}
       className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center"
       style={{ bottom: keyboard }}
       role="dialog"
@@ -74,7 +71,7 @@ export function Modal({ open, onClose, title, children, footer }: ModalProps) {
         </div>
 
         {/* Scrollable body — overflow-x-hidden prevents any child from widening the panel */}
-        <div className="overflow-y-auto overflow-x-hidden flex-1 p-4">
+        <div className="overflow-y-auto overflow-x-hidden overscroll-contain flex-1 p-4">
           {children}
         </div>
 
