@@ -1,18 +1,18 @@
 {
   "bundle": {
-    "firstPaintBytes": 332083,
-    "firstPaintGzip": 102865,
+    "firstPaintBytes": 336389,
+    "firstPaintGzip": 104562,
     "files": [
       {
-        "ref": "/assets/index-CwMGyCTQ.js",
-        "bytes": 303388
+        "ref": "/assets/index-CPMiXasF.js",
+        "bytes": 307511
       },
       {
-        "ref": "/assets/index-Dr70Vo8m.css",
-        "bytes": 28695
+        "ref": "/assets/index-C3h9CGi8.css",
+        "bytes": 28878
       }
     ],
-    "measuredAt": "2026-10-08"
+    "measuredAt": "2026-10-10"
   },
   "startup": {
     "domContentLoadedMs": 118,

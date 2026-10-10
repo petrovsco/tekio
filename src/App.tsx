@@ -4,6 +4,7 @@ import { AppShell } from './components/layout/AppShell'
 import { HomeTab } from './components/tabs/home/HomeTab'
 import { HomeSkeleton } from './components/tabs/HomeSkeleton'
 import { dismissSplash } from './lib/splash'
+import { setScreen } from './lib/errorReport'
 
 // T3 — on demand (design-system tier table, roadmap 018 unit 5). Everything
 // reached by an explicit destination change is a lazy chunk with no prefetch;
@@ -57,6 +58,7 @@ export default function App() {
   useEffect(() => { if (!loading) dismissSplash() }, [loading])
 
   const go = (t: string, muscle?: string) => {
+    setScreen(t)
     setFocusMuscle(muscle ?? null)
     setTab(t as Tab)
   }

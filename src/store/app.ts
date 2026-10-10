@@ -41,12 +41,16 @@ import {
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
 import { loadPlans, savePlan, updatePlan, markPlanLogged, deletePlan } from '../lib/db/plans'
 import { usePrefs } from './prefs'
+import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
 import type { PatternKey } from '../constants/movementPatterns'
 
 interface AppStore extends AppState {
   loading: boolean
   toast: string
+  /** Set when the toast is about a failure that was reported (RFC 0103), so it
+   *  can offer a note against that report. */
+  toastReport: ErrorReport | null
 
   // Edit modal
   editModal: EditModalTarget | null
@@ -54,7 +58,7 @@ interface AppStore extends AppState {
   closeEditModal: () => void
 
   replaceLists: (lists: Partial<Pick<AppState, ListKey>>) => void
-  setToast: (msg: string) => void
+  setToast: (msg: string, report?: ErrorReport | null) => void
   withToast: (fn: () => Promise<void>, ok: string, fail?: string) => Promise<boolean>
 
   bootstrap: () => Promise<void>
@@ -236,7 +240,19 @@ function listActions<K extends ListKey, N extends string>(
   } as ListActions<N, T>
 }
 
-export const useAppStore = create<AppStore>((set, get) => ({
+// Every action leaves its name, and only its name, on the error report's trail
+// (RFC 0103), so a report says what was done before it without saying with
+// what. The toast setters are left out: they follow an action, they are not one.
+const UNTRAILED = new Set(['setToast', 'withToast'])
+function trailed(store: AppStore): AppStore {
+  return Object.fromEntries(Object.entries(store).map(([key, value]) =>
+    typeof value === 'function' && !UNTRAILED.has(key)
+      ? [key, (...args: unknown[]) => { breadcrumb(key); return value(...args) }]
+      : [key, value],
+  )) as AppStore
+}
+
+export const useAppStore = create<AppStore>((set, get) => trailed({
   weights: [],
   bodyweight: [],
   cardio: [],
@@ -256,6 +272,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   exerciseAliases: [],
   loading: true,
   toast: '',
+  toastReport: null,
   editModal: null,
 
   // ── Edit modal ──────────────────────────────────────────────────────────────
@@ -273,21 +290,25 @@ export const useAppStore = create<AppStore>((set, get) => ({
       Object.entries(lists).map(([key, xs]) => [key, byDate(xs as Dated[])]),
     ) as Partial<AppStore>,
   ),
-  setToast: (toast) => {
-    set({ toast })
-    if (toast) setTimeout(() => set({ toast: '' }), 3000)
+  setToast: (toast, toastReport = null) => {
+    set({ toast, toastReport })
+    // Twice as long when it offers a note: three seconds is too short to tap.
+    if (toast) setTimeout(() => {
+      if (get().toast === toast) set({ toast: '', toastReport: null })
+    }, toastReport ? 6000 : 3000)
   },
   // The store's actions throw; every caller answered with the same try/catch and
   // two toasts. Put the whole success path — the write and the form reset that
   // follows it — inside `fn`, so a failed write leaves the form untouched.
-  // Never throws: returns true when `fn` completed.
+  // A failure the app did not expect is reported (RFC 0103) and its toast
+  // offers a note. Never throws: returns true when `fn` completed.
   withToast: async (fn, ok, fail = 'Failed to save.') => {
     try {
       await fn()
       get().setToast(ok)
       return true
-    } catch {
-      get().setToast(fail)
+    } catch (e) {
+      get().setToast(fail, reportError(e, 'write'))
       return false
     }
   },

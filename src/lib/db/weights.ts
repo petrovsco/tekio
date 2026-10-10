@@ -8,6 +8,7 @@ import { withOrigin } from '../env'
 import { getOrCreateExerciseRow } from './exercises'
 import { userRows, deleteRow } from './_rows'
 import { liftSetProblem } from '../sets'
+import { KnownError } from '../errorReport'
 
 async function getOrCreateSession(date: string): Promise<string> {
   const { data: existing } = await supabase
@@ -83,9 +84,9 @@ export async function saveWeightEntry(
 ): Promise<{ entry: WeightEntry; linked: boolean }> {
   // Nothing is written unless every set can be: an entry is never stored
   // without its sets, and never with a set the table would refuse.
-  if (entry.sets.length === 0) throw new Error('An exercise needs at least one set.')
+  if (entry.sets.length === 0) throw new KnownError('An exercise needs at least one set.')
   const problem = entry.sets.map(liftSetProblem).find(Boolean)
-  if (problem) throw new Error(problem)
+  if (problem) throw new KnownError(problem)
 
   // The row, not just its id: what the user typed may be an alias, and the
   // entry handed back seeds the in-memory log. Returning the typed spelling
@@ -157,9 +158,9 @@ export async function updateWeightEntry(
 ): Promise<void> {
   // Check before the delete below: a refused insert after it would leave the
   // entry with no sets at all.
-  if (patch.sets.length === 0) throw new Error('An exercise needs at least one set.')
+  if (patch.sets.length === 0) throw new KnownError('An exercise needs at least one set.')
   const problem = patch.sets.map(liftSetProblem).find(Boolean)
-  if (problem) throw new Error(problem)
+  if (problem) throw new KnownError(problem)
 
   // Replace all sets for this session_exercise
   await supabase.from('session_sets').delete().eq('session_exercise_id', id)
