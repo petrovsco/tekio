@@ -52,11 +52,24 @@ const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
  *  chart axis inside one year. */
 export type DateYear = 'auto' | 'short' | 'never'
 
+const RELATIVE: Record<number, string> = { [-1]: 'Yesterday', 0: 'Today', 1: 'Tomorrow' }
+
 /** A stored date (YYYY-MM-DD, or YYYY-MM for a month bucket) as the app prints
- *  it: "8 Oct", "Wed 8 Oct", "Oct '26". */
-export function fmtDate(date: string, { weekday = false, year = 'auto' }: { weekday?: boolean; year?: DateYear } = {}): string {
+ *  it: "8 Oct", "Wed 8 Oct", "Oct '26" — and "Today", "Yesterday" or
+ *  "Tomorrow" when it is one of those, unless `relative` is off (a chart axis,
+ *  where a word among dates breaks the run). `midSentence` lowercases the word
+ *  for a date inside a sentence: "prefilled from yesterday". */
+export function fmtDate(
+  date: string,
+  { weekday = false, year = 'auto', relative = true, midSentence = false }:
+    { weekday?: boolean; year?: DateYear; relative?: boolean; midSentence?: boolean } = {},
+): string {
   const [y, m, d] = date.split('-').map(Number)
   if (!y || !m) return date
+  if (relative && d) {
+    const word = RELATIVE[daysBetween(today(), date)]
+    if (word) return midSentence ? word.toLowerCase() : word
+  }
   const yearPart = year === 'short' ? ` '${String(y).slice(2)}`
     : year === 'auto' && String(y) !== today().slice(0, 4) ? ` ${y}`
     : ''

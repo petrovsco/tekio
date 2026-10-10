@@ -91,8 +91,8 @@ export function Progress({ lens }: { lens: Lens }) {
     : rollupCardio(sessions, grain, weekStartDay)
   const labelOf = (key: string) => {
     const hash = key.indexOf('#')
-    if (hash >= 0) return fmtDate(key.slice(0, hash), { year: spansYears ? 'short' : 'never' })
-    return fmtDate(key, { year: grain === 'week' ? 'never' : 'short' })
+    if (hash >= 0) return fmtDate(key.slice(0, hash), { year: spansYears ? 'short' : 'never', relative: false })
+    return fmtDate(key, { year: grain === 'week' ? 'never' : 'short', relative: false })
   }
   // A rolled-up point is a sum, so its tooltip leads with the count.
   const tooltipLabel = (key: string, payload: ReadonlyArray<{ payload?: CardioBucket }>) => {

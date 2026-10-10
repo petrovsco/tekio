@@ -119,7 +119,7 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
   }
   const hrMaxStatus =
     source === 'tracker' && stored
-      ? `Using ${stored.value} bpm from your tracker${observed?.value === stored.value ? ` (${observed.label}, ${fmtDate(observed.date)})` : ''}.`
+      ? `Using ${stored.value} bpm from your tracker${observed?.value === stored.value ? ` (${observed.label}, ${fmtDate(observed.date, { midSentence: true })})` : ''}.`
       : source === 'typed' && stored
         ? `Using ${stored.value} bpm you typed.`
         : source === 'estimate'
@@ -174,7 +174,7 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
         {proposal && (
           <div className="flex items-center justify-between gap-3 border border-line rounded-[3px] px-2.5 py-2 mb-2.5">
             <span className="text-xs text-ink leading-[1.4]">
-              Your tracker recorded {proposal.value} bpm twice in the last {HR_MAX_WINDOW_MONTHS} months ({proposal.label}, {fmtDate(proposal.date)}).
+              Your tracker recorded {proposal.value} bpm twice in the last {HR_MAX_WINDOW_MONTHS} months ({proposal.label}, {fmtDate(proposal.date, { midSentence: true })}).
             </span>
             <Btn small className="shrink-0" onClick={() => setHrMaxStored(proposal.value, 'tracker')}>
               Use {proposal.value}

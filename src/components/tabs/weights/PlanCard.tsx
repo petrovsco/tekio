@@ -127,7 +127,7 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
       )}
       {expired.length > 0 && (
         <p className="mt-2 text-[10px] text-ink-3 leading-snug">
-          Not logged: {expired.map(p => `${p.exercise} (${fmtDate(p.date)})`).join(', ')}
+          Not logged: {expired.map(p => `${p.exercise} (${fmtDate(p.date, { midSentence: true })})`).join(', ')}
         </p>
       )}
       <button onClick={onAdd} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">

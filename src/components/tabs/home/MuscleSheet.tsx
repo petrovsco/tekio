@@ -21,7 +21,11 @@ import { MovementQuestion } from '../weights/MovementQuestion'
 // Logging goes through an exercise on purpose — sets classify into adaptations
 // by rep range, so a bare set count would write data no read can use.
 
-const fmtDay = (date: string): string => fmtDate(date)
+/** "today", "yesterday", or "last 8 Oct" — when an exercise was last logged. */
+const lastLogged = (date: string): string => {
+  const when = fmtDate(date, { midSentence: true })
+  return /^\d/.test(when) ? `last ${when}` : when
+}
 
 const FOOT_BTN = 'w-full min-h-[48px] rounded-[3px] text-[14px] font-bold cursor-pointer disabled:opacity-45'
 const FOOT_BTN_SOLID = `${FOOT_BTN} border border-ink bg-ink text-white`
@@ -259,7 +263,7 @@ export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
               <span className="block text-[14px] font-bold truncate">{c.exercise}</span>
               <span className="block text-[11px] text-ink-2">
                 {c.source
-                  ? `${loggedToday(c) ? 'today' : `last ${fmtDay(c.source.lastDate)}`} · ${schemeLabel(c.source.lastSets)}`
+                  ? `${lastLogged(c.source.lastDate)} · ${schemeLabel(c.source.lastSets)}`
                   : c.feeds ? 'not logged yet' : `does not count for ${muscle}`}
               </span>
             </span>

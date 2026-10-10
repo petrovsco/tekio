@@ -157,7 +157,7 @@ export function WeightsTab() {
     .filter(d => d.exercise === chartEx)
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(d => ({
-      date: fmtDate(d.date, { year: 'never' }),
+      date: fmtDate(d.date, { year: 'never', relative: false }),
       maxWeight: Math.max(...d.sets.map(s => s.weight)),
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
     })), [weights, chartEx])
@@ -222,7 +222,7 @@ export function WeightsTab() {
             )}
             {lastPerf && (
               <div className="px-2.5 py-2 bg-hairline rounded-[3px] text-[11px] text-ink-2">
-                <span className="font-bold text-ink">Last ({fmtDate(lastPerf.date)}):</span>{' '}
+                <span className="font-bold text-ink">Last ({fmtDate(lastPerf.date, { midSentence: true })}):</span>{' '}
                 {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
               </div>
             )}

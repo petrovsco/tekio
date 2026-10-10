@@ -85,7 +85,7 @@ export function MobilityTab() {
     .filter(m => m.exercises.some(e => e.name === chartEx))
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(m => ({
-      date: fmtDate(m.date, { year: 'never' }),
+      date: fmtDate(m.date, { year: 'never', relative: false }),
       duration: m.exercises.find(e => e.name === chartEx)?.duration ?? 0,
     }))
 

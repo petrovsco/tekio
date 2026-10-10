@@ -54,7 +54,7 @@ function WeightCapture({ onClose }: { onClose: () => void }) {
         />
       }
       note={last
-        ? `prefilled from ${fmtDate(last.date)} (${last.weight.toFixed(1)} kg) — step to today, then log`
+        ? `prefilled from ${fmtDate(last.date, { midSentence: true })} (${last.weight.toFixed(1)} kg) — step to today, then log`
         : 'no entries yet — step to today, then log'}
     />
   )

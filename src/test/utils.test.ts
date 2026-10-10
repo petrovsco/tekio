@@ -395,8 +395,8 @@ describe('formatDurationMins / parseDurationMins', () => {
 describe('fmtDate', () => {
   const thisYear = today().slice(0, 4)
   it('prints the day, then the month as a word', () => {
-    expect(fmtDate(`${thisYear}-09-08`)).toBe('8 Sept')
-    expect(fmtDate(`${thisYear}-10-08`, { weekday: false, year: 'never' })).toBe('8 Oct')
+    expect(fmtDate(`${thisYear}-09-08`, { relative: false })).toBe('8 Sept')
+    expect(fmtDate(`${thisYear}-10-08`, { year: 'never', relative: false })).toBe('8 Oct')
   })
   it('adds the year only when it is not this one, unless told', () => {
     expect(fmtDate('2025-03-03')).toBe('3 Mar 2025')
@@ -411,5 +411,14 @@ describe('fmtDate', () => {
   })
   it('passes anything that is not a date through unchanged', () => {
     expect(fmtDate('')).toBe('')
+  })
+  it('names today, yesterday and tomorrow, lowercased mid-sentence', () => {
+    const t = today()
+    const shift = (n: number) => new Date(Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10) + n)).toISOString().slice(0, 10)
+    expect(fmtDate(t)).toBe('Today')
+    expect(fmtDate(shift(-1), { weekday: true })).toBe('Yesterday')
+    expect(fmtDate(shift(1), { midSentence: true })).toBe('tomorrow')
+    expect(fmtDate(shift(2))).not.toMatch(/day$/i)
+    expect(fmtDate(t, { relative: false })).toMatch(/^\d+ [A-Z][a-z]+$/)
   })
 })
