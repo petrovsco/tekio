@@ -1,7 +1,12 @@
 import type { WeightEntry, MobilityEntry, ExerciseMuscleLink } from '../types'
 
-export const today = (): string =>
-  new Date().toISOString().slice(0, 10)
+/** Today's date (YYYY-MM-DD) on the device's own clock. Not `toISOString()`,
+ *  which is the UTC date: east of Greenwich it still says yesterday for the
+ *  first hours after midnight, and a log made then would land on the wrong day. */
+export const today = (): string => {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 /**
  * Groups `rows` by `key`, in first-seen key order; `value` maps each row into
@@ -92,10 +97,12 @@ export type WeekStartDay = 'sunday' | 'monday'
 
 /** Returns the date (YYYY-MM-DD) of the start of the week containing `s`. */
 export const startOfWeek = (s: string, weekStart: WeekStartDay = 'monday'): string => {
-  const d = new Date(s)
-  const day = d.getDay() // 0 = Sunday … 6 = Saturday
+  // Day arithmetic in UTC throughout: `new Date(s)` is UTC midnight, and a
+  // local getDay() would read the day before west of Greenwich.
+  const d = new Date(`${s}T00:00:00Z`)
+  const day = d.getUTCDay() // 0 = Sunday … 6 = Saturday
   const offset = weekStart === 'monday' ? (day + 6) % 7 : day
-  d.setDate(d.getDate() - offset)
+  d.setUTCDate(d.getUTCDate() - offset)
   return d.toISOString().slice(0, 10)
 }
 

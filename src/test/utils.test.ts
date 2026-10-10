@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, today } from '../lib/utils'
+import { describe, it, expect, vi } from 'vitest'
+import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, today, startOfWeek } from '../lib/utils'
 import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -420,5 +420,33 @@ describe('fmtDate', () => {
     expect(fmtDate(shift(1), { midSentence: true })).toBe('tomorrow')
     expect(fmtDate(shift(2))).not.toMatch(/day$/i)
     expect(fmtDate(t, { relative: false })).toMatch(/^\d+ [A-Z][a-z]+$/)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// today / startOfWeek — the device's calendar day, not UTC's
+// ---------------------------------------------------------------------------
+describe('today', () => {
+  const inZone = (tz: string, fn: () => void) => {
+    const was = process.env.TZ
+    process.env.TZ = tz
+    try { fn() } finally { process.env.TZ = was }
+  }
+  it('is the local date just after midnight east of Greenwich', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-09T22:30:00Z')) // 01:30 on the 10th in Sofia
+    try {
+      inZone('Europe/Sofia', () => expect(today()).toBe('2026-10-10'))
+      inZone('America/Los_Angeles', () => expect(today()).toBe('2026-10-09'))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+  it('starts the week on the right day west of Greenwich', () => {
+    inZone('America/Los_Angeles', () => {
+      expect(startOfWeek('2026-10-07', 'monday')).toBe('2026-10-05')
+      expect(startOfWeek('2026-10-05', 'monday')).toBe('2026-10-05')
+      expect(startOfWeek('2026-10-07', 'sunday')).toBe('2026-10-04')
+    })
   })
 })
