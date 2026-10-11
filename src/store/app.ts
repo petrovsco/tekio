@@ -52,7 +52,7 @@ interface AppStore extends AppState {
   loading: boolean
   toast: string
   /** Set when the toast is about a failure that was reported (RFC 0103), so it
-   *  can offer a note against that report. */
+   *  can say so. */
   toastReport: ErrorReport | null
 
   // Edit modal
@@ -305,16 +305,15 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   ),
   setToast: (toast, toastReport = null) => {
     set({ toast, toastReport })
-    // Twice as long when it offers a note: three seconds is too short to tap.
     if (toast) setTimeout(() => {
       if (get().toast === toast) set({ toast: '', toastReport: null })
-    }, toastReport ? 6000 : 3000)
+    }, 3000)
   },
   // The store's actions throw; every caller answered with the same try/catch and
   // two toasts. Put the whole success path — the write and the form reset that
   // follows it — inside `fn`, so a failed write leaves the form untouched.
   // A failure the app did not expect is reported (RFC 0103) and its toast
-  // offers a note. Never throws: returns true when `fn` completed.
+  // says so. Never throws: returns true when `fn` completed.
   withToast: async (fn, ok, fail = 'Failed to save.') => {
     try {
       await fn()

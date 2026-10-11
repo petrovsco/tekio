@@ -1,20 +1,18 @@
-import { Component, lazy, Suspense } from 'react'
+import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { Btn } from './Button'
 import { dismissSplash } from '../../lib/splash'
 import { reportError, type ErrorReport } from '../../lib/errorReport'
 
-const ReportNoteSheet = lazy(() => import('./ReportNoteSheet'))
-
 // Without a boundary, any render error unmounts the whole tree and leaves a
 // white page with nothing to tap. This is the floor under everything: a line
 // saying what happened and the one action that fixes it. The error is sent on
-// its own (RFC 0103); the screen says so and offers a note.
+// its own (RFC 0103), and the screen says so.
 
-interface State { error: Error | null; report: ErrorReport | null; noting: boolean }
+interface State { error: Error | null; report: ErrorReport | null }
 
 export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
-  state: State = { error: null, report: null, noting: false }
+  state: State = { error: null, report: null }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { error }
@@ -28,27 +26,15 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, State> {
 
   render() {
     if (!this.state.error) return this.props.children
-    const { report, noting } = this.state
+    const { report } = this.state
     return (
       <div className="min-h-svh flex flex-col items-center justify-center gap-3 p-4 text-center">
         <p className="text-sm text-ink">Something went wrong loading this screen.</p>
         <p className="text-xs text-ink-3 max-w-[320px]">{this.state.error.message}</p>
         <div className="flex items-center gap-3">
           <Btn onClick={() => window.location.reload()}>Reload</Btn>
-          {report && (
-            <span className="text-xs text-ink-2">
-              Reported ·{' '}
-              <button onClick={() => this.setState({ noting: true })} className="underline cursor-pointer">
-                Add a note
-              </button>
-            </span>
-          )}
+          {report && <span className="text-xs text-ink-2">Reported</span>}
         </div>
-        {report && noting && (
-          <Suspense fallback={null}>
-            <ReportNoteSheet report={report} onClose={() => this.setState({ noting: false })} />
-          </Suspense>
-        )}
       </div>
     )
   }

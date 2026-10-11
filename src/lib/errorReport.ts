@@ -4,13 +4,14 @@
 // caught — is sent on its own, with no tap. What is sent is built here from a
 // whitelist and never by serialising state, so a logged value cannot ride
 // along: version, build, screen, the error's name, message, code and stack,
-// the browser, and the names of the last few screens and store actions. A note
-// is the only free text and goes only when the user taps Send.
+// the browser, and the names of the last few screens and store actions. There
+// is no free text: a user who wants to say more has other channels, and
+// chooses there what to share.
 //
 // The expected is never reported: a validation message the app already shows
 // throws a `KnownError`, and a network that is not there is not a bug.
 import { APP_ENV } from './env'
-import { sendErrorReport, sendErrorReportNote } from './db/errorReports'
+import { sendErrorReport } from './db/errorReports'
 
 /** An error the app expects and already explains on screen. Never reported. */
 export class KnownError extends Error {
@@ -170,7 +171,7 @@ const sent = new Map<string, number>()
 
 /**
  * Report an unexpected error. Returns the report, so the screen can say
- * "Reported" and offer a note against it, or null when nothing was sent.
+ * "Reported", or null when nothing was sent.
  * Never throws, and a failed send is dropped: the reporter must not become a
  * second fault.
  */
@@ -191,14 +192,9 @@ export function reportError(
   }
 }
 
-/** The user's note, on the same row as the report it was written about. */
-export function sendNote(report: ErrorReport, note: string): Promise<void> {
-  return sendErrorReportNote(report, note)
-}
-
 /** Errors nothing else caught. Installed once, from main.tsx. Several sheets
  *  await a write with no catch, so a refused write lands here, and `onReport`
- *  is how the screen still says so and offers the note. */
+ *  is how the screen still says so. */
 export function reportUncaught(onReport: (report: ErrorReport) => void) {
   const handle = (thrown: unknown, source: ReportSource) => {
     const report = reportError(thrown, source)

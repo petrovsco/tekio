@@ -7,7 +7,6 @@ vi.mock('../lib/supabase', () => ({ supabase: {} }))
 const send = vi.fn(async () => {})
 vi.mock('../lib/db/errorReports', () => ({
   sendErrorReport: (...a: unknown[]) => send(...(a as [])),
-  sendErrorReportNote: vi.fn(async () => {}),
 }))
 
 const { buildReport, reportError, breadcrumb, setScreen, KnownError } = await import('../lib/errorReport')
@@ -97,7 +96,7 @@ describe('what is sent', () => {
 })
 
 describe('a failed write', () => {
-  it('is reported, and its toast offers a note against that report', async () => {
+  it('is reported, and its toast says so', async () => {
     const { useAppStore } = await import('../store/app')
     const ok = await useAppStore.getState().withToast(async () => { throw new Error('insert refused') }, 'Saved.')
     expect(ok).toBe(false)
