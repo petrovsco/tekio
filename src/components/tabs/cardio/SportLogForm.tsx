@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { today, parseDurationMins, uniqSorted } from '../../../lib/utils'
+import { today, parseDurationMins, uniqSorted, formatDurationMins } from '../../../lib/utils'
 import { Inp, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { FieldLabel, Toggle, Rating } from '../../ui/Fields'
 import { SmartInput } from '../../ui/SmartInput'
 import { ChipListInput } from '../../ui/ChipListInput'
-import type { QualityRating, MatchResult, NewSportFlags } from '../../../types'
+import type { QualityRating, MatchResult, NewSportFlags, PlannedSession } from '../../../types'
 
 const RESULTS: { value: MatchResult; label: string }[] = [
   { value: 'win', label: 'Win' },
@@ -20,12 +20,16 @@ const RESULTS: { value: MatchResult; label: string }[] = [
  * ones a cardio session genuinely lacks — sport name, trainer, quality,
  * competitors, teammates, result.
  */
-export function SportLogForm() {
-  const [sport, setSport] = useState('')
+export function SportLogForm({ plan, onLogged }: {
+  /** Fills the form once, as on the cardio form (RFC 0104). */
+  plan?: PlannedSession | null
+  onLogged?: (entryId: string) => Promise<void>
+} = {}) {
+  const [sport, setSport] = useState(plan?.name ?? '')
   const [date, setDate] = useState(today())
   const [withTrainer, setWithTrainer] = useState(false)
   const [quality, setQuality] = useState(0)
-  const [duration, setDuration] = useState('')
+  const [duration, setDuration] = useState(plan?.duration ? formatDurationMins(plan.duration) : '')
   const [avgHr, setAvgHr] = useState('')
   const [notes, setNotes] = useState('')
   const [competitorNames, setCompetitorNames] = useState<string[]>([])
@@ -59,7 +63,7 @@ export function SportLogForm() {
       ? { hasCompetitor: newSportHasCompetitor, hasTeammate: newSportHasTeammate }
       : undefined
     await withToast(async () => {
-      await addSportEntry({
+      const saved = await addSportEntry({
         sport: sport.trim(),
         date,
         withTrainer,
@@ -71,6 +75,7 @@ export function SportLogForm() {
         result: hasCompetitor ? (result || undefined) : undefined,
         teammateNames: hasTeammate ? teammates : undefined,
       }, newSportFlags)
+      await onLogged?.(saved.id)
       setSport(''); setNotes(''); setQuality(0); setWithTrainer(false)
       setDuration(''); setAvgHr('')
       setCompetitorNames([]); setResult(''); setTeammates([])
