@@ -1,23 +1,36 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { today, parseDurationMins, calcPace } from '../../../lib/utils'
+import { today, parseDurationMins, calcPace, formatDurationMins } from '../../../lib/utils'
 import { CARDIO_TYPES, CARDIO_FORMATS } from '../../../constants/app'
 import { Inp, SelEl } from '../../ui/Input'
 import { Toggle } from '../../ui/Fields'
 import { Btn } from '../../ui/Button'
 import { useHrMax } from '../../../hooks/useHrMax'
-import type { CardioType, CardioFormat } from '../../../types'
+import type { CardioType, CardioFormat, PlannedSession } from '../../../types'
 
-export function CardioLogForm() {
+/** A planned type the select knows, or the default: an agent may have written
+ *  a type the app does not list. */
+const knownType = (name?: string): CardioType =>
+  CARDIO_TYPES.find(t => t.toLowerCase() === name?.trim().toLowerCase()) ?? 'Running'
+
+/**
+ * `plan` fills the form once, when it mounts (the tab keys the form by the
+ * plan); `onLogged` hears the saved entry's id, so the plan can be ticked
+ * (RFC 0104). The numbers typed may differ from the plan's targets.
+ */
+export function CardioLogForm({ plan, onLogged }: {
+  plan?: PlannedSession | null
+  onLogged?: (entryId: string) => Promise<void>
+} = {}) {
   const { hrMax } = useHrMax()
-  const [type, setType] = useState<CardioType>('Running')
+  const [type, setType] = useState<CardioType>(knownType(plan?.name))
   const [date, setDate] = useState(today())
-  const [duration, setDuration] = useState('')
-  const [distance, setDistance] = useState('')
+  const [duration, setDuration] = useState(plan?.duration ? formatDurationMins(plan.duration) : '')
+  const [distance, setDistance] = useState(plan?.distance ? String(plan.distance) : '')
   const [avgHr, setAvgHr] = useState('')
-  const [format, setFormat] = useState<CardioFormat | ''>('')
-  const [bout, setBout] = useState('')
-  const [notes, setNotes] = useState('')
+  const [format, setFormat] = useState<CardioFormat | ''>(plan?.format ?? '')
+  const [bout, setBout] = useState(plan?.boutSeconds ? formatDurationMins(plan.boutSeconds / 60) : '')
+  const [notes, setNotes] = useState(plan?.notes ?? '')
   const addCardioEntry = useAppStore(s => s.addCardioEntry)
   const withToast = useAppStore(s => s.withToast)
 
@@ -30,7 +43,7 @@ export function CardioLogForm() {
   const add = async () => {
     if (!durationMins) return
     await withToast(async () => {
-      await addCardioEntry({
+      const saved = await addCardioEntry({
         date, type, duration: durationMins,
         distance: distKm || undefined,
         avgHr: avgHr ? +avgHr : undefined,
@@ -38,6 +51,7 @@ export function CardioLogForm() {
         boutSeconds,
         notes: notes || undefined,
       })
+      await onLogged?.(saved.id)
       setDuration(''); setDistance(''); setAvgHr(''); setFormat(''); setBout(''); setNotes('')
     }, 'Session logged!')
   }

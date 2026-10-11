@@ -17,6 +17,8 @@ import type {
   ReadinessInput,
   CheckInAnswers,
   PlannedExercise,
+  PlannedSession,
+  PlannedKind,
 } from '../types'
 import { getOrCreateUser } from '../lib/db/user'
 import { loadExerciseAliases } from '../lib/db/exercises'
@@ -40,6 +42,7 @@ import {
 } from '../lib/db/recovery'
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
 import { loadPlans, savePlan, updatePlan, markPlanLogged, deletePlan } from '../lib/db/plans'
+import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
@@ -80,6 +83,15 @@ interface AppStore extends AppState {
   /** The plan was logged as the weight entry `entryId`. */
   markPlanLogged: (id: string, entryId: string) => Promise<void>
 
+  // Planned cardio, sport and mobility sessions (RFC 0104). Never handed to a
+  // read either.
+  sessionPlans: PlannedSession[]
+  addSessionPlan: (plan: SessionPlanPatch) => Promise<void>
+  removeSessionPlan: (id: string) => Promise<void>
+  editSessionPlan: (id: string, patch: SessionPlanPatch) => Promise<void>
+  /** The plan was logged as the `kind` entry `entryId`. */
+  markSessionPlanLogged: (id: string, kind: PlannedKind, entryId: string) => Promise<void>
+
 
 
   // Bodyweight
@@ -93,12 +105,12 @@ interface AppStore extends AppState {
   editCardioEntry: (id: string, patch: Omit<CardioEntry, 'id'>) => Promise<void>
 
   // Mobility
-  addMobilityEntry: (entry: Omit<MobilityEntry, 'id'>) => Promise<void>
+  addMobilityEntry: (entry: Omit<MobilityEntry, 'id'>) => Promise<MobilityEntry>
   removeMobilityEntry: (id: string) => Promise<void>
   editMobilityEntry: (id: string, patch: Omit<MobilityEntry, 'id'>) => Promise<void>
 
   // Sports
-  addSportEntry: (entry: Omit<SportEntry, 'id'>, newSportFlags?: NewSportFlags) => Promise<void>
+  addSportEntry: (entry: Omit<SportEntry, 'id'>, newSportFlags?: NewSportFlags) => Promise<SportEntry>
   removeSportEntry: (id: string) => Promise<void>
   editSportEntry: (id: string, patch: Omit<SportEntry, 'id'>, newSportFlags?: NewSportFlags) => Promise<void>
 
@@ -263,6 +275,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   sleep: [],
   readinessInputs: [],
   plans: [],
+  sessionPlans: [],
   sauna: [],
   cold: [],
   muscleGroups: [],
@@ -318,7 +331,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     set({ loading: true })
     try {
       await getOrCreateUser()
-      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs, plans] = await Promise.all([
+      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs, plans, sessionPlans] = await Promise.all([
         loadWeights(),
         loadBodyweight(),
         loadCardio(),
@@ -336,6 +349,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
         loadExerciseAliases(),
         loadReadinessInputs(),
         loadPlans(),
+        loadSessionPlans(),
         usePrefs.getState().loadPrefs(),
       ])
       set({
@@ -356,6 +370,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
         exerciseAliases,
         readinessInputs,
         plans,
+        sessionPlans,
       })
     } finally {
       set({ loading: false })
@@ -417,6 +432,24 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     set(s => ({ plans: patchId(s.plans, id, { loggedAs: entryId }) }))
   },
 
+  // ── Planned sessions ─────────────────────────────────────────────────────────
+  addSessionPlan: async (plan) => {
+    const saved = await saveSessionPlan(plan)
+    set(s => ({ sessionPlans: [...s.sessionPlans, saved] }))
+  },
+  removeSessionPlan: async (id) => {
+    await deleteSessionPlan(id)
+    set(s => ({ sessionPlans: dropId(s.sessionPlans, id) }))
+  },
+  editSessionPlan: async (id, patch) => {
+    await updateSessionPlan(id, patch)
+    set(s => ({ sessionPlans: patchId(s.sessionPlans, id, patch) }))
+  },
+  markSessionPlanLogged: async (id, kind, entryId) => {
+    await markSessionPlanLogged(id, kind, entryId)
+    set(s => ({ sessionPlans: patchId(s.sessionPlans, id, { loggedAs: entryId }) }))
+  },
+
   // ── Bodyweight ───────────────────────────────────────────────────────────────
   ...listActions(set, 'bodyweight', 'Bodyweight', {
     save: saveBodyweightEntry, del: deleteBodyweightEntry, update: updateBodyweightEntry,
@@ -433,6 +466,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   addMobilityEntry: async (entry) => {
     const saved = await saveMobilityEntry(entry)
     set(s => ({ mobility: applyMuscleTags(insert(s.mobility, saved), saved.exercises) }))
+    return saved
   },
   removeMobilityEntry: async (id) => {
     await deleteMobilityEntry(id)
@@ -453,6 +487,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
         ? [...s.sportTypes.filter(t => t.name.toLowerCase() !== saved.sport.toLowerCase()), { name: saved.sport, ...newSportFlags }]
         : s.sportTypes,
     }))
+    return saved
   },
   removeSportEntry: async (id) => {
     await deleteSportEntry(id)

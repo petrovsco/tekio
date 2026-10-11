@@ -21,6 +21,7 @@ import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exercis
 import { MovementQuestion } from './MovementQuestion'
 import { PlanCard } from './PlanCard'
 import { PlanSheet } from './PlanSheet'
+import { FromPlanStrip } from '../../ui/PlannedCard'
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -195,12 +196,7 @@ export function WeightsTab() {
 
       <div ref={formRef} className="scroll-mt-24"><Card>
           <SecTitle>Log Exercise</SecTitle>
-          {fromPlan && (
-            <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-planned bg-planned-tint rounded-[3px]">
-              <span className="text-[11px] text-ink-2">From today's plan: <span className="font-bold text-ink">{fromPlan.exercise}</span></span>
-              <button className="text-[11px] text-ink-3 hover:text-ink cursor-pointer" onClick={() => setFromPlan(null)}>Unlink</button>
-            </div>
-          )}
+          {fromPlan && <FromPlanStrip name={fromPlan.exercise} onUnlink={() => setFromPlan(null)} />}
           <div className="flex flex-col gap-2.5 mb-3">
             <div className="flex flex-col gap-1">
               <label className={FIELD_LABEL}>Exercise</label>

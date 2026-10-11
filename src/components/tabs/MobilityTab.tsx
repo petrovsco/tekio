@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
@@ -13,7 +13,12 @@ import { SmartInput } from '../ui/SmartInput'
 import { HistoryList } from '../ui/HistoryList'
 import { CHART, CHART_AXIS, CHART_LINE, CHART_TOOLTIP, hoverDot } from '../ui/chart'
 import { ChartFrame } from '../ui/ChartFrame'
-import type { MobilityExercise } from '../../types'
+import { FromPlanStrip } from '../ui/PlannedCard'
+import { SessionPlanCard } from './plans/SessionPlanCard'
+import { SessionPlanSheet } from './plans/SessionPlanSheet'
+import type { MobilityExercise, PlannedKind, PlannedSession } from '../../types'
+
+const KINDS: PlannedKind[] = ['mobility']
 
 /** One header row of labels over the repeating exercise rows, the same shape
  *  SetsGrid uses — a label per field would repeat eight times (§8). */
@@ -37,6 +42,12 @@ export function MobilityTab() {
   const openEditModal = useAppStore(s => s.openEditModal)
   const withToast = useAppStore(s => s.withToast)
   const { weekStartDay } = usePrefs()
+  const markSessionPlanLogged = useAppStore(s => s.markSessionPlanLogged)
+  // The plan the form was filled from (RFC 0104): saving the form logs the
+  // session and ticks the plan.
+  const [fromPlan, setFromPlan] = useState<PlannedSession | null>(null)
+  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedSession } | null>(null)
+  const formRef = useRef<HTMLDivElement>(null)
 
   const allExNames = uniqSorted(mobility.flatMap(m => m.exercises.map(e => e.name)))
 
@@ -73,11 +84,31 @@ export function MobilityTab() {
     const valid = exercises.filter(e => e.name.trim() && e.duration > 0)
     if (valid.length === 0) return
     await withToast(async () => {
-      await addMobilityEntry({ date, exercises: valid, duration: valid.reduce((s, e) => s + e.duration, 0) })
+      const saved = await addMobilityEntry({ date, exercises: valid, duration: valid.reduce((s, e) => s + e.duration, 0) })
+      if (fromPlan) await markSessionPlanLogged(fromPlan.id, 'mobility', saved.id)
       setExercises([emptyExercise()])
       setRevealedEx(1)
       setMuscleOpen(null)
+      setFromPlan(null)
     }, 'Session logged!')
+  }
+
+  // A plan fills the form; its minutes are targets, and a stretch planned
+  // without any is left for you to fill. Known stretches bring their muscle
+  // tags, as typing the name would.
+  const logFromPlan = (p: PlannedSession) => {
+    const rows = (p.stretches ?? []).slice(0, 8).map(st => ({
+      ...emptyExercise(),
+      name: st.name,
+      duration: st.duration,
+      muscleGroups: [...(tagsByName.get(st.name.toLowerCase()) ?? [])],
+    }))
+    setExercises(rows.length ? rows : [emptyExercise()])
+    setRevealedEx(Math.max(1, rows.length))
+    setMuscleOpen(null)
+    setDate(today())
+    setFromPlan(p)
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
   const chartEx = selEx || allExNames[0] || ''
@@ -105,8 +136,19 @@ export function MobilityTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <SessionPlanCard
+        kinds={KINDS}
+        onLog={logFromPlan}
+        onEdit={p => setPlanSheet({ plan: p })}
+        onAdd={() => setPlanSheet({})}
+      />
+      {planSheet && (
+        <SessionPlanSheet plan={planSheet.plan} kinds={KINDS} onClose={() => setPlanSheet(null)} />
+      )}
+
+      <div ref={formRef} className="scroll-mt-24"><Card>
         <SecTitle>Log session</SecTitle>
+        {fromPlan && <FromPlanStrip name="Mobility" onUnlink={() => setFromPlan(null)} />}
         <div className="mb-3">
           <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
         </div>
@@ -183,7 +225,7 @@ export function MobilityTab() {
           )}
           <Btn onClick={add} className="flex-1">Log session</Btn>
         </div>
-      </Card>
+      </Card></div>
 
       {volRows.length > 0 && (
         <Card>

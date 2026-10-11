@@ -257,6 +257,41 @@ export interface PlannedExercise {
   loggedAs?: string
 }
 
+/** What a planned session is for (RFC 0104). Lifts are `PlannedExercise`. */
+export type PlannedKind = 'cardio' | 'sport' | 'mobility'
+
+/** A planned stretch: a name and the minutes to give it. */
+export interface PlannedStretch {
+  name: string
+  duration: number
+}
+
+/**
+ * A cardio, sport or mobility session written ahead of time (RFC 0104). Like a
+ * `PlannedExercise`, it counts for nothing until it is logged, and its fields
+ * are targets: logging may use other numbers.
+ */
+export interface PlannedSession {
+  id: string
+  date: string
+  kind: PlannedKind
+  /** The cardio type or the sport; empty for mobility. */
+  name: string
+  /** Target minutes (cardio, sport). */
+  duration?: number
+  /** Target km (cardio). */
+  distance?: number
+  format?: CardioFormat
+  boutSeconds?: number
+  /** The stretches (mobility). Named apart from `MobilityEntry.exercises` so a
+   *  plan is not structurally an entry and no read will type-check with one. */
+  stretches?: PlannedStretch[]
+  notes?: string
+  plannedBy: 'user' | 'agent'
+  /** The logged entry this plan became; absent while it is still a plan. */
+  loggedAs?: string
+}
+
 export interface AppState {
   weights: WeightEntry[]
   bodyweight: BodyweightEntry[]
