@@ -27,7 +27,10 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   const withToast = useAppStore(s => s.withToast)
 
   const [ex, setEx] = useState(plan?.exercise ?? '')
-  const [date, setDate] = useState(plan?.date ?? today())
+  // A missed plan opens on today: editing it is a reschedule, and a plan's day
+  // is today or later.
+  const missed = !!plan && plan.date < today()
+  const [date, setDate] = useState(plan && !missed ? plan.date : today())
   const [sets, setSets] = useState<SetStr[]>(plan?.targets.length ? toSetStr(plan.targets) : [{ weight: '', reps: '' }])
   const [revealed, setRevealed] = useState(plan?.targets.length || 1)
 
@@ -38,7 +41,7 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
     const patch = { date, exercise: ex.trim(), targets: parseSets(sets, revealed) }
     const ok = await withToast(
       () => (plan ? editPlan(plan.id, patch) : addPlan(patch)),
-      plan ? 'Plan updated' : 'Planned',
+      missed ? 'Rescheduled' : plan ? 'Plan updated' : 'Planned',
     )
     if (ok) onClose()
   }
@@ -52,7 +55,7 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   return (
     <BottomSheet
       onClose={onClose}
-      label={plan ? 'Edit plan' : 'Add to plan'}
+      label={missed ? 'Reschedule plan' : plan ? 'Edit plan' : 'Add to plan'}
       footer={
         <div className="flex gap-2">
           <Btn onClick={save} disabled={!valid} className="flex-1">Save plan</Btn>
@@ -62,9 +65,9 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
     >
       <div className="flex flex-col gap-2.5">
         <div>
-          <div className="text-[10px] font-bold tracking-[0.1em]">{plan ? 'EDIT PLAN' : 'ADD TO PLAN'}</div>
+          <div className="text-[10px] font-bold tracking-[0.1em]">{missed ? 'RESCHEDULE' : plan ? 'EDIT PLAN' : 'ADD TO PLAN'}</div>
           <p className="text-[11px] text-ink-2 mt-0.5">
-            {plan ? 'Changes the plan, not your log.' : 'For today or a later day.'} Nothing counts until you log it.
+            {missed ? 'Missed. Pick a new day.' : plan ? 'Changes the plan, not your log.' : 'For today or a later day.'} Nothing counts until you log it.
           </p>
         </div>
         <div className="flex flex-col gap-1">

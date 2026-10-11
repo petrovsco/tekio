@@ -3,10 +3,17 @@ import type { WeightEntry, MobilityEntry, ExerciseMuscleLink } from '../types'
 /** Today's date (YYYY-MM-DD) on the device's own clock. Not `toISOString()`,
  *  which is the UTC date: east of Greenwich it still says yesterday for the
  *  first hours after midnight, and a log made then would land on the wrong day. */
-export const today = (): string => {
+export const today = (): string => localDay(new Date())
+
+/** The calendar day `n` days before today, on the device's clock. */
+export const daysAgo = (n: number): string => {
   const d = new Date()
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  d.setDate(d.getDate() - n)
+  return localDay(d)
 }
+
+const localDay = (d: Date): string =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 /**
  * Groups `rows` by `key`, in first-seen key order; `value` maps each row into

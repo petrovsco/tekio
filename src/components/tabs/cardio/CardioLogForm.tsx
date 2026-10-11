@@ -32,6 +32,8 @@ export function CardioLogForm({ plan, onLogged }: {
   const [bout, setBout] = useState(plan?.boutSeconds ? formatDurationMins(plan.boutSeconds / 60) : '')
   const [notes, setNotes] = useState(plan?.notes ?? '')
   const addCardioEntry = useAppStore(s => s.addCardioEntry)
+  const editCardioEntry = useAppStore(s => s.editCardioEntry)
+  const cardio = useAppStore(s => s.cardio)
   const withToast = useAppStore(s => s.withToast)
 
   const durationMins = parseDurationMins(duration)
@@ -42,18 +44,39 @@ export function CardioLogForm({ plan, onLogged }: {
 
   const add = async () => {
     if (!durationMins) return
+    const typed = {
+      date, type, duration: durationMins,
+      distance: distKm || undefined,
+      avgHr: avgHr ? +avgHr : undefined,
+      format: format || undefined,
+      boutSeconds,
+      notes: notes || undefined,
+    }
+    // The watch already synced this session: what is typed merges into its
+    // row rather than standing beside it. The sync does the same the other
+    // way round (scripts/garmin-sync, "claims"), and a typed value wins
+    // there as here; a field left empty keeps what the watch measured.
+    const synced = cardio.find(e => e.source === 'garmin' && e.date === date && e.type === type)
     await withToast(async () => {
-      const saved = await addCardioEntry({
-        date, type, duration: durationMins,
-        distance: distKm || undefined,
-        avgHr: avgHr ? +avgHr : undefined,
-        format: format || undefined,
-        boutSeconds,
-        notes: notes || undefined,
-      })
-      await onLogged?.(saved.id)
+      let id: string
+      if (synced) {
+        const { id: syncedId, ...rest } = synced
+        await editCardioEntry(syncedId, {
+          ...rest,
+          ...typed,
+          distance: typed.distance ?? rest.distance,
+          avgHr: typed.avgHr ?? rest.avgHr,
+          format: typed.format ?? rest.format,
+          boutSeconds: typed.boutSeconds ?? rest.boutSeconds,
+          notes: typed.notes ?? rest.notes,
+        })
+        id = syncedId
+      } else {
+        id = (await addCardioEntry(typed)).id
+      }
+      await onLogged?.(id)
       setDuration(''); setDistance(''); setAvgHr(''); setFormat(''); setBout(''); setNotes('')
-    }, 'Session logged!')
+    }, synced ? 'Merged with the synced session' : 'Session logged!')
   }
 
   return (

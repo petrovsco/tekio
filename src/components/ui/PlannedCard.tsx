@@ -1,14 +1,12 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { today, daysBetween, fmtDate } from '../../lib/utils'
+import { MISSED_PLAN_KEPT_DAYS } from '../../constants/app'
 import { Card } from './Card'
 import { FIELD_LABEL } from './Input'
 import { DelBtn, ACT_CHIP } from './Button'
 import { Icon } from './Icon'
 import { MicroLabel, MICRO_LABEL } from './Badges'
 
-/** How many days an unlogged plan stays listed as not logged before it drops
- *  off the screen. Display only: a plan never counts, whatever its age. */
-const EXPIRED_SHOWN_DAYS = 7
 
 /** What every plan has, whatever it plans: a lift (RFC 0098) or a cardio,
  *  sport or mobility session (RFC 0104). */
@@ -31,8 +29,9 @@ const writeFolded = (key: string, v: boolean) => {
  * The yellow Planned card a capture tab carries above its log form. A plan is
  * a prefill, never a log: "Log" hands it to the form, and only saving the form
  * makes it work. Later days are listed so a plan made ahead can be checked;
- * earlier days' unlogged plans get one quiet line. Each tab supplies its plans,
- * how one reads, and when one counts as logged.
+ * a missed plan stays a week, to be moved to another day or removed, and is
+ * then deleted. Each tab supplies its plans, how one reads, and when one counts
+ * as logged.
  */
 export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, details, onLog, onEdit, onRemove, onAdd }: {
   plans: P[]
@@ -46,12 +45,13 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
   /** Its targets, under the name. */
   details: (plan: P) => ReactNode
   onLog: (plan: P) => void
+  /** Opens the plan sheet on this plan; on a missed one, that is a reschedule. */
   onEdit: (plan: P) => void
   onRemove: (plan: P) => void
   /** Opens the plan sheet, for a new plan. */
   onAdd: () => void
 }) {
-  const { todays, doneToday, later, expired } = useMemo(() => {
+  const { todays, doneToday, later, missed } = useMemo(() => {
     const t = today()
     const byDay = (a: P, b: P) => a.date.localeCompare(b.date)
     const open = plans.filter(p => !isLogged(p))
@@ -59,7 +59,7 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
       todays: open.filter(p => p.date === t),
       doneToday: plans.some(p => p.date === t && isLogged(p)),
       later: open.filter(p => p.date > t).sort(byDay),
-      expired: open.filter(p => p.date < t && daysBetween(p.date, t) <= EXPIRED_SHOWN_DAYS).sort(byDay),
+      missed: open.filter(p => p.date < t && daysBetween(p.date, t) <= MISSED_PLAN_KEPT_DAYS).sort(byDay),
     }
   }, [plans, isLogged])
 
@@ -67,9 +67,10 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
   const toggle = () => setFolded(f => { writeFolded(foldKey, !f); return !f })
   const summary = todays.length > 0
     ? `${todays.length} today`
-    : later.length > 0 ? `${later.length} later` : 'nothing planned'
+    : later.length > 0 ? `${later.length} later`
+    : missed.length > 0 ? `${missed.length} missed` : 'nothing planned'
 
-  const row = (p: P, when?: string) => (
+  const row = (p: P, when?: string, isMissed = false) => (
     <div key={p.id} className="flex items-start justify-between gap-2 py-2 border-b border-hairline last:border-0">
       <div className="min-w-0">
         <p className="text-xs font-bold flex items-center gap-1.5 flex-wrap text-ink">
@@ -83,13 +84,17 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
         {!when && (
           <button className={ACT_CHIP} onClick={() => onLog(p)}>Log</button>
         )}
-        <button
-          aria-label="Edit plan"
-          onClick={() => onEdit(p)}
-          className="w-7 h-7 flex items-center justify-center text-ink-3 hover:text-ink rounded-[2px] cursor-pointer transition-colors"
-        >
-          <Icon name="edit" size={13} />
-        </button>
+        {isMissed ? (
+          <button className={ACT_CHIP} onClick={() => onEdit(p)}>Reschedule</button>
+        ) : (
+          <button
+            aria-label="Edit plan"
+            onClick={() => onEdit(p)}
+            className="w-7 h-7 flex items-center justify-center text-ink-3 hover:text-ink rounded-[2px] cursor-pointer transition-colors"
+          >
+            <Icon name="edit" size={13} />
+          </button>
+        )}
         <DelBtn label="Remove plan" onClick={() => onRemove(p)} />
       </div>
     </div>
@@ -119,10 +124,11 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
           {later.map(p => row(p, fmtDate(p.date)))}
         </div>
       )}
-      {expired.length > 0 && (
-        <p className="mt-2 text-[10px] text-ink-3 leading-snug">
-          Not logged: {expired.map(p => `${title(p)} (${fmtDate(p.date, { midSentence: true })})`).join(', ')}
-        </p>
+      {missed.length > 0 && (
+        <div className="mt-3">
+          <span className={MICRO_LABEL}>Missed</span>
+          {missed.map(p => row(p, fmtDate(p.date), true))}
+        </div>
       )}
       <button onClick={onAdd} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">
         + Add to plan

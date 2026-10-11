@@ -40,6 +40,7 @@ export function SportLogForm({ plan, onLogged }: {
   const sports = useAppStore(s => s.sports)
   const sportTypes = useAppStore(s => s.sportTypes)
   const addSportEntry = useAppStore(s => s.addSportEntry)
+  const editSportEntry = useAppStore(s => s.editSportEntry)
   const withToast = useAppStore(s => s.withToast)
 
   const allSports = uniqSorted(sports.map(d => d.sport))
@@ -62,8 +63,12 @@ export function SportLogForm({ plan, onLogged }: {
     const newSportFlags: NewSportFlags | undefined = isNewSport
       ? { hasCompetitor: newSportHasCompetitor, hasTeammate: newSportHasTeammate }
       : undefined
+    // The watch already synced this game: what is typed merges into its row,
+    // as on the cardio form; an empty field keeps what the watch measured.
+    const synced = sports.find(e =>
+      e.source === 'garmin' && e.date === date && e.sport.trim().toLowerCase() === sport.trim().toLowerCase())
     await withToast(async () => {
-      const saved = await addSportEntry({
+      const typed = {
         sport: sport.trim(),
         date,
         withTrainer,
@@ -74,13 +79,28 @@ export function SportLogForm({ plan, onLogged }: {
         competitorNames: hasCompetitor ? (competitorNames.length ? competitorNames : undefined) : undefined,
         result: hasCompetitor ? (result || undefined) : undefined,
         teammateNames: hasTeammate ? teammates : undefined,
-      }, newSportFlags)
-      await onLogged?.(saved.id)
+      }
+      let id: string
+      if (synced) {
+        const { id: syncedId, ...rest } = synced
+        await editSportEntry(syncedId, {
+          ...rest,
+          ...typed,
+          sport: rest.sport,
+          duration: typed.duration ?? rest.duration,
+          avgHr: typed.avgHr ?? rest.avgHr,
+          notes: typed.notes || rest.notes,
+        }, newSportFlags)
+        id = syncedId
+      } else {
+        id = (await addSportEntry(typed, newSportFlags)).id
+      }
+      await onLogged?.(id)
       setSport(''); setNotes(''); setQuality(0); setWithTrainer(false)
       setDuration(''); setAvgHr('')
       setCompetitorNames([]); setResult(''); setTeammates([])
       setNewSportHasCompetitor(false); setNewSportHasTeammate(false)
-    }, 'Session logged!')
+    }, synced ? 'Merged with the synced session' : 'Session logged!')
   }
 
   return (

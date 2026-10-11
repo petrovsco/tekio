@@ -41,9 +41,11 @@ import {
   loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
-import { loadPlans, savePlan, updatePlan, markPlanLogged, deletePlan } from '../lib/db/plans'
-import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, type SessionPlanPatch } from '../lib/db/sessionPlans'
+import { loadPlans, savePlan, updatePlan, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
+import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, pruneMissedSessionPlans, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
+import { daysAgo } from '../lib/utils'
+import { MISSED_PLAN_KEPT_DAYS } from '../constants/app'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
 import type { PatternKey } from '../constants/movementPatterns'
@@ -347,8 +349,10 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
         loadAdaptationTargets(),
         loadExerciseAliases(),
         loadReadinessInputs(),
-        loadPlans(),
-        loadSessionPlans(),
+        // A missed plan is deleted a week after its day (RFC 0104). A failed
+        // prune costs nothing but a stale row, so it never holds up the start.
+        pruneMissedPlans(daysAgo(MISSED_PLAN_KEPT_DAYS)).catch(() => {}).then(loadPlans),
+        pruneMissedSessionPlans(daysAgo(MISSED_PLAN_KEPT_DAYS)).catch(() => {}).then(loadSessionPlans),
         usePrefs.getState().loadPrefs(),
       ])
       set({

@@ -146,3 +146,8 @@ export const DONATION_SUPPRESSION = { acuteHours: 48, aerobicTailDays: 21 } as c
 // reweighted, they were retired — the number they produced measured adherence
 // to a recovery routine, not recovery state. The before/after comparison on
 // real data is in tekio.rfcs/rfcs/done/0014-doctrine-ledger-execution.md.
+
+/** How many days a missed plan stays on its Planned card, to be rescheduled or
+ *  removed, before it is deleted (RFC 0104). A plan never counts toward a read,
+ *  whatever its age. */
+export const MISSED_PLAN_KEPT_DAYS = 7

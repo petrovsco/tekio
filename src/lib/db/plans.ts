@@ -80,3 +80,15 @@ export async function markPlanLogged(id: string, sessionExerciseId: string): Pro
 }
 
 export const deletePlan = (id: string): Promise<void> => deleteRow('planned_exercises', id)
+
+/** Deletes the plans dated before `day` that were never logged: missed, and
+ *  kept on the card a week to be rescheduled or removed (RFC 0104). */
+export async function pruneMissedPlans(day: string): Promise<void> {
+  const { error } = await supabase
+    .from('planned_exercises')
+    .delete()
+    .eq('user_id', USER_ID)
+    .lt('plan_date', day)
+    .is('session_exercise_id', null)
+  if (error) throw error
+}

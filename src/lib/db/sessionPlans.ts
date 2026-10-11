@@ -119,3 +119,18 @@ export async function markSessionPlanLogged(id: string, kind: PlannedKind, entry
 }
 
 export const deleteSessionPlan = (id: string): Promise<void> => deleteRow('planned_sessions', id)
+
+/** Deletes the plans dated before `day` that were never logged from the card,
+ *  as `pruneMissedPlans` does for lifts. A cardio or sport plan cleared by a
+ *  same-day session carries no link and goes too: that work is logged. */
+export async function pruneMissedSessionPlans(day: string): Promise<void> {
+  const { error } = await supabase
+    .from('planned_sessions')
+    .delete()
+    .eq('user_id', USER_ID)
+    .lt('plan_date', day)
+    .is('cardio_session_id', null)
+    .is('sport_session_id', null)
+    .is('mobility_session_id', null)
+  if (error) throw error
+}
