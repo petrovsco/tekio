@@ -1,0 +1,47 @@
+name: Error report issues
+
+# Error reports, stage 2 (tekio.rfcs/rfcs/0103-error-reports-to-agent-fixes.md).
+# Each new fault the app sent to `error_reports` becomes an issue here, and the
+# table follows the issue: closed, reopened, a fix PR open. What one issue holds
+# and what is never filed in public: scripts/error-reports/issue.mjs.
+#
+# Hourly is plenty: the routine that works the issues (stage 3) runs daily.
+# GitHub's schedule can start late (RFC 0077); a late run files the same issues.
+#
+# No setup of its own. The workflow's own token opens the issues, and the
+# Supabase secrets are the ones the Garmin syncs already use.
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Say what would be filed; change nothing'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: error-report-issues
+  cancel-in-progress: false
+
+jobs:
+  file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - run: node scripts/error-reports/file-issues.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ inputs.dry_run || 'false' }}
