@@ -24,6 +24,7 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
       foldKey="tekio.planCard.folded"
       title={p => p.exercise}
       details={p => <PlanChips items={p.targets.map(s => `${s.weight}kg×${s.reps}`)} />}
+      groupOf={p => p.supersetId}
       onLog={onLog}
       onEdit={onEdit}
       onRemove={p => withToast(() => removePlan(p.id), 'Plan removed')}

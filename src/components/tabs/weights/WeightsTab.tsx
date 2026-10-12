@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
+import { today, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
@@ -14,7 +14,7 @@ import { toSetStr, parseSets, setsProblem, liftSetProblem } from '../../../lib/s
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
-import type { WeightEntry, PlannedExercise } from '../../../types'
+import type { PlannedExercise } from '../../../types'
 import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor } from '../../../constants/exerciseCatalogue'
 import type { PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
@@ -22,6 +22,7 @@ import { MovementQuestion } from './MovementQuestion'
 import { PlanCard } from './PlanCard'
 import { PlanSheet } from './PlanSheet'
 import { FromPlanStrip } from '../../ui/PlannedCard'
+import { groupRuns, groupName } from '../../../lib/supersets'
 
 export function WeightsTab() {
   const [ex, setEx] = useState('')
@@ -46,6 +47,7 @@ export function WeightsTab() {
   const withToast = useAppStore(s => s.withToast)
   const setToast = useAppStore(s => s.setToast)
   const markPlanLogged = useAppStore(s => s.markPlanLogged)
+  const plans = useAppStore(s => s.plans)
   // The plan the form was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
   const [fromPlan, setFromPlan] = useState<PlannedExercise | null>(null)
@@ -133,11 +135,19 @@ export function WeightsTab() {
     if (problem) { setToast(problem); return }
     const vs = parseSets(sets, revealed)
     if (!vs.length) { setToast('Add at least one set with weight and reps.'); return }
+    // A lift from a planned superset is logged into it (RFC 0106), and the
+    // form moves on to the group's next open lift.
+    const supersetId = fromPlan?.supersetId
+    const next = supersetId
+      ? plans.find(p => p.supersetId === supersetId && p.id !== fromPlan.id && !p.loggedAs)
+      : undefined
     await withToast(async () => {
-      const saved = await addWeightEntry({ date, exercise: ex.trim(), sets: vs }, pattern ?? undefined)
+      const saved = await addWeightEntry({ date, exercise: ex.trim(), sets: vs, ...(supersetId ? { supersetId } : {}) }, pattern ?? undefined)
       if (fromPlan) await markPlanLogged(fromPlan.id, saved.id)
-      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null); setFromPlan(null)
-    }, 'Exercise saved!')
+      setMovement(null)
+      if (next) { fillFromPlan(next); setFromPlan(next); return }
+      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setFromPlan(null)
+    }, next ? `Saved. Next: ${next.exercise}` : 'Exercise saved!')
   }
 
   const fillFromPlan = (p: PlannedExercise) => {
@@ -163,29 +173,12 @@ export function WeightsTab() {
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
     })), [weights, chartEx])
 
-  const recentGrouped = useMemo(() => {
-    const sorted = [...weights].sort((a, b) => b.date.localeCompare(a.date))
-    // Index the supersets once. The pairing used to `find` a partner in the
-    // whole list per entry, which is O(n²) — and it ran on every keystroke.
-    // Entries with no superset all land in the '' bucket, which is never read.
-    const bySuperset = groupBy(sorted, e => e.supersetId ?? '')
-    const groups: Array<{ type: 'single' | 'superset'; entries: WeightEntry[] }> = []
-    const used = new Set<string>()
-    for (const entry of sorted) {
-      if (used.has(entry.id)) continue
-      const partner = entry.supersetId
-        ? bySuperset.get(entry.supersetId)?.find(e => e.id !== entry.id && !used.has(e.id))
-        : undefined
-      if (partner) {
-        groups.push({ type: 'superset', entries: [entry, partner] })
-        used.add(entry.id); used.add(partner.id)
-        continue
-      }
-      groups.push({ type: 'single', entries: [entry] })
-      used.add(entry.id)
-    }
-    return groups
-  }, [weights])
+  // A superset or circuit (RFC 0106) reads as one block wherever its first
+  // lift stands, newest first like every other row.
+  const recentGrouped = useMemo(() => groupRuns(
+    [...weights].sort((a, b) => b.date.localeCompare(a.date)),
+    e => e.supersetId,
+  ).map(entries => ({ type: entries.length > 1 ? 'superset' as const : 'single' as const, entries })), [weights])
 
   return (
     <div className="flex flex-col gap-4">
@@ -341,16 +334,16 @@ export function WeightsTab() {
                 <div key={gi} className="mb-3 border border-line rounded-[3px] p-2.5 bg-paper">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <SSBadge />
-                    <span className={MICRO_LABEL}>Superset</span>
+                    <span className={MICRO_LABEL}>{groupName(g.entries.length)}</span>
                     <RowActions
                       label={fmtDate(g.entries[0].date)}
                       className="ml-auto"
-                      onEdit={() => openEditModal({ type: 'weight-superset', record: [g.entries[0], g.entries[1]] })}
+                      onEdit={() => openEditModal({ type: 'weight-superset', record: g.entries })}
                       onDelete={() => g.entries.forEach(e => removeWeightEntry(e.id))}
                     />
                   </div>
                   {g.entries.map((e, ei) => (
-                    <div key={ei} className={ei === 0 ? 'mb-1.5' : ''}>
+                    <div key={ei} className={ei < g.entries.length - 1 ? 'mb-1.5' : ''}>
                       <span className="text-xs font-bold text-ink">{e.exercise}</span>
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {e.sets.map((s, i) => (

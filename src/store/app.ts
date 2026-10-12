@@ -41,7 +41,7 @@ import {
   loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
-import { loadPlans, savePlan, updatePlan, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
+import { loadPlans, savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
 import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, pruneMissedSessionPlans, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
 import { daysAgo } from '../lib/utils'
@@ -79,9 +79,13 @@ interface AppStore extends AppState {
   // Planned exercises (RFC 0098). Held apart from `weights` and never handed to
   // a read: a plan counts for nothing until it is logged.
   plans: PlannedExercise[]
-  addPlan: (plan: Omit<PlannedExercise, 'id' | 'plannedBy' | 'loggedAs'>) => Promise<void>
+  /** `partnerId` puts the new plan in a superset with that plan (RFC 0106). */
+  addPlan: (plan: Pick<PlannedExercise, 'date' | 'exercise' | 'targets'>, partnerId?: string) => Promise<void>
   removePlan: (id: string) => Promise<void>
-  editPlan: (id: string, patch: Pick<PlannedExercise, 'date' | 'exercise' | 'targets'>) => Promise<void>
+  /** `partnerId` regroups the plan: a plan joins that plan's superset, `null`
+   *  leaves its own, absent keeps it. A grouped plan that changes day takes
+   *  its open group with it, so a superset never splits across days. */
+  editPlan: (id: string, patch: Pick<PlannedExercise, 'date' | 'exercise' | 'targets'>, partnerId?: string | null) => Promise<void>
   /** The plan was logged as the weight entry `entryId`. */
   markPlanLogged: (id: string, entryId: string) => Promise<void>
 
@@ -266,6 +270,17 @@ function trailed(store: AppStore): AppStore {
   )) as AppStore
 }
 
+/** The superset a plan joins when it is paired with `partnerId` (RFC 0106):
+ *  the partner's own, or a new one the partner is put in first. */
+async function joinSuperset(partnerId: string): Promise<string> {
+  const partner = useAppStore.getState().plans.find(p => p.id === partnerId)
+  if (partner?.supersetId) return partner.supersetId
+  const supersetId = crypto.randomUUID()
+  await patchPlans([partnerId], { supersetId })
+  useAppStore.setState(s => ({ plans: s.plans.map(p => (p.id === partnerId ? { ...p, supersetId } : p)) }))
+  return supersetId
+}
+
 export const useAppStore = create<AppStore>((set, get) => trailed({
   weights: [],
   bodyweight: [],
@@ -418,17 +433,29 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   },
 
   // ── Planned exercises ────────────────────────────────────────────────────────
-  addPlan: async (plan) => {
-    const saved = await savePlan(plan)
+  addPlan: async (plan, partnerId) => {
+    const supersetId = partnerId ? await joinSuperset(partnerId) : undefined
+    const saved = await savePlan({ ...plan, supersetId })
     set(s => ({ plans: [...s.plans, saved] }))
   },
   removePlan: async (id) => {
     await deletePlan(id)
     set(s => ({ plans: dropId(s.plans, id) }))
   },
-  editPlan: async (id, patch) => {
-    await updatePlan(id, patch)
-    set(s => ({ plans: patchId(s.plans, id, patch) }))
+  editPlan: async (id, patch, partnerId) => {
+    const before = get().plans.find(p => p.id === id)
+    const supersetId = partnerId === undefined ? before?.supersetId
+      : partnerId === null ? undefined
+      : await joinSuperset(partnerId)
+    await updatePlan(id, { ...patch, ...(partnerId !== undefined ? { supersetId: supersetId ?? null } : {}) })
+    const moving = before?.supersetId && before.supersetId === supersetId && before.date !== patch.date
+      ? get().plans.filter(p => p.id !== id && p.supersetId === supersetId && !p.loggedAs).map(p => p.id)
+      : []
+    await patchPlans(moving, { date: patch.date })
+    set(s => ({
+      plans: byDate(s.plans.map(p => p.id === id ? { ...p, ...patch, supersetId }
+        : moving.includes(p.id) ? { ...p, date: patch.date } : p)),
+    }))
   },
   markPlanLogged: async (id, entryId) => {
     await markPlanLogged(id, entryId)

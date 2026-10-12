@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { today } from '../../../lib/utils'
 import { BottomSheet } from '../home/BottomSheet'
-import { Inp, FIELD_LABEL } from '../../ui/Input'
+import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { SmartInput } from '../../ui/SmartInput'
 import { SetsGrid } from '../../ui/SetsGrid'
@@ -25,6 +25,7 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   const addPlan = useAppStore(s => s.addPlan)
   const editPlan = useAppStore(s => s.editPlan)
   const withToast = useAppStore(s => s.withToast)
+  const plans = useAppStore(s => s.plans)
 
   const [ex, setEx] = useState(plan?.exercise ?? '')
   // A missed plan opens on today: editing it is a reschedule, and a plan's day
@@ -34,13 +35,25 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   const [sets, setSets] = useState<SetStr[]>(plan?.targets.length ? toSetStr(plan.targets) : [{ weight: '', reps: '' }])
   const [revealed, setRevealed] = useState(plan?.targets.length || 1)
 
-  const valid = ex.trim() !== '' && date >= today() && !setsProblem(sets, revealed)
+  // Superset with (RFC 0106): another open lift of the same day, or one this
+  // plan is already grouped with. Moving a grouped plan to another day takes
+  // its group along, so its partners stay on offer whatever the date.
+  const partners = plans.filter(p => p.id !== plan?.id && !p.loggedAs
+    && (p.date === date || (!!plan?.supersetId && p.supersetId === plan.supersetId)))
+  const initialPartner = plan?.supersetId
+    ? partners.find(p => p.supersetId === plan.supersetId)?.id ?? ''
+    : ''
+  const [partner, setPartner] = useState(initialPartner)
+  const partnerOk = partner === '' || partners.some(p => p.id === partner)
+
+  const valid = partnerOk && ex.trim() !== '' && date >= today() && !setsProblem(sets, revealed)
 
   const save = async () => {
     if (!valid) return
     const patch = { date, exercise: ex.trim(), targets: parseSets(sets, revealed) }
+    const regroup = partner === initialPartner ? undefined : partner || null
     const ok = await withToast(
-      () => (plan ? editPlan(plan.id, patch) : addPlan(patch)),
+      () => (plan ? editPlan(plan.id, patch, regroup) : addPlan(patch, partner || undefined)),
       missed ? 'Rescheduled' : plan ? 'Plan updated' : 'Planned',
     )
     if (ok) onClose()
@@ -82,6 +95,17 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
           />
         </div>
         <Inp label="Date" type="date" min={today()} value={date} onChange={e => setDate(e.target.value)} />
+        {(partners.length > 0 || partner !== '') && (
+          <SelEl
+            label="Superset with"
+            value={partner}
+            onChange={e => setPartner(e.target.value)}
+            options={[
+              { value: '', label: 'None' },
+              ...partners.map(p => ({ value: p.id, label: p.exercise })),
+            ]}
+          />
+        )}
         <div>
           <div className={`${FIELD_LABEL} mb-1`}>Targets</div>
           <SetsGrid

@@ -10,6 +10,7 @@ import { FieldLabel, Toggle, Rating } from './Fields'
 import { Btn, DelBtn } from './Button'
 import { Icon } from './Icon'
 import { SSBadge } from './Badges'
+import { groupName } from '../../lib/supersets'
 import { SmartInput } from './SmartInput'
 import { ChipListInput } from './ChipListInput'
 import { CARDIO_TYPES, CARDIO_FORMATS, DONATION_TYPES } from '../../constants/app'
@@ -156,39 +157,40 @@ function WeightForm({ record, onClose }: FormProps<WeightEntry>) {
 
 // ── SupersetForm ──────────────────────────────────────────────────────────────
 
-function SupersetForm({ record, onClose }: FormProps<[WeightEntry, WeightEntry]>) {
+/** Every lift of a logged superset or circuit (RFC 0106), edited together. */
+function SupersetForm({ record, onClose }: FormProps<WeightEntry[]>) {
   const editWeightEntry = useAppStore(s => s.editWeightEntry)
-  const [first, second] = record
-  const [date, setDate] = useState(first.date)
-  const s0 = useSets(first.sets)
-  const s1 = useSets(second.sets)
+  const [date, setDate] = useState(record[0].date)
+  const [grids, setGrids] = useState(() => record.map(e => ({ sets: toSetStr(e.sets), revealed: e.sets.length || 1 })))
 
-  useSave(onClose, s0.ok && s1.ok, async () => {
-    await Promise.all([
-      editWeightEntry(first.id, { sets: s0.parsed, date }),
-      editWeightEntry(second.id, { sets: s1.parsed, date }),
-    ])
+  const patch = (i: number, f: (g: { sets: SetStr[]; revealed: number }) => { sets: SetStr[]; revealed: number }) =>
+    setGrids(p => p.map((g, idx) => (idx === i ? f(g) : g)))
+  const parsed = grids.map(g => parseSets(g.sets, g.revealed))
+  const ok = grids.every((g, i) => parsed[i].length > 0 && !setsProblem(g.sets, g.revealed))
+
+  useSave(onClose, ok, async () => {
+    await Promise.all(record.map((e, i) => editWeightEntry(e.id, { sets: parsed[i], date })))
   })
 
   return (
     <div className="flex flex-col gap-4">
       <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
 
-      <div className="border border-line rounded-[3px] p-2.5 bg-hairline">
-        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{first.exercise}</p>
-        <SetsGrid
-          sets={s0.sets} revealed={s0.revealed}
-          onUpdate={s0.update} onRemove={s0.remove} onRevealNext={s0.revealNext}
-        />
-      </div>
-
-      <div className="border border-line rounded-[3px] p-2.5 bg-hairline">
-        <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{second.exercise}</p>
-        <SetsGrid
-          sets={s1.sets} revealed={s1.revealed}
-          onUpdate={s1.update} onRemove={s1.remove} onRevealNext={s1.revealNext}
-        />
-      </div>
+      {record.map((e, i) => (
+        <div key={e.id} className="border border-line rounded-[3px] p-2.5 bg-hairline">
+          <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{e.exercise}</p>
+          <SetsGrid
+            sets={grids[i].sets} revealed={grids[i].revealed}
+            onUpdate={(si, f, v) => patch(i, g => ({ ...g, sets: g.sets.map((x, idx) => (idx === si ? { ...x, [f]: v } : x)) }))}
+            onRemove={si => patch(i, g => ({ sets: g.sets.filter((_, idx) => idx !== si), revealed: Math.max(1, g.revealed - 1) }))}
+            onRevealNext={() => patch(i, g => {
+              const n = g.revealed + 1
+              const sets = n > g.sets.length ? [...g.sets, { weight: g.sets[g.sets.length - 1]?.weight || '', reps: '' }] : g.sets
+              return { sets, revealed: n }
+            })}
+          />
+        </div>
+      ))}
     </div>
   )
 }
@@ -706,7 +708,8 @@ export function EditModal() {
     <Modal
       open={!!editModal}
       onClose={closeEditModal}
-      title={editModal ? TITLES[editModal.type] : ''}
+      title={editModal?.type === 'weight-superset' ? `Edit ${groupName(editModal.record.length)}`
+        : editModal ? TITLES[editModal.type] : ''}
       footer={<Footer onCancel={closeEditModal} onSave={() => saveSlot.run()} />}
     >
       {editModal?.type === 'weight' && <WeightForm record={editModal.record} onClose={closeEditModal} />}

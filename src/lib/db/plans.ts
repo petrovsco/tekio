@@ -16,9 +16,10 @@ type PlanRow = {
   sort_order: number
   planned_by: 'user' | 'agent'
   session_exercise_id: string | null
+  superset_group_id: string | null
 }
 
-const COLS = 'id, plan_date, exercise, target_sets, sort_order, planned_by, session_exercise_id'
+const COLS = 'id, plan_date, exercise, target_sets, sort_order, planned_by, session_exercise_id, superset_group_id'
 
 function mapRow(r: PlanRow): PlannedExercise {
   return {
@@ -28,6 +29,7 @@ function mapRow(r: PlanRow): PlannedExercise {
     targets: (r.target_sets ?? []).map(s => ({ weight: Number(s.weight), reps: Number(s.reps) })),
     plannedBy: r.planned_by,
     ...(r.session_exercise_id ? { loggedAs: r.session_exercise_id } : {}),
+    ...(r.superset_group_id ? { supersetId: r.superset_group_id } : {}),
   }
 }
 
@@ -39,7 +41,7 @@ export async function loadPlans(): Promise<PlannedExercise[]> {
     .map(mapRow)
 }
 
-export async function savePlan(plan: { date: string; exercise: string; targets: LiftSet[] }): Promise<PlannedExercise> {
+export async function savePlan(plan: { date: string; exercise: string; targets: LiftSet[]; supersetId?: string }): Promise<PlannedExercise> {
   const { count } = await supabase
     .from('planned_exercises')
     .select('id', { count: 'exact', head: true })
@@ -54,6 +56,7 @@ export async function savePlan(plan: { date: string; exercise: string; targets: 
       target_sets: plan.targets,
       sort_order: count ?? 0,
       planned_by: 'user',
+      superset_group_id: plan.supersetId ?? null,
     }))
     .select(COLS)
     .single()
@@ -61,12 +64,34 @@ export async function savePlan(plan: { date: string; exercise: string; targets: 
   return mapRow(data as PlanRow)
 }
 
-/** Change what a plan says: its day, its exercise, its targets. */
-export async function updatePlan(id: string, patch: { date: string; exercise: string; targets: LiftSet[] }): Promise<void> {
+/** Change what a plan says: its day, its exercise, its targets, and the
+ *  superset it belongs to (`null` takes it out of one). */
+export async function updatePlan(
+  id: string,
+  patch: { date: string; exercise: string; targets: LiftSet[]; supersetId?: string | null },
+): Promise<void> {
   const { error } = await supabase
     .from('planned_exercises')
-    .update({ plan_date: patch.date, exercise: patch.exercise, target_sets: patch.targets })
+    .update({
+      plan_date: patch.date,
+      exercise: patch.exercise,
+      target_sets: patch.targets,
+      ...(patch.supersetId !== undefined ? { superset_group_id: patch.supersetId } : {}),
+    })
     .eq('id', id)
+  if (error) throw error
+}
+
+/** Puts plans into one superset (RFC 0106), or moves them to another day. */
+export async function patchPlans(ids: string[], patch: { supersetId?: string; date?: string }): Promise<void> {
+  if (ids.length === 0) return
+  const { error } = await supabase
+    .from('planned_exercises')
+    .update({
+      ...(patch.supersetId !== undefined ? { superset_group_id: patch.supersetId } : {}),
+      ...(patch.date !== undefined ? { plan_date: patch.date } : {}),
+    })
+    .in('id', ids)
   if (error) throw error
 }
 
