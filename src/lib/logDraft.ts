@@ -1,9 +1,10 @@
 import type { SetStr } from './sets'
 
-// The Weights log form as typed, kept on the device until it is saved
-// (RFC 0106). Leaving the tab, reloading or switching between the lifts of a
-// superset keeps every typed set; only Save writes to the log. Per device, like
-// the Planned card's fold: a blocked storage just starts an empty form.
+// The Weights log form as typed, kept on the device (RFC 0106). Each set is
+// written to the log the moment it is ticked; what is typed but not yet ticked
+// survives leaving the tab, a reload, or switching between the lifts of a
+// superset. Per device, like the Planned card's fold: a blocked storage just
+// starts an empty form.
 
 /** One lift on the form. A lift filled from a plan keeps the plan's id, and
  *  its superset's, so saving ticks the plan and logs into the superset. */
@@ -15,6 +16,10 @@ export interface DraftLift {
   revealed: number
   planId?: string
   supersetId?: string
+  /** The logged entry the ticked sets went into; absent before the first tick. */
+  entryId?: string
+  /** Which rows of `sets` are in the log, by index. */
+  saved?: boolean[]
 }
 
 export interface LogDraft {

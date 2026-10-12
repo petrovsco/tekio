@@ -1,5 +1,6 @@
 import { MICRO_LABEL } from './Badges'
 import { DelBtn } from './Button'
+import { Icon } from './Icon'
 import { FIELD } from './Input'
 import { setsProblem, type SetStr } from '../../lib/sets'
 
@@ -9,29 +10,41 @@ interface SetsGridProps {
   onUpdate: (i: number, field: 'weight' | 'reps', val: string) => void
   onRemove: (i: number) => void
   onRevealNext: () => void
+  /** Sets already in the log (RFC 0106): each row is saved the moment it is
+   *  ticked. Absent, the grid is a plain form saved as a whole. */
+  saved?: boolean[]
+  onToggle?: (i: number) => void
+  /** A save is under way: ticks wait, so one set is never written twice. */
+  busy?: boolean
 }
 
 /**
  * Reusable sets grid (weight × reps rows) used in WeightsTab and EditModal.
  */
-export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: SetsGridProps) {
+export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle, busy }: SetsGridProps) {
   const visible = sets.slice(0, revealed)
   const problem = setsProblem(sets, revealed)
+  const cols = onToggle
+    ? '28px minmax(0,1fr) minmax(0,1fr) 32px 28px'
+    : '28px minmax(0,1fr) minmax(0,1fr) 28px'
 
   return (
     <div>
-      <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
-        {['#', 'Weight kg', 'Reps', ''].map((h, i) => (
+      <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: cols }}>
+        {['#', 'Weight kg', 'Reps', ...(onToggle ? ['Done'] : []), ''].map((h, i) => (
           <p key={i} className={MICRO_LABEL}>{h}</p>
         ))}
       </div>
 
-      {visible.map((s, i) => (
-        <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: '28px minmax(0,1fr) minmax(0,1fr) 28px' }}>
+      {visible.map((s, i) => {
+        const done = !!saved?.[i]
+        return (
+        <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: cols }}>
           <span className="text-[11px] text-ink-3 text-center">{i + 1}</span>
           <input
             value={s.weight}
             onChange={e => onUpdate(i, 'weight', e.target.value)}
+            readOnly={done}
             type="number"
             placeholder="60"
             min="0"
@@ -41,6 +54,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
           <input
             value={s.reps}
             onChange={e => onUpdate(i, 'reps', e.target.value)}
+            readOnly={done}
             type="number"
             inputMode="numeric"
             placeholder="10"
@@ -48,11 +62,25 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext }: S
             step="1"
             className={FIELD}
           />
+          {onToggle && (
+            <button
+              type="button"
+              aria-pressed={done}
+              aria-label={done ? `Set ${i + 1} saved. Tap to take it out of the log` : `Save set ${i + 1}`}
+              disabled={busy || (!done && (!s.weight || !s.reps))}
+              onClick={() => onToggle(i)}
+              className={`w-8 h-8 flex items-center justify-center rounded-[3px] border cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-default ${
+                done ? 'bg-ink border-ink text-white' : 'bg-white border-line text-ink-3 hover:border-ink hover:text-ink'}`}
+            >
+              <Icon name="check" size={14} />
+            </button>
+          )}
           <div>
-            {visible.length > 1 && <DelBtn noConfirm onClick={() => onRemove(i)} />}
+            {visible.length > 1 && !done && <DelBtn noConfirm onClick={() => onRemove(i)} />}
           </div>
         </div>
-      ))}
+        )
+      })}
 
       {problem && <p role="alert" className="text-[11px] font-semibold text-signal mb-1">{problem}</p>}
 

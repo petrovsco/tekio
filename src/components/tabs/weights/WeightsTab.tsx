@@ -26,9 +26,9 @@ import { groupRuns, groupName } from '../../../lib/supersets'
 import { readDraft, writeDraft, emptyLift, liftTouched, type DraftLift, type LogDraft } from '../../../lib/logDraft'
 
 export function WeightsTab() {
-  // The form is a draft kept on the device until Save (RFC 0106): one lift, or
-  // the lifts of a superset side by side, so sets typed between lifts, or
-  // before leaving the tab, are never lost.
+  // The form is a draft kept on the device (RFC 0106): one lift, or the lifts
+  // of a superset side by side. Each set goes into the log when it is ticked;
+  // what is typed and not yet ticked survives leaving the tab.
   const [draft, setDraft] = useState<LogDraft>(() => readDraft(today()))
   useEffect(() => writeDraft(draft), [draft])
   const { date, lifts, active } = draft
@@ -56,6 +56,7 @@ export function WeightsTab() {
   const exerciseAliases = useAppStore(s => s.exerciseAliases)
   const addWeightEntry = useAppStore(s => s.addWeightEntry)
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
+  const editWeightEntry = useAppStore(s => s.editWeightEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
   const withToast = useAppStore(s => s.withToast)
   const setToast = useAppStore(s => s.setToast)
@@ -63,7 +64,7 @@ export function WeightsTab() {
   const plans = useAppStore(s => s.plans)
   // The plan the lift was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
-  const fromPlan = plans.find(p => p.id === lift.planId && !p.loggedAs) ?? null
+  const fromPlan = plans.find(p => p.id === lift.planId && (!p.loggedAs || p.loggedAs === lift.entryId)) ?? null
   const unlinkPlan = () => patchLift(l => ({ ...l, planId: undefined, supersetId: undefined }))
   // The plan sheet (RFC 0098): `plan` absent writes a new plan.
   const [planSheet, setPlanSheet] = useState<{ plan?: PlannedExercise } | null>(null)
@@ -80,7 +81,9 @@ export function WeightsTab() {
     return [...pickerNames, ...CATALOGUE_NAMES.filter(n => !own.has(normaliseExerciseName(n))).sort()]
   }, [pickerNames])
   const aliases = useMemo(() => [...exerciseAliases, ...CATALOGUE_ALIASES], [exerciseAliases])
-  const getLastPerf = (n: string) => lastPerformance(weights, n)
+  // The lift being logged is not its own "last": its ticked sets are already in
+  // the log (RFC 0106).
+  const getLastPerf = (n: string) => lastPerformance(lift.entryId ? weights.filter(w => w.id !== lift.entryId) : weights, n)
 
   const lastPerf = getLastPerf(ex)
 
@@ -112,9 +115,11 @@ export function WeightsTab() {
   // nothing already logged for this exercise matched at its reps and its load.
   const exHistory = useMemo(
     () => ex.trim()
-      ? weights.filter(d => d.exercise.toLowerCase() === ex.trim().toLowerCase()).flatMap(d => d.sets)
+      ? weights
+          .filter(d => d.id !== lift.entryId && d.exercise.toLowerCase() === ex.trim().toLowerCase())
+          .flatMap(d => d.sets)
       : [],
-    [weights, ex],
+    [weights, ex, lift.entryId],
   )
   const prSet = typedSets.find(s => isSetPR(s, exHistory)) ?? null
 
@@ -143,34 +148,82 @@ export function WeightsTab() {
     setRevealed(r => Math.max(1, r - 1))
   }
 
-  /** Saves every lift with sets on it, together: a superset is logged as one
-   *  (RFC 0106). A lift still empty stays on the form. */
+  // A lift's entry, if the log still has it: an entry deleted from Recent
+  // leaves its lift with nothing saved.
+  const entryOf = (l: DraftLift) => (l.entryId && weights.some(w => w.id === l.entryId) ? l.entryId : undefined)
+  const savedOf = (l: DraftLift) => (entryOf(l) ? l.saved ?? [] : [])
+  const anySaved = lifts.some(l => savedOf(l).some(Boolean))
+  const [busy, setBusy] = useState(false)
+
+  /**
+   * Writes a lift's chosen rows to the log (RFC 0106): the first set creates
+   * its entry, in its superset and ticking its plan; later ones rewrite the
+   * entry's sets; none left removes it. Returns whether the write went in.
+   */
+  const writeLift = async (l: DraftLift, saved: boolean[], toast: string): Promise<boolean> => {
+    if (!l.ex.trim()) { setToast('Pick an exercise first.'); return false }
+    const rows = l.sets.slice(0, l.revealed).map((s, i) => ({ s, i })).filter(r => saved[r.i])
+    const chosen = rows.map(({ s }) => ({ weight: +s.weight, reps: +s.reps }))
+    const problem = chosen.map(liftSetProblem).find(Boolean)
+    if (problem) { setToast(problem); return false }
+    const entryId = entryOf(l)
+    setBusy(true)
+    const ok = await withToast(async () => {
+      let id = entryId
+      if (!id && chosen.length) {
+        const entry = await addWeightEntry(
+          { date, exercise: l.ex.trim(), sets: chosen, ...(l.supersetId ? { supersetId: l.supersetId } : {}) },
+          l.id === lift.id ? pattern ?? undefined : undefined,
+        )
+        id = entry.id
+        if (l.planId && plans.some(p => p.id === l.planId && !p.loggedAs)) await markPlanLogged(l.planId, id)
+      } else if (id && chosen.length) {
+        await editWeightEntry(id, { sets: chosen })
+      } else if (id) {
+        await removeWeightEntry(id)
+        id = undefined
+      }
+      setDraft(x => ({
+        ...x,
+        lifts: x.lifts.map(y => (y.id === l.id ? { ...y, entryId: id, saved: id ? saved : [] } : y)),
+      }))
+    }, toast)
+    setBusy(false)
+    return ok
+  }
+
+  /** Tick: this one set goes into the log, or comes back out of it. */
+  const toggleSet = (i: number) => {
+    const saved = [...savedOf(lift)]
+    saved[i] = !saved[i]
+    void writeLift(lift, saved, saved[i] ? `Set ${i + 1} saved` : `Set ${i + 1} taken out`)
+  }
+
+  /** Finish: every filled set not yet ticked is saved too, and the lifts that
+   *  are in the log leave the form. A lift with nothing typed stays. */
   const addEntry = async () => {
-    const ready = lifts.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed).length > 0)
-    if (!ready.length) {
+    const pending = lifts.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed).length > 0)
+    if (!pending.length) {
       setToast(ex.trim() ? 'Add at least one set with weight and reps.' : 'Pick an exercise first.')
       return
     }
-    for (const l of ready) {
+    for (const l of pending) {
       const problem = setsProblem(l.sets, l.revealed)
       if (problem) { setToast(lifts.length > 1 ? `${l.ex.trim()}: ${problem}` : problem); return }
     }
-    const ok = await withToast(async () => {
-      for (const l of ready) {
-        const saved = await addWeightEntry(
-          { date, exercise: l.ex.trim(), sets: parseSets(l.sets, l.revealed), ...(l.supersetId ? { supersetId: l.supersetId } : {}) },
-          l === lift ? pattern ?? undefined : undefined,
-        )
-        if (l.planId && plans.some(p => p.id === l.planId && !p.loggedAs)) await markPlanLogged(l.planId, saved.id)
-        // Saved lifts leave the form one by one, so a failure part-way keeps
-        // only what is still unsaved.
-        setDraft(x => {
-          const rest = x.lifts.filter(y => y.id !== l.id)
-          return rest.length ? { ...x, lifts: rest, active: 0 } : { ...x, lifts: [emptyLift()], active: 0 }
-        })
-      }
-    }, ready.length > 1 ? `${ready.length} exercises saved!` : 'Exercise saved!')
-    if (ok) setMovement(null)
+    for (const l of pending) {
+      const prev = savedOf(l)
+      const saved = l.sets.slice(0, l.revealed).map((s, i) => !!prev[i] || !!(s.weight && s.reps))
+      const changed = saved.some((v, i) => v !== !!prev[i])
+      if (changed && !(await writeLift(l, saved, 'Saved'))) return
+      // In the log now: off the form.
+      setDraft(x => {
+        const rest = x.lifts.filter(y => y.id !== l.id)
+        return rest.length ? { ...x, lifts: rest, active: 0 } : { ...x, lifts: [emptyLift()], active: 0 }
+      })
+    }
+    setMovement(null)
+    setToast(pending.length > 1 ? `${pending.length} exercises saved!` : 'Exercise saved!')
   }
 
   const liftFromPlan = (p: PlannedExercise): DraftLift => ({
@@ -255,14 +308,16 @@ export function WeightsTab() {
           <div className="flex flex-col gap-2.5 mb-3">
             <div className="flex flex-col gap-1">
               <label className={FIELD_LABEL}>Exercise</label>
-              <SmartInput
+              {entryOf(lift) ? (
+                <p className="text-[13px] font-bold text-ink py-1">{ex}</p>
+              ) : <SmartInput
                 value={ex}
                 onChange={setEx}
                 onPick={handleSelectEx}
                 suggestions={suggestions}
                 aliases={aliases}
                 placeholder="e.g. Bench Press"
-              />
+              />}
             </div>
             {unknownName && (
               <MovementQuestion
@@ -277,7 +332,7 @@ export function WeightsTab() {
                 {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
               </div>
             )}
-            <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <Inp label="Date" type="date" value={date} disabled={anySaved} onChange={e => setDate(e.target.value)} />
           </div>
 
           <div className="mb-3">
@@ -287,6 +342,9 @@ export function WeightsTab() {
               onUpdate={updateSet}
               onRemove={removeSet}
               onRevealNext={revealNext}
+              saved={savedOf(lift)}
+              onToggle={toggleSet}
+              busy={busy}
             />
           </div>
 
@@ -341,7 +399,9 @@ export function WeightsTab() {
             </div>
           )}
 
-          <Btn onClick={addEntry} className="w-full">{lifts.length > 1 ? `Save ${lifts.length} exercises` : 'Save exercise'}</Btn>
+          <Btn onClick={addEntry} disabled={busy} className="w-full">
+            {anySaved ? 'Finish' : lifts.length > 1 ? `Save ${lifts.length} exercises` : 'Save exercise'}
+          </Btn>
       </Card></div>
 
       {exercises.length > 0 && (
