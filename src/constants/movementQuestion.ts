@@ -51,6 +51,7 @@ export const MOVEMENT_AREAS: MovementArea[] = [
       { pattern: 'verticalPull', label: 'Pull-down', like: 'pull-up, lat pulldown' },
       { pattern: 'horizontalPull', label: 'Row', like: 'barbell row, seated cable row' },
       { pattern: 'horizontalAbduction', label: 'Rear-delt fly', like: 'reverse fly, face pull' },
+      { pattern: 'shoulderExternalRotation', label: 'External rotation', like: 'cable or band external rotation' },
       { pattern: 'straightArmExtension', label: 'Straight-arm pull', like: 'straight-arm pulldown, pullover' },
       { pattern: 'scapularElevation', label: 'Shrug', like: 'barbell or dumbbell shrug' },
     ],

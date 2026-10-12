@@ -31,7 +31,7 @@ export interface MovementPattern {
   verdict: 'supported' | 'partially supported' | 'convention'
 }
 
-/** 31 patterns — the table in the grounding file, in its order. */
+/** 32 patterns — the 0074 grounding file's 31, in its order, then RFC 0105's. */
 export const MOVEMENT_PATTERNS = {
   // ── Lower body (run L) ────────────────────────────────────────────────────
   // Hamstrings did not grow in squat or hip-thrust trials (Kubo 2019,
@@ -161,6 +161,15 @@ export const MOVEMENT_PATTERNS = {
     name: 'Wrist and Grip',
     links: { Forearms: 1 },
     verdict: 'convention',
+  },
+  // shoulder external rotation: Rotator Cuff 1, Posterior Deltoid 3, Traps 3, Rhomboids 3 — cuff is
+  // prime mover by EMG (Reinold 2004, Kim 2017); loaded-ER cuff growth small and untrained-only
+  // (Matsumura 2023, Safford 2024); IR is its own pattern, not built.
+  // See tekio.rfcs/rfcs/0105-shoulder-external-rotation.md#grounding
+  shoulderExternalRotation: {
+    name: 'Shoulder External Rotation',
+    links: { 'Rotator Cuff': 1, 'Posterior Deltoid': 3, 'Upper Back / Traps': 3, Rhomboids: 3 },
+    verdict: 'partially supported',
   },
 
   // ── Trunk, carries, Olympic lifts (run T) ─────────────────────────────────

@@ -366,6 +366,13 @@ export const EXERCISE_CATALOGUE: CatalogueEntry[] = [
   { name: 'Bent-Over Rear Delt Raise', pattern: 'horizontalAbduction', aliases: ['Rear Delt Raise', 'Bent-Over Reverse Fly'] },
   { name: 'Chest-Supported Reverse Fly', pattern: 'horizontalAbduction', aliases: ['Incline Reverse Fly'] },
   { name: 'Rear Delt Row', pattern: 'horizontalAbduction', aliases: ['Wide-Grip Rear Delt Row'] },
+  // Shoulder external rotation (RFC 0105). Only versions where the load pulls
+  // across the rotation: a standing dumbbell with the elbow at the side pulls
+  // straight down and barely loads it, so it is deliberately not a member.
+  { name: 'Cable External Rotation', pattern: 'shoulderExternalRotation', aliases: ['Cable External Rotations', 'External Rotation', 'Cable ER'] },
+  { name: 'Band External Rotation', pattern: 'shoulderExternalRotation', aliases: ['Band External Rotations', 'Banded External Rotation'] },
+  { name: 'Side-Lying Dumbbell External Rotation', pattern: 'shoulderExternalRotation', aliases: ['Side-Lying External Rotation', 'Side Lying DB External Rotation'] },
+  { name: 'Machine External Rotation', pattern: 'shoulderExternalRotation' },
   // Straight-arm shoulder extension
   { name: 'Straight-Arm Pulldown', pattern: 'straightArmExtension', aliases: ['Straight-Arm Lat Pulldown', 'Lat Prayer'] },
   { name: 'Cable Pullover', pattern: 'straightArmExtension', aliases: ['Rope Pullover'] },
