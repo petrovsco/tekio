@@ -5,6 +5,11 @@
 // way, with the login page in place of the chunk. Either way a fresh load is
 // the fix, so do it for the reader — once: if the reload lands on the same
 // failure, let it through to the error boundary rather than loop.
+//
+// Home prefetches its four sheets together, so a stale tab fails all four at
+// once. The first failure starts the reload; the rest land while it is under
+// way and are swallowed too, or they surface as errors on a page that is
+// already going away (error reports #2–#6, RFC 0103).
 // tekio.rfcs/rfcs/done/0075-white-screen-after-deploy.md
 
 const KEY = 'tekio:chunk-reload'
@@ -19,9 +24,12 @@ function reloadedRecently(): boolean {
 }
 
 export function reloadOnStaleChunk() {
+  let reloading = false
   window.addEventListener('vite:preloadError', event => {
+    if (reloading) return event.preventDefault()
     if (reloadedRecently()) return
     event.preventDefault()
+    reloading = true
     try { sessionStorage.setItem(KEY, String(Date.now())) } catch { /* private mode: reload anyway */ }
     window.location.reload()
   })
