@@ -36,3 +36,42 @@ describe('no entry is written without savable sets', () => {
     expect(from).not.toHaveBeenCalled()
   })
 })
+
+describe('ticking the next set writes only that set', () => {
+  const calls: string[] = []
+  const chain = (table: string) => {
+    const q = {
+      insert: (rows: unknown) => { calls.push(`${table}.insert ${JSON.stringify(rows)}`); return Promise.resolve({ error: null }) },
+      delete: () => { calls.push(`${table}.delete`); return q },
+      eq: (c: string, v: unknown) => { calls.push(`eq ${c}=${String(v)}`); return q },
+      gt: (c: string, v: unknown) => { calls.push(`gt ${c}>${String(v)}`); return Promise.resolve({ error: null }) },
+      then: (r: (v: { error: null }) => void) => r({ error: null }),
+    }
+    return q
+  }
+
+  it('appends one row when a set is ticked on', async () => {
+    calls.length = 0
+    from.mockImplementation(chain)
+    const { updateWeightEntry } = await import('../lib/db/weights')
+    await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }])
+    expect(calls).toEqual(['session_sets.insert [{"session_exercise_id":"se1","set_number":2,"weight":60,"reps":7}]'])
+  })
+
+  it('removes only the last row when it is ticked off', async () => {
+    calls.length = 0
+    from.mockImplementation(chain)
+    const { updateWeightEntry } = await import('../lib/db/weights')
+    await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 8 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
+    expect(calls).toEqual(['session_sets.delete', 'eq session_exercise_id=se1', 'gt set_number>1'])
+  })
+
+  it('rewrites every set when an earlier one changed', async () => {
+    calls.length = 0
+    from.mockImplementation(chain)
+    const { updateWeightEntry } = await import('../lib/db/weights')
+    await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
+    expect(calls[0]).toBe('session_sets.delete')
+    expect(calls).toContain('session_sets.insert [{"session_exercise_id":"se1","set_number":1,"weight":60,"reps":7}]')
+  })
+})

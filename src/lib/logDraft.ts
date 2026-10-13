@@ -43,7 +43,10 @@ export function readDraft(fallbackDate: string): LogDraft {
     if (raw) {
       const d = JSON.parse(raw) as LogDraft
       if (Array.isArray(d.lifts) && d.lifts.length > 0 && typeof d.date === 'string') {
-        return { ...d, active: Math.min(Math.max(0, d.active | 0), d.lifts.length - 1) }
+        // A tick is shown before its write lands; one with no entry behind it
+        // was never written, so it comes back unticked.
+        const lifts = d.lifts.map(l => (l.entryId ? l : { ...l, saved: undefined }))
+        return { ...d, lifts, active: Math.min(Math.max(0, d.active | 0), d.lifts.length - 1) }
       }
     }
   } catch { /* an unreadable draft starts an empty form */ }

@@ -14,14 +14,12 @@ interface SetsGridProps {
    *  ticked. Absent, the grid is a plain form saved as a whole. */
   saved?: boolean[]
   onToggle?: (i: number) => void
-  /** A save is under way: ticks wait, so one set is never written twice. */
-  busy?: boolean
 }
 
 /**
  * Reusable sets grid (weight × reps rows) used in WeightsTab and EditModal.
  */
-export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle, busy }: SetsGridProps) {
+export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle }: SetsGridProps) {
   const visible = sets.slice(0, revealed)
   const problem = setsProblem(sets, revealed)
   const cols = onToggle
@@ -38,6 +36,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
 
       {visible.map((s, i) => {
         const done = !!saved?.[i]
+        const unfilled = !s.weight || !s.reps
         return (
         <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: cols }}>
           <span className="text-[11px] text-ink-3 text-center">{i + 1}</span>
@@ -67,10 +66,16 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
               type="button"
               aria-pressed={done}
               aria-label={done ? `Set ${i + 1} saved. Tap to take it out of the log` : `Save set ${i + 1}`}
-              disabled={busy || (!done && (!s.weight || !s.reps))}
+              // Never disabled: a tap on a row not filled in yet says what is
+              // missing rather than doing nothing. The ::before reaches the
+              // touch area out to 44 px over the gaps around the box, which
+              // stays the size it is drawn.
+              aria-disabled={!done && unfilled}
               onClick={() => onToggle(i)}
-              className={`w-8 h-8 flex items-center justify-center rounded-[3px] border cursor-pointer transition-colors disabled:opacity-40 disabled:cursor-default ${
-                done ? 'bg-ink border-ink text-white' : 'bg-white border-line text-ink-3 hover:border-ink hover:text-ink'}`}
+              className={`relative before:absolute before:-inset-1.5 w-8 h-8 flex items-center justify-center rounded-[3px] border transition-colors ${
+                done ? 'bg-ink border-ink text-white cursor-pointer'
+                : unfilled ? 'bg-white border-line text-ink-3 opacity-40 cursor-default'
+                : 'bg-white border-line text-ink-3 hover:border-ink hover:text-ink cursor-pointer'}`}
             >
               <Icon name="check" size={14} />
             </button>

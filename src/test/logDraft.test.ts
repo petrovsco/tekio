@@ -27,4 +27,13 @@ describe('log draft', () => {
     localStorage.setItem('tekio.weightsDraft', '{oops')
     expect(readDraft('2026-10-13').lifts[0].ex).toBe('')
   })
+
+  it('brings back unticked a tick whose first write never landed', () => {
+    const lift = { ...emptyLift(), ex: 'Back Squat', sets: [{ weight: '60', reps: '5' }], saved: [true] }
+    const kept = { ...lift, id: 'kept', entryId: 'se1' }
+    writeDraft({ date: '2026-10-12', lifts: [lift, kept], active: 0 })
+    const d = readDraft('2026-10-13')
+    expect(d.lifts[0].saved).toBeUndefined()
+    expect(d.lifts[1].saved).toEqual([true])
+  })
 })
