@@ -1,10 +1,10 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, groupBy, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
+import { today, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
-import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
+import { Btn, DelBtn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
 import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
@@ -14,7 +14,7 @@ import { toSetStr, parseSets, setsProblem, liftSetProblem } from '../../../lib/s
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
-import type { WeightEntry, PlannedExercise } from '../../../types'
+import type { PlannedExercise } from '../../../types'
 import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor } from '../../../constants/exerciseCatalogue'
 import type { PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
@@ -22,12 +22,26 @@ import { MovementQuestion } from './MovementQuestion'
 import { PlanCard } from './PlanCard'
 import { PlanSheet } from './PlanSheet'
 import { FromPlanStrip } from '../../ui/PlannedCard'
+import { groupRuns, groupName } from '../../../lib/supersets'
+import { readDraft, writeDraft, emptyLift, liftTouched, type DraftLift, type LogDraft } from '../../../lib/logDraft'
 
 export function WeightsTab() {
-  const [ex, setEx] = useState('')
-  const [date, setDate] = useState(today())
-  const [sets, setSets] = useState<SetStr[]>([{ weight: '', reps: '' }])
-  const [revealed, setRevealed] = useState(1)
+  // The form is a draft kept on the device (RFC 0106): one lift, or the lifts
+  // of a superset side by side. Each set goes into the log when it is ticked;
+  // what is typed and not yet ticked survives leaving the tab.
+  const [draft, setDraft] = useState<LogDraft>(() => readDraft(today()))
+  useEffect(() => writeDraft(draft), [draft])
+  const { date, lifts, active } = draft
+  const lift = lifts[active]
+  const { ex, sets, revealed } = lift
+  const setDate = (d: string) => setDraft(x => ({ ...x, date: d }))
+  const patchLift = (f: (l: DraftLift) => DraftLift) =>
+    setDraft(x => ({ ...x, lifts: x.lifts.map((l, i) => (i === x.active ? f(l) : l)) }))
+  const setEx = (v: string) => patchLift(l => ({ ...l, ex: v }))
+  const setSets = (u: SetStr[] | ((p: SetStr[]) => SetStr[])) =>
+    patchLift(l => ({ ...l, sets: typeof u === 'function' ? u(l.sets) : u }))
+  const setRevealed = (u: number | ((r: number) => number)) =>
+    patchLift(l => ({ ...l, revealed: typeof u === 'function' ? u(l.revealed) : u }))
   const [selEx, setSelEx] = useState('')
   const formRef = useRef<HTMLDivElement>(null)
   const [chartMetric, setChartMetric] = useState<'maxWeight' | 'volume'>('maxWeight')
@@ -42,13 +56,16 @@ export function WeightsTab() {
   const exerciseAliases = useAppStore(s => s.exerciseAliases)
   const addWeightEntry = useAppStore(s => s.addWeightEntry)
   const removeWeightEntry = useAppStore(s => s.removeWeightEntry)
+  const editWeightEntry = useAppStore(s => s.editWeightEntry)
   const openEditModal = useAppStore(s => s.openEditModal)
   const withToast = useAppStore(s => s.withToast)
   const setToast = useAppStore(s => s.setToast)
   const markPlanLogged = useAppStore(s => s.markPlanLogged)
-  // The plan the form was filled from (RFC 0098). Saving the form logs the work
+  const plans = useAppStore(s => s.plans)
+  // The plan the lift was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
-  const [fromPlan, setFromPlan] = useState<PlannedExercise | null>(null)
+  const fromPlan = plans.find(p => p.id === lift.planId && (!p.loggedAs || p.loggedAs === lift.entryId)) ?? null
+  const unlinkPlan = () => patchLift(l => ({ ...l, planId: undefined, supersetId: undefined }))
   // The plan sheet (RFC 0098): `plan` absent writes a new plan.
   const [planSheet, setPlanSheet] = useState<{ plan?: PlannedExercise } | null>(null)
 
@@ -64,7 +81,9 @@ export function WeightsTab() {
     return [...pickerNames, ...CATALOGUE_NAMES.filter(n => !own.has(normaliseExerciseName(n))).sort()]
   }, [pickerNames])
   const aliases = useMemo(() => [...exerciseAliases, ...CATALOGUE_ALIASES], [exerciseAliases])
-  const getLastPerf = (n: string) => lastPerformance(weights, n)
+  // The lift being logged is not its own "last": its ticked sets are already in
+  // the log (RFC 0106).
+  const getLastPerf = (n: string) => lastPerformance(lift.entryId ? weights.filter(w => w.id !== lift.entryId) : weights, n)
 
   const lastPerf = getLastPerf(ex)
 
@@ -96,9 +115,11 @@ export function WeightsTab() {
   // nothing already logged for this exercise matched at its reps and its load.
   const exHistory = useMemo(
     () => ex.trim()
-      ? weights.filter(d => d.exercise.toLowerCase() === ex.trim().toLowerCase()).flatMap(d => d.sets)
+      ? weights
+          .filter(d => d.id !== lift.entryId && d.exercise.toLowerCase() === ex.trim().toLowerCase())
+          .flatMap(d => d.sets)
       : [],
-    [weights, ex],
+    [weights, ex, lift.entryId],
   )
   const prSet = typedSets.find(s => isSetPR(s, exHistory)) ?? null
 
@@ -127,31 +148,114 @@ export function WeightsTab() {
     setRevealed(r => Math.max(1, r - 1))
   }
 
-  const addEntry = async () => {
-    if (!ex.trim()) return
-    const problem = setsProblem(sets, revealed)
-    if (problem) { setToast(problem); return }
-    const vs = parseSets(sets, revealed)
-    if (!vs.length) { setToast('Add at least one set with weight and reps.'); return }
-    await withToast(async () => {
-      const saved = await addWeightEntry({ date, exercise: ex.trim(), sets: vs }, pattern ?? undefined)
-      if (fromPlan) await markPlanLogged(fromPlan.id, saved.id)
-      setEx(''); setSets([{ weight: '', reps: '' }]); setRevealed(1); setMovement(null); setFromPlan(null)
-    }, 'Exercise saved!')
+  // A lift's entry, if the log still has it: an entry deleted from Recent
+  // leaves its lift with nothing saved.
+  const entryOf = (l: DraftLift) => (l.entryId && weights.some(w => w.id === l.entryId) ? l.entryId : undefined)
+  const savedOf = (l: DraftLift) => (entryOf(l) ? l.saved ?? [] : [])
+  const anySaved = lifts.some(l => savedOf(l).some(Boolean))
+  const [busy, setBusy] = useState(false)
+
+  /**
+   * Writes a lift's chosen rows to the log (RFC 0106): the first set creates
+   * its entry, in its superset and ticking its plan; later ones rewrite the
+   * entry's sets; none left removes it. Returns whether the write went in.
+   */
+  const writeLift = async (l: DraftLift, saved: boolean[], toast: string): Promise<boolean> => {
+    if (!l.ex.trim()) { setToast('Pick an exercise first.'); return false }
+    const rows = l.sets.slice(0, l.revealed).map((s, i) => ({ s, i })).filter(r => saved[r.i])
+    const chosen = rows.map(({ s }) => ({ weight: +s.weight, reps: +s.reps }))
+    const problem = chosen.map(liftSetProblem).find(Boolean)
+    if (problem) { setToast(problem); return false }
+    const entryId = entryOf(l)
+    setBusy(true)
+    const ok = await withToast(async () => {
+      let id = entryId
+      if (!id && chosen.length) {
+        const entry = await addWeightEntry(
+          { date, exercise: l.ex.trim(), sets: chosen, ...(l.supersetId ? { supersetId: l.supersetId } : {}) },
+          l.id === lift.id ? pattern ?? undefined : undefined,
+        )
+        id = entry.id
+        if (l.planId && plans.some(p => p.id === l.planId && !p.loggedAs)) await markPlanLogged(l.planId, id)
+      } else if (id && chosen.length) {
+        await editWeightEntry(id, { sets: chosen })
+      } else if (id) {
+        await removeWeightEntry(id)
+        id = undefined
+      }
+      setDraft(x => ({
+        ...x,
+        lifts: x.lifts.map(y => (y.id === l.id ? { ...y, entryId: id, saved: id ? saved : [] } : y)),
+      }))
+    }, toast)
+    setBusy(false)
+    return ok
   }
 
-  const fillFromPlan = (p: PlannedExercise) => {
-    setEx(p.exercise); setSelEx(p.exercise)
-    if (p.targets.length) { setSets(toSetStr(p.targets)); setRevealed(p.targets.length) }
-    else { setSets([{ weight: '', reps: '' }]); setRevealed(1) }
+  /** Tick: this one set goes into the log, or comes back out of it. */
+  const toggleSet = (i: number) => {
+    const saved = [...savedOf(lift)]
+    saved[i] = !saved[i]
+    void writeLift(lift, saved, saved[i] ? `Set ${i + 1} saved` : `Set ${i + 1} taken out`)
+  }
+
+  /** Finish: every filled set not yet ticked is saved too, and the lifts that
+   *  are in the log leave the form. A lift with nothing typed stays. */
+  const addEntry = async () => {
+    const pending = lifts.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed).length > 0)
+    if (!pending.length) {
+      setToast(ex.trim() ? 'Add at least one set with weight and reps.' : 'Pick an exercise first.')
+      return
+    }
+    for (const l of pending) {
+      const problem = setsProblem(l.sets, l.revealed)
+      if (problem) { setToast(lifts.length > 1 ? `${l.ex.trim()}: ${problem}` : problem); return }
+    }
+    for (const l of pending) {
+      const prev = savedOf(l)
+      const saved = l.sets.slice(0, l.revealed).map((s, i) => !!prev[i] || !!(s.weight && s.reps))
+      const changed = saved.some((v, i) => v !== !!prev[i])
+      if (changed && !(await writeLift(l, saved, 'Saved'))) return
+      // In the log now: off the form.
+      setDraft(x => {
+        const rest = x.lifts.filter(y => y.id !== l.id)
+        return rest.length ? { ...x, lifts: rest, active: 0 } : { ...x, lifts: [emptyLift()], active: 0 }
+      })
+    }
+    setMovement(null)
+    setToast(pending.length > 1 ? `${pending.length} exercises saved!` : 'Exercise saved!')
+  }
+
+  const liftFromPlan = (p: PlannedExercise): DraftLift => ({
+    id: crypto.randomUUID(),
+    ex: p.exercise,
+    sets: p.targets.length ? toSetStr(p.targets) : [{ weight: '', reps: '' }],
+    revealed: p.targets.length || 1,
+    planId: p.id,
+    ...(p.supersetId ? { supersetId: p.supersetId } : {}),
+  })
+
+  /** Log on a plan: a lift already on the form is shown as typed; otherwise the
+   *  plan, with the rest of its superset, joins the form. An untouched form is
+   *  replaced; one with typing keeps it, beside the new lifts. */
+  const logFromPlan = (p: PlannedExercise) => {
+    setSelEx(p.exercise)
+    setDraft(x => {
+      const at = x.lifts.findIndex(l => l.planId === p.id)
+      if (at >= 0) return { ...x, active: at }
+      const group = p.supersetId
+        ? plans.filter(q => q.supersetId === p.supersetId && !q.loggedAs && !x.lifts.some(l => l.planId === q.id))
+        : [p]
+      const kept = x.lifts.filter(liftTouched)
+      const added = group.map(liftFromPlan)
+      return {
+        date: kept.length ? x.date : today(),
+        lifts: [...kept, ...added],
+        active: kept.length + Math.max(0, group.findIndex(q => q.id === p.id)),
+      }
+    })
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
-
-  const logFromPlan = (p: PlannedExercise) => {
-    fillFromPlan(p); setDate(today()); setFromPlan(p)
-  }
-
-
 
   const chartEx = selEx || exercises[0] || ''
   const chartData = useMemo(() => weights
@@ -163,29 +267,12 @@ export function WeightsTab() {
       volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
     })), [weights, chartEx])
 
-  const recentGrouped = useMemo(() => {
-    const sorted = [...weights].sort((a, b) => b.date.localeCompare(a.date))
-    // Index the supersets once. The pairing used to `find` a partner in the
-    // whole list per entry, which is O(n²) — and it ran on every keystroke.
-    // Entries with no superset all land in the '' bucket, which is never read.
-    const bySuperset = groupBy(sorted, e => e.supersetId ?? '')
-    const groups: Array<{ type: 'single' | 'superset'; entries: WeightEntry[] }> = []
-    const used = new Set<string>()
-    for (const entry of sorted) {
-      if (used.has(entry.id)) continue
-      const partner = entry.supersetId
-        ? bySuperset.get(entry.supersetId)?.find(e => e.id !== entry.id && !used.has(e.id))
-        : undefined
-      if (partner) {
-        groups.push({ type: 'superset', entries: [entry, partner] })
-        used.add(entry.id); used.add(partner.id)
-        continue
-      }
-      groups.push({ type: 'single', entries: [entry] })
-      used.add(entry.id)
-    }
-    return groups
-  }, [weights])
+  // A superset or circuit (RFC 0106) reads as one block wherever its first
+  // lift stands, newest first like every other row.
+  const recentGrouped = useMemo(() => groupRuns(
+    [...weights].sort((a, b) => b.date.localeCompare(a.date)),
+    e => e.supersetId,
+  ).map(entries => ({ type: entries.length > 1 ? 'superset' as const : 'single' as const, entries })), [weights])
 
   return (
     <div className="flex flex-col gap-4">
@@ -196,18 +283,41 @@ export function WeightsTab() {
 
       <div ref={formRef} className="scroll-mt-24"><Card>
           <SecTitle>Log Exercise</SecTitle>
-          {fromPlan && <FromPlanStrip name={fromPlan.exercise} onUnlink={() => setFromPlan(null)} />}
+          {lifts.length > 1 && (
+            <div className="flex flex-col gap-1.5 mb-2.5">
+              {lifts.every(l => l.supersetId && l.supersetId === lifts[0].supersetId) && (
+                <div className="flex items-center gap-1.5">
+                  <SSBadge />
+                  <span className={MICRO_LABEL}>{groupName(lifts.length)}</span>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-1">
+                {lifts.map((l, i) => (
+                  <Chip key={l.id} small active={i === active} onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
+                    {l.ex.trim() || 'New exercise'}
+                  </Chip>
+                ))}
+                <DelBtn
+                  label={`Take ${ex.trim() || 'this exercise'} off this log`}
+                  onClick={() => setDraft(x => ({ ...x, lifts: x.lifts.filter((_, i) => i !== x.active), active: 0 }))}
+                />
+              </div>
+            </div>
+          )}
+          {fromPlan && <FromPlanStrip name={fromPlan.exercise} onUnlink={unlinkPlan} />}
           <div className="flex flex-col gap-2.5 mb-3">
             <div className="flex flex-col gap-1">
               <label className={FIELD_LABEL}>Exercise</label>
-              <SmartInput
+              {entryOf(lift) ? (
+                <p className="text-[13px] font-bold text-ink py-1">{ex}</p>
+              ) : <SmartInput
                 value={ex}
                 onChange={setEx}
                 onPick={handleSelectEx}
                 suggestions={suggestions}
                 aliases={aliases}
                 placeholder="e.g. Bench Press"
-              />
+              />}
             </div>
             {unknownName && (
               <MovementQuestion
@@ -222,7 +332,7 @@ export function WeightsTab() {
                 {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
               </div>
             )}
-            <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+            <Inp label="Date" type="date" value={date} disabled={anySaved} onChange={e => setDate(e.target.value)} />
           </div>
 
           <div className="mb-3">
@@ -232,6 +342,9 @@ export function WeightsTab() {
               onUpdate={updateSet}
               onRemove={removeSet}
               onRevealNext={revealNext}
+              saved={savedOf(lift)}
+              onToggle={toggleSet}
+              busy={busy}
             />
           </div>
 
@@ -286,7 +399,9 @@ export function WeightsTab() {
             </div>
           )}
 
-          <Btn onClick={addEntry} className="w-full">Save exercise</Btn>
+          <Btn onClick={addEntry} disabled={busy} className="w-full">
+            {anySaved ? 'Finish' : lifts.length > 1 ? `Save ${lifts.length} exercises` : 'Save exercise'}
+          </Btn>
       </Card></div>
 
       {exercises.length > 0 && (
@@ -341,16 +456,16 @@ export function WeightsTab() {
                 <div key={gi} className="mb-3 border border-line rounded-[3px] p-2.5 bg-paper">
                   <div className="flex items-center gap-1.5 mb-1.5">
                     <SSBadge />
-                    <span className={MICRO_LABEL}>Superset</span>
+                    <span className={MICRO_LABEL}>{groupName(g.entries.length)}</span>
                     <RowActions
                       label={fmtDate(g.entries[0].date)}
                       className="ml-auto"
-                      onEdit={() => openEditModal({ type: 'weight-superset', record: [g.entries[0], g.entries[1]] })}
+                      onEdit={() => openEditModal({ type: 'weight-superset', record: g.entries })}
                       onDelete={() => g.entries.forEach(e => removeWeightEntry(e.id))}
                     />
                   </div>
                   {g.entries.map((e, ei) => (
-                    <div key={ei} className={ei === 0 ? 'mb-1.5' : ''}>
+                    <div key={ei} className={ei < g.entries.length - 1 ? 'mb-1.5' : ''}>
                       <span className="text-xs font-bold text-ink">{e.exercise}</span>
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {e.sets.map((s, i) => (

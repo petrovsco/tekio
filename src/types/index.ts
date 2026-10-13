@@ -255,6 +255,9 @@ export interface PlannedExercise {
   plannedBy: 'user' | 'agent'
   /** The logged entry this plan became; absent while it is still a plan. */
   loggedAs?: string
+  /** Shared by the lifts of one superset or circuit (RFC 0106), and carried
+   *  unchanged onto the entries they are logged as. */
+  supersetId?: string
 }
 
 /** What a planned session is for (RFC 0104). Lifts are `PlannedExercise`. */
@@ -309,7 +312,7 @@ export interface AppState {
 
 export type EditModalTarget =
   | { type: 'weight'; record: WeightEntry }
-  | { type: 'weight-superset'; record: [WeightEntry, WeightEntry] }
+  | { type: 'weight-superset'; record: WeightEntry[] }
   | { type: 'bodyweight'; record: BodyweightEntry }
   | { type: 'cardio'; record: CardioEntry }
   | { type: 'mobility'; record: MobilityEntry }
