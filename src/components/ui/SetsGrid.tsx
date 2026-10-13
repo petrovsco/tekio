@@ -14,12 +14,14 @@ interface SetsGridProps {
    *  ticked. Absent, the grid is a plain form saved as a whole. */
   saved?: boolean[]
   onToggle?: (i: number) => void
+  /** Rows whose tick is still being written: Done spins until it lands. */
+  pending?: boolean[]
 }
 
 /**
  * Reusable sets grid (weight × reps rows) used in WeightsTab and EditModal.
  */
-export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle }: SetsGridProps) {
+export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle, pending }: SetsGridProps) {
   const visible = sets.slice(0, revealed)
   const problem = setsProblem(sets, revealed)
   const cols = onToggle
@@ -37,6 +39,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
       {visible.map((s, i) => {
         const done = !!saved?.[i]
         const unfilled = !s.weight || !s.reps
+        const saving = !!pending?.[i]
         return (
         <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: cols }}>
           <span className="text-[11px] text-ink-3 text-center">{i + 1}</span>
@@ -65,7 +68,8 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
             <button
               type="button"
               aria-pressed={done}
-              aria-label={done ? `Set ${i + 1} saved. Tap to take it out of the log` : `Save set ${i + 1}`}
+              aria-busy={saving}
+              aria-label={saving ? `Set ${i + 1} saving` : done ? `Set ${i + 1} saved. Tap to take it out of the log` : `Save set ${i + 1}`}
               // Never disabled: a tap on a row not filled in yet says what is
               // missing rather than doing nothing. The ::before reaches the
               // touch area out to 44 px over the gaps around the box, which
@@ -77,7 +81,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
                 : unfilled ? 'bg-white border-line text-ink-3 opacity-40 cursor-default'
                 : 'bg-white border-line text-ink-3 hover:border-ink hover:text-ink cursor-pointer'}`}
             >
-              <Icon name="check" size={14} />
+              {saving ? <Icon name="spinner" size={14} className="animate-spin" /> : <Icon name="check" size={14} />}
             </button>
           )}
           <div>

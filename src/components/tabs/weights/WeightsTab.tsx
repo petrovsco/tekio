@@ -10,6 +10,7 @@ import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
+import { Icon } from '../../ui/Icon'
 import { toSetStr, parseSets, setsProblem, liftSetProblem } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
@@ -181,6 +182,21 @@ export function WeightsTab() {
     return run
   }
   const logged = useRef(new Map<string, { entryId?: string; saved: boolean[] }>())
+  // The same ticks as state, so a row whose write is still on its way can
+  // show it is (the spinner on Done).
+  const [confirmed, setConfirmed] = useState<Record<string, boolean[]>>({})
+  const setLogged = (id: string, v?: { entryId?: string; saved: boolean[] }) => {
+    if (v) logged.current.set(id, v)
+    else logged.current.delete(id)
+    setConfirmed(c => {
+      const { [id]: _, ...rest } = c
+      return v ? { ...rest, [id]: v.saved } : rest
+    })
+  }
+  const pendingOf = (l: DraftLift) => {
+    const have = confirmed[l.id]
+    return have ? savedOf(l).map((v, i) => !!v !== !!have[i]) : []
+  }
   const loggedOf = (l: DraftLift) => logged.current.get(l.id) ?? fromLog(l)
   // A lift this visit has not written: its ticks are trusted only as far as
   // the entry's sets bear them out, in order, since a tick left on the device
@@ -226,7 +242,7 @@ export function WeightsTab() {
         await removeWeightEntry(id)
         id = undefined
       }
-      logged.current.set(l.id, { entryId: id, saved: id ? saved : [] })
+      setLogged(l.id, { entryId: id, saved: id ? saved : [] })
       setDraft(x => ({ ...x, lifts: x.lifts.map(y => (y.id === l.id ? { ...y, entryId: id } : y)) }))
     }, toast)
   }
@@ -257,7 +273,7 @@ export function WeightsTab() {
       if (problem) { setToast(problem); return }
     }
     // Until a lift's first tick, the form is what the log holds.
-    if (!logged.current.has(lift.id)) logged.current.set(lift.id, fromLog(lift))
+    if (!logged.current.has(lift.id)) setLogged(lift.id, fromLog(lift))
     const saved = [...savedOf(lift)]
     saved[i] = on
     // What the first write needs from the form, fixed as it stands now.
@@ -295,7 +311,7 @@ export function WeightsTab() {
           return !changed || writeLift({ ...l, date, pattern: l.id === lift.id ? pattern ?? undefined : undefined }, saved, 'Saved')
         })
         if (!ok) return
-        logged.current.delete(l.id)
+        setLogged(l.id)
         // In the log now: off the form.
         setDraft(x => {
           const rest = x.lifts.filter(y => y.id !== l.id)
@@ -428,6 +444,7 @@ export function WeightsTab() {
               onRevealNext={revealNext}
               saved={savedOf(lift)}
               onToggle={toggleSet}
+              pending={pendingOf(lift)}
             />
           </div>
 
@@ -482,7 +499,8 @@ export function WeightsTab() {
             </div>
           )}
 
-          <Btn onClick={addEntry} disabled={busy} className="w-full">
+          <Btn onClick={addEntry} disabled={busy} className="w-full inline-flex items-center justify-center gap-1.5">
+            {busy && <Icon name="spinner" size={13} className="animate-spin" />}
             {saveLabel}
           </Btn>
       </Card></div>
