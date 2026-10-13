@@ -154,6 +154,11 @@ export function WeightsTab() {
   const savedOf = (l: DraftLift) => (entryOf(l) ? l.saved ?? [] : [])
   const anySaved = lifts.some(l => savedOf(l).some(Boolean))
   const [busy, setBusy] = useState(false)
+  // The button names everything it will save: a superset's Finish saves every
+  // lift on the form, not only the one showing (RFC 0106).
+  const together = lifts.length > 1 && lifts.every(l => l.supersetId && l.supersetId === lifts[0].supersetId)
+  const what = together ? groupName(lifts.length).toLowerCase() : lifts.length > 1 ? `${lifts.length} exercises` : 'exercise'
+  const saveLabel = `${anySaved ? 'Finish' : 'Save'} ${what}`
 
   /**
    * Writes a lift's chosen rows to the log (RFC 0106): the first set creates
@@ -400,7 +405,7 @@ export function WeightsTab() {
           )}
 
           <Btn onClick={addEntry} disabled={busy} className="w-full">
-            {anySaved ? 'Finish' : lifts.length > 1 ? `Save ${lifts.length} exercises` : 'Save exercise'}
+            {saveLabel}
           </Btn>
       </Card></div>
 
