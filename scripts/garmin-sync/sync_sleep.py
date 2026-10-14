@@ -63,14 +63,22 @@ def extract_row(user_id: str, raw: dict) -> dict | None:
 
 
 def upsert(rows: list[dict]) -> None:
-    resp = requests.post(
-        rest_url("sleep_logs"),
-        params={"on_conflict": "user_id,log_date"},
-        headers=rest_headers("resolution=merge-duplicates,return=minimal"),
-        json=rows,
-        timeout=30,
-    )
-    rest_check(resp, "sleep_logs upsert")
+    # A bulk write needs every row to carry the same keys (PostgREST PGRST102),
+    # but a row drops the keys Garmin did not send so it never nulls a column.
+    # A few nights are alike; a backfill's year is not (older nights without
+    # HRV or a score), so rows go up in groups of one shape.
+    shapes: dict[tuple[str, ...], list[dict]] = {}
+    for row in rows:
+        shapes.setdefault(tuple(sorted(row)), []).append(row)
+    for group in shapes.values():
+        resp = requests.post(
+            rest_url("sleep_logs"),
+            params={"on_conflict": "user_id,log_date"},
+            headers=rest_headers("resolution=merge-duplicates,return=minimal"),
+            json=group,
+            timeout=30,
+        )
+        rest_check(resp, "sleep_logs upsert")
 
 
 def main() -> None:
