@@ -19,6 +19,12 @@ const PAD = { top: 6, right: 6, bottom: 20, left: 28 }
 const BAND = '#e2e2e0'
 /** Where touching shows a day: a solid hairline, never the reference dash. */
 const CURSOR = '#c9c9c7'
+/** A tap this near the day on show puts it away (Peter, 2026-10-14: nothing
+ *  brought the legend back). A day can be narrower than a fingertip, so a
+ *  second tap at the same spot often misses its day but lands this near. */
+const REACH = 16
+/** A finger that moves less than this is tapping, not sliding. */
+const SLOP = 8
 
 interface ReadinessTrendProps {
   trend: Trend
@@ -101,7 +107,13 @@ export default function ReadinessTrend({ trend, title, span, singleName, lineNam
   const drawn = n >= 2
   const wrap = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(340)
-  const [hover, setHover] = useState<number | null>(null)
+  // The day on show. A mouse shows the day under it and takes it away on
+  // leaving; a finger's day is pinned, so it stays to be read after the lift.
+  const [shown, setShown] = useState<{ i: number; pinned: boolean } | null>(null)
+  // The press under way: where it started, and whether it landed on the
+  // pinned day, which a tap that does not slide puts away.
+  const press = useRef<{ x: number; away: boolean } | null>(null)
+  const pinned = shown?.pinned ?? false
 
   // Drawn at the sheet's real width, so the 11 px labels stay 11 px.
   useEffect(() => {
@@ -111,6 +123,17 @@ export default function ReadinessTrend({ trend, title, span, singleName, lineNam
     ro.observe(el)
     return () => ro.disconnect()
   }, [drawn])
+
+  // A press anywhere outside the chart puts a pinned day away too, and the
+  // legend it stood in for comes back.
+  useEffect(() => {
+    if (!pinned) return
+    const outside = (e: Event) => {
+      if (!wrap.current?.contains(e.target as Node)) setShown(null)
+    }
+    document.addEventListener('pointerdown', outside)
+    return () => document.removeEventListener('pointerdown', outside)
+  }, [pinned])
 
   if (!drawn) return null
 
@@ -142,14 +165,35 @@ export default function ReadinessTrend({ trend, title, span, singleName, lineNam
     : []))
   const labelled = [...ends, ...months.filter(m => ends.every(e => Math.abs(x(m.i) - x(e.i)) >= 44))]
 
-  const pick = (e: PointerEvent<SVGSVGElement>) => {
+  /** Where a pointer is across the chart, in its drawing's units. */
+  const along = (e: PointerEvent<SVGSVGElement>) => {
     const box = e.currentTarget.getBoundingClientRect()
-    const px = ((e.clientX - box.left) / box.width) * width
-    setHover(Math.round(Math.min(Math.max((px - PAD.left) / plotW, 0), 1) * (n - 1)))
+    return ((e.clientX - box.left) / box.width) * width
+  }
+  const show = (e: PointerEvent<SVGSVGElement>) => {
+    const i = Math.round(Math.min(Math.max((along(e) - PAD.left) / plotW, 0), 1) * (n - 1))
+    const pin = e.pointerType !== 'mouse'
+    setShown(s => (s && s.i === i && s.pinned === pin ? s : { i, pinned: pin }))
+  }
+  const down = (e: PointerEvent<SVGSVGElement>) => {
+    const away = shown !== null && shown.pinned && Math.abs(along(e) - x(shown.i)) <= REACH
+    press.current = { x: e.clientX, away }
+    if (!away) show(e)
+  }
+  const move = (e: PointerEvent<SVGSVGElement>) => {
+    if (e.pointerType === 'mouse') { show(e); return }
+    const p = press.current
+    if (!p || (p.away && Math.abs(e.clientX - p.x) < SLOP)) return
+    p.away = false
+    show(e)
+  }
+  const up = () => {
+    if (press.current?.away) setShown(null)
+    press.current = null
   }
 
   const head = full ? span : `SINCE ${fmtDate(days[0].date, { relative: false }).toUpperCase()}`
-  const h = hover !== null ? days[hover] : null
+  const h = shown ? days[shown.i] : null
   const num = (v: number | null) => (v === null ? '—' : String(Math.round(v)))
   // One day in words (invented figures): "Wed 8 Oct · night 66 · 7‑night
   // average 63 ms", or "Thu 9 Oct · 16 of 25".
@@ -171,12 +215,13 @@ export default function ReadinessTrend({ trend, title, span, singleName, lineNam
           role="img"
           aria-label={`${title}: the ${lineName} against ${bandName}, ${head.toLowerCase()}`}
           className="block touch-pan-y select-none"
-          onPointerDown={pick}
-          onPointerMove={pick}
-          // A finger lifting keeps its day on the readout; a mouse leaving
-          // clears it, and so does a touch the page took for a scroll.
-          onPointerLeave={e => { if (e.pointerType === 'mouse') setHover(null) }}
-          onPointerCancel={() => setHover(null)}
+          onPointerDown={down}
+          onPointerMove={move}
+          onPointerUp={up}
+          // A mouse leaving takes its day away; a finger lifting leaves its
+          // day pinned. A touch the page took for a scroll puts it away.
+          onPointerLeave={e => { if (e.pointerType === 'mouse') setShown(null) }}
+          onPointerCancel={() => { press.current = null; setShown(null) }}
         >
           {axis.ticks.map(v => (
             <g key={v}>
@@ -193,10 +238,10 @@ export default function ReadinessTrend({ trend, title, span, singleName, lineNam
           {lines.map((pts, i) => pts.length === 1
             ? <circle key={i} cx={pts[0][0]} cy={pts[0][1]} r={2} fill={CHART.line} />
             : <path key={i} d={monotone(pts)} fill="none" stroke={CHART.line} strokeWidth={1.5} strokeLinejoin="round" />)}
-          {h && hover !== null && (
+          {shown && h && (
             <g>
-              <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={PAD.top + plotH} stroke={CURSOR} strokeWidth={1} />
-              {h.read !== null && <circle cx={x(hover)} cy={y(h.read)} r={3} fill={CHART.line} />}
+              <line x1={x(shown.i)} x2={x(shown.i)} y1={PAD.top} y2={PAD.top + plotH} stroke={CURSOR} strokeWidth={1} />
+              {h.read !== null && <circle cx={x(shown.i)} cy={y(h.read)} r={3} fill={CHART.line} />}
             </g>
           )}
           {labelled.map(t => (
@@ -204,30 +249,34 @@ export default function ReadinessTrend({ trend, title, span, singleName, lineNam
           ))}
         </svg>
       </div>
-      <div className="min-h-[20px] mt-1 text-[11px] leading-[1.4] text-ink-3" aria-live="polite">
-        {h ? (
-          <span className="text-ink-2">{readout(h)}</span>
-        ) : (
-          <span className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+      {/* The day is read over the legend, which keeps its room, so the sheet
+          does not jump when a day is put away and the legend comes back. */}
+      <div className="grid mt-1 text-[11px] leading-[1.4] text-ink-3" aria-live="polite">
+        <span className={`col-start-1 row-start-1 flex flex-wrap items-center gap-x-3 gap-y-0.5${h ? ' invisible' : ''}`}>
+          <span className="inline-flex items-center gap-1">
+            {dots
+              ? <svg width="14" height="6" aria-hidden><line x1="0" y1="3" x2="14" y2="3" stroke={CHART.line} strokeWidth="1.5" /></svg>
+              : <svg width="6" height="6" aria-hidden><circle cx="3" cy="3" r="2" fill={CHART.line} /></svg>}
+            {lineName}
+          </span>
+          {hasSingles && (
             <span className="inline-flex items-center gap-1">
-              {dots
-                ? <svg width="14" height="6" aria-hidden><line x1="0" y1="3" x2="14" y2="3" stroke={CHART.line} strokeWidth="1.5" /></svg>
-                : <svg width="6" height="6" aria-hidden><circle cx="3" cy="3" r="2" fill={CHART.line} /></svg>}
-              {lineName}
+              <svg width="6" height="6" aria-hidden><circle cx="3" cy="3" r="2" fill={CHART.line2} /></svg>
+              single {singleName}s
             </span>
-            {hasSingles && (
-              <span className="inline-flex items-center gap-1">
-                <svg width="6" height="6" aria-hidden><circle cx="3" cy="3" r="2" fill={CHART.line2} /></svg>
-                single {singleName}s
-              </span>
-            )}
-            {normal && (
-              <span className="inline-flex items-center gap-1">
-                <span aria-hidden className="inline-block w-3 h-2" style={{ background: BAND }} />
-                {bandName}
-              </span>
-            )}
-            <span className="text-ink-4">touch to read a day</span>
+          )}
+          {normal && (
+            <span className="inline-flex items-center gap-1">
+              <span aria-hidden className="inline-block w-3 h-2" style={{ background: BAND }} />
+              {bandName}
+            </span>
+          )}
+          <span className="text-ink-4">touch to read a day</span>
+        </span>
+        {shown && h && (
+          <span className="col-start-1 row-start-1 self-start flex flex-wrap items-center gap-x-3 gap-y-0.5">
+            <span className="text-ink-2">{readout(h)}</span>
+            {shown.pinned && <span className="text-ink-4">tap again to clear</span>}
           </span>
         )}
       </div>
