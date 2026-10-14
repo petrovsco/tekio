@@ -10,14 +10,20 @@ import { userRows, deleteRow } from './_rows'
 import { liftSetProblem } from '../sets'
 import { KnownError } from '../errorReport'
 
-async function getOrCreateSession(date: string): Promise<string> {
+/** The day's session, with how many exercises it already holds. The count
+ *  rides on the same request: a separate one cost a round trip on every first
+ *  tick of a lift. */
+async function getOrCreateSession(date: string): Promise<{ id: string; exercises: number }> {
   const { data: existing } = await supabase
     .from('training_sessions')
-    .select('id')
+    .select('id, session_exercises(count)')
     .eq('user_id', USER_ID)
     .eq('session_date', date)
     .maybeSingle()
-  if (existing) return existing.id
+  if (existing) {
+    const counted = existing.session_exercises as unknown as { count: number }[] | null
+    return { id: existing.id, exercises: counted?.[0]?.count ?? 0 }
+  }
 
   const { data, error } = await supabase
     .from('training_sessions')
@@ -25,7 +31,7 @@ async function getOrCreateSession(date: string): Promise<string> {
     .select('id')
     .single()
   if (error) throw error
-  return data.id
+  return { id: data.id, exercises: 0 }
 }
 
 /** Delete a training session once its last exercise is gone — the row exists
@@ -92,24 +98,18 @@ export async function saveWeightEntry(
   // entry handed back seeds the in-memory log. Returning the typed spelling
   // would leave the muscle read blind to this set until the next reload —
   // exactly the split roadmap 044 closes.
-  const [exercise, sessionId] = await Promise.all([
+  const [exercise, session] = await Promise.all([
     getOrCreateExerciseRow(entry.exercise, { link: true, pattern }),
     getOrCreateSession(entry.date),
   ])
-  const exerciseId = exercise.id
-
-  // Determine sort_order (append after existing exercises in this session)
-  const { count } = await supabase
-    .from('session_exercises')
-    .select('id', { count: 'exact', head: true })
-    .eq('session_id', sessionId)
 
   const { data: se, error: seErr } = await supabase
     .from('session_exercises')
     .insert({
-      session_id: sessionId,
-      exercise_id: exerciseId,
-      sort_order: count ?? 0,
+      session_id: session.id,
+      exercise_id: exercise.id,
+      // Appended after the exercises already in this session.
+      sort_order: session.exercises,
       superset_group_id: entry.supersetId ?? null,
     })
     .select('id')
@@ -152,15 +152,33 @@ export async function deleteWeightEntry(id: string): Promise<void> {
   if (se?.session_id) await deleteSessionIfEmpty(se.session_id)
 }
 
+const sameSet = (a: LiftSet, b: LiftSet) => a.weight === b.weight && a.reps === b.reps
+
+/** `prev` is what the entry holds now, when the caller knows it. */
 export async function updateWeightEntry(
   id: string,
-  patch: { sets: LiftSet[]; date?: string }
+  patch: { sets: LiftSet[]; date?: string },
+  prev?: LiftSet[],
 ): Promise<void> {
   // Check before the delete below: a refused insert after it would leave the
   // entry with no sets at all.
   if (patch.sets.length === 0) throw new KnownError('An exercise needs at least one set.')
   const problem = patch.sets.map(liftSetProblem).find(Boolean)
   if (problem) throw new KnownError(problem)
+
+  // Ticking the next set on Weights adds one row at the end, and unticking the
+  // last takes one off (RFC 0106). Either is a single request; rewriting every
+  // set was two in a row, on every tick.
+  const n = Math.min(patch.sets.length, prev?.length ?? 0)
+  if (!patch.date && prev && prev.length !== patch.sets.length && patch.sets.slice(0, n).every((s, i) => sameSet(s, prev[i]))) {
+    const { error } = patch.sets.length > prev.length
+      ? await supabase.from('session_sets').insert(
+          patch.sets.slice(n).map((s, i) => ({ session_exercise_id: id, set_number: n + i + 1, weight: s.weight, reps: s.reps })),
+        )
+      : await supabase.from('session_sets').delete().eq('session_exercise_id', id).gt('set_number', n)
+    if (error) throw error
+    return
+  }
 
   // Replace all sets for this session_exercise
   await supabase.from('session_sets').delete().eq('session_exercise_id', id)
