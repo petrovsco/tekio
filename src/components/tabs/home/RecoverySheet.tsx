@@ -4,7 +4,7 @@ import { startOfWeek, today, fmtDate } from '../../../lib/utils'
 import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   readinessTrend, HRV_BASELINE_DAYS,
-  type ReadinessMethod, type SystemicReadiness, type TrendDay,
+  type ReadinessMethod, type SystemicReadiness, type ReadinessTrend as Trend,
 } from '../../../lib/fusedRead'
 import { CHECK_IN_BAND } from '../../../constants/app'
 import type { CheckInAnswers, SleepEntry } from '../../../types'
@@ -65,13 +65,23 @@ const SOURCE_LINE: Record<ReadinessMethod, string> = {
   check_in: `Your usual comes from your check-ins over the ${CHECK_IN_BAND.baselineDays} days before today.`,
 }
 
-/** How the history chart names its parts, per method. */
+/** How the chart names its parts, per method: its window is the one the
+ *  source line above it names. */
 const TREND_WORDS: Record<ReadinessMethod, {
-  title: string; singleName: string; lineName: string; bandName: string; unit: string; dots: boolean
+  title: string; span: string; singleName: string; lineName: string; bandName: string; unit: string; dots: boolean
 }> = {
-  overnight_hrv: { title: 'HRV', singleName: 'night', lineName: '7‑night average', bandName: 'your normal', unit: ' ms', dots: true },
-  morning_hrv: { title: 'MORNING HRV', singleName: 'morning', lineName: '7‑day average', bandName: 'your normal', unit: ' ms', dots: true },
-  check_in: { title: 'CHECK-IN', singleName: 'check-in', lineName: 'daily total', bandName: 'your usual', unit: ' of 25', dots: false },
+  overnight_hrv: {
+    title: 'HRV', span: `${HRV_BASELINE_DAYS} NIGHTS + THIS WEEK`,
+    singleName: 'night', lineName: '7‑night average', bandName: 'your normal', unit: ' ms', dots: true,
+  },
+  morning_hrv: {
+    title: 'MORNING HRV', span: `${HRV_BASELINE_DAYS} MORNINGS + THIS WEEK`,
+    singleName: 'morning', lineName: '7‑day average', bandName: 'your normal', unit: ' ms', dots: true,
+  },
+  check_in: {
+    title: 'CHECK-IN', span: `${CHECK_IN_BAND.baselineDays} DAYS + TODAY`,
+    singleName: 'check-in', lineName: 'daily total', bandName: 'your usual', unit: ' of 25', dots: false,
+  },
 }
 
 /** Why there is no reading, when there is none. */
@@ -89,10 +99,10 @@ function missingLine(sys: SystemicReadiness): string {
 
 /** Where today's readiness came from — one tap from the card (0085, 0092):
  * the band, the reading placed on the person's normal, the night or morning
- * behind it, and the months behind that. */
+ * behind it, and the days that normal is built from. */
 function ReadinessSource({ sys, trend, morningToday, onOpenProfile }: {
   sys: SystemicReadiness
-  trend: TrendDay[]
+  trend: Trend | null
   morningToday: number | null | undefined
   onOpenProfile: () => void
 }) {
@@ -127,7 +137,7 @@ function ReadinessSource({ sys, trend, morningToday, onOpenProfile }: {
       {sys.notes.shortNight !== null && (
         <div className="text-ink-2">Short night: {sys.notes.shortNight.toFixed(1)} h. A note only; it does not change the verdict.</div>
       )}
-      {trendMethod && <ReadinessTrend days={trend} {...TREND_WORDS[trendMethod]} />}
+      {trendMethod && trend && <ReadinessTrend trend={trend} {...TREND_WORDS[trendMethod]} />}
       {sys.method === 'check_in' && (
         <div className="text-ink-3 mt-2">Less certain than HRV. A 1-minute morning HRV reading would read your body directly.</div>
       )}
@@ -275,11 +285,11 @@ export default function RecoverySheet({ sys, onClose, onOpenProfile }: RecoveryS
   const minutesMeta = (xs: { duration: number }[]) =>
     xs.length > 0 ? `${xs.length}× this week · ${xs.reduce((n, e) => n + e.duration, 0)} min` : 'nothing this week'
   const todays = inputs.find(e => e.date === today())
-  // The months behind today's reading, for the method being read (or the one
+  // The window behind today's reading, for the method being read (or the one
   // chosen, while it builds its baseline).
   const trendMethod = sys.method ?? sys.chosen
   const trend = useMemo(
-    () => (trendMethod ? readinessTrend(trendMethod, sleep, inputs) : []),
+    () => (trendMethod ? readinessTrend(trendMethod, sleep, inputs) : null),
     [trendMethod, sleep, inputs],
   )
 

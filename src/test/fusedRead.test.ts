@@ -633,56 +633,70 @@ describe('the readiness gauge', () => {
 })
 
 describe('readinessTrend', () => {
-  it('ends on the day of the reading, with the same 7-night mean and normal', () => {
+  it("ends on today with the reading's own mean, printed number and normal", () => {
     const sleep = hrvHistory(76)
     const r = overnightHrvReading(sleep, TODAY)!
-    const days = readinessTrend('overnight_hrv', sleep, [], TODAY)
-    const last = days[days.length - 1]
+    const t = readinessTrend('overnight_hrv', sleep, [], TODAY)
+    const last = t.days[t.days.length - 1]
     expect(last.date).toBe(TODAY)
     expect(last.single).toBe(76)
     expect(Math.round(last.read!)).toBe(76)
-    expect(r.recent).toBe(76)
+    expect(last.printed).toBe(r.recent)
     // the reading prints the whole values inside the same exact edges
-    expect(Math.ceil(last.low!)).toBe(r.normal.low)
-    expect(Math.floor(last.high!)).toBe(r.normal.high)
-    expect(last.printed).toEqual({ read: r.recent, ...r.normal })
+    expect(Math.ceil(t.normal!.low)).toBe(r.normal.low)
+    expect(Math.floor(t.normal!.high)).toBe(r.normal.high)
   })
 
-  it('starts at the first reading and draws no normal before 14 baseline nights', () => {
-    const days = readinessTrend('overnight_hrv', hrvHistory(80, 20), [], TODAY)
-    expect(days[0].date).toBe(ago(26))
-    expect(days[0].low).toBeNull()
-    // day 7 + 14 baseline nights back: the first day with a normal
-    const firstNormal = days.find(d => d.low !== null)!
-    expect(firstNormal.date).toBe(ago(26 - 14 - 7 + 1))
+  it('prints a week under the normal under its printed edge, as the gauge does', () => {
+    const sleep = hrvHistory(70)
+    const r = overnightHrvReading(sleep, TODAY)!
+    const t = readinessTrend('overnight_hrv', sleep, [], TODAY)
+    expect(r.gauge.side).toBe('below')
+    expect(t.days[t.days.length - 1].printed).toBe(r.recent)
   })
 
-  it('reaches back no further than asked', () => {
-    const days = readinessTrend('overnight_hrv', hrvHistory(80, 60), [], TODAY, 30)
-    expect(days).toHaveLength(30)
-    expect(days[0].date).toBe(ago(29))
+  it('covers the 60 nights before this week and the week itself', () => {
+    const t = readinessTrend('overnight_hrv', hrvHistory(80, 90), [], TODAY)
+    expect(t.full).toBe(true)
+    expect(t.days).toHaveLength(67)
+    expect(t.days[0].date).toBe(ago(66))
+  })
+
+  it('starts at the first reading when the history is shorter than that', () => {
+    const t = readinessTrend('overnight_hrv', hrvHistory(80, 20), [], TODAY)
+    expect(t.full).toBe(false)
+    expect(t.days[0].date).toBe(ago(26))
+    expect(t.normal).not.toBeNull()
+  })
+
+  it('draws no normal before 14 baseline nights', () => {
+    const t = readinessTrend('overnight_hrv', hrvHistory(80, 10), [], TODAY)
+    expect(t.days[0].date).toBe(ago(16))
+    expect(t.normal).toBeNull()
+    expect(t.days.every(d => d.printed !== null && Number.isInteger(d.printed))).toBe(true)
   })
 
   it('reads each method on its own readings', () => {
-    expect(readinessTrend('morning_hrv', hrvHistory(80), [], TODAY)).toEqual([])
-    const morningDays = readinessTrend('morning_hrv', [], morningHistory(65), TODAY)
-    expect(morningDays[morningDays.length - 1].single).toBe(65)
+    expect(readinessTrend('morning_hrv', hrvHistory(80), [], TODAY).days).toEqual([])
+    const morning = readinessTrend('morning_hrv', [], morningHistory(65), TODAY)
+    expect(morning.days[morning.days.length - 1].single).toBe(65)
   })
 
-  it('reads the check-in day by day, against the 28 days before each', () => {
+  it('reads the check-in day by day, against the 28 days before today', () => {
     const inputs = checkInHistory({ ...answers(4), mood: 1 })
-    const days = readinessTrend('check_in', [], inputs, TODAY)
-    const last = days[days.length - 1]
+    const t = readinessTrend('check_in', [], inputs, TODAY)
+    const last = t.days[t.days.length - 1]
     expect(last.single).toBe(17)
     expect(last.read).toBe(17)
-    expect(last.low).toBeCloseTo(17, 5)
-    expect(last.high).toBeCloseTo(21, 5)
-    const r = checkInReading(inputs, TODAY)!
-    expect(last.printed).toEqual({ read: r.recent, ...r.normal })
+    expect(t.normal!.low).toBeCloseTo(17, 5)
+    expect(t.normal!.high).toBeCloseTo(21, 5)
+    expect(last.printed).toBe(checkInReading(inputs, TODAY)!.recent)
+    expect(t.days[0].date).toBe(ago(20))
+    expect(readinessTrend('check_in', [], checkInHistory(answers(4), 40), TODAY).days).toHaveLength(29)
   })
 
   it('is empty with nothing logged', () => {
-    expect(readinessTrend('overnight_hrv', [], [], TODAY)).toEqual([])
+    expect(readinessTrend('overnight_hrv', [], [], TODAY)).toEqual({ days: [], normal: null, full: false })
   })
 })
 

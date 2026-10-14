@@ -628,56 +628,56 @@ export function checkInReading(inputs: ReadinessInput[], date: string = today())
   }
 }
 
-// ── The sheet's history: a method over the last months ──────────────────────
+// ── The sheet's chart: the window today's reading reads ────────────────────
 
-/** One day of a method's history, for the readiness sheet's chart. Values are
- * exact, in the method's own unit; null where there was nothing to read. */
+/** One day of the window the readiness sheet charts. Values are exact, in the
+ * method's own unit; null where there was nothing to read. */
 export interface TrendDay {
   date: string
   /** That day's own reading: the night's or the morning's HRV, or the day's
    * check-in total. */
   single: number | null
-  /** What the verdict read that day: the 7-day mean for HRV, geometric as the
-   * reading takes it, and the day's own total for the check-in. */
+  /** The read on that day: the 7-day mean for HRV, geometric as the reading
+   * takes it, and the day's own total for the check-in. */
   read: number | null
-  /** The person's normal as it stood that day; null until its baseline had
-   * enough readings. */
-  low: number | null
-  high: number | null
-  /** The day as the screen prints it, in whole numbers that agree with that
-   * day's band ({@link wholeNumbers}); null without a normal. */
-  printed: { read: number | null; low: number; high: number } | null
+  /** The read as the screen prints it: a whole number on its own side of
+   * today's normal ({@link wholeNumbers}), so the last day prints what the
+   * gauge does. */
+  printed: number | null
 }
 
-/** A history day's printed numbers: the read on its own side of the normal. */
-function printedDay(
-  read: number | null, low: number, high: number, side: NormalSide | null, inside: (v: number) => boolean,
-): NonNullable<TrendDay['printed']> {
-  if (read === null || side === null) return { read: null, ...wholeRange(low, high, inside) }
-  const w = wholeNumbers(read, low, high, side, inside)
-  return { read: w.recent, ...w.normal }
+/** The readiness sheet's chart: the days today's normal is built from and the
+ * days it reads, with that normal to draw across them. */
+export interface ReadinessTrend {
+  days: TrendDay[]
+  /** Today's normal, exact edges in the method's unit; null until its
+   * baseline has enough readings. */
+  normal: { low: number; high: number } | null
+  /** The history reaches the window's first day, so the days cover the whole
+   * window; otherwise they start at the first reading. */
+  full: boolean
 }
-
-/** How far back the readiness sheet's history reaches: about six months. */
-export const TREND_DAYS = 182
 
 const DAY_MS = 86_400_000
 const dayIndex = (date: string): number => Math.round(Date.parse(date) / DAY_MS)
 const dayDate = (index: number): string => new Date(index * DAY_MS).toISOString().slice(0, 10)
 
 /**
- * A method's last `days` days, each with the value the verdict read and the
- * normal it was read against that day — the same math as the reading, run
- * day by day, so the chart's last day is today's reading. Starts at the first
- * day with anything to draw; empty without any readings.
+ * The window today's reading reads, day by day: for HRV the 60 days its
+ * normal comes from and the 7 it reads, for the check-in the 28 days and
+ * today. Each day carries its own reading and the read (the 7-day mean, or the
+ * day's total); the window carries today's normal, from the same readings,
+ * edges and side test as the reading, so the last day is today's reading.
+ * The sheet's sentence says the normal comes from those 60 nights, and the
+ * chart shows them (Peter, 2026-10-14: six months was too much). Starts at the
+ * first reading when the history is shorter; empty without a reading in it.
  */
 export function readinessTrend(
   method: ReadinessMethod,
   sleep: SleepEntry[],
   inputs: ReadinessInput[],
   date: string = today(),
-  days: number = TREND_DAYS,
-): TrendDay[] {
+): ReadinessTrend {
   const end = dayIndex(date)
   const byDay = new Map<number, number>()
   if (method === 'check_in') {
@@ -695,41 +695,51 @@ export function readinessTrend(
     return xs
   }
 
-  const out: TrendDay[] = []
-  for (let d = end - days + 1; d <= end; d++) {
+  // Today's normal, and how a read prints against it. `x` is the read in the
+  // unit the side is tested in: ln ms for HRV, points for the check-in.
+  let start: number
+  let normal: ReadinessTrend['normal'] = null
+  let print: (read: number, x: number) => number = read => Math.round(read)
+  if (method === 'check_in') {
+    start = end - CHECK_IN_BAND.baselineDays
+    const base = span(start, end - 1)
+    if (base.length >= CHECK_IN_BAND.minEntries) {
+      const n = checkInNormal(base)
+      normal = { low: Math.max(5, n.low), high: Math.min(25, n.high) }
+      print = total => wholeNumbers(total, n.low, n.high,
+        checkInBand(total, n) !== 'ok' ? 'below' : total > n.high ? 'above' : 'inside', checkInInside(n)).recent
+    }
+  } else {
+    start = end - HRV_ROLLING_DAYS - HRV_BASELINE_DAYS + 1
+    const base = span(start, end - HRV_ROLLING_DAYS).map(Math.log)
+    if (base.length >= MIN_HRV_BASELINE_NIGHTS) {
+      const n = hrvNormal(base)
+      normal = { low: Math.exp(n.low), high: Math.exp(n.high) }
+      print = (read, x) => wholeNumbers(read, Math.exp(n.low), Math.exp(n.high),
+        bandForZ((x - n.mean) / n.sd) !== 'ok' ? 'below' : x > n.high ? 'above' : 'inside', hrvInside(n)).recent
+    }
+  }
+
+  const first = Math.min(...byDay.keys())
+  const days: TrendDay[] = []
+  for (let d = Math.max(start, first); d <= end; d++) {
     const single = byDay.get(d) ?? null
     let read: number | null = null
-    let low: number | null = null
-    let high: number | null = null
-    let printed: TrendDay['printed'] = null
+    let x = 0
     if (method === 'check_in') {
       read = single
-      const base = span(d - CHECK_IN_BAND.baselineDays, d - 1)
-      if (base.length >= CHECK_IN_BAND.minEntries) {
-        const n = checkInNormal(base)
-        low = Math.max(5, n.low)
-        high = Math.min(25, n.high)
-        const side: NormalSide | null = read === null ? null
-          : checkInBand(read, n) !== 'ok' ? 'below' : read > n.high ? 'above' : 'inside'
-        printed = printedDay(read, n.low, n.high, side, checkInInside(n))
-      }
+      x = single ?? 0
     } else {
       const week = span(d - HRV_ROLLING_DAYS + 1, d).map(Math.log)
-      const x = week.length > 0 ? avg(week) : null
-      if (x !== null) read = Math.exp(x)
-      const base = span(d - HRV_ROLLING_DAYS - HRV_BASELINE_DAYS + 1, d - HRV_ROLLING_DAYS).map(Math.log)
-      if (base.length >= MIN_HRV_BASELINE_NIGHTS) {
-        const n = hrvNormal(base)
-        low = Math.exp(n.low)
-        high = Math.exp(n.high)
-        const side: NormalSide | null = x === null ? null : x < n.low ? 'below' : x > n.high ? 'above' : 'inside'
-        printed = printedDay(read, low, high, side, hrvInside(n))
+      if (week.length > 0) {
+        x = avg(week)
+        read = Math.exp(x)
       }
     }
-    if (out.length === 0 && single === null && read === null && low === null) continue
-    out.push({ date: dayDate(d), single, read, low, high, printed })
+    days.push({ date: dayDate(d), single, read, printed: read === null ? null : print(read, x) })
   }
-  return out
+  if (!days.some(d => d.single !== null)) return { days: [], normal: null, full: false }
+  return { days, normal, full: first <= start }
 }
 
 /** Readings each method has toward its first verdict. */

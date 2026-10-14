@@ -1,25 +1,32 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import { TREND_DAYS, type TrendDay } from '../../../lib/fusedRead'
+import type { ReadinessTrend as Trend, TrendDay } from '../../../lib/fusedRead'
 import { fmtDate } from '../../../lib/utils'
 import { CHART } from '../../ui/chart'
 
-// The readiness sheet's long view (Peter, 2026-10-14): what the verdict read
-// each day, against the normal it was read against that day, over about six
-// months, with the single readings behind it. It answers what the gauge
-// cannot: whether today's dip is one week or a slide, and where the normal
-// itself has been going. Drawn by hand rather than with Recharts, which is its
-// own download the sheet should not wait on when it opens from Home's card;
-// styled by design-system §9. See tekio.rfcs/rfcs/0109-readiness-on-your-normal.md
+// The readiness sheet's chart (Peter, 2026-10-14): the days today's normal is
+// built from and the days it reads, for HRV the 60 nights before this week and
+// the week itself. Today's normal is drawn across them as one band, with each
+// night behind the line the verdict reads, so the chart shows what the
+// sentence above it says: where the normal comes from, and where this week
+// sits on it. Six months was tried first and was too much. Drawn by hand
+// rather than with Recharts, which is its own download the sheet should not
+// wait on when it opens from Home's card; styled by design-system §9.
+// See tekio.rfcs/rfcs/0109-readiness-on-your-normal.md
 
 const HEIGHT = 136
 const PAD = { top: 6, right: 6, bottom: 20, left: 28 }
 /** The normal's band: a reference area, one step under the card border. */
 const BAND = '#e2e2e0'
-/** Where scrubbing shows a day: a solid hairline, never the reference dash. */
+/** Where touching shows a day: a solid hairline, never the reference dash. */
 const CURSOR = '#c9c9c7'
 
 interface ReadinessTrendProps {
-  days: TrendDay[]
+  trend: Trend
+  /** The chart's name: 'HRV'. */
+  title: string
+  /** The window, as the header names it when the history covers it:
+   *  '60 NIGHTS + THIS WEEK'. */
+  span: string
   /** What one reading is called in the readout: 'night', 'morning',
    *  'check-in'. */
   singleName: string
@@ -33,8 +40,6 @@ interface ReadinessTrendProps {
    *  it. The check-in reads each day on its own, so its days are ink dots and
    *  nothing joins them: a line would claim a continuity it does not have. */
   dots: boolean
-  /** The chart's name, before the span: 'HRV'. */
-  title: string
 }
 
 /** Grid steps a value axis may use: whole numbers that read at a glance. */
@@ -78,7 +83,7 @@ function monotone(pts: [number, number][]): string {
   return d
 }
 
-/** Consecutive runs of days where `has` holds — a gap breaks a line or band. */
+/** Consecutive runs of days where `has` holds — a gap breaks a line. */
 function runs(days: TrendDay[], has: (d: TrendDay) => boolean): number[][] {
   const out: number[][] = []
   let cur: number[] = []
@@ -90,7 +95,8 @@ function runs(days: TrendDay[], has: (d: TrendDay) => boolean): number[][] {
   return out
 }
 
-export default function ReadinessTrend({ days, singleName, lineName, bandName, unit, dots, title }: ReadinessTrendProps) {
+export default function ReadinessTrend({ trend, title, span, singleName, lineName, bandName, unit, dots }: ReadinessTrendProps) {
+  const { days, normal, full } = trend
   const n = days.length
   const drawn = n >= 2
   const wrap = useRef<HTMLDivElement>(null)
@@ -112,36 +118,29 @@ export default function ReadinessTrend({ days, singleName, lineName, bandName, u
   for (const d of days) {
     if (dots && d.single !== null) values.push(d.single)
     if (d.read !== null) values.push(d.read)
-    if (d.low !== null && d.high !== null) values.push(d.low, d.high)
   }
+  if (normal) values.push(normal.low, normal.high)
   const axis = valueAxis(values)
   const plotW = width - PAD.left - PAD.right
   const plotH = HEIGHT - PAD.top - PAD.bottom
   const x = (i: number) => PAD.left + (i / (n - 1)) * plotW
   const y = (v: number) => PAD.top + (1 - (v - axis.from) / (axis.to - axis.from)) * plotH
 
-  const bands = runs(days, d => d.low !== null && d.high !== null).map(r =>
-    `M${r.map(i => `${x(i).toFixed(1)},${y(days[i].high!).toFixed(1)}`).join('L')}` +
-    `L${[...r].reverse().map(i => `${x(i).toFixed(1)},${y(days[i].low!).toFixed(1)}`).join('L')}Z`)
   const lines = dots
     ? runs(days, d => d.read !== null).map(r => r.map(i => [x(i), y(days[i].read!)] as [number, number]))
     : days.flatMap((d, i) => (d.read !== null ? [[[x(i), y(d.read)] as [number, number]]] : []))
-  const hasBand = days.some(d => d.low !== null)
   const hasSingles = dots && days.some(d => d.single !== null)
 
-  // Months along the bottom, on their first day; a span too short to hold two
-  // gets its first and last days instead.
-  let ticks = days.flatMap((d, i) => (d.date.endsWith('-01') ? [{ i, label: fmtDate(d.date.slice(0, 7), { year: 'never' }) }] : []))
-  if (ticks.length < 2) {
-    ticks = [0, n - 1].map(i => ({ i, label: fmtDate(days[i].date, { relative: false, year: 'never' }) }))
-  }
-  const labelled: typeof ticks = []
-  for (const t of ticks) {
-    const prev = labelled[labelled.length - 1]
-    if (!prev || x(t.i) - x(prev.i) >= 44) labelled.push(t)
-  }
-  // A label at an end of the axis hangs inward rather than off the frame.
-  const anchor = (i: number) => (x(i) < PAD.left + 20 ? 'start' : x(i) > width - 24 ? 'end' : 'middle')
+  // The window's first day and today at the ends; the months between them
+  // where there is room for their names.
+  const ends = [
+    { i: 0, label: fmtDate(days[0].date, { relative: false, year: 'never' }), anchor: 'start' as const },
+    { i: n - 1, label: fmtDate(days[n - 1].date, { year: 'never' }), anchor: 'end' as const },
+  ]
+  const months = days.flatMap((d, i) => (i > 0 && i < n - 1 && d.date.endsWith('-01')
+    ? [{ i, label: fmtDate(d.date.slice(0, 7), { year: 'never' }), anchor: 'middle' as const }]
+    : []))
+  const labelled = [...ends, ...months.filter(m => ends.every(e => Math.abs(x(m.i) - x(e.i)) >= 44))]
 
   const pick = (e: PointerEvent<SVGSVGElement>) => {
     const box = e.currentTarget.getBoundingClientRect()
@@ -149,31 +148,28 @@ export default function ReadinessTrend({ days, singleName, lineName, bandName, u
     setHover(Math.round(Math.min(Math.max((px - PAD.left) / plotW, 0), 1) * (n - 1)))
   }
 
-  const span = n >= TREND_DAYS ? 'LAST 6 MONTHS' : `SINCE ${fmtDate(days[0].date, { relative: false }).toUpperCase()}`
+  const head = full ? span : `SINCE ${fmtDate(days[0].date, { relative: false }).toUpperCase()}`
   const h = hover !== null ? days[hover] : null
-  const num = (v: number | null | undefined) => (v == null ? '—' : String(Math.round(v)))
-  // One day in words, with the numbers the card would have printed that day
-  // (invented figures): "Wed 8 Oct · night 66 · 7‑night average 63 · normal
-  // 60–69 ms", or "Thu 9 Oct · 16 of 25 · usual 17–21".
+  const num = (v: number | null) => (v === null ? '—' : String(Math.round(v)))
+  // One day in words (invented figures): "Wed 8 Oct · night 66 · 7‑night
+  // average 63 ms", or "Thu 9 Oct · 16 of 25".
   const readout = (d: TrendDay) => {
-    const read = d.printed?.read ?? d.read
     const parts = [fmtDate(d.date, { weekday: true, relative: false })]
-    if (dots) parts.push(`${singleName} ${num(d.single)}`, `${lineName} ${num(read)}`)
-    else parts.push(read === null ? `no ${singleName}` : `${num(read)}${unit}`)
-    if (d.printed) parts.push(`${bandName.replace('your ', '')} ${d.printed.low}–${d.printed.high}`)
-    return parts.join(' · ') + (dots ? unit : '')
+    if (dots) parts.push(`${singleName} ${num(d.single)}`, `${lineName} ${num(d.printed)}${unit}`)
+    else parts.push(d.printed === null ? `no ${singleName}` : `${d.printed}${unit}`)
+    return parts.join(' · ')
   }
 
   return (
     <div className="mt-3">
-      <div className="text-[10px] font-bold tracking-[0.12em] text-ink-3 mb-1">{title} · {span}</div>
+      <div className="text-[10px] font-bold tracking-[0.12em] text-ink-3 mb-1">{title} · {head}</div>
       <div ref={wrap}>
         <svg
           width={width}
           height={HEIGHT}
           viewBox={`0 0 ${width} ${HEIGHT}`}
           role="img"
-          aria-label={`${title}: the ${lineName} against ${bandName}, ${span.toLowerCase()}`}
+          aria-label={`${title}: the ${lineName} against ${bandName}, ${head.toLowerCase()}`}
           className="block touch-pan-y select-none"
           onPointerDown={pick}
           onPointerMove={pick}
@@ -188,9 +184,11 @@ export default function ReadinessTrend({ days, singleName, lineName, bandName, u
               <text x={PAD.left - 5} y={y(v)} textAnchor="end" dominantBaseline="middle" fontSize={11} fill={CHART.axis}>{v}</text>
             </g>
           ))}
-          {bands.map((d, i) => <path key={i} d={d} fill={BAND} />)}
+          {normal && (
+            <rect x={PAD.left} width={plotW} y={y(normal.high)} height={y(normal.low) - y(normal.high)} fill={BAND} />
+          )}
           {dots && days.map((d, i) => d.single !== null && (
-            <circle key={i} cx={x(i)} cy={y(d.single)} r={1.8} fill={CHART.line2} />
+            <circle key={i} cx={x(i)} cy={y(d.single)} r={2} fill={CHART.line2} />
           ))}
           {lines.map((pts, i) => pts.length === 1
             ? <circle key={i} cx={pts[0][0]} cy={pts[0][1]} r={2} fill={CHART.line} />
@@ -202,7 +200,7 @@ export default function ReadinessTrend({ days, singleName, lineName, bandName, u
             </g>
           )}
           {labelled.map(t => (
-            <text key={t.i} x={x(t.i)} y={HEIGHT - 5} textAnchor={anchor(t.i)} fontSize={11} fill={CHART.axis}>{t.label}</text>
+            <text key={t.i} x={x(t.i)} y={HEIGHT - 5} textAnchor={t.anchor} fontSize={11} fill={CHART.axis}>{t.label}</text>
           ))}
         </svg>
       </div>
@@ -219,11 +217,11 @@ export default function ReadinessTrend({ days, singleName, lineName, bandName, u
             </span>
             {hasSingles && (
               <span className="inline-flex items-center gap-1">
-                <svg width="6" height="6" aria-hidden><circle cx="3" cy="3" r="1.8" fill={CHART.line2} /></svg>
+                <svg width="6" height="6" aria-hidden><circle cx="3" cy="3" r="2" fill={CHART.line2} /></svg>
                 single {singleName}s
               </span>
             )}
-            {hasBand && (
+            {normal && (
               <span className="inline-flex items-center gap-1">
                 <span aria-hidden className="inline-block w-3 h-2" style={{ background: BAND }} />
                 {bandName}
