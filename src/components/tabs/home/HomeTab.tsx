@@ -118,6 +118,10 @@ interface GateCol {
   tone: keyof typeof TONE
   /** A typed reading still to give today: the value reads as a prompt. */
   ask?: boolean
+  /** The person's normal range, printed under the bar and shaded on it. A
+   * readiness score of 25–75 is exactly that range (z ±0.5), so the shade
+   * sits at a fixed quarter-to-three-quarters of the track. */
+  normal?: string
 }
 
 export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => void }) {
@@ -235,7 +239,10 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           // normal (half = normal), so the number beside it is that mean, not
           // one night: a good last night printed over a short bar read as a
           // broken bar.
-          ? { label: colMethod === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS', value: `${sys.recent} ms`, pct: sys.readiness ?? 0, tone: 'ink' }
+          ? {
+              label: colMethod === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS', value: `${sys.recent} ms`, pct: sys.readiness ?? 0, tone: 'ink',
+              normal: sys.normal ? `your normal ${sys.normal.low}–${sys.normal.high} ms` : undefined,
+            }
           : colMethod === 'morning_hrv'
             ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', pct: 0, tone: 'off' }
             : sys.hrv != null
@@ -354,12 +361,21 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             <div key={col.label} className="grow basis-0 pr-2">
               <div className={`text-[9px] tracking-[0.05em] mb-[3px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.label}</div>
               <div className={`text-xs font-semibold ${col.ask && !gated ? 'text-signal' : ''}`}>{col.value}</div>
-              <div className={`h-[3px] mt-1 rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
+              <div className={`relative h-[3px] mt-1 rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
+                {col.normal && (
+                  <div
+                    className="absolute inset-y-0 left-1/4 w-1/2"
+                    style={{ background: gated ? 'rgba(255,255,255,0.35)' : '#bdbdbb' }}
+                  />
+                )}
                 <div
-                  className="h-[3px] rounded-sm"
+                  className="relative h-[3px] rounded-sm"
                   style={{ width: `${col.pct}%`, background: TONE[col.tone][gated ? 'gated' : 'normal'] }}
                 />
               </div>
+              {col.normal && (
+                <div className={`text-[10px] mt-[3px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.normal}</div>
+              )}
             </div>
           ))}
         </div>
