@@ -6,7 +6,8 @@ import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { SmartInput } from '../../ui/SmartInput'
 import { SetsGrid } from '../../ui/SetsGrid'
-import { toSetStr, parseSets, setsProblem, type SetStr } from '../../../lib/sets'
+import { toSetStr, parseSets, setsProblem, isTimedSet, type SetStr } from '../../../lib/sets'
+import { Chip } from '../../ui/Chip'
 import type { ExerciseAlias, PlannedExercise } from '../../../types'
 
 /**
@@ -15,11 +16,13 @@ import type { ExerciseAlias, PlannedExercise } from '../../../types'
  * until it is logged. The day is today or later — work on a past day either
  * happened, and is logged, or it did not.
  */
-export function PlanSheet({ plan, suggestions, aliases, onClose }: {
+export function PlanSheet({ plan, suggestions, aliases, timedOf, onClose }: {
   /** The plan to edit; absent writes a new one. */
   plan?: PlannedExercise
   suggestions: string[]
   aliases: ExerciseAlias[]
+  /** Whether a name is a hold (RFC 0107); `null` for a name nothing knows. */
+  timedOf: (name: string) => boolean | null
   onClose: () => void
 }) {
   const addPlan = useAppStore(s => s.addPlan)
@@ -34,6 +37,11 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   const [date, setDate] = useState(plan && !missed ? plan.date : today())
   const [sets, setSets] = useState<SetStr[]>(plan?.targets.length ? toSetStr(plan.targets) : [{ weight: '', reps: '' }])
   const [revealed, setRevealed] = useState(plan?.targets.length || 1)
+  // A known name decides; a new one is asked, as on the log form (RFC 0107).
+  // A plan being edited keeps what it was written as.
+  const [ownTimed, setOwnTimed] = useState(!!plan?.targets.some(isTimedSet))
+  const known = plan && plan.exercise === ex.trim() ? ownTimed : timedOf(ex)
+  const timed = known ?? ownTimed
 
   // Superset with (RFC 0106): another open lift of the same day, or one this
   // plan is already grouped with. Moving a grouped plan to another day takes
@@ -46,11 +54,11 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
   const [partner, setPartner] = useState(initialPartner)
   const partnerOk = partner === '' || partners.some(p => p.id === partner)
 
-  const valid = partnerOk && ex.trim() !== '' && date >= today() && !setsProblem(sets, revealed)
+  const valid = partnerOk && ex.trim() !== '' && date >= today() && !setsProblem(sets, revealed, timed)
 
   const save = async () => {
     if (!valid) return
-    const patch = { date, exercise: ex.trim(), targets: parseSets(sets, revealed) }
+    const patch = { date, exercise: ex.trim(), targets: parseSets(sets, revealed, timed) }
     const regroup = partner === initialPartner ? undefined : partner || null
     const ok = await withToast(
       () => (plan ? editPlan(plan.id, patch, regroup) : addPlan(patch, partner || undefined)),
@@ -94,6 +102,15 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
             placeholder="e.g. Bench Press"
           />
         </div>
+        {known === null && ex.trim() !== '' && (
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] text-ink-2">Is it counted in reps or held for time?</span>
+            <div className="flex gap-1">
+              <Chip small active={!timed} onClick={() => setOwnTimed(false)}>Reps</Chip>
+              <Chip small active={timed} onClick={() => setOwnTimed(true)}>Time</Chip>
+            </div>
+          </div>
+        )}
         <Inp label="Date" type="date" min={today()} value={date} onChange={e => setDate(e.target.value)} />
         {(partners.length > 0 || partner !== '') && (
           <SelEl
@@ -114,6 +131,7 @@ export function PlanSheet({ plan, suggestions, aliases, onClose }: {
             onUpdate={(i, f, v) => setSets(p => p.map((s, idx) => (idx === i ? { ...s, [f]: v } : s)))}
             onRemove={i => { setSets(p => p.filter((_, idx) => idx !== i)); setRevealed(r => Math.max(1, r - 1)) }}
             onRevealNext={revealNext}
+            timed={timed}
           />
         </div>
       </div>

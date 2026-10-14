@@ -66,22 +66,33 @@ describe('classifyWeightSet', () => {
     // strength [1, 5], hypertrophy [5, 30], muscular endurance [15, 999]. A set
     // inside an overlap counts in full toward each, in continuum order.
     // Outside every edge it snaps to the nearest band.
-    expect(classifyWeightSet(1)).toEqual(['strength'])
-    expect(classifyWeightSet(4)).toEqual(['strength'])
-    expect(classifyWeightSet(5)).toEqual(['strength', 'hypertrophy'])
-    expect(classifyWeightSet(6)).toEqual(['hypertrophy'])
-    expect(classifyWeightSet(14)).toEqual(['hypertrophy'])
-    expect(classifyWeightSet(15)).toEqual(['hypertrophy', 'muscular_endurance'])
-    expect(classifyWeightSet(20)).toEqual(['hypertrophy', 'muscular_endurance'])
-    expect(classifyWeightSet(30)).toEqual(['hypertrophy', 'muscular_endurance'])
-    expect(classifyWeightSet(31)).toEqual(['muscular_endurance'])
-    expect(classifyWeightSet(0)).toEqual(['strength'])
-    expect(classifyWeightSet(1000)).toEqual(['muscular_endurance'])
+    expect(classifyWeightSet({ reps: 1 })).toEqual(['strength'])
+    expect(classifyWeightSet({ reps: 4 })).toEqual(['strength'])
+    expect(classifyWeightSet({ reps: 5 })).toEqual(['strength', 'hypertrophy'])
+    expect(classifyWeightSet({ reps: 6 })).toEqual(['hypertrophy'])
+    expect(classifyWeightSet({ reps: 14 })).toEqual(['hypertrophy'])
+    expect(classifyWeightSet({ reps: 15 })).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet({ reps: 20 })).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet({ reps: 30 })).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet({ reps: 31 })).toEqual(['muscular_endurance'])
+    expect(classifyWeightSet({ reps: 0 })).toEqual(['strength'])
+    expect(classifyWeightSet({ reps: 1000 })).toEqual(['muscular_endurance'])
   })
 
   it('lets an exercise override win outright over reps', () => {
-    expect(classifyWeightSet(3, 'power')).toEqual(['power'])
-    expect(classifyWeightSet(20, 'power')).toEqual(['power'])
+    expect(classifyWeightSet({ reps: 3 }, 'power')).toEqual(['power'])
+    expect(classifyWeightSet({ reps: 20 }, 'power')).toEqual(['power'])
+  })
+
+  it('reads a hold by its seconds, never by its one rep (RFC 0107)', () => {
+    // HOLD_BANDS_S: strength [1, 10], hypertrophy [10, 60], muscular endurance
+    // [30, ∞) s, overlapping like the rep bands.
+    expect(classifyWeightSet({ reps: 1, seconds: 5 })).toEqual(['strength'])
+    expect(classifyWeightSet({ reps: 1, seconds: 10 })).toEqual(['strength', 'hypertrophy'])
+    expect(classifyWeightSet({ reps: 1, seconds: 20 })).toEqual(['hypertrophy'])
+    expect(classifyWeightSet({ reps: 1, seconds: 45 })).toEqual(['hypertrophy', 'muscular_endurance'])
+    expect(classifyWeightSet({ reps: 1, seconds: 120 })).toEqual(['muscular_endurance'])
+    expect(classifyWeightSet({ reps: 1, seconds: 45 }, 'power')).toEqual(['power'])
   })
 })
 
@@ -466,6 +477,15 @@ describe('adaptationCoverage', () => {
       expect(Math.max(...parts)).toBeLessThanOrEqual(stim.total[m])
       expect(parts.reduce((s, v) => s + v, 0)).toBeGreaterThanOrEqual(stim.total[m])
     }
+  })
+
+  it('counts a 45 s hold as one set, in hypertrophy and endurance, never strength (RFC 0107)', () => {
+    const hold: WeightEntry = { id: 'h', date: '2025-01-02', exercise: 'Bench Press', sets: [{ weight: 0, reps: 1, seconds: 45 }, { weight: 0, reps: 1, seconds: 45 }] }
+    const stim = muscleStimulus([hold], links, { from: '2025-01-01', to: '2025-01-07' })
+    expect(stim.total.Chest).toBe(2)
+    expect(stim.byQuality.strength.Chest).toBeUndefined()
+    expect(stim.byQuality.hypertrophy.Chest).toBe(2)
+    expect(stim.byQuality.muscular_endurance.Chest).toBe(2)
   })
 
   it('routes an override to its quality only; recovery links never add sets', () => {

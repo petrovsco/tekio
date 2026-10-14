@@ -3,7 +3,7 @@ import { parseDurationMins, formatDurationMins, calcPace, uniqSorted } from '../
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
-import { toSetStr, parseSets, setsProblem } from '../../lib/sets'
+import { toSetStr, parseSets, setsProblem, isTimedSet } from '../../lib/sets'
 import type { SetStr } from '../../lib/sets'
 import { Inp, SelEl, FIELD_LABEL } from './Input'
 import { FieldLabel, Toggle, Rating } from './Fields'
@@ -98,6 +98,8 @@ function useSave(onClose: () => void, ready: boolean, write: () => Promise<void>
 
 /** Custom hook — manages a sets grid's local state. */
 function useSets(initial: LiftSet[]) {
+  // A logged hold stays a hold (RFC 0107).
+  const timed = initial.some(isTimedSet)
   const [sets, setSets] = useState<SetStr[]>(() => toSetStr(initial))
   const [revealed, setRevealed] = useState(initial.length || 1)
 
@@ -115,10 +117,10 @@ function useSets(initial: LiftSet[]) {
     setRevealed(n)
   }
 
-  const parsed = parseSets(sets, revealed)
+  const parsed = parseSets(sets, revealed, timed)
   // Savable only with at least one set and none the table would refuse.
-  const ok = parsed.length > 0 && !setsProblem(sets, revealed)
-  return { sets, revealed, update, remove, revealNext, parsed, ok }
+  const ok = parsed.length > 0 && !setsProblem(sets, revealed, timed)
+  return { sets, revealed, update, remove, revealNext, parsed, ok, timed }
 }
 
 // ── Save/Cancel footer ────────────────────────────────────────────────────────
@@ -149,7 +151,7 @@ function WeightForm({ record, onClose }: FormProps<WeightEntry>) {
       <Inp label="Date" type="date" value={date} onChange={e => setDate(e.target.value)} />
       <SetsGrid
         sets={s.sets} revealed={s.revealed}
-        onUpdate={s.update} onRemove={s.remove} onRevealNext={s.revealNext}
+        onUpdate={s.update} onRemove={s.remove} onRevealNext={s.revealNext} timed={s.timed}
       />
     </div>
   )
@@ -165,8 +167,9 @@ function SupersetForm({ record, onClose }: FormProps<WeightEntry[]>) {
 
   const patch = (i: number, f: (g: { sets: SetStr[]; revealed: number }) => { sets: SetStr[]; revealed: number }) =>
     setGrids(p => p.map((g, idx) => (idx === i ? f(g) : g)))
-  const parsed = grids.map(g => parseSets(g.sets, g.revealed))
-  const ok = grids.every((g, i) => parsed[i].length > 0 && !setsProblem(g.sets, g.revealed))
+  const timed = record.map(e => e.sets.some(isTimedSet))
+  const parsed = grids.map((g, i) => parseSets(g.sets, g.revealed, timed[i]))
+  const ok = grids.every((g, i) => parsed[i].length > 0 && !setsProblem(g.sets, g.revealed, timed[i]))
 
   useSave(onClose, ok, async () => {
     await Promise.all(record.map((e, i) => editWeightEntry(e.id, { sets: parsed[i], date })))
@@ -180,7 +183,7 @@ function SupersetForm({ record, onClose }: FormProps<WeightEntry[]>) {
         <div key={e.id} className="border border-line rounded-[3px] p-2.5 bg-hairline">
           <p className="flex items-center gap-1.5 text-xs font-bold text-ink mb-2"><SSBadge />{e.exercise}</p>
           <SetsGrid
-            sets={grids[i].sets} revealed={grids[i].revealed}
+            sets={grids[i].sets} revealed={grids[i].revealed} timed={timed[i]}
             onUpdate={(si, f, v) => patch(i, g => ({ ...g, sets: g.sets.map((x, idx) => (idx === si ? { ...x, [f]: v } : x)) }))}
             onRemove={si => patch(i, g => ({ sets: g.sets.filter((_, idx) => idx !== si), revealed: Math.max(1, g.revealed - 1) }))}
             onRevealNext={() => patch(i, g => {

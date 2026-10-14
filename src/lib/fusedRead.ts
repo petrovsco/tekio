@@ -113,7 +113,7 @@ export function muscleQualityStates(
   const stimulus = muscleStimulus(weights, exerciseMuscles, muscleWindow(date), overrides)
   const feedsQuality = (w: WeightEntry) => {
     const override = resolveExerciseAdaptation(w.exercise, overrides)
-    return w.sets.some(s => classifyWeightSet(s.reps, override).includes(quality))
+    return w.sets.some(s => classifyWeightSet(s, override).includes(quality))
   }
   const lastAny = lastStimulusDates(weights, exerciseMuscles, date)
   const lastOfQuality = lastStimulusDates(weights, exerciseMuscles, date, feedsQuality)

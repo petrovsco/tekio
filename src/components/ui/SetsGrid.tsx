@@ -2,7 +2,7 @@ import { MICRO_LABEL } from './Badges'
 import { DelBtn } from './Button'
 import { Icon } from './Icon'
 import { FIELD } from './Input'
-import { setsProblem, type SetStr } from '../../lib/sets'
+import { setsProblem, toLiftSet, fmtSet, rowFilled, type SetStr } from '../../lib/sets'
 
 interface SetsGridProps {
   sets: SetStr[]
@@ -16,14 +16,17 @@ interface SetsGridProps {
   onToggle?: (i: number) => void
   /** Rows whose tick is still being written: Done spins until it lands. */
   pending?: boolean[]
+  /** A hold (RFC 0107): the columns read added load and seconds. */
+  timed?: boolean
 }
 
 /**
- * Reusable sets grid (weight × reps rows) used in WeightsTab and EditModal.
+ * Reusable sets grid (weight × reps rows, or added load × seconds for a hold)
+ * used in WeightsTab, the plan sheet and EditModal.
  */
-export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle, pending }: SetsGridProps) {
+export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, saved, onToggle, pending, timed = false }: SetsGridProps) {
   const visible = sets.slice(0, revealed)
-  const problem = setsProblem(sets, revealed)
+  const problem = setsProblem(sets, revealed, timed)
   const cols = onToggle
     ? '28px minmax(0,1fr) minmax(0,1fr) 32px 28px'
     : '28px minmax(0,1fr) minmax(0,1fr) 28px'
@@ -31,14 +34,14 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
   return (
     <div>
       <div className="grid gap-1.5 mb-1.5" style={{ gridTemplateColumns: cols }}>
-        {['#', 'Weight kg', 'Reps', ...(onToggle ? ['Done'] : []), ''].map((h, i) => (
+        {['#', timed ? 'Added kg' : 'Weight kg', timed ? 'Seconds' : 'Reps', ...(onToggle ? ['Done'] : []), ''].map((h, i) => (
           <p key={i} className={MICRO_LABEL}>{h}</p>
         ))}
       </div>
 
       {visible.map((s, i) => {
         const done = !!saved?.[i]
-        const unfilled = !s.weight || !s.reps
+        const unfilled = !rowFilled(s, timed)
         const saving = !!pending?.[i]
         return (
         <div key={i} className="grid gap-1.5 mb-1.5 items-center" style={{ gridTemplateColumns: cols }}>
@@ -48,7 +51,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
             onChange={e => onUpdate(i, 'weight', e.target.value)}
             readOnly={done}
             type="number"
-            placeholder="60"
+            placeholder={timed ? '0' : '60'}
             min="0"
             step="0.5"
             className={FIELD}
@@ -59,7 +62,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
             readOnly={done}
             type="number"
             inputMode="numeric"
-            placeholder="10"
+            placeholder={timed ? '30' : '10'}
             min="1"
             step="1"
             className={FIELD}
@@ -95,7 +98,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
 
       <button onClick={onRevealNext} className="text-[11px] font-semibold text-ink underline underline-offset-2 mt-1 cursor-pointer">
         {revealed < sets.length
-          ? `+ Set ${revealed + 1} (${sets[revealed].weight}kg × ${sets[revealed].reps})`
+          ? `+ Set ${revealed + 1} (${fmtSet(toLiftSet(sets[revealed], timed))})`
           : '+ Add set'}
       </button>
     </div>

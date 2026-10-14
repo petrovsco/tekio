@@ -10,6 +10,15 @@ import { userRows, deleteRow } from './_rows'
 import { liftSetProblem } from '../sets'
 import { KnownError } from '../errorReport'
 
+/** A set as its `session_sets` row: a hold is one rep and its seconds (RFC 0107). */
+const setRow = (sessionExerciseId: string, n: number, s: LiftSet) => ({
+  session_exercise_id: sessionExerciseId,
+  set_number: n,
+  weight: s.weight,
+  reps: s.reps,
+  ...(s.seconds != null ? { duration_s: s.seconds } : {}),
+})
+
 /** The day's session, with how many exercises it already holds. The count
  *  rides on the same request: a separate one cost a round trip on every first
  *  tick of a lift. */
@@ -50,7 +59,7 @@ async function deleteSessionIfEmpty(sessionId: string): Promise<void> {
 export async function loadWeights(): Promise<WeightEntry[]> {
   const sessions = await userRows(
     'training_sessions',
-    'session_date, session_exercises(id, sort_order, superset_group_id, exercises(name), session_sets(set_number, weight, reps))',
+    'session_date, session_exercises(id, sort_order, superset_group_id, exercises(name), session_sets(set_number, weight, reps, duration_s))',
     'session_date',
   )
 
@@ -61,14 +70,14 @@ export async function loadWeights(): Promise<WeightEntry[]> {
       sort_order: number
       superset_group_id: string | null
       exercises: { name: string } | null
-      session_sets: { set_number: number; weight: number; reps: number }[]
+      session_sets: { set_number: number; weight: number; reps: number; duration_s: number | null }[]
     }[]
 
     const sorted = [...exercises].sort((a, b) => a.sort_order - b.sort_order)
     for (const se of sorted) {
       const sets: LiftSet[] = [...(se.session_sets ?? [])]
         .sort((a, b) => a.set_number - b.set_number)
-        .map(s => ({ weight: Number(s.weight), reps: s.reps }))
+        .map(s => ({ weight: Number(s.weight), reps: s.reps, ...(s.duration_s != null ? { seconds: s.duration_s } : {}) }))
 
       entries.push({
         id: se.id,
@@ -118,12 +127,7 @@ export async function saveWeightEntry(
 
   if (entry.sets.length > 0) {
     const { error: setsErr } = await supabase.from('session_sets').insert(
-      entry.sets.map((s, i) => ({
-        session_exercise_id: se.id,
-        set_number: i + 1,
-        weight: s.weight,
-        reps: s.reps,
-      }))
+      entry.sets.map((s, i) => setRow(se.id, i + 1, s))
     )
     if (setsErr) {
       // No entry without its sets: a failed save must not leave an empty
@@ -152,7 +156,7 @@ export async function deleteWeightEntry(id: string): Promise<void> {
   if (se?.session_id) await deleteSessionIfEmpty(se.session_id)
 }
 
-const sameSet = (a: LiftSet, b: LiftSet) => a.weight === b.weight && a.reps === b.reps
+const sameSet = (a: LiftSet, b: LiftSet) => a.weight === b.weight && a.reps === b.reps && a.seconds === b.seconds
 
 /** `prev` is what the entry holds now, when the caller knows it. */
 export async function updateWeightEntry(
@@ -173,7 +177,7 @@ export async function updateWeightEntry(
   if (!patch.date && prev && prev.length !== patch.sets.length && patch.sets.slice(0, n).every((s, i) => sameSet(s, prev[i]))) {
     const { error } = patch.sets.length > prev.length
       ? await supabase.from('session_sets').insert(
-          patch.sets.slice(n).map((s, i) => ({ session_exercise_id: id, set_number: n + i + 1, weight: s.weight, reps: s.reps })),
+          patch.sets.slice(n).map((s, i) => setRow(id, n + i + 1, s)),
         )
       : await supabase.from('session_sets').delete().eq('session_exercise_id', id).gt('set_number', n)
     if (error) throw error
@@ -184,12 +188,7 @@ export async function updateWeightEntry(
   await supabase.from('session_sets').delete().eq('session_exercise_id', id)
   if (patch.sets.length > 0) {
     const { error } = await supabase.from('session_sets').insert(
-      patch.sets.map((s, i) => ({
-        session_exercise_id: id,
-        set_number: i + 1,
-        weight: s.weight,
-        reps: s.reps,
-      }))
+      patch.sets.map((s, i) => setRow(id, i + 1, s))
     )
     if (error) throw error
   }
@@ -202,7 +201,7 @@ export async function updateWeightEntry(
       .eq('id', id)
       .single()
 
-    const newSessionId = await getOrCreateSession(patch.date)
+    const { id: newSessionId } = await getOrCreateSession(patch.date)
 
     const { error } = await supabase
       .from('session_exercises')
