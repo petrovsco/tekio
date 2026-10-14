@@ -402,8 +402,25 @@ export type ReadinessBand = 'low' | 'moderate' | 'ok'
 export const READINESS_METHODS = ['overnight_hrv', 'morning_hrv', 'check_in'] as const
 export type ReadinessMethod = typeof READINESS_METHODS[number]
 
+/** Which side of the person's normal a reading falls on. Under it the band
+ * drops (moderate or low); inside it or above it reads ok. */
+export type NormalSide = 'below' | 'inside' | 'above'
+
+/** The readiness gauge's track, on Home's card and in the readiness sheet: the
+ * normal fills its middle 40 %, so a reading can sit visibly under or over it,
+ * and anything further out is pinned to the ends. One geometry for every
+ * method. */
+export const GAUGE_NORMAL = { from: 0.3, to: 0.7 } as const
+
+/** Where a reading sits against the person's normal, for the gauge. */
+export interface Gauge {
+  side: NormalSide
+  /** The dot's place along the track, 0–1. */
+  at: number
+}
+
 /** What every readiness calculator returns, whatever it measured: the band,
- * plus the 0–100 score the card prints (50 = the person's own normal). */
+ * plus a 0–100 score (50 = the person's own normal). */
 export interface ReadinessReading {
   method: ReadinessMethod
   band: ReadinessBand
@@ -411,11 +428,13 @@ export interface ReadinessReading {
   /** Distance from the person's own baseline, in their own SD units. */
   z: number
   /** The recent value and the person's normal range, in the method's own
-   * unit (ms for HRV, points of 25 for the check-in) — what the explanation
-   * shows instead of z. Below the range's low edge reads moderate or low;
-   * inside it or above, ok. */
+   * unit (ms for HRV, points of 25 for the check-in): what the screen prints
+   * instead of z, as whole numbers that agree with the band
+   * ({@link wholeNumbers}). Below the range reads moderate or low; inside it
+   * or above it, ok. */
   recent: number
   normal: { low: number; high: number }
+  gauge: Gauge
 }
 
 /** The band a baseline distance falls in (HRV_BAND_Z: the trialled tiers). */
@@ -423,6 +442,46 @@ export function bandForZ(z: number): ReadinessBand {
   if (z < HRV_BAND_Z.low) return 'low'
   if (z < HRV_BAND_Z.moderate) return 'moderate'
   return 'ok'
+}
+
+/** The dot's place on the gauge, from unrounded values in one linear unit (ln
+ * ms for HRV, points for the check-in). It keeps to its own side of the
+ * band's edge, so a reading a hair under the normal never draws inside it. */
+function gaugeAt(x: number, low: number, high: number, side: NormalSide): number {
+  const at = GAUGE_NORMAL.from + (GAUGE_NORMAL.to - GAUGE_NORMAL.from) * (x - low) / (high - low)
+  const gap = 0.02
+  if (side === 'below') return clamp(Math.min(at, GAUGE_NORMAL.from - gap), 0, 1)
+  if (side === 'above') return clamp(Math.max(at, GAUGE_NORMAL.to + gap), 0, 1)
+  return clamp(at, GAUGE_NORMAL.from, GAUGE_NORMAL.to)
+}
+
+/** The numbers the screen prints, agreeing with the band: the normal is the
+ * whole values that read inside it, and the recent value is rounded to the
+ * nearest whole value on its own side of the edge. Rounding each to the
+ * nearest whole value printed "62 ms · your normal 62–71 ms" for a week that
+ * read under it (invented figures: 61.6 ms against an edge at 62.07). `low`
+ * and `high` are the normal's exact edges in the printed unit; `inside` is the
+ * band's own test for a whole value. */
+export function wholeNumbers(
+  recent: number, low: number, high: number, side: NormalSide, inside: (v: number) => boolean,
+): { recent: number; normal: { low: number; high: number } } {
+  const normal = wholeRange(low, high, inside)
+  const r = Math.round(recent)
+  return {
+    recent: side === 'below' ? Math.min(r, normal.low - 1)
+      : side === 'above' ? Math.max(r, normal.high + 1)
+        : clamp(r, normal.low, normal.high),
+    normal,
+  }
+}
+
+/** The whole values inside a normal whose exact edges are `low` and `high`.
+ * A normal narrower than one unit holds none: its middle is printed instead. */
+function wholeRange(low: number, high: number, inside: (v: number) => boolean): { low: number; high: number } {
+  const whole: number[] = []
+  for (let v = Math.floor(low); v <= Math.ceil(high); v++) if (inside(v)) whole.push(v)
+  const mid = Math.round((low + high) / 2)
+  return whole.length > 0 ? { low: whole[0], high: whole[whole.length - 1] } : { low: mid, high: mid }
 }
 
 /** Baseline-relative HRV (the grounded method — Vesterinen 2016, Buchheit
@@ -436,7 +495,7 @@ export function bandForZ(z: number): ReadinessBand {
  * on its own readings: the two routes are different numbers and never mix
  * (0092). See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding */
 const HRV_ROLLING_DAYS = 7
-const HRV_BASELINE_DAYS = 60
+export const HRV_BASELINE_DAYS = 60
 const MIN_HRV_BASELINE_NIGHTS = 14
 /** SD floor in ln units (≈ 5 % of the raw value) — guards a near-zero SD on a
  * very flat history. */
@@ -457,6 +516,19 @@ function hrvBaseline(points: Dated[], date: string): number[] {
     .map(p => Math.log(p.value))
 }
 
+/** An ln-HRV baseline's mean and SD (floored), and the normal's exact edges in
+ * ln ms: the moderate line either side of the mean. Shared by the reading and
+ * the sheet's history, so the two cannot draw different normals. */
+function hrvNormal(baseline: number[]) {
+  const mean = avg(baseline)
+  const sd = Math.max(Math.sqrt(avg(baseline.map(v => (v - mean) ** 2))), HRV_LN_SD_FLOOR)
+  return { mean, sd, low: mean + HRV_BAND_Z.moderate * sd, high: mean - HRV_BAND_Z.moderate * sd }
+}
+
+/** Whether a whole number of ms reads inside the normal. */
+const hrvInside = (n: { low: number; high: number }) => (v: number): boolean =>
+  v > 0 && Math.log(v) >= n.low && Math.log(v) <= n.high
+
 /** One HRV route's reading: null without a fresh reading (within `freshDays`)
  * or without 14 baseline readings. */
 function hrvReading(points: Dated[], method: ReadinessMethod, freshDays: number, date: string): ReadinessReading | null {
@@ -465,16 +537,15 @@ function hrvReading(points: Dated[], method: ReadinessMethod, freshDays: number,
   const rolling = xs.filter(p => daysBetween(p.date, date) < HRV_ROLLING_DAYS).map(p => Math.log(p.value))
   const baseline = hrvBaseline(xs, date)
   if (rolling.length === 0 || baseline.length < MIN_HRV_BASELINE_NIGHTS) return null
-  const mean = avg(baseline)
-  const sd = Math.max(Math.sqrt(avg(baseline.map(v => (v - mean) ** 2))), HRV_LN_SD_FLOOR)
-  const z = (avg(rolling) - mean) / sd
+  const n = hrvNormal(baseline)
+  const x = avg(rolling)
+  const z = (x - n.mean) / n.sd
+  const band = bandForZ(z)
+  const side: NormalSide = band !== 'ok' ? 'below' : x > n.high ? 'above' : 'inside'
   return {
-    method, band: bandForZ(z), score: clamp(Math.round(50 + 50 * z), 0, 100), z,
-    recent: Math.round(Math.exp(avg(rolling))),
-    normal: {
-      low: Math.round(Math.exp(mean + HRV_BAND_Z.moderate * sd)),
-      high: Math.round(Math.exp(mean - HRV_BAND_Z.moderate * sd)),
-    },
+    method, band, score: clamp(Math.round(50 + 50 * z), 0, 100), z,
+    ...wholeNumbers(Math.exp(x), Math.exp(n.low), Math.exp(n.high), side, hrvInside(n)),
+    gauge: { side, at: gaugeAt(x, n.low, n.high, side) },
   }
 }
 
@@ -511,6 +582,31 @@ function checkInBaseline(inputs: ReadinessInput[], date: string): number[] {
     .map(e => checkInTotal(e.checkIn as CheckInAnswers))
 }
 
+/** A check-in baseline's mean and SD (floored), and the normal's exact edges
+ * in points. The edge under which a total reads moderate: both tests must
+ * fail, so the wider of the two distances. */
+function checkInNormal(baseline: number[]) {
+  const mean = avg(baseline)
+  const sd = Math.max(Math.sqrt(avg(baseline.map(v => (v - mean) ** 2))), CHECK_IN_SD_FLOOR)
+  const edge = Math.max(-CHECK_IN_BAND.moderate.z * sd, CHECK_IN_BAND.moderate.points)
+  return { mean, sd, low: mean - edge, high: mean + edge }
+}
+
+/** A total's band against its baseline: both the SD line and the point floor
+ * must be crossed to drop a band. */
+function checkInBand(total: number, { mean, sd }: { mean: number; sd: number }): ReadinessBand {
+  const z = (total - mean) / sd
+  const below = mean - total
+  return z < CHECK_IN_BAND.low.z && below >= CHECK_IN_BAND.low.points ? 'low'
+    : z < CHECK_IN_BAND.moderate.z && below >= CHECK_IN_BAND.moderate.points ? 'moderate'
+      : 'ok'
+}
+
+/** Whether a total reads inside the usual: within the scale, not over its top
+ * edge, and not low enough to drop the band. */
+const checkInInside = (n: { mean: number; sd: number; high: number }) => (v: number): boolean =>
+  v >= 5 && v <= 25 && v <= n.high && checkInBand(v, n) === 'ok'
+
 /** The check-in calculator (0092): today's total against the person's own
  * usual total over the 28 days before it, in SD units with point floors
  * (CHECK_IN_BAND, convention). Null until today's check-in is answered, or
@@ -520,23 +616,120 @@ export function checkInReading(inputs: ReadinessInput[], date: string = today())
   if (!todays?.checkIn) return null
   const baseline = checkInBaseline(inputs, date)
   if (baseline.length < CHECK_IN_BAND.minEntries) return null
-  const mean = avg(baseline)
-  const sd = Math.max(Math.sqrt(avg(baseline.map(v => (v - mean) ** 2))), CHECK_IN_SD_FLOOR)
+  const n = checkInNormal(baseline)
   const total = checkInTotal(todays.checkIn)
-  const z = (total - mean) / sd
-  const below = mean - total
-  const band: ReadinessBand =
-    z < CHECK_IN_BAND.low.z && below >= CHECK_IN_BAND.low.points ? 'low'
-      : z < CHECK_IN_BAND.moderate.z && below >= CHECK_IN_BAND.moderate.points ? 'moderate'
-        : 'ok'
-  // The edge under which a total reads moderate: both tests must fail, so the
-  // wider of the two distances.
-  const edge = Math.max(-CHECK_IN_BAND.moderate.z * sd, CHECK_IN_BAND.moderate.points)
+  const z = (total - n.mean) / n.sd
+  const band = checkInBand(total, n)
+  const side: NormalSide = band !== 'ok' ? 'below' : total > n.high ? 'above' : 'inside'
   return {
     method: 'check_in', band, score: clamp(Math.round(50 + 50 * z), 0, 100), z,
-    recent: total,
-    normal: { low: Math.max(5, Math.round(mean - edge)), high: Math.min(25, Math.round(mean + edge)) },
+    ...wholeNumbers(total, n.low, n.high, side, checkInInside(n)),
+    gauge: { side, at: gaugeAt(total, n.low, n.high, side) },
   }
+}
+
+// ── The sheet's history: a method over the last months ──────────────────────
+
+/** One day of a method's history, for the readiness sheet's chart. Values are
+ * exact, in the method's own unit; null where there was nothing to read. */
+export interface TrendDay {
+  date: string
+  /** That day's own reading: the night's or the morning's HRV, or the day's
+   * check-in total. */
+  single: number | null
+  /** What the verdict read that day: the 7-day mean for HRV, geometric as the
+   * reading takes it, and the day's own total for the check-in. */
+  read: number | null
+  /** The person's normal as it stood that day; null until its baseline had
+   * enough readings. */
+  low: number | null
+  high: number | null
+  /** The day as the screen prints it, in whole numbers that agree with that
+   * day's band ({@link wholeNumbers}); null without a normal. */
+  printed: { read: number | null; low: number; high: number } | null
+}
+
+/** A history day's printed numbers: the read on its own side of the normal. */
+function printedDay(
+  read: number | null, low: number, high: number, side: NormalSide | null, inside: (v: number) => boolean,
+): NonNullable<TrendDay['printed']> {
+  if (read === null || side === null) return { read: null, ...wholeRange(low, high, inside) }
+  const w = wholeNumbers(read, low, high, side, inside)
+  return { read: w.recent, ...w.normal }
+}
+
+/** How far back the readiness sheet's history reaches: about six months. */
+export const TREND_DAYS = 182
+
+const DAY_MS = 86_400_000
+const dayIndex = (date: string): number => Math.round(Date.parse(date) / DAY_MS)
+const dayDate = (index: number): string => new Date(index * DAY_MS).toISOString().slice(0, 10)
+
+/**
+ * A method's last `days` days, each with the value the verdict read and the
+ * normal it was read against that day — the same math as the reading, run
+ * day by day, so the chart's last day is today's reading. Starts at the first
+ * day with anything to draw; empty without any readings.
+ */
+export function readinessTrend(
+  method: ReadinessMethod,
+  sleep: SleepEntry[],
+  inputs: ReadinessInput[],
+  date: string = today(),
+  days: number = TREND_DAYS,
+): TrendDay[] {
+  const end = dayIndex(date)
+  const byDay = new Map<number, number>()
+  if (method === 'check_in') {
+    for (const e of inputs) if (e.checkIn && e.date <= date) byDay.set(dayIndex(e.date), checkInTotal(e.checkIn))
+  } else {
+    const points = method === 'overnight_hrv' ? overnightPoints(sleep) : morningPoints(inputs)
+    for (const p of points) if (p.date <= date) byDay.set(dayIndex(p.date), p.value)
+  }
+  const span = (from: number, to: number): number[] => {
+    const xs: number[] = []
+    for (let d = from; d <= to; d++) {
+      const v = byDay.get(d)
+      if (v != null) xs.push(v)
+    }
+    return xs
+  }
+
+  const out: TrendDay[] = []
+  for (let d = end - days + 1; d <= end; d++) {
+    const single = byDay.get(d) ?? null
+    let read: number | null = null
+    let low: number | null = null
+    let high: number | null = null
+    let printed: TrendDay['printed'] = null
+    if (method === 'check_in') {
+      read = single
+      const base = span(d - CHECK_IN_BAND.baselineDays, d - 1)
+      if (base.length >= CHECK_IN_BAND.minEntries) {
+        const n = checkInNormal(base)
+        low = Math.max(5, n.low)
+        high = Math.min(25, n.high)
+        const side: NormalSide | null = read === null ? null
+          : checkInBand(read, n) !== 'ok' ? 'below' : read > n.high ? 'above' : 'inside'
+        printed = printedDay(read, n.low, n.high, side, checkInInside(n))
+      }
+    } else {
+      const week = span(d - HRV_ROLLING_DAYS + 1, d).map(Math.log)
+      const x = week.length > 0 ? avg(week) : null
+      if (x !== null) read = Math.exp(x)
+      const base = span(d - HRV_ROLLING_DAYS - HRV_BASELINE_DAYS + 1, d - HRV_ROLLING_DAYS).map(Math.log)
+      if (base.length >= MIN_HRV_BASELINE_NIGHTS) {
+        const n = hrvNormal(base)
+        low = Math.exp(n.low)
+        high = Math.exp(n.high)
+        const side: NormalSide | null = x === null ? null : x < n.low ? 'below' : x > n.high ? 'above' : 'inside'
+        printed = printedDay(read, low, high, side, hrvInside(n))
+      }
+    }
+    if (out.length === 0 && single === null && read === null && low === null) continue
+    out.push({ date: dayDate(d), single, read, low, high, printed })
+  }
+  return out
 }
 
 /** Readings each method has toward its first verdict. */
@@ -627,6 +820,8 @@ export interface SystemicReadiness {
   /** The reading's recent value and the person's normal range, in its own unit. */
   recent: number | null
   normal: { low: number; high: number } | null
+  /** Where the reading sits against that normal, for the gauge. */
+  gauge: Gauge | null
   notes: ReadinessNotes
   /** Last night's device sleep score, if fresh — shown, never part of readiness (0085). */
   sleepScore: number | null
@@ -684,6 +879,7 @@ export function systemicReadiness(
     z: reading?.z ?? null,
     recent: reading?.recent ?? null,
     normal: reading?.normal ?? null,
+    gauge: reading?.gauge ?? null,
     notes: readinessNotes(sleep, date),
     sleepScore,
     hrv,

@@ -3,6 +3,7 @@ import {
   muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, fusedVerdict, overnightHrvReading, bandForZ, HISTORY_WEEKS,
   morningHrvReading, checkInReading, checkInTotal, readinessNotes, autoReadinessMethod, overnightConnected,
+  wholeNumbers, readinessTrend, GAUGE_NORMAL,
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
@@ -394,8 +395,11 @@ describe('overnightHrvReading', () => {
     expect(r?.score).toBe(50)
     expect(r?.band).toBe('ok')
     expect(r?.recent).toBe(80) // geometric means, rounded to whole ms
-    // the normal range is the baseline ± the moderate line (0.5 SD), in ms
-    expect(r?.normal).toEqual({ low: 77, high: 82 })
+    // the normal range is the baseline ± the moderate line (0.5 SD): 77.4 to
+    // 82.4 ms, printed as the whole values inside it
+    expect(r?.normal).toEqual({ low: 78, high: 82 })
+    expect(r?.gauge.side).toBe('inside')
+    expect(r?.gauge.at).toBeCloseTo(0.5, 5)
   })
 
   it('puts a week just under the normal range in moderate', () => {
@@ -558,13 +562,127 @@ describe('checkInReading', () => {
 
   it('gives the normal range in points, edges at the moderate line', () => {
     const r = checkInReading(checkInHistory(answers(4)), TODAY)!
-    expect(r.normal).toEqual({ low: 17, high: 21 })
+    // mean 19 ± 2: 17 itself reads moderate (the test above), so the usual
+    // printed is the totals that read inside it
+    expect(r.normal).toEqual({ low: 18, high: 21 })
+    expect(r.gauge.side).toBe('inside')
+    expect(checkInReading(checkInHistory(answers(5)), TODAY)!.gauge.side).toBe('above')
+    const r17 = checkInReading(checkInHistory({ ...answers(4), mood: 1 }), TODAY)!
+    expect(r17.recent).toBeLessThan(r17.normal.low)
+    expect(r17.gauge.side).toBe('below')
+    expect(r17.gauge.at).toBeLessThan(GAUGE_NORMAL.from)
   })
 
   it('needs today answered and 14 earlier check-ins', () => {
     expect(checkInReading(checkInHistory(answers(4)).slice(1), TODAY)).toBeNull()
     expect(checkInReading(checkInHistory(answers(4), 13), TODAY)).toBeNull()
     expect(checkInReading(checkInHistory(answers(4), 14), TODAY)).not.toBeNull()
+  })
+})
+
+describe('wholeNumbers', () => {
+  // Invented figures throughout.
+  const within = (low: number, high: number) => (v: number) => v >= low && v <= high
+
+  it('prints a week a hair under the normal under its printed range', () => {
+    // 61.6 ms against an edge at 62.07: rounded each on its own, it printed
+    // "62 ms · your normal 62–71" for a week that read under the normal
+    const w = wholeNumbers(61.6, 62.07, 71.9, 'below', within(62.07, 71.9))
+    expect(w.normal).toEqual({ low: 63, high: 71 })
+    expect(w.recent).toBe(62)
+  })
+
+  it('rounds the recent value toward its own side of the edge', () => {
+    // 62.6 rounds to 63, but sits under an edge at 62.8: printed 62
+    expect(wholeNumbers(62.6, 62.8, 71.9, 'below', within(62.8, 71.9)).recent).toBe(62)
+    // 62.3 rounds to 62, but sits inside an edge at 62.07: printed 63
+    expect(wholeNumbers(62.3, 62.07, 71.9, 'inside', within(62.07, 71.9)).recent).toBe(63)
+    // 72.2 rounds to 72, above an edge at 72.1: printed 73
+    expect(wholeNumbers(72.2, 62.07, 72.1, 'above', within(62.07, 72.1)).recent).toBe(73)
+  })
+
+  it('prints the middle of a normal too narrow to hold a whole value', () => {
+    const w = wholeNumbers(20.5, 20.1, 20.9, 'inside', within(20.1, 20.9))
+    expect(w.normal).toEqual({ low: 21, high: 21 })
+    expect(w.recent).toBe(21)
+  })
+})
+
+describe('the readiness gauge', () => {
+  const sd = Math.abs(Math.log(85) - Math.log(75)) / 2
+  const mean = (Math.log(75) + Math.log(85)) / 2
+  const at = (z: number) => overnightHrvReading(hrvHistory(Math.exp(mean + z * sd)), TODAY)!.gauge
+
+  it('puts the normal in the middle of the track and the dot by its distance', () => {
+    expect(at(0).side).toBe('inside')
+    expect(at(0).at).toBeCloseTo(0.5, 5)
+    expect(at(-0.25).at).toBeCloseTo(0.4, 5)
+    expect(at(0.25).at).toBeCloseTo(0.6, 5)
+  })
+
+  it('keeps a reading just under the normal visibly outside it', () => {
+    const g = at(-0.51)
+    expect(g.side).toBe('below')
+    expect(g.at).toBeLessThanOrEqual(GAUGE_NORMAL.from - 0.02)
+  })
+
+  it('pins readings past the ends of the track', () => {
+    expect(at(-3)).toEqual({ side: 'below', at: 0 })
+    expect(at(3)).toEqual({ side: 'above', at: 1 })
+  })
+})
+
+describe('readinessTrend', () => {
+  it('ends on the day of the reading, with the same 7-night mean and normal', () => {
+    const sleep = hrvHistory(76)
+    const r = overnightHrvReading(sleep, TODAY)!
+    const days = readinessTrend('overnight_hrv', sleep, [], TODAY)
+    const last = days[days.length - 1]
+    expect(last.date).toBe(TODAY)
+    expect(last.single).toBe(76)
+    expect(Math.round(last.read!)).toBe(76)
+    expect(r.recent).toBe(76)
+    // the reading prints the whole values inside the same exact edges
+    expect(Math.ceil(last.low!)).toBe(r.normal.low)
+    expect(Math.floor(last.high!)).toBe(r.normal.high)
+    expect(last.printed).toEqual({ read: r.recent, ...r.normal })
+  })
+
+  it('starts at the first reading and draws no normal before 14 baseline nights', () => {
+    const days = readinessTrend('overnight_hrv', hrvHistory(80, 20), [], TODAY)
+    expect(days[0].date).toBe(ago(26))
+    expect(days[0].low).toBeNull()
+    // day 7 + 14 baseline nights back: the first day with a normal
+    const firstNormal = days.find(d => d.low !== null)!
+    expect(firstNormal.date).toBe(ago(26 - 14 - 7 + 1))
+  })
+
+  it('reaches back no further than asked', () => {
+    const days = readinessTrend('overnight_hrv', hrvHistory(80, 60), [], TODAY, 30)
+    expect(days).toHaveLength(30)
+    expect(days[0].date).toBe(ago(29))
+  })
+
+  it('reads each method on its own readings', () => {
+    expect(readinessTrend('morning_hrv', hrvHistory(80), [], TODAY)).toEqual([])
+    const morningDays = readinessTrend('morning_hrv', [], morningHistory(65), TODAY)
+    expect(morningDays[morningDays.length - 1].single).toBe(65)
+  })
+
+  it('reads the check-in day by day, against the 28 days before each', () => {
+    const inputs = checkInHistory({ ...answers(4), mood: 1 })
+    const days = readinessTrend('check_in', [], inputs, TODAY)
+    const last = days[days.length - 1]
+    expect(last.single).toBe(17)
+    expect(last.read).toBe(17)
+    expect(last.low).toBeCloseTo(17, 5)
+    expect(last.high).toBeCloseTo(21, 5)
+    const r = checkInReading(inputs, TODAY)!
+    expect(last.printed).toEqual({ read: r.recent, ...r.normal })
+  })
+
+  it('is empty with nothing logged', () => {
+    expect(readinessTrend('overnight_hrv', [], [], TODAY)).toEqual([])
   })
 })
 

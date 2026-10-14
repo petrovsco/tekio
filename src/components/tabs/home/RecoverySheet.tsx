@@ -1,12 +1,18 @@
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
 import { startOfWeek, today, fmtDate } from '../../../lib/utils'
-import { Fragment, useEffect, useState, type ReactNode } from 'react'
-import type { SystemicReadiness } from '../../../lib/fusedRead'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  readinessTrend, HRV_BASELINE_DAYS,
+  type ReadinessMethod, type SystemicReadiness, type TrendDay,
+} from '../../../lib/fusedRead'
+import { CHECK_IN_BAND } from '../../../constants/app'
 import type { CheckInAnswers, SleepEntry } from '../../../types'
 import { METHOD_NAME, CHECK_IN_ITEMS } from '../../../constants/readiness'
 import { BottomSheet, SheetHeader, CaptureLabel } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
+import { ReadinessGauge } from './ReadinessGauge'
+import ReadinessTrend from './ReadinessTrend'
 
 // The systemic-recovery captures (SAUNA / COLD / SLEEP) as one T2 sheet
 // (roadmap 018 unit 4). They used to live on RecoveryCard, which the fused
@@ -23,13 +29,49 @@ interface RecoverySheetProps {
 
 const BAND_WORD = { low: 'Low', moderate: 'Moderate', ok: 'OK' } as const
 
-/** The reading's value against the person's normal, in the method's unit. */
+/** Where the reading sits against the person's normal, in words: the gauge
+ * says it in position, this says it in the sentence. */
+function sideWords(sys: SystemicReadiness): string {
+  if (sys.gauge?.side === 'above') return 'above'
+  if (sys.gauge?.side === 'inside') return 'inside'
+  return sys.band === 'low' ? 'well under' : 'under'
+}
+
+/** The reading against the person's normal, in the method's own unit. */
 function readingLine(sys: SystemicReadiness): string | null {
   if (!sys.method || sys.recent === null || sys.normal === null) return null
   const { low, high } = sys.normal
-  if (sys.method === 'check_in') return `Check-in today ${sys.recent} of 25 · your usual ${low}–${high}`
-  const what = sys.method === 'morning_hrv' ? 'Morning HRV' : 'HRV'
-  return `${what} this week ${sys.recent} ms · your normal ${low}–${high} ms`
+  if (sys.method === 'check_in') return `Today ${sys.recent} of 25, ${sideWords(sys)} your usual of ${low}–${high}.`
+  const average = sys.method === 'morning_hrv' ? '7‑day average' : '7‑night average'
+  return `${average[0].toUpperCase()}${average.slice(1)} ${sys.recent} ms, ${sideWords(sys)} your normal of ${low}–${high} ms.`
+}
+
+/** The single reading behind the week, and why the week decides (0085: single
+ * readings are too noisy to act on, so the verdict reads the rolling mean). */
+function singleLine(sys: SystemicReadiness, morningToday: number | null | undefined): string | null {
+  if (sys.method === 'overnight_hrv' && sys.hrv != null) {
+    return `Last night ${sys.hrv} ms. One night is too noisy to act on, so the 7‑night average decides.`
+  }
+  if (sys.method === 'morning_hrv' && morningToday != null) {
+    return `This morning ${morningToday} ms. One reading is too noisy to act on, so the 7‑day average decides.`
+  }
+  return null
+}
+
+/** Where the normal comes from: the window each method's baseline reads. */
+const SOURCE_LINE: Record<ReadinessMethod, string> = {
+  overnight_hrv: `Your normal comes from the ${HRV_BASELINE_DAYS} nights before this week.`,
+  morning_hrv: `Your normal comes from the ${HRV_BASELINE_DAYS} mornings before this week.`,
+  check_in: `Your usual comes from your check-ins over the ${CHECK_IN_BAND.baselineDays} days before today.`,
+}
+
+/** How the history chart names its parts, per method. */
+const TREND_WORDS: Record<ReadinessMethod, {
+  title: string; singleName: string; lineName: string; bandName: string; unit: string; dots: boolean
+}> = {
+  overnight_hrv: { title: 'HRV', singleName: 'night', lineName: '7‑night average', bandName: 'your normal', unit: ' ms', dots: true },
+  morning_hrv: { title: 'MORNING HRV', singleName: 'morning', lineName: '7‑day average', bandName: 'your normal', unit: ' ms', dots: true },
+  check_in: { title: 'CHECK-IN', singleName: 'check-in', lineName: 'daily total', bandName: 'your usual', unit: ' of 25', dots: false },
 }
 
 /** Why there is no reading, when there is none. */
@@ -39,22 +81,39 @@ function missingLine(sys: SystemicReadiness): string {
   if (sys.awaitingInput) {
     return sys.chosen === 'check_in' ? "Answer today's check-in below." : "Type this morning's reading below."
   }
-  if (sys.progress) {
+  if (sys.progress && sys.progress.have < sys.progress.need) {
     return `Building your baseline: ${sys.progress.have} of ${sys.progress.need} readings. No verdict until then.`
   }
-  return 'No reading today.'
+  return sys.chosen === 'overnight_hrv' ? 'No HRV from last night yet. It arrives when the watch syncs.' : 'No reading today.'
 }
 
-/** Where today's readiness came from — one tap from the card (0085, 0092). */
-function ReadinessSource({ sys, onOpenProfile }: { sys: SystemicReadiness; onOpenProfile: () => void }) {
+/** Where today's readiness came from — one tap from the card (0085, 0092):
+ * the band, the reading placed on the person's normal, the night or morning
+ * behind it, and the months behind that. */
+function ReadinessSource({ sys, trend, morningToday, onOpenProfile }: {
+  sys: SystemicReadiness
+  trend: TrendDay[]
+  morningToday: number | null | undefined
+  onOpenProfile: () => void
+}) {
   const line = readingLine(sys)
+  const single = singleLine(sys, morningToday)
   const fellBack = sys.method && sys.chosen && sys.method !== sys.chosen
+  const trendMethod = sys.method ?? sys.chosen
+  const unit = sys.method === 'check_in' ? ' of 25' : ' ms'
   return (
     <div className="mb-3 pb-2.5 border-b border-line text-[12px] leading-[1.45]">
-      {sys.method && sys.band && line ? (
+      {sys.method && sys.band && sys.gauge && sys.normal && sys.recent !== null && line ? (
         <>
           <div><b>{BAND_WORD[sys.band]}</b> · from {METHOD_NAME[sys.method]}</div>
+          <ReadinessGauge
+            size="sheet"
+            gauge={sys.gauge}
+            labels={{ value: `${sys.recent}${unit}`, low: String(sys.normal.low), high: String(sys.normal.high) }}
+          />
           <div className="text-ink-2">{line}</div>
+          {single && <div className="text-ink-2">{single}</div>}
+          <div className="text-ink-3">{SOURCE_LINE[sys.method]}</div>
           {fellBack && sys.chosen && (
             <div className="text-ink-2">No {METHOD_NAME[sys.chosen]} reading today, so this comes from the next method down.</div>
           )}
@@ -68,11 +127,12 @@ function ReadinessSource({ sys, onOpenProfile }: { sys: SystemicReadiness; onOpe
       {sys.notes.shortNight !== null && (
         <div className="text-ink-2">Short night: {sys.notes.shortNight.toFixed(1)} h. A note only; it does not change the verdict.</div>
       )}
+      {trendMethod && <ReadinessTrend days={trend} {...TREND_WORDS[trendMethod]} />}
       {sys.method === 'check_in' && (
-        <div className="text-ink-3 mt-0.5">Less certain than HRV. A 1-minute morning HRV reading would read your body directly.</div>
+        <div className="text-ink-3 mt-2">Less certain than HRV. A 1-minute morning HRV reading would read your body directly.</div>
       )}
       {sys.method === 'morning_hrv' && (
-        <div className="text-ink-3 mt-0.5">A watch or ring would read HRV overnight, with nothing to type.</div>
+        <div className="text-ink-3 mt-2">A watch or ring would read HRV overnight, with nothing to type.</div>
       )}
       <button onClick={onOpenProfile} className="min-h-[44px] -mb-2.5 text-[12px] text-signal font-semibold cursor-pointer">
         Change method in Profile →
@@ -215,6 +275,13 @@ export default function RecoverySheet({ sys, onClose, onOpenProfile }: RecoveryS
   const minutesMeta = (xs: { duration: number }[]) =>
     xs.length > 0 ? `${xs.length}× this week · ${xs.reduce((n, e) => n + e.duration, 0)} min` : 'nothing this week'
   const todays = inputs.find(e => e.date === today())
+  // The months behind today's reading, for the method being read (or the one
+  // chosen, while it builds its baseline).
+  const trendMethod = sys.method ?? sys.chosen
+  const trend = useMemo(
+    () => (trendMethod ? readinessTrend(trendMethod, sleep, inputs) : []),
+    [trendMethod, sleep, inputs],
+  )
 
   const savedNote = saved && (
     <div className="flex items-center justify-between gap-2 min-h-[44px] mb-2 pl-3 rounded-[3px] bg-ink text-white text-[13px]" role="status">
@@ -316,7 +383,7 @@ export default function RecoverySheet({ sys, onClose, onOpenProfile }: RecoveryS
   return (
     <BottomSheet onClose={onClose} label="READINESS AND RECOVERY INPUTS" footer={savedNote || undefined}>
       <SheetHeader eyebrow="READINESS" onClose={onClose} className="mb-2" />
-      <ReadinessSource sys={sys} onOpenProfile={onOpenProfile} />
+      <ReadinessSource sys={sys} trend={trend} morningToday={todays?.morningHrv} onOpenProfile={onOpenProfile} />
       <div className="text-[10px] font-bold tracking-[0.12em] text-ink-3 mt-1">LOG</div>
       {rows.map(r => (
         <button key={r.step} onClick={() => setStep(r.step)} className={ROW}>
