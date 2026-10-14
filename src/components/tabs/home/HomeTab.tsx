@@ -230,11 +230,17 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', pct: 0, tone: 'off', ask: true }
       : colMethod === 'check_in'
         ? { label: 'CHECK-IN', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', pct: sys.method === 'check_in' ? sys.readiness ?? 0 : 0, tone: sys.method === 'check_in' ? 'ink' : 'off' }
-        : colMethod === 'morning_hrv'
-          ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', pct: sys.method === 'morning_hrv' ? sys.readiness ?? 0 : 0, tone: sys.method === 'morning_hrv' ? 'ink' : 'off' }
-          : sys.hrv != null
-            ? { label: 'HRV', value: String(sys.hrv), pct: sys.readiness ?? 0, tone: 'ink' }
-            : { label: 'HRV', value: '—', pct: 0, tone: 'off' }
+        : (colMethod === 'overnight_hrv' || colMethod === 'morning_hrv') && sys.method === colMethod && sys.recent != null
+          // The bar is where the 7-night mean sits against the person's own
+          // normal (half = normal), so the number beside it is that mean, not
+          // one night: a good last night printed over a short bar read as a
+          // broken bar.
+          ? { label: colMethod === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS', value: `${sys.recent} ms`, pct: sys.readiness ?? 0, tone: 'ink' }
+          : colMethod === 'morning_hrv'
+            ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', pct: 0, tone: 'off' }
+            : sys.hrv != null
+              ? { label: 'HRV', value: `${sys.hrv} ms`, pct: 0, tone: 'off' }
+              : { label: 'HRV', value: '—', pct: 0, tone: 'off' }
   const gateCols: GateCol[] = colMethod === 'overnight_hrv' || colMethod === null
     ? [sleepCol, readingCol]
     : [readingCol, sleepCol]
