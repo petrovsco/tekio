@@ -6,7 +6,7 @@ import {
   muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
   type MuscleState, type MuscleQuality,
 } from '../lib/fusedRead'
-import { HRV_BAND_Z, RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
+import { HRV_BAND_Z, RECOVER_DAYS, RECOVER_MIN_SETS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
 import type { TargetUnit } from '../lib/adaptations'
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry,
@@ -84,6 +84,28 @@ describe('muscleStates', () => {
     expect(states.find(m => m.name === 'Biceps')?.recovering).toBe(true)
     const later = muscleStates([weight(ago(RECOVER_DAYS), 'Curls')], links, GROUPS, TODAY)
     expect(later.find(m => m.name === 'Biceps')?.recovering).toBe(false)
+  })
+
+  it('needs RECOVER_MIN_SETS weighted sets in a day before flagging (RFC 0108)', () => {
+    const one = muscleStates([weight(ago(0), 'Curls', 1)], links, GROUPS, TODAY)
+    expect(one.find(m => m.name === 'Biceps')?.recovering).toBe(false)
+    const enough = muscleStates([weight(ago(0), 'Curls', RECOVER_MIN_SETS)], links, GROUPS, TODAY)
+    expect(enough.find(m => m.name === 'Biceps')?.recovering).toBe(true)
+    // a synergist (level 2, ×0.5) needs twice the sets
+    expect(enough.find(m => m.name === 'Triceps')?.recovering).toBe(false)
+    const twice = muscleStates([weight(ago(0), 'Curls', RECOVER_MIN_SETS * 2)], links, GROUPS, TODAY)
+    expect(twice.find(m => m.name === 'Triceps')?.recovering).toBe(true)
+  })
+
+  it('sums the day across entries but not across days (RFC 0108)', () => {
+    const sameDay = muscleStates([
+      { ...weight(ago(0), 'Curls', 1), id: 'a' },
+      { ...weight(ago(0), 'Curls', 1), id: 'b' },
+    ], links, GROUPS, TODAY)
+    expect(sameDay.find(m => m.name === 'Biceps')?.recovering).toBe(true)
+    const twoDays = muscleStates([weight(ago(0), 'Curls', 1), weight(ago(1), 'Curls', 1)], links, GROUPS, TODAY)
+    expect(twoDays.find(m => m.name === 'Biceps')?.recovering).toBe(false)
+    expect(twoDays.find(m => m.name === 'Biceps')?.daysSince).toBe(0)
   })
 
   it('ignores recovery-contribution links', () => {
@@ -258,7 +280,7 @@ describe('muscleQualityStates', () => {
   })
 
   it('reads never-trained in a quality even when the muscle has other history', () => {
-    const s = on([entry(ago(1), 'Curls', [10])], 'strength')
+    const s = on([entry(ago(1), 'Curls', [10, 10])], 'strength')
     expect(s.sets).toBe(0)
     expect(s.daysSince).toBeNull()
     expect(s.recovering).toBe(true)

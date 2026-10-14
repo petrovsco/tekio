@@ -3,7 +3,7 @@ import type {
   SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet, ReadinessInput, CheckInAnswers,
 } from '../types'
 import {
-  RECOVER_DAYS, HRV_BAND_Z, CHECK_IN_BAND, RESTING_HR_NOTE, SHORT_NIGHT_HOURS,
+  RECOVER_DAYS, RECOVER_MIN_SETS, HRV_BAND_Z, CHECK_IN_BAND, RESTING_HR_NOTE, SHORT_NIGHT_HOURS,
   QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
   MUSCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
 } from '../constants/app'
@@ -53,7 +53,8 @@ export interface MuscleState {
   sets: number
   /** Days since the last stimulus over all history; null = never trained. */
   daysSince: number | null
-  /** Inside the post-session recovery window right now. */
+  /** Inside the post-session recovery window right now: a day within
+   *  RECOVER_DAYS gave this muscle at least RECOVER_MIN_SETS weighted sets. */
   recovering: boolean
   /** sets ÷ the window target (MUSCLE_SET_TARGET on Home; the quality's weekly
    *  rate × window / 7 on the drill-down), uncapped — drives the map's ramp. */
@@ -75,7 +76,8 @@ export function muscleStates(
 ): MuscleState[] {
   const { total } = muscleStimulus(weights, exerciseMuscles, muscleWindow(date))
   const last = lastStimulusDates(weights, exerciseMuscles, date)
-  return buildMuscleStates(muscleGroups, total, last, last, MUSCLE_SET_TARGET, date)
+  const dosed = lastDosedDates(weights, exerciseMuscles, date)
+  return buildMuscleStates(muscleGroups, total, last, dosed, MUSCLE_SET_TARGET, date)
 }
 
 /**
@@ -85,7 +87,7 @@ export function muscleStates(
  * `quality`, and `daysSince` is the last date such a set fed the muscle. A
  * 10-rep set therefore shows on the hypertrophy map and not the strength map,
  * and a power set shows on the power map only (039 S3). `recovering` stays
- * muscle-level — a muscle recovers from any hard set, not from a quality.
+ * muscle-level — a muscle recovers from the day's dose, not from a quality.
  * `shape` is the quality's weekly target ({@link targetShape}); its rate is
  * scaled to the window here exactly as MUSCLE_SET_TARGET is (/ground
  * exemption 2 — a shape change), and its unit picks what `sets` counts: power
@@ -115,10 +117,10 @@ export function muscleQualityStates(
     const override = resolveExerciseAdaptation(w.exercise, overrides)
     return w.sets.some(s => classifyWeightSet(s, override).includes(quality))
   }
-  const lastAny = lastStimulusDates(weights, exerciseMuscles, date)
+  const dosed = lastDosedDates(weights, exerciseMuscles, date)
   const lastOfQuality = lastStimulusDates(weights, exerciseMuscles, date, feedsQuality)
   const target = windowMuscleTarget(shape.weekly)
-  return buildMuscleStates(muscleGroups, perMuscleVolume(stimulus, quality, shape.unit), lastOfQuality, lastAny, target, date)
+  return buildMuscleStates(muscleGroups, perMuscleVolume(stimulus, quality, shape.unit), lastOfQuality, dosed, target, date)
 }
 
 /**
@@ -149,13 +151,46 @@ function lastStimulusDates(
   return lastDate
 }
 
-/** Shape per-group volume + recency into {@link MuscleState}s; `lastAny` drives
+/**
+ * Latest date within the last RECOVER_DAYS on which a muscle got at least
+ * RECOVER_MIN_SETS level-weighted sets, summed over the day's entries (RFC
+ * 0108). Every set counts, whatever its quality — a muscle recovers from the
+ * work, not from a rep band — and a zero-weight link adds nothing.
+ */
+function lastDosedDates(
+  weights: WeightEntry[],
+  exerciseMuscles: ExerciseMuscleLink[],
+  date: string,
+): Record<string, string> {
+  const from = shiftDate(date, 1 - RECOVER_DAYS)
+  const linksByExercise = groupBy(
+    exerciseMuscles.filter(l => l.contribution === 'stimulus' && (LEVEL_WEIGHT[l.level] ?? 0) > 0),
+    l => l.exercise.toLowerCase(),
+  )
+  const perDay = new Map<string, number>() // `${group}|${date}` → weighted sets
+  for (const w of weights) {
+    if (w.date > date || w.date < from) continue
+    for (const l of linksByExercise.get(w.exercise.toLowerCase()) ?? []) {
+      const key = `${l.group}|${w.date}`
+      perDay.set(key, (perDay.get(key) ?? 0) + w.sets.length * LEVEL_WEIGHT[l.level])
+    }
+  }
+  const dosed: Record<string, string> = {}
+  for (const [key, sets] of perDay) {
+    if (sets < RECOVER_MIN_SETS) continue
+    const [group, day] = key.split('|')
+    if (!dosed[group] || day > dosed[group]) dosed[group] = day
+  }
+  return dosed
+}
+
+/** Shape per-group volume + recency into {@link MuscleState}s; `dosed` drives
  *  `recovering`, `lastDate` drives `daysSince` (the two differ per quality). */
 function buildMuscleStates(
   muscleGroups: MuscleGroup[],
   sets: Record<string, number>,
   lastDate: Record<string, string>,
-  lastAny: Record<string, string>,
+  dosed: Record<string, string>,
   target: number,
   date: string,
 ): MuscleState[] {
@@ -163,8 +198,8 @@ function buildMuscleStates(
   return muscleGroups.map(g => {
     const s = sets[g.name] ?? 0
     const last = lastDate[g.name]
-    const any = lastAny[g.name]
-    const sinceAny = any ? daysBetween(any, date) : null
+    const hit = dosed[g.name]
+    const sinceDose = hit ? daysBetween(hit, date) : null
     return {
       id: g.id,
       name: g.name,
@@ -172,7 +207,7 @@ function buildMuscleStates(
       leaf: !parentIds.has(g.id),
       sets: s,
       daysSince: last ? daysBetween(last, date) : null,
-      recovering: sinceAny !== null && sinceAny < RECOVER_DAYS,
+      recovering: sinceDose !== null && sinceDose < RECOVER_DAYS,
       fillFraction: target > 0 ? +(s / target).toFixed(3) : 0,
     }
   })
