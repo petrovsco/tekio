@@ -20,6 +20,9 @@ export interface DraftLift {
   entryId?: string
   /** Which rows of `sets` are in the log, by index. */
   saved?: boolean[]
+  /** A new name's answer to "reps or time?" (RFC 0107), or a timed plan's.
+   *  A name the app knows decides for itself. */
+  timed?: boolean
 }
 
 export interface LogDraft {

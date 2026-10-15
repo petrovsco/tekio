@@ -58,6 +58,13 @@ export const DONATION_ELIGIBILITY_DAYS: Record<string, number> = {
  * see tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
 export const RECOVER_DAYS = 2
 
+/** 2 — level-weighted sets one muscle must get in a day before RECOVER_DAYS
+ * starts (a prime mover's set counts 1, a synergist's 0.5), so one set alone
+ * never flags a muscle. Convention inside a 1–3 bracket: 3 sets to failure
+ * delays recovery 24–48 h+, no study tests 1–2, and effort matters more than
+ * set count. See tekio.rfcs/rfcs/done/0108-recovering-minimum-dose.md#grounding */
+export const RECOVER_MIN_SETS = 2
+
 /** −0.5 / −1 SD — partially supported: the trialled three-tier rule cuts the
  * 7-day rolling LnRMSSD against the person's own baseline — within 0.5 SD the
  * session runs as planned, 0.5–1 SD it runs lighter, beyond 1 SD it is active

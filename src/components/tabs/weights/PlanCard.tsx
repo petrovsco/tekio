@@ -1,6 +1,7 @@
 import { useAppStore } from '../../../store/app'
 import { PlannedCard, PlanChips } from '../../ui/PlannedCard'
 import type { PlannedExercise } from '../../../types'
+import { fmtSet } from '../../../lib/sets'
 
 /**
  * The day's planned exercises (RFC 0098), above the log form. A plan is a
@@ -23,7 +24,7 @@ export function PlanCard({ onLog, onEdit, onAdd }: {
       isLogged={isLogged}
       foldKey="tekio.planCard.folded"
       title={p => p.exercise}
-      details={p => <PlanChips items={p.targets.map(s => `${s.weight}kg×${s.reps}`)} />}
+      details={p => <PlanChips items={p.targets.map(fmtSet)} />}
       groupOf={p => p.supersetId}
       onLog={onLog}
       onEdit={onEdit}

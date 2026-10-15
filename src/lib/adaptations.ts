@@ -29,15 +29,36 @@ const REP_DERIVED = ADAPTATIONS
   .sort((a, b) => a.repRange![0] - b.repRange![0])
 
 /**
+ * HOLD_BANDS_S — the seconds band each muscle-linked quality covers for a hold
+ * (RFC 0107), inclusive, overlapping like `repRange`: strength [1, 10],
+ * hypertrophy [10, 60], muscular endurance [30, ∞) s; 1 hold = 1 hard set.
+ * Convention mapping the rep bands to time under tension (≈2–3 s a rep); long
+ * holds grow muscle (Schott 1995, Kubo 2001, Oranchuk 2019) and time to failure
+ * tracks %MVC per joint (Frey-Law 2010), see
+ * tekio.rfcs/rfcs/0107-timed-sets.md#grounding
+ */
+export const HOLD_BANDS_S: readonly { key: Adaptation; range: [number, number] }[] = [
+  { key: 'strength', range: [1, 10] },
+  { key: 'hypertrophy', range: [10, 60] },
+  { key: 'muscular_endurance', range: [30, Infinity] },
+]
+
+/**
  * Every adaptation a single logged resistance set trains. An exercise
  * `override` wins outright (one quality, whatever the reps); otherwise every
  * rep-derived adaptation whose `repRange` covers the set is returned, in
  * continuum order. Bands may overlap, and a set inside an overlap counts in
  * full toward each — the model cardio already uses (roadmap 039 §6.0). A set
- * outside every band snaps to the nearest one.
+ * outside every band snaps to the nearest one. A hold is read by its seconds
+ * against {@link HOLD_BANDS_S} instead, never by its one rep (RFC 0107).
  */
-export function classifyWeightSet(reps: number, override?: Adaptation | null): Adaptation[] {
+export function classifyWeightSet(set: { reps: number; seconds?: number }, override?: Adaptation | null): Adaptation[] {
   if (override) return [override]
+  if (set.seconds != null) {
+    const hits = HOLD_BANDS_S.filter(b => set.seconds! >= b.range[0] && set.seconds! <= b.range[1])
+    return hits.length > 0 ? hits.map(b => b.key) : [HOLD_BANDS_S[0].key]
+  }
+  const { reps } = set
   const hits = REP_DERIVED.filter(a => reps >= a.repRange![0] && reps <= a.repRange![1])
   if (hits.length > 0) return hits.map(a => a.key)
   const edge = reps < REP_DERIVED[0].repRange![0] ? REP_DERIVED[0] : REP_DERIVED[REP_DERIVED.length - 1]
@@ -211,7 +232,7 @@ export function muscleStimulus(
     const override = resolveExerciseAdaptation(w.exercise, overrides)
     const links = linksByExercise.get(w.exercise.toLowerCase()) ?? []
     for (const set of w.sets) {
-      const qualities = classifyWeightSet(set.reps, override).filter(isMuscleQuality)
+      const qualities = classifyWeightSet(set, override).filter(isMuscleQuality)
       const hard = !qualities.includes('power')
       for (const q of qualities) { sets[q] += 1; qualityDays[q].add(w.date) }
       for (const l of links) {

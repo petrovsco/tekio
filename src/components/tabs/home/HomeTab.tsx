@@ -4,6 +4,7 @@ import {
   muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
   donationStatus, fusedVerdict, checkInTotal,
   type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict, type ReadinessBand,
+  type Gauge,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
 import { today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
@@ -15,6 +16,7 @@ import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
 import { usePrefs } from '../../../store/prefs'
 import { METHOD_LABEL } from '../../../constants/readiness'
+import { ReadinessGauge } from './ReadinessGauge'
 import type { FoldKind } from './FoldSheet'
 import type { WholeBodyQuality } from './QualitySheet'
 
@@ -114,10 +116,17 @@ const TONE = {
 interface GateCol {
   label: string
   value: string
-  pct: number
+  /** An amount out of 100, drawn as a fill: the sleep score. */
+  pct?: number
+  /** A reading against the person's own normal, drawn as a dot on its range
+   *  (ReadinessGauge); null keeps the empty track until there is one. */
+  gauge?: Gauge | null
   tone: keyof typeof TONE
   /** A typed reading still to give today: the value reads as a prompt. */
   ask?: boolean
+  /** One line under the bar: the normal it is read against, or how far that
+   *  normal still has to build. */
+  note?: string
 }
 
 export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => void }) {
@@ -225,16 +234,30 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   // baseline can turn it into a band.
   const typedToday = readinessInputs.find(e => e.date === date)
   const colMethod = sys.method ?? sys.chosen
+  // The reading prints what the verdict reads, placed on the person's own
+  // normal: the 7-night mean for HRV (one night is too noisy to act on), the
+  // day's total for the check-in. Each method against its own normal (0092).
+  const building = sys.progress && sys.progress.have > 0 && sys.progress.have < sys.progress.need
+    ? `building your ${colMethod === 'check_in' ? 'usual' : 'normal'} · ${sys.progress.have} of ${sys.progress.need}`
+    : undefined
   const readingCol: GateCol =
     sys.awaitingInput
-      ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', pct: 0, tone: 'off', ask: true }
-      : colMethod === 'check_in'
-        ? { label: 'CHECK-IN', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', pct: sys.method === 'check_in' ? sys.readiness ?? 0 : 0, tone: sys.method === 'check_in' ? 'ink' : 'off' }
-        : colMethod === 'morning_hrv'
-          ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', pct: sys.method === 'morning_hrv' ? sys.readiness ?? 0 : 0, tone: sys.method === 'morning_hrv' ? 'ink' : 'off' }
-          : sys.hrv != null
-            ? { label: 'HRV', value: String(sys.hrv), pct: sys.readiness ?? 0, tone: 'ink' }
-            : { label: 'HRV', value: '—', pct: 0, tone: 'off' }
+      ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', gauge: null, tone: 'off', ask: true }
+      : sys.method && sys.gauge && sys.recent != null && sys.normal
+        ? sys.method === 'check_in'
+          ? { label: 'CHECK-IN', value: `${sys.recent} of 25`, gauge: sys.gauge, tone: 'ink', note: `your usual ${sys.normal.low}–${sys.normal.high}` }
+          : {
+              label: sys.method === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS',
+              value: `${sys.recent} ms`, gauge: sys.gauge, tone: 'ink',
+              note: `your normal ${sys.normal.low}–${sys.normal.high} ms`,
+            }
+        : colMethod === 'check_in'
+          ? { label: 'CHECK-IN', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', gauge: null, tone: 'off', note: building }
+          : colMethod === 'morning_hrv'
+            ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', gauge: null, tone: 'off', note: building }
+            : sys.hrv != null
+              ? { label: 'HRV · LAST NIGHT', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
+              : { label: 'HRV', value: '—', gauge: null, tone: 'off' }
   const gateCols: GateCol[] = colMethod === 'overnight_hrv' || colMethod === null
     ? [sleepCol, readingCol]
     : [readingCol, sleepCol]
@@ -348,12 +371,21 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             <div key={col.label} className="grow basis-0 pr-2">
               <div className={`text-[9px] tracking-[0.05em] mb-[3px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.label}</div>
               <div className={`text-xs font-semibold ${col.ask && !gated ? 'text-signal' : ''}`}>{col.value}</div>
-              <div className={`h-[3px] mt-1 rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
-                <div
-                  className="h-[3px] rounded-sm"
-                  style={{ width: `${col.pct}%`, background: TONE[col.tone][gated ? 'gated' : 'normal'] }}
-                />
+              <div className="mt-1">
+                {col.gauge !== undefined ? (
+                  <ReadinessGauge gauge={col.gauge} inverted={gated} />
+                ) : (
+                  <div className={`h-[3px] rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
+                    <div
+                      className="h-[3px] rounded-sm"
+                      style={{ width: `${col.pct ?? 0}%`, background: TONE[col.tone][gated ? 'gated' : 'normal'] }}
+                    />
+                  </div>
+                )}
               </div>
+              {col.note && (
+                <div className={`text-[10px] mt-[5px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.note}</div>
+              )}
             </div>
           ))}
         </div>

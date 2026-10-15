@@ -12,7 +12,8 @@ import { Icon } from '../../ui/Icon'
 import { GAP_CUTOFF, targetShape } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
-import { EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor } from '../../../constants/exerciseCatalogue'
+import { EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor, isTimedName } from '../../../constants/exerciseCatalogue'
+import { isTimedSet } from '../../../lib/sets'
 import { MOVEMENT_PATTERNS, type PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName as norm, resolveExerciseName } from '../../../lib/exerciseName'
 import { MovementQuestion } from '../weights/MovementQuestion'
@@ -35,15 +36,20 @@ const SAVED_NOTE_MS = 6000
 
 const fmtKg = (w: number): string => (w === 0 ? 'BW' : `${fmtSets(w)} kg`)
 
-/** "3×8 @ 24 kg" for a uniform scheme; falls back to count + last set. */
+/** "3×8 @ 24 kg" for a uniform scheme, "3×45 s @ BW" for holds (RFC 0107);
+ *  falls back to count + last set. */
 function schemeLabel(sets: LiftSet[]): string {
   if (sets.length === 0) return '—'
   const [first] = sets
-  const uniform = sets.every(s => s.reps === first.reps && s.weight === first.weight)
-  if (uniform) return `${sets.length}×${first.reps} @ ${fmtKg(first.weight)}`
+  const count = (s: LiftSet) => (isTimedSet(s) ? `${s.seconds} s` : `${s.reps}`)
+  const uniform = sets.every(s => count(s) === count(first) && s.weight === first.weight)
+  if (uniform) return `${sets.length}×${count(first)} @ ${fmtKg(first.weight)}`
   const last = sets[sets.length - 1]
-  return `${sets.length} sets · last ${last.reps} @ ${fmtKg(last.weight)}`
+  return `${sets.length} sets · last ${count(last)} @ ${fmtKg(last.weight)}`
 }
+
+/** A first set to step from: eight reps, or a 30 s hold, at bodyweight. */
+const startRow = (timed: boolean): LiftSet => (timed ? { reps: 1, seconds: 30, weight: 0 } : { reps: 8, weight: 0 })
 
 interface MuscleSheetProps {
   muscle: string
@@ -96,6 +102,12 @@ export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
   // The picked exercise travels by name, not index — saving re-ranks sources.
   const [pickedName, setPickedName] = useState<string | null>(null)
   const [rows, setRows] = useState<LiftSet[]>([])
+  // Whether the picked lift is a hold, counted in seconds (RFC 0107).
+  const [timed, setTimedState] = useState(false)
+  const setTimed = (t: boolean) => {
+    setTimedState(t)
+    setRows(rs => rs.map(r => (isTimedSet(r) === t ? r : { ...startRow(t), weight: r.weight })))
+  }
   const [query, setQuery] = useState('')
   // The movement question's answer for a name nothing knows (RFC 0074).
   const [pattern, setPattern] = useState<PatternKey | null>(null)
@@ -191,7 +203,9 @@ export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
     setPattern(null)
     // Prefilled from last time; an exercise never logged starts at one
     // bodyweight set for the stepper to move.
-    setRows(source ? source.lastSets.map(r => ({ ...r })) : [{ reps: 8, weight: 0 }])
+    const hold = isTimedName(exercise) || !!source?.lastSets.some(isTimedSet)
+    setTimedState(hold)
+    setRows(source ? source.lastSets.map(r => ({ ...r })) : [startRow(hold)])
     setStep('sets')
   }
   const editRow = (i: number, patch: Partial<LiftSet>) =>
@@ -302,7 +316,7 @@ export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
         {stepHeader(pickedName.toUpperCase(), () => setStep('pick'))}
         {!known(pickedName) && (
           <div className="mb-2">
-            <MovementQuestion value={pattern} onChange={setPattern} thumb />
+            <MovementQuestion value={pattern} onChange={setPattern} thumb timed={timed} onTimed={setTimed} />
             {pattern && !feedsIn(MOVEMENT_PATTERNS[pattern].links, muscle) && (
               <div className="mt-1 text-[11px] text-ink-2">That movement does not count for {muscle}.</div>
             )}
@@ -314,10 +328,17 @@ export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
         {rows.map((r, i) => (
           <div key={i} className="grid grid-cols-[34px_1fr_1fr_36px] gap-2 items-center min-h-[52px] border-b border-line">
             <span className="text-[10px] text-ink-3 tracking-[0.06em]">SET {i + 1}</span>
-            <Stepper
-              value={r.reps} unit="reps" step={1} label={`Set ${i + 1} reps`} numeric
-              onChange={v => editRow(i, { reps: Math.max(0, Math.floor(v)) })}
-            />
+            {timed ? (
+              <Stepper
+                value={r.seconds ?? 0} unit="s" step={5} label={`Set ${i + 1} seconds`} numeric
+                onChange={v => editRow(i, { reps: 1, seconds: Math.max(0, Math.floor(v)) })}
+              />
+            ) : (
+              <Stepper
+                value={r.reps} unit="reps" step={1} label={`Set ${i + 1} reps`} numeric
+                onChange={v => editRow(i, { reps: Math.max(0, Math.floor(v)) })}
+              />
+            )}
             <Stepper
               value={r.weight} unit="kg" step={2.5} label={`Set ${i + 1} weight`}
               onChange={v => editRow(i, { weight: Math.max(0, v) })}
@@ -332,7 +353,7 @@ export default function MuscleSheet({ muscle, onClose }: MuscleSheetProps) {
           </div>
         ))}
         <button
-          onClick={() => setRows(rs => [...rs, rs.length ? { ...rs[rs.length - 1] } : { reps: 8, weight: 0 }])}
+          onClick={() => setRows(rs => [...rs, rs.length ? { ...rs[rs.length - 1] } : startRow(timed)])}
           className="w-full min-h-[44px] mt-2 border border-dashed border-[#c9c9c7] rounded-[3px] text-[13px] font-semibold text-ink-2 cursor-pointer"
         >
           + Add a set

@@ -453,6 +453,18 @@ for (const e of EXERCISE_CATALOGUE) for (const s of [e.name, ...(e.aliases ?? []
  *  punctuation the way every other exercise match does. */
 export const catalogueEntryFor = (name: string): CatalogueEntry | undefined => byKey.get(key(name))
 
+/** Holds, logged in seconds rather than reps (RFC 0107). A list of names, not a
+ *  flag on the entry: three are not catalogue lifts, and being a hold says
+ *  nothing about which muscles a lift counts for. Any other exercise is timed
+ *  when it was last logged or planned in seconds. */
+const TIMED = new Set([
+  'Plank', 'Side Plank', 'Hollow Hold', 'Copenhagen Plank',
+  'Dead Hang', 'Dead Hangs', 'Wall Sit', 'Wall Sits', 'L-sit', 'L-sits',
+].map(key))
+
+/** Whether a name, or a catalogue spelling of one, is a hold. */
+export const isTimedName = (name: string): boolean => TIMED.has(key(catalogueEntryFor(name)?.name ?? name))
+
 /**
  * The standing check (RFC 0074 §5): everything wrong with a catalogue, as
  * sentences. Empty means sound. It protects the committed file, not the live

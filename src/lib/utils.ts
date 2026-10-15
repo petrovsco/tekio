@@ -215,9 +215,11 @@ export function oneRM(weight: number, reps: number): OneRM | null {
  * The best 1RM a group of sets supports. Ties go to the measured one: a set
  * actually lifted for a single rep outranks an estimate of the same size.
  */
-export function bestOneRM(sets: { weight: number; reps: number }[]): OneRM | null {
+export function bestOneRM(sets: { weight: number; reps: number; seconds?: number }[]): OneRM | null {
   let best: OneRM | null = null
   for (const s of sets) {
+    // A hold's one rep is not a single to failure (RFC 0107).
+    if (s.seconds != null) continue
     const c = oneRM(s.weight, s.reps)
     if (!c) continue
     if (!best || c.kg > best.kg || (c.kg === best.kg && c.kind === 'measured')) best = c
@@ -229,11 +231,18 @@ export function bestOneRM(sets: { weight: number; reps: number }[]): OneRM | nul
  * Is this set a personal best for the exercise? Measured, never estimated: a
  * set is a best when nothing already logged both matched its reps and matched
  * its load. Repeating a previous set is not a best; beating it at the same reps
- * is, and so is holding the load for more reps.
+ * is, and so is holding the load for more reps. A hold (RFC 0107) is held
+ * against holds only, by its seconds at its load, and a bodyweight hold counts:
+ * its best is the longest one.
  */
-export function isSetPR(set: { weight: number; reps: number }, history: { weight: number; reps: number }[]): boolean {
+type PRSet = { weight: number; reps: number; seconds?: number }
+export function isSetPR(set: PRSet, history: PRSet[]): boolean {
+  if (set.seconds != null) {
+    if (!(set.seconds >= 1) || !(set.weight >= 0)) return false
+    return !history.some(h => h.seconds != null && h.seconds >= set.seconds! && h.weight >= set.weight)
+  }
   if (!(set.weight > 0) || !(set.reps >= 1)) return false
-  return !history.some(h => h.reps >= set.reps && h.weight >= set.weight)
+  return !history.some(h => h.seconds == null && h.reps >= set.reps && h.weight >= set.weight)
 }
 
 // ── Cardio duration helpers ───────────────────────────────────────────────────

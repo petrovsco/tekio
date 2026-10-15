@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
-import { setsProblem, liftSetProblem, parseSets } from '../lib/sets'
+import { setsProblem, liftSetProblem, parseSets, toSetStr, fmtSet } from '../lib/sets'
+import { isSetPR, bestOneRM } from '../lib/utils'
 
 describe('a set that cannot be stored blocks the save', () => {
   it('names a fractional rep count and its set', () => {
@@ -73,5 +74,33 @@ describe('ticking the next set writes only that set', () => {
     await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
     expect(calls[0]).toBe('session_sets.delete')
     expect(calls).toContain('session_sets.insert [{"session_exercise_id":"se1","set_number":1,"weight":60,"reps":7}]')
+  })
+})
+
+describe('a hold is measured in seconds (RFC 0107)', () => {
+  it('stores a timed row as one rep held for its seconds, with an empty load as bodyweight', () => {
+    expect(parseSets([{ weight: '', reps: '45' }, { weight: '10', reps: '30' }], 2, true))
+      .toEqual([{ weight: 0, reps: 1, seconds: 45 }, { weight: 10, reps: 1, seconds: 30 }])
+    expect(toSetStr([{ weight: 0, reps: 1, seconds: 45 }])).toEqual([{ weight: '0', reps: '45' }])
+  })
+
+  it('blocks a fractional or zero hold', () => {
+    expect(setsProblem([{ weight: '0', reps: '12.5' }], 1, true)).toBe('Set 1: Seconds must be a whole number.')
+    expect(liftSetProblem({ weight: 0, reps: 1, seconds: 0 })).toBe('Seconds must be a whole number.')
+  })
+
+  it('prints a hold as seconds everywhere a set is listed', () => {
+    expect(fmtSet({ weight: 0, reps: 1, seconds: 45 })).toBe('45 s')
+    expect(fmtSet({ weight: 10, reps: 1, seconds: 30 })).toBe('10kg · 30 s')
+    expect(fmtSet({ weight: 60, reps: 8 })).toBe('60kg×8')
+  })
+
+  it('never estimates a 1RM from a hold, and its best is the longest hold', () => {
+    expect(bestOneRM([{ weight: 20, reps: 1, seconds: 30 }])).toBeNull()
+    const holds = [{ weight: 0, reps: 1, seconds: 45 }]
+    expect(isSetPR({ weight: 0, reps: 1, seconds: 50 }, holds)).toBe(true)
+    expect(isSetPR({ weight: 0, reps: 1, seconds: 40 }, holds)).toBe(false)
+    // A rep set is never measured against a hold, nor a hold against reps.
+    expect(isSetPR({ weight: 60, reps: 1 }, [{ weight: 60, reps: 1, seconds: 30 }])).toBe(true)
   })
 })

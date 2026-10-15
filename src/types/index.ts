@@ -6,6 +6,9 @@ import type { CARDIO_TYPES, DONATION_TYPES } from '../constants/app'
 export interface LiftSet {
   weight: number
   reps: number
+  /** A hold (RFC 0107): the seconds it lasted. Stored as one rep, so `reps`
+   *  is 1 whenever this is set. */
+  seconds?: number
 }
 
 export interface WeightEntry {

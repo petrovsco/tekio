@@ -12,7 +12,7 @@ type PlanRow = {
   id: string
   plan_date: string
   exercise: string
-  target_sets: { weight: number | string; reps: number | string }[] | null
+  target_sets: { weight: number | string; reps?: number | string; seconds?: number | string }[] | null
   sort_order: number
   planned_by: 'user' | 'agent'
   session_exercise_id: string | null
@@ -26,7 +26,10 @@ function mapRow(r: PlanRow): PlannedExercise {
     id: r.id,
     date: r.plan_date,
     exercise: r.exercise,
-    targets: (r.target_sets ?? []).map(s => ({ weight: Number(s.weight), reps: Number(s.reps) })),
+    // A timed target (RFC 0107) is `{"weight": 0, "seconds": 45}`: one rep, held.
+    targets: (r.target_sets ?? []).map(s => s.seconds != null
+      ? { weight: Number(s.weight), reps: 1, seconds: Number(s.seconds) }
+      : { weight: Number(s.weight), reps: Number(s.reps) }),
     plannedBy: r.planned_by,
     ...(r.session_exercise_id ? { loggedAs: r.session_exercise_id } : {}),
     ...(r.superset_group_id ? { supersetId: r.superset_group_id } : {}),

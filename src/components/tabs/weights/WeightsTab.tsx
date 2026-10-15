@@ -11,12 +11,12 @@ import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
 import { Icon } from '../../ui/Icon'
-import { toSetStr, parseSets, setsProblem, liftSetProblem } from '../../../lib/sets'
+import { toSetStr, toLiftSet, parseSets, setsProblem, liftSetProblem, rowFilled, fmtSet, isTimedSet } from '../../../lib/sets'
 import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
-import type { PlannedExercise } from '../../../types'
-import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor } from '../../../constants/exerciseCatalogue'
+import type { PlannedExercise, LiftSet } from '../../../types'
+import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor, isTimedName } from '../../../constants/exerciseCatalogue'
 import type { PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
 import { MovementQuestion } from './MovementQuestion'
@@ -25,6 +25,8 @@ import { PlanSheet } from './PlanSheet'
 import { FromPlanStrip } from '../../ui/PlannedCard'
 import { groupRuns, groupName } from '../../../lib/supersets'
 import { readDraft, writeDraft, emptyLift, liftTouched, type DraftLift, type LogDraft } from '../../../lib/logDraft'
+
+const sameSet = (a: LiftSet, b: LiftSet) => a.weight === b.weight && a.reps === b.reps && a.seconds === b.seconds
 
 /** A lift on its way to the log, with what the first write needs from the
  *  form: the day, and the movement named for a lift nothing knows. */
@@ -92,6 +94,25 @@ export function WeightsTab() {
 
   const lastPerf = getLastPerf(ex)
 
+  // Whether a name is a hold, logged in seconds (RFC 0107): the catalogue's
+  // holds are; any other name the app knows is what it was last logged or
+  // planned as. `null` for a name nothing knows: its lift's own answer decides.
+  const timedOf = (n: string): boolean | null => {
+    if (!n.trim()) return null
+    if (isTimedName(n)) return true
+    const known = resolveExerciseName(n, pickerNames, aliases)
+    const name = normaliseExerciseName(known ?? n)
+    const last = weights
+      .filter(w => normaliseExerciseName(w.exercise) === name)
+      .reduce<typeof weights[number] | undefined>((a, w) => (!a || w.date > a.date ? w : a), undefined)
+    if (last) return last.sets.some(isTimedSet)
+    const plan = plans.find(p => normaliseExerciseName(p.exercise) === name && p.targets.length > 0)
+    if (plan) return plan.targets.some(isTimedSet)
+    return known || catalogueEntryFor(n) ? false : null
+  }
+  const timedLift = (l: DraftLift): boolean => timedOf(l.ex) ?? l.timed ?? false
+  const timed = timedLift(lift)
+
   // The movement question (RFC 0074) is for a name nothing knows. Its answer
   // belongs to the name it was given for, the way the 1RM ask below does: edit
   // the name and the answer no longer applies, with no effect resetting it.
@@ -110,7 +131,7 @@ export function WeightsTab() {
 
   // Only sets that could be saved feed the previews below: an invalid set is
   // neither a personal best nor a 1RM input.
-  const typedSets = useMemo(() => parseSets(sets, revealed).filter(s => !liftSetProblem(s)), [sets, revealed])
+  const typedSets = useMemo(() => parseSets(sets, revealed, timed).filter(s => !liftSetProblem(s)), [sets, revealed, timed])
 
   // What the typed sets could support if asked — computed, but not shown until
   // it is. `null` when no set is inside the grounded rep window.
@@ -128,7 +149,7 @@ export function WeightsTab() {
   )
   const prSet = typedSets.find(s => isSetPR(s, exHistory)) ?? null
 
-  const askKey = `${ex.trim().toLowerCase()}|${typedSets.map(s => `${s.weight}x${s.reps}`).join(',')}`
+  const askKey = `${ex.trim().toLowerCase()}|${typedSets.map(fmtSet).join(',')}`
   const maxAsk = ask?.key === askKey ? ask.state : 'idle'
   const answer = (state: 'asking' | 'toFailure' | 'submax') => () => setAsk({ key: askKey, state })
 
@@ -206,7 +227,7 @@ export function WeightsTab() {
     if (!entry) return { entryId: undefined, saved: [] }
     let j = 0
     const saved = l.sets.map((s, i) => {
-      const hit = !!l.saved?.[i] && j < entry.sets.length && +s.weight === entry.sets[j].weight && +s.reps === entry.sets[j].reps
+      const hit = !!l.saved?.[i] && j < entry.sets.length && sameSet(toLiftSet(s, timedLift(l)), entry.sets[j])
       if (hit) j++
       return hit
     })
@@ -223,7 +244,7 @@ export function WeightsTab() {
    */
   const writeLift = async (l: OnLog, saved: boolean[], toast: string): Promise<boolean> => {
     const rows = l.sets.slice(0, l.revealed).map((s, i) => ({ s, i })).filter(r => saved[r.i])
-    const chosen = rows.map(({ s }) => ({ weight: +s.weight, reps: +s.reps }))
+    const chosen = rows.map(({ s }) => toLiftSet(s, timedLift(l)))
     const problem = chosen.map(liftSetProblem).find(Boolean)
     if (problem) { setToast(problem); return false }
     const entryId = liveEntry(loggedOf(l).entryId)
@@ -268,8 +289,8 @@ export function WeightsTab() {
     const on = !savedOf(lift)[i]
     if (on) {
       if (!ex.trim()) { setToast('Pick an exercise first.'); return }
-      if (!s.weight || !s.reps) { setToast(`Enter weight and reps for set ${i + 1} first.`); return }
-      const problem = liftSetProblem({ weight: +s.weight, reps: +s.reps })
+      if (!rowFilled(s, timed)) { setToast(`Enter ${timed ? 'seconds' : 'weight and reps'} for set ${i + 1} first.`); return }
+      const problem = liftSetProblem(toLiftSet(s, timed))
       if (problem) { setToast(problem); return }
     }
     // Until a lift's first tick, the form is what the log holds.
@@ -289,13 +310,13 @@ export function WeightsTab() {
    *  are in the log leave the form. A lift with nothing typed stays. */
   const addEntry = async () => {
     if (finishing.current) return
-    const pending = lifts.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed).length > 0)
+    const pending = lifts.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed, timedLift(l)).length > 0)
     if (!pending.length) {
-      setToast(ex.trim() ? 'Add at least one set with weight and reps.' : 'Pick an exercise first.')
+      setToast(ex.trim() ? `Add at least one set with ${timed ? 'seconds' : 'weight and reps'}.` : 'Pick an exercise first.')
       return
     }
     for (const l of pending) {
-      const problem = setsProblem(l.sets, l.revealed)
+      const problem = setsProblem(l.sets, l.revealed, timedLift(l))
       if (problem) { setToast(lifts.length > 1 ? `${l.ex.trim()}: ${problem}` : problem); return }
     }
     finishing.current = true
@@ -306,7 +327,7 @@ export function WeightsTab() {
         const ok = await enqueue(async () => {
           wanted.current.delete(l.id)
           const prev = loggedOf(l).saved
-          const saved = l.sets.slice(0, l.revealed).map((s, i) => !!prev[i] || !!(s.weight && s.reps))
+          const saved = l.sets.slice(0, l.revealed).map((s, i) => !!prev[i] || rowFilled(s, timedLift(l)))
           const changed = saved.some((v, i) => v !== !!prev[i])
           return !changed || writeLift({ ...l, date, pattern: l.id === lift.id ? pattern ?? undefined : undefined }, saved, 'Saved')
         })
@@ -333,6 +354,7 @@ export function WeightsTab() {
     revealed: p.targets.length || 1,
     planId: p.id,
     ...(p.supersetId ? { supersetId: p.supersetId } : {}),
+    ...(p.targets.some(isTimedSet) ? { timed: true } : {}),
   })
 
   /** Log on a plan: a lift already on the form is shown as typed; otherwise the
@@ -358,13 +380,17 @@ export function WeightsTab() {
   }
 
   const chartEx = selEx || exercises[0] || ''
+  // A hold's progress is how long it lasted (RFC 0107); it has no volume load.
+  const chartTimed = useMemo(() => weights.some(d => d.exercise === chartEx && d.sets.some(isTimedSet)), [weights, chartEx])
+  const metric = chartTimed ? 'longest' : chartMetric
   const chartData = useMemo(() => weights
     .filter(d => d.exercise === chartEx)
     .sort((a, b) => a.date.localeCompare(b.date))
     .map(d => ({
       date: fmtDate(d.date, { year: 'never', relative: false }),
       maxWeight: Math.max(...d.sets.map(s => s.weight)),
-      volume: d.sets.reduce((a, s) => a + s.weight * s.reps, 0),
+      volume: d.sets.reduce((a, s) => a + (isTimedSet(s) ? 0 : s.weight * s.reps), 0),
+      longest: Math.max(0, ...d.sets.map(s => s.seconds ?? 0)),
     })), [weights, chartEx])
 
   // A superset or circuit (RFC 0106) reads as one block wherever its first
@@ -378,7 +404,7 @@ export function WeightsTab() {
     <div className="flex flex-col gap-4">
       <PlanCard onLog={logFromPlan} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
       {planSheet && (
-        <PlanSheet plan={planSheet.plan} suggestions={suggestions} aliases={aliases} onClose={() => setPlanSheet(null)} />
+        <PlanSheet plan={planSheet.plan} suggestions={suggestions} aliases={aliases} timedOf={timedOf} onClose={() => setPlanSheet(null)} />
       )}
 
       <div ref={formRef} className="scroll-mt-24"><Card>
@@ -424,12 +450,14 @@ export function WeightsTab() {
                 key={nameKey}
                 value={pattern}
                 onChange={p => setMovement({ key: nameKey, pattern: p })}
+                timed={timed}
+                onTimed={t => patchLift(l => ({ ...l, timed: t }))}
               />
             )}
             {lastPerf && (
               <div className="px-2.5 py-2 bg-hairline rounded-[3px] text-[11px] text-ink-2">
                 <span className="font-bold text-ink">Last ({fmtDate(lastPerf.date, { midSentence: true })}):</span>{' '}
-                {lastPerf.sets.map(s => `${s.weight}kg×${s.reps}`).join(' · ')}
+                {lastPerf.sets.map(fmtSet).join(' · ')}
               </div>
             )}
             <Inp label="Date" type="date" value={date} disabled={anySaved} onChange={e => setDate(e.target.value)} />
@@ -445,6 +473,7 @@ export function WeightsTab() {
               saved={savedOf(lift)}
               onToggle={toggleSet}
               pending={pendingOf(lift)}
+              timed={timed}
             />
           </div>
 
@@ -454,9 +483,9 @@ export function WeightsTab() {
                   the outline tone (design-system §1) — like SS. */}
               {prSet && (
                 <div className="flex items-center justify-between gap-2">
-                  <span className={FIELD_LABEL}>Personal best</span>
+                  <span className={FIELD_LABEL}>{isTimedSet(prSet) ? 'Longest hold' : 'Personal best'}</span>
                   <span className="text-[11px] text-ink-2 tabular-nums flex items-center gap-1.5">
-                    {prSet.weight}kg×{prSet.reps}
+                    {fmtSet(prSet)}
                     <MicroLabel>PR</MicroLabel>
                   </span>
                 </div>
@@ -509,10 +538,12 @@ export function WeightsTab() {
         <Card>
           <div className="flex items-center justify-between mb-2.5">
             <SecTitle>Progress</SecTitle>
-            <div className="flex gap-1">
-              <Chip small active={chartMetric === 'maxWeight'} onClick={() => setChartMetric('maxWeight')}>Max kg</Chip>
-              <Chip small active={chartMetric === 'volume'} onClick={() => setChartMetric('volume')}>Volume</Chip>
-            </div>
+            {chartTimed ? <span className={MICRO_LABEL}>Longest hold</span> : (
+              <div className="flex gap-1">
+                <Chip small active={chartMetric === 'maxWeight'} onClick={() => setChartMetric('maxWeight')}>Max kg</Chip>
+                <Chip small active={chartMetric === 'volume'} onClick={() => setChartMetric('volume')}>Volume</Chip>
+              </div>
+            )}
           </div>
           <div className="mb-3">
             <SelEl
@@ -526,13 +557,13 @@ export function WeightsTab() {
             <YAxis domain={['auto', 'auto']} width={38} {...CHART_AXIS} />
             <Tooltip
               {...CHART_TOOLTIP}
-              formatter={(v: number) => chartMetric === 'maxWeight'
-                ? [`${v} kg`, 'Max weight']
+              formatter={(v: number) => metric === 'longest' ? [`${v} s`, 'Longest hold']
+                : metric === 'maxWeight' ? [`${v} kg`, 'Max weight']
                 : [`${v} kg·reps`, 'Volume']}
             />
             <Line
               {...CHART_LINE}
-              dataKey={chartMetric}
+              dataKey={metric}
               stroke={CHART.line}
               activeDot={hoverDot(CHART.line)}
               // No resting dots (§9).
@@ -570,7 +601,7 @@ export function WeightsTab() {
                       <span className="text-xs font-bold text-ink">{e.exercise}</span>
                       <div className="flex flex-wrap gap-1 mt-0.5">
                         {e.sets.map((s, i) => (
-                          <span key={i} className="px-1.5 py-0.5 rounded-[2px] bg-white border border-line text-[10px] text-ink-2 tabular-nums">S{i + 1}: {s.weight}kg×{s.reps}</span>
+                          <span key={i} className="px-1.5 py-0.5 rounded-[2px] bg-white border border-line text-[10px] text-ink-2 tabular-nums">S{i + 1}: {fmtSet(s)}</span>
                         ))}
                       </div>
                     </div>
@@ -587,7 +618,7 @@ export function WeightsTab() {
                   </p>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {entry.sets.map((s, i) => (
-                      <span key={i} className="px-1.5 py-0.5 rounded-[2px] bg-hairline text-[10px] text-ink-2 tabular-nums">S{i + 1}: {s.weight}kg×{s.reps}</span>
+                      <span key={i} className="px-1.5 py-0.5 rounded-[2px] bg-hairline text-[10px] text-ink-2 tabular-nums">S{i + 1}: {fmtSet(s)}</span>
                     ))}
                   </div>
                 </div>

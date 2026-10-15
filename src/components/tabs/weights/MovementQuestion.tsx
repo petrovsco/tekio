@@ -8,11 +8,15 @@ import type { PatternKey } from '../../../constants/movementPatterns'
  * RFC 0074: asked only for a name nothing knows — not on file, not an alias,
  * not in the catalogue. Two taps: a body area, then the movement, each named
  * with a lift it is like. The answer decides which muscles the new exercise
- * counts for. Skipping it still saves; the lift is then unmapped.
+ * counts for. Skipping it still saves; the lift is then unmapped. Given
+ * `onTimed`, it also asks whether the lift is counted in reps or held for time
+ * (RFC 0107); the answer sticks from the lift's first logged set.
  */
-export function MovementQuestion({ value, onChange, thumb }: {
+export function MovementQuestion({ value, onChange, thumb, timed, onTimed }: {
   value: PatternKey | null
   onChange: (pattern: PatternKey | null) => void
+  timed?: boolean
+  onTimed?: (timed: boolean) => void
   /** Every control a full thumb's height, for the muscle sheet (RFC 0100). */
   thumb?: boolean
 }) {
@@ -59,6 +63,24 @@ export function MovementQuestion({ value, onChange, thumb }: {
               </button>
             )
           })}
+        </div>
+      )}
+      {onTimed && (
+        <div className="flex flex-col gap-1 mt-1">
+          <span className="text-[11px] text-ink-2 leading-snug">Is it counted in reps or held for time?</span>
+          <div className="flex flex-wrap gap-1">
+            {([false, true] as const).map(t => (
+              <Chip
+                key={String(t)}
+                small={!thumb}
+                active={!!timed === t}
+                className={thumb ? 'min-h-[44px]' : ''}
+                onClick={() => onTimed(t)}
+              >
+                {t ? 'Time' : 'Reps'}
+              </Chip>
+            ))}
+          </div>
         </div>
       )}
     </div>
