@@ -89,6 +89,16 @@ them. An activity already in the table is skipped, so a re-run writes nothing.
   syncs. It's **idempotent** — upserts on the `(user_id, log_date)` key.
 - Only objective columns are written (`source='garmin'`). Your subjective
   `quality` stars and `notes` are never overwritten.
+- **On demand from Home** (RFC 0110). The line beside the wordmark ("Garmin ·
+  08:02") calls `request_garmin_sync` in Supabase, which writes a `sync_runs`
+  row and dispatches [garmin-sync-now.yml](../../.github/workflows/garmin-sync-now.yml)
+  with that row's id, using the same Vault token as the 08:00 dispatch. That
+  workflow runs activities, then sleep, in one job. Every Garmin workflow ends
+  with [record_run.py](record_run.py), which closes the row (or writes one for
+  a scheduled run), so the line shows whichever run finished last. The function
+  refuses a second run while one from the last 5 minutes is open and allows 20
+  a day; all three workflows share the `garmin-token` concurrency group so two
+  runs never spend the same rotating refresh token.
 
 ## One-time setup
 

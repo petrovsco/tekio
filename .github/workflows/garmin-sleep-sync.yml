@@ -15,8 +15,10 @@ on:
         description: 'Trailing nights to sync (raise for a backfill)'
         default: '3'
 
+# Shared by every Garmin sync (RFC 0110): two runs at once could spend a
+# refresh token the other has just rotated (integration_tokens).
 concurrency:
-  group: garmin-sleep-sync
+  group: garmin-token
   cancel-in-progress: false
 
 jobs:
@@ -41,3 +43,12 @@ jobs:
           TEKIO_USER_ID: ${{ secrets.TEKIO_USER_ID }}
           # `inputs` is empty on the schedule, so this falls back to the daily default.
           SYNC_DAYS: ${{ inputs.days || '3' }}
+
+      # Closes the run for the app's "Garmin · 08:02" line on Home (RFC 0110).
+      - if: always()
+        run: python scripts/garmin-sync/record_run.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TEKIO_USER_ID: ${{ secrets.TEKIO_USER_ID }}
+          JOB_STATUS: ${{ job.status }}

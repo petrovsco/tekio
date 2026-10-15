@@ -11,7 +11,7 @@ export type IconName =
   | 'adaptations' | 'profile'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
   | 'warmup' | 'sport' | 'recovery' | 'drag' | 'export' | 'import'
-  | 'info' | 'list' | 'search' | 'heart' | 'pause' | 'arrowRight' | 'spinner'
+  | 'info' | 'list' | 'search' | 'heart' | 'pause' | 'arrowRight' | 'spinner' | 'sync'
 
 /** Path geometry only — the wrapper below carries every shared stroke rule. */
 const PATHS: Record<IconName, string> = {
@@ -63,6 +63,8 @@ const PATHS: Record<IconName, string> = {
   arrowRight: 'M5 12h14M13 6l6 6-6 6',
   // Three quarters of a ring, turned by `animate-spin`: a write on its way.
   spinner: 'M21 12a9 9 0 1 1-9-9',
+  // Two arrows chasing round — ask a connected service for what is new (RFC 0110).
+  sync: 'M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4',
 }
 
 interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'name'> {
