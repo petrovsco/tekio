@@ -67,6 +67,9 @@ interface AppStore extends AppState {
   withToast: (fn: () => Promise<void>, ok: string, fail?: string) => Promise<boolean>
 
   bootstrap: () => Promise<void>
+  /** Re-reads what a Garmin sync writes (nights, cardio and sport sessions),
+   *  after a sync asked for from Home finishes (RFC 0110). */
+  refreshSynced: () => Promise<void>
 
   // Weights
   /** Resolves to the saved entry, so a caller can offer Undo on its id.
@@ -393,6 +396,11 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     } finally {
       set({ loading: false })
     }
+  },
+
+  refreshSynced: async () => {
+    const [sleep, cardio, sports] = await Promise.all([loadSleep(), loadCardio(), loadSports()])
+    set({ sleep, cardio, sports })
   },
 
   // ── Readiness inputs ───────────────────────────────────────────────────────

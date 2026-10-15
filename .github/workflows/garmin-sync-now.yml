@@ -1,0 +1,54 @@
+name: Garmin sync now
+
+# Started from the app (RFC 0110): tapping "Garmin · 08:02" beside the wordmark
+# on Home calls `request_garmin_sync` in Supabase, which writes a sync_runs row
+# and dispatches this workflow with that row's id. Activities, then sleep, in
+# one job, so Garmin's rotating token is refreshed by one run at a time; the
+# last step closes the row and the app's spinner stops.
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'The sync_runs row to close (written by request_garmin_sync)'
+        default: ''
+
+# Shared with the two daily syncs: two runs at once could spend a refresh token
+# the other has just rotated (integration_tokens).
+concurrency:
+  group: garmin-token
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GARMIN_TOKENSTORE: ${{ secrets.GARMIN_TOKENSTORE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      TEKIO_USER_ID: ${{ secrets.TEKIO_USER_ID }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: scripts/garmin-sync/requirements.txt
+
+      - run: pip install -r scripts/garmin-sync/requirements.txt
+
+      - run: python scripts/garmin-sync/sync_activities.py
+        env:
+          SYNC_DAYS: '3'
+          SYNC_KINDS: 'cardio,sport'
+
+      - run: python scripts/garmin-sync/sync_sleep.py
+        env:
+          SYNC_DAYS: '3'
+
+      - if: always()
+        run: python scripts/garmin-sync/record_run.py
+        env:
+          SYNC_RUN_ID: ${{ inputs.run_id }}
+          JOB_STATUS: ${{ job.status }}

@@ -16,6 +16,7 @@ import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
 import { usePrefs } from '../../../store/prefs'
 import { METHOD_LABEL } from '../../../constants/readiness'
+import { SyncLine } from './SyncLine'
 import { ReadinessGauge } from './ReadinessGauge'
 import type { FoldKind } from './FoldSheet'
 import type { WholeBodyQuality } from './QualitySheet'
@@ -325,8 +326,9 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   return (
     <div className="text-ink" onPointerDown={prefetch}>
       {/* Header */}
-      <div className="flex items-baseline pb-2">
+      <div className="flex items-center pb-2">
         <span className="text-[15px] font-bold tracking-[0.14em]">TEKIŌ</span>
+        <SyncLine />
       </div>
 
       {/* Verdict — readiness gates the instruction; the sub names the top gap */}
