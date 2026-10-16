@@ -4,7 +4,7 @@ import { useAppStore } from '../../../store/app'
 import { today, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
-import { Btn, DelBtn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
+import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
 import { Chip } from '../../ui/Chip'
 import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
@@ -72,7 +72,6 @@ export function WeightsTab() {
   // The plan the lift was filled from (RFC 0098). Saving the form logs the work
   // and ticks the plan; the numbers may differ from its targets.
   const fromPlan = plans.find(p => p.id === lift.planId && (!p.loggedAs || p.loggedAs === lift.entryId)) ?? null
-  const unlinkPlan = () => patchLift(l => ({ ...l, planId: undefined, supersetId: undefined }))
   // The plan sheet (RFC 0098): `plan` absent writes a new plan.
   const [planSheet, setPlanSheet] = useState<{ plan?: PlannedExercise } | null>(null)
 
@@ -184,13 +183,16 @@ export function WeightsTab() {
   const anySaved = lifts.some(l => savedOf(l).some(Boolean))
   // Only Finish holds the button; a tick never does, it waits its turn below.
   // The ref stops a double tap that lands before the button redraws disabled.
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<'one' | 'all' | null>(null)
   const finishing = useRef(false)
   // The button names everything it will save: a superset's Finish saves every
   // lift on the form, not only the one showing (RFC 0106).
   const together = lifts.length > 1 && lifts.every(l => l.supersetId && l.supersetId === lifts[0].supersetId)
   const what = together ? groupName(lifts.length).toLowerCase() : lifts.length > 1 ? `${lifts.length} exercises` : 'exercise'
   const saveLabel = `${anySaved ? 'Finish' : 'Save'} ${what}`
+  // With more than one lift on the form, the one showing can be finished on
+  // its own: it leaves the switcher and the rest stay.
+  const oneLabel = `${savedOf(lift).some(Boolean) ? 'Finish' : 'Save'} this one`
 
   // Writes go to the database one at a time, in the order they were tapped, so
   // a second tick can follow the first without waiting on screen for it.
@@ -306,11 +308,20 @@ export function WeightsTab() {
     void enqueue(() => syncLift(lift.id))
   }
 
+  /** Takes a lift off the form; the next one along shows. */
+  const dropLift = (id: string) => setDraft(x => {
+    const rest = x.lifts.filter(y => y.id !== id)
+    return rest.length
+      ? { ...x, lifts: rest, active: Math.min(x.active, rest.length - 1) }
+      : { ...x, lifts: [emptyLift()], active: 0 }
+  })
+
   /** Finish: every filled set not yet ticked is saved too, and the lifts that
-   *  are in the log leave the form. A lift with nothing typed stays. */
-  const addEntry = async () => {
+   *  are in the log leave the form. A lift with nothing typed stays. `only`
+   *  finishes just those lifts, leaving the rest on the switcher. */
+  const addEntry = async (only?: DraftLift[]) => {
     if (finishing.current) return
-    const pending = lifts.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed, timedLift(l)).length > 0)
+    const pending = (only ?? lifts).filter(l => l.ex.trim() && parseSets(l.sets, l.revealed, timedLift(l)).length > 0)
     if (!pending.length) {
       setToast(ex.trim() ? `Add at least one set with ${timed ? 'seconds' : 'weight and reps'}.` : 'Pick an exercise first.')
       return
@@ -320,7 +331,7 @@ export function WeightsTab() {
       if (problem) { setToast(lifts.length > 1 ? `${l.ex.trim()}: ${problem}` : problem); return }
     }
     finishing.current = true
-    setBusy(true)
+    setBusy(only ? 'one' : 'all')
     try {
       for (const l of pending) {
         // After the ticks already on their way, so prev is what the log holds.
@@ -334,18 +345,41 @@ export function WeightsTab() {
         if (!ok) return
         setLogged(l.id)
         // In the log now: off the form.
-        setDraft(x => {
-          const rest = x.lifts.filter(y => y.id !== l.id)
-          return rest.length ? { ...x, lifts: rest, active: 0 } : { ...x, lifts: [emptyLift()], active: 0 }
-        })
+        dropLift(l.id)
       }
       setMovement(null)
       setToast(pending.length > 1 ? `${pending.length} exercises saved!` : 'Exercise saved!')
     } finally {
       finishing.current = false
-      setBusy(false)
+      setBusy(null)
     }
   }
+
+  /** Back to plan: the lift leaves the form and its plan waits on the Planned
+   *  card again. Sets already ticked come out of the log with it, which the
+   *  strip asks about first; the plan's link goes with the entry. */
+  const [askBack, setAskBack] = useState<string | null>(null)
+  const backToPlan = async () => {
+    if (finishing.current) return
+    const l = lift
+    setAskBack(null)
+    finishing.current = true
+    try {
+      // After the ticks already on their way, so the entry is the one they made.
+      const ok = await enqueue(async () => {
+        wanted.current.delete(l.id)
+        const id = liveEntry(loggedOf(l).entryId)
+        return !id || withToast(() => removeWeightEntry(id), 'Back on the plan')
+      })
+      if (!ok) return
+      if (!entryOf(l) && !savedOf(l).some(Boolean)) setToast('Back on the plan')
+      setLogged(l.id)
+      dropLift(l.id)
+    } finally {
+      finishing.current = false
+    }
+  }
+  const ticked = savedOf(lift).filter(Boolean).length
 
   const liftFromPlan = (p: PlannedExercise): DraftLift => ({
     id: crypto.randomUUID(),
@@ -419,18 +453,43 @@ export function WeightsTab() {
               )}
               <div className="flex flex-wrap gap-1">
                 {lifts.map((l, i) => (
-                  <Chip key={l.id} small active={i === active} onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
+                  <Chip key={l.id} small active={i === active} className="inline-flex items-center gap-0.5" onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
+                    {savedOf(l).some(Boolean) && <Icon name="check" size={10} />}
                     {l.ex.trim() || 'New exercise'}
                   </Chip>
                 ))}
-                <DelBtn
-                  label={`Take ${ex.trim() || 'this exercise'} off this log`}
-                  onClick={() => setDraft(x => ({ ...x, lifts: x.lifts.filter((_, i) => i !== x.active), active: 0 }))}
-                />
               </div>
+              {/* An unplanned lift with nothing in the log yet: dropping it
+                  only loses what was typed. A planned one goes back to plan
+                  from its strip; a logged one is finished. */}
+              {!fromPlan && !ticked && !entryOf(lift) && (
+                <button
+                  className="self-start text-[11px] text-ink-3 hover:text-ink cursor-pointer"
+                  onClick={() => dropLift(lift.id)}
+                >
+                  Remove {ex.trim() || 'this exercise'}
+                </button>
+              )}
             </div>
           )}
-          {fromPlan && <FromPlanStrip name={fromPlan.exercise} onUnlink={unlinkPlan} />}
+          {fromPlan && (
+            <FromPlanStrip
+              name={fromPlan.exercise}
+              action={askBack === lift.id ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] text-ink-2">
+                  Take {ticked} logged set{ticked === 1 ? '' : 's'} out?
+                  <YesNo onYes={() => void backToPlan()} onNo={() => setAskBack(null)} />
+                </span>
+              ) : (
+                <button
+                  className="leading-snug text-ink-3 hover:text-ink cursor-pointer"
+                  onClick={() => (ticked ? setAskBack(lift.id) : void backToPlan())}
+                >
+                  Back to plan
+                </button>
+              )}
+            />
+          )}
           <div className="flex flex-col gap-2.5 mb-3">
             <div className="flex flex-col gap-1">
               <label className={FIELD_LABEL}>Exercise</label>
@@ -528,10 +587,18 @@ export function WeightsTab() {
             </div>
           )}
 
-          <Btn onClick={addEntry} disabled={busy} className="w-full inline-flex items-center justify-center gap-1.5">
-            {busy && <Icon name="spinner" size={13} className="animate-spin" />}
-            {saveLabel}
-          </Btn>
+          <div className="flex gap-2">
+            {lifts.length > 1 && (
+              <Btn variant="secondary" onClick={() => void addEntry([lift])} disabled={!!busy} className="flex-1 inline-flex items-center justify-center gap-1.5">
+                {busy === 'one' && <Icon name="spinner" size={13} className="animate-spin" />}
+                {oneLabel}
+              </Btn>
+            )}
+            <Btn onClick={() => void addEntry()} disabled={!!busy} className="flex-1 inline-flex items-center justify-center gap-1.5">
+              {busy === 'all' && <Icon name="spinner" size={13} className="animate-spin" />}
+              {saveLabel}
+            </Btn>
+          </div>
       </Card></div>
 
       {exercises.length > 0 && (
