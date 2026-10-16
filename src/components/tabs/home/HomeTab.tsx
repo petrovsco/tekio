@@ -228,8 +228,10 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   // The card's two columns follow the method the verdict reads from (0092).
   // A typed method still waiting for today's answer asks for it, in the
   // accent: action lives there (design-system §1).
+  // The score keeps one day of grace for a late sync, so say when it is the
+  // night before's: a sync that ran before Garmin had last night is not news.
   const sleepCol: GateCol = sys.sleepScore != null
-    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink' }
+    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink', note: sys.sleepScoreDate !== date ? 'last night not in yet' : undefined }
     : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' }
   // Today's typed answer for the method being read, shown even before the
   // baseline can turn it into a band.
@@ -257,7 +259,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           : colMethod === 'morning_hrv'
             ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', gauge: null, tone: 'off', note: building }
             : sys.hrv != null
-              ? { label: 'HRV · LAST NIGHT', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
+              ? { label: sys.hrvDate === date ? 'HRV · LAST NIGHT' : 'HRV · NIGHT BEFORE', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
               : { label: 'HRV', value: '—', gauge: null, tone: 'off' }
   const gateCols: GateCol[] = colMethod === 'overnight_hrv' || colMethod === null
     ? [sleepCol, readingCol]

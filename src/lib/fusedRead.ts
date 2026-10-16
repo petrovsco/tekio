@@ -835,8 +835,12 @@ export interface SystemicReadiness {
   notes: ReadinessNotes
   /** Last night's device sleep score, if fresh — shown, never part of readiness (0085). */
   sleepScore: number | null
+  /** The wake date that score belongs to: the day before `date` when last night has not synced yet. */
+  sleepScoreDate: string | null
   /** Last night's overnight HRV in ms, if fresh. */
   hrv: number | null
+  /** The wake date that HRV belongs to, as for `sleepScoreDate`. */
+  hrvDate: string | null
 }
 
 function readingFor(method: ReadinessMethod, sleep: SleepEntry[], inputs: ReadinessInput[], date: string) {
@@ -862,8 +866,10 @@ export function systemicReadiness(
   const fresh = sleep
     .filter(e => e.date <= date && daysBetween(e.date, date) <= 1)
     .sort((a, b) => b.date.localeCompare(a.date))
-  const sleepScore = fresh.find(e => e.score != null)?.score ?? null
-  const hrv = fresh.find(e => e.hrv != null)?.hrv ?? null
+  const scored = fresh.find(e => e.score != null) ?? null
+  const sleepScore = scored?.score ?? null
+  const withHrv = fresh.find(e => e.hrv != null) ?? null
+  const hrv = withHrv?.hrv ?? null
   const chosen = picked ?? autoReadinessMethod(sleep, inputs, date)
   let reading: ReadinessReading | null = null
   if (chosen) {
@@ -892,7 +898,9 @@ export function systemicReadiness(
     gauge: reading?.gauge ?? null,
     notes: readinessNotes(sleep, date),
     sleepScore,
+    sleepScoreDate: scored?.date ?? null,
     hrv,
+    hrvDate: withHrv?.date ?? null,
   }
 }
 
