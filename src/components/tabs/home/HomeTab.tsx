@@ -7,7 +7,7 @@ import {
   type Gauge,
 } from '../../../lib/fusedRead'
 import { useHrMax } from '../../../hooks/useHrMax'
-import { today, daysBetween, fmtSets, fmtAgo } from '../../../lib/utils'
+import { today, daysBetween, fmtSets, fmtAgo, lastNightDate } from '../../../lib/utils'
 import { RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
@@ -230,8 +230,10 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   // accent: action lives there (design-system §1).
   // The score keeps one day of grace for a late sync, so say when it is the
   // night before's: a sync that ran before Garmin had last night is not news.
+  // "Last night" turns over at 04:00, not midnight, for whoever is still up.
+  const lastNight = lastNightDate()
   const sleepCol: GateCol = sys.sleepScore != null
-    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink', note: sys.sleepScoreDate !== date ? 'last night not in yet' : undefined }
+    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink', note: (sys.sleepScoreDate ?? '') < lastNight ? 'last night not in yet' : undefined }
     : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' }
   // Today's typed answer for the method being read, shown even before the
   // baseline can turn it into a band.
@@ -259,7 +261,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           : colMethod === 'morning_hrv'
             ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', gauge: null, tone: 'off', note: building }
             : sys.hrv != null
-              ? { label: sys.hrvDate === date ? 'HRV · LAST NIGHT' : 'HRV · NIGHT BEFORE', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
+              ? { label: sys.hrvDate != null && sys.hrvDate >= lastNight ? 'HRV · LAST NIGHT' : 'HRV · NIGHT BEFORE', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
               : { label: 'HRV', value: '—', gauge: null, tone: 'off' }
   const gateCols: GateCol[] = colMethod === 'overnight_hrv' || colMethod === null
     ? [sleepCol, readingCol]
