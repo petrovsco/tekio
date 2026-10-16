@@ -172,12 +172,16 @@ export function PlanChips({ items }: { items: string[] }) {
 }
 
 /** The strip over a log form filled from a plan: saving the form logs the work
- *  and ticks the plan; Unlink keeps the numbers and forgets the plan. */
-export function FromPlanStrip({ name, onUnlink }: { name: string; onUnlink: () => void }) {
+ *  and ticks the plan; Unlink keeps the numbers and forgets the plan. A form
+ *  can put its own control in Unlink's place (`action`). One line always: a
+ *  long name is cut short rather than pushing the control onto a second. */
+export function FromPlanStrip({ name, onUnlink, action }: { name: string; onUnlink?: () => void; action?: ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 mb-2.5 border border-dashed border-planned bg-planned-tint rounded-[3px]">
-      <span className="text-[11px] text-ink-2">From today's plan: <span className="font-bold text-ink">{name}</span></span>
-      <button className="text-[11px] text-ink-3 hover:text-ink cursor-pointer" onClick={onUnlink}>Unlink</button>
+      <span className="min-w-0 truncate text-[11px] leading-snug text-ink-2">From today's plan: <span className="font-bold text-ink">{name}</span></span>
+      <span className="shrink-0 flex items-center whitespace-nowrap text-[11px] leading-snug">
+        {action ?? <button className="text-[11px] text-ink-3 hover:text-ink cursor-pointer" onClick={onUnlink}>Unlink</button>}
+      </span>
     </div>
   )
 }
