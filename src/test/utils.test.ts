@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, today, startOfWeek } from '../lib/utils'
+import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, today, startOfWeek, lastNightDate } from '../lib/utils'
 import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------
@@ -448,5 +448,14 @@ describe('today', () => {
       expect(startOfWeek('2026-10-05', 'monday')).toBe('2026-10-05')
       expect(startOfWeek('2026-10-07', 'sunday')).toBe('2026-10-04')
     })
+  })
+})
+
+describe('lastNightDate', () => {
+  it('turns over at 04:00 on the device clock, not at midnight', () => {
+    expect(lastNightDate(new Date(2026, 9, 16, 1, 30))).toBe('2026-10-15')
+    expect(lastNightDate(new Date(2026, 9, 16, 3, 59))).toBe('2026-10-15')
+    expect(lastNightDate(new Date(2026, 9, 16, 4, 0))).toBe('2026-10-16')
+    expect(lastNightDate(new Date(2026, 10, 1, 2, 0))).toBe('2026-10-31')
   })
 })

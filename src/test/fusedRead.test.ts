@@ -485,6 +485,13 @@ describe('systemicReadiness', () => {
     expect(r.band).toBeNull()
     expect(r.sleepScore).toBe(73)
     expect(r.hrv).toBe(80)
+    expect(r.sleepScoreDate).toBe(ago(0))
+  })
+
+  it("dates the score so Home can say last night isn't in yet", () => {
+    const r = systemicReadiness([night(ago(1), 80, 82)], TODAY)
+    expect(r.sleepScore).toBe(80)
+    expect(r.sleepScoreDate).toBe(ago(1))
   })
 
   it('returns nothing with no data at all', () => {

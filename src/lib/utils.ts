@@ -12,6 +12,19 @@ export const daysAgo = (n: number): string => {
   return localDay(d)
 }
 
+/** The hour a night ends for "last night": before it, someone still up is in
+ *  the night that wakes today, so the last finished night woke yesterday. */
+const NIGHT_ENDS_HOUR = 4
+
+/** The wake date of "last night", on the device's clock: today from 04:00,
+ *  yesterday before that, so a night owl at 01:00 is not told last night is
+ *  missing when it has not happened yet. */
+export const lastNightDate = (now: Date = new Date()): string => {
+  const d = new Date(now)
+  if (d.getHours() < NIGHT_ENDS_HOUR) d.setDate(d.getDate() - 1)
+  return localDay(d)
+}
+
 const localDay = (d: Date): string =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
