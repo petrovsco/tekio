@@ -316,19 +316,37 @@ export function WeightsTab() {
       : { ...x, lifts: [emptyLift()], active: 0 }
   })
 
+  /** Rows typed but not ticked, on a form where ticking has started: Finish
+   *  asks before it logs them, since a tap meant for one lift or one set can
+   *  land on Finish. A form saved without any tick is a plain Save. */
+  const untickedOf = (scope: DraftLift[]) => scope.some(l => savedOf(l).some(Boolean))
+    ? scope.flatMap(l => l.sets.slice(0, l.revealed)
+      .map((s, i) => ({ l, i, s }))
+      .filter(r => r.l.ex.trim() && rowFilled(r.s, timedLift(r.l)) && !savedOf(r.l)[r.i]))
+    : []
+  // The lifts the asked Finish covers, by id, so the question follows the form.
+  const [askFinish, setAskFinish] = useState<{ only?: string[] } | null>(null)
+  const askedScope = askFinish?.only ? lifts.filter(l => askFinish.only!.includes(l.id)) : lifts
+  const askedRows = askFinish ? untickedOf(askedScope) : []
+
   /** Finish: every filled set not yet ticked is saved too, and the lifts that
    *  are in the log leave the form. A lift with nothing typed stays. `only`
-   *  finishes just those lifts, leaving the rest on the switcher. */
-  const addEntry = async (only?: DraftLift[]) => {
+   *  finishes just those lifts, leaving the rest on the switcher. With
+   *  `ticked` only the ticked sets are kept, and a lift with none stays. */
+  const addEntry = async (only?: DraftLift[], mode?: 'all' | 'ticked') => {
     if (finishing.current) return
-    const pending = (only ?? lifts).filter(l => l.ex.trim() && parseSets(l.sets, l.revealed, timedLift(l)).length > 0)
+    const scope = only ?? lifts
+    if (!mode && untickedOf(scope).length) { setAskFinish({ only: only?.map(l => l.id) }); return }
+    setAskFinish(null)
+    const pending = scope.filter(l => l.ex.trim() && parseSets(l.sets, l.revealed, timedLift(l)).length > 0)
+      .filter(l => mode !== 'ticked' || savedOf(l).some(Boolean))
     if (!pending.length) {
       setToast(ex.trim() ? `Add at least one set with ${timed ? 'seconds' : 'weight and reps'}.` : 'Pick an exercise first.')
       return
     }
     for (const l of pending) {
       const problem = setsProblem(l.sets, l.revealed, timedLift(l))
-      if (problem) { setToast(lifts.length > 1 ? `${l.ex.trim()}: ${problem}` : problem); return }
+      if (problem && mode !== 'ticked') { setToast(lifts.length > 1 ? `${l.ex.trim()}: ${problem}` : problem); return }
     }
     finishing.current = true
     setBusy(only ? 'one' : 'all')
@@ -338,7 +356,7 @@ export function WeightsTab() {
         const ok = await enqueue(async () => {
           wanted.current.delete(l.id)
           const prev = loggedOf(l).saved
-          const saved = l.sets.slice(0, l.revealed).map((s, i) => !!prev[i] || rowFilled(s, timedLift(l)))
+          const saved = l.sets.slice(0, l.revealed).map((s, i) => !!prev[i] || (mode !== 'ticked' && rowFilled(s, timedLift(l))))
           const changed = saved.some((v, i) => v !== !!prev[i])
           return !changed || writeLift({ ...l, date, pattern: l.id === lift.id ? pattern ?? undefined : undefined }, saved, 'Saved')
         })
@@ -587,6 +605,22 @@ export function WeightsTab() {
             </div>
           )}
 
+          {askedRows.length > 0 ? (
+            <div className="flex flex-col gap-2 px-2.5 py-2.5 bg-hairline rounded-[3px]">
+              <p className="text-[12px] text-ink leading-snug">
+                {askedRows.length === 1 ? '1 set isn’t' : `${askedRows.length} sets aren’t`} ticked:{' '}
+                {[...new Set(askedRows.map(r => r.l))].map(l => {
+                  const nums = askedRows.filter(r => r.l === l).map(r => r.i + 1)
+                  return `${l.ex.trim()} set${nums.length === 1 ? '' : 's'} ${nums.join(', ')}`
+                }).join('; ')}. Log {askedRows.length === 1 ? 'it' : 'them'} as done?
+              </p>
+              <div className="flex gap-2">
+                <Btn variant="secondary" onClick={() => setAskFinish(null)} className="flex-1">Cancel</Btn>
+                <Btn variant="secondary" onClick={() => void addEntry(askFinish?.only && askedScope, 'ticked')} className="flex-1">Only ticked</Btn>
+                <Btn onClick={() => void addEntry(askFinish?.only && askedScope, 'all')} className="flex-1">Log all</Btn>
+              </div>
+            </div>
+          ) : (
           <div className="flex gap-2">
             {lifts.length > 1 && (
               <Btn variant="secondary" onClick={() => void addEntry([lift])} disabled={!!busy} className="flex-1 inline-flex items-center justify-center gap-1.5">
@@ -599,6 +633,7 @@ export function WeightsTab() {
               {saveLabel}
             </Btn>
           </div>
+          )}
       </Card></div>
 
       {exercises.length > 0 && (
