@@ -2,6 +2,7 @@ import { supabase } from '../supabase'
 import { USER_ID } from '../../constants/app'
 import { withOrigin } from '../env'
 import { normaliseExerciseName, resolveExerciseName } from '../exerciseName'
+import { whileReloading } from '../staleChunk'
 import type { ExerciseAlias } from '../../types'
 import type { LinkSet, PatternKey } from '../../constants/movementPatterns'
 
@@ -54,7 +55,7 @@ export async function getOrCreateExerciseRow(
     loadExerciseAliases(),
     // A dynamic import keeps 270 lifts off the first paint: the store loads
     // this file at startup, and only a write ever needs the catalogue.
-    import('../../constants/exerciseCatalogue'),
+    import('../../constants/exerciseCatalogue').then(whileReloading),
   ])
   if (exErr) throw exErr
   const rows = existing ?? []

@@ -10,6 +10,12 @@
 // once. The first failure starts the reload; the rest land while it is under
 // way and are swallowed too, or they surface as errors on a page that is
 // already going away (error reports #2–#6, RFC 0103).
+//
+// A swallowed failure does not reject: Vite resolves that import() to
+// undefined. Code that reads the module would then throw on the page that is
+// going away, so every dynamic import passes through whileReloading, which
+// waits for the reload instead (error report #23: tapping Weights on such a
+// page threw "can't access property WeightsTab").
 // tekio.rfcs/rfcs/done/0075-white-screen-after-deploy.md
 
 const KEY = 'tekio:chunk-reload'
@@ -33,4 +39,11 @@ export function reloadOnStaleChunk() {
     try { sessionStorage.setItem(KEY, String(Date.now())) } catch { /* private mode: reload anyway */ }
     window.location.reload()
   })
+}
+
+/** A dynamic import's module, or, when reloadOnStaleChunk swallowed its
+ *  failure and Vite resolved it to undefined, a promise that never settles:
+ *  the page is reloading, so there is nothing to render or run. */
+export function whileReloading<T>(mod: T | undefined): Promise<T> {
+  return mod === undefined ? new Promise<T>(() => {}) : Promise.resolve(mod)
 }

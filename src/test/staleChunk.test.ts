@@ -43,3 +43,29 @@ describe('reloadOnStaleChunk', () => {
     expect(e.defaultPrevented).toBe(false)
   })
 })
+
+// Error report #23: once a failure is swallowed, Vite resolves that import()
+// to undefined, and reading the module threw on the page being reloaded.
+describe('whileReloading', () => {
+  const settled = async (p: Promise<unknown>) => {
+    let done = false
+    p.then(() => { done = true }, () => { done = true })
+    await new Promise(r => setTimeout(r, 0))
+    return done
+  }
+
+  it('hands a loaded module straight on', async () => {
+    const { whileReloading } = await import('../lib/staleChunk')
+    const mod = { WeightsTab: () => null }
+    await expect(Promise.resolve(mod).then(whileReloading)).resolves.toBe(mod)
+  })
+
+  it('waits for the reload instead of reading a swallowed import', async () => {
+    const { whileReloading } = await import('../lib/staleChunk')
+    const swallowed = Promise.resolve(undefined as { WeightsTab: () => null } | undefined)
+    // The loader App.tsx used before: it rejects, and React shows the error.
+    expect(await settled(swallowed.then(m => ({ default: m!.WeightsTab })))).toBe(true)
+    const load = swallowed.then(whileReloading).then(m => ({ default: m.WeightsTab }))
+    expect(await settled(load)).toBe(false)
+  })
+})
