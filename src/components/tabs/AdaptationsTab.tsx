@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import { today } from '../../lib/utils'
+import { whileReloading } from '../../lib/staleChunk'
 import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, targetShape, GAP_CUTOFF } from '../../lib/adaptations'
 import { useHrMax } from '../../hooks/useHrMax'
 import {
@@ -22,9 +23,9 @@ import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL, coverageL
 // 14-day window as Home (031 §7 decision 1; 039 §6.6).
 // The rx and the per-muscle detail are T2 sheets, one tap away on the read.
 
-const RxSheet = lazy(() => import('./adaptations/RxSheet'))
-const MuscleListSheet = lazy(() => import('./adaptations/MuscleListSheet'))
-const MuscleSheet = lazy(() => import('./home/MuscleSheet'))
+const RxSheet = lazy(() => import('./adaptations/RxSheet').then(whileReloading))
+const MuscleListSheet = lazy(() => import('./adaptations/MuscleListSheet').then(whileReloading))
+const MuscleSheet = lazy(() => import('./home/MuscleSheet').then(whileReloading))
 
 type OpenSheet = { rx: Adaptation } | { list: true } | { muscle: string }
 

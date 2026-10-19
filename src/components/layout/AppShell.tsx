@@ -6,13 +6,14 @@ import { Drawer } from './Drawer'
 import { BottomNav } from './BottomNav'
 import { EnvBanner } from './EnvBanner'
 import { IS_PRODUCTION } from '../../lib/env'
+import { whileReloading } from '../../lib/staleChunk'
 
 // T2 — on intent (roadmap 018 unit 5). The edit form is reached from every
 // surface but only ever after a tap, so it is a lazy chunk prefetched on the
 // first pointer-down anywhere in the shell and mounted only while an edit is
 // open. Modal has no open/close transition, so conditional mounting is
 // equivalent to the old always-rendered form.
-const EditModal = lazy(() => import('../ui/EditModal').then(m => ({ default: m.EditModal })))
+const EditModal = lazy(() => import('../ui/EditModal').then(whileReloading).then(m => ({ default: m.EditModal })))
 
 const TAB_TITLES: Record<string, string> = {
   Home: 'Home',

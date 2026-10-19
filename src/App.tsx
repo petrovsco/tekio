@@ -5,16 +5,17 @@ import { HomeTab } from './components/tabs/home/HomeTab'
 import { HomeSkeleton } from './components/tabs/HomeSkeleton'
 import { dismissSplash } from './lib/splash'
 import { setScreen } from './lib/errorReport'
+import { whileReloading } from './lib/staleChunk'
 
 // T3 — on demand (design-system tier table, roadmap 018 unit 5). Everything
 // reached by an explicit destination change is a lazy chunk with no prefetch;
 // Home is the only tab in the initial chunk, because it is the whole
 // five-second answer. This is what keeps Recharts and dnd-kit out of T1.
-const AdaptationsTab = lazy(() => import('./components/tabs/AdaptationsTab').then(m => ({ default: m.AdaptationsTab })))
-const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').then(m => ({ default: m.WeightsTab })))
-const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(m => ({ default: m.CardioTab })))
-const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(m => ({ default: m.MobilityTab })))
-const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(m => ({ default: m.ProfileTab })))
+const AdaptationsTab = lazy(() => import('./components/tabs/AdaptationsTab').then(whileReloading).then(m => ({ default: m.AdaptationsTab })))
+const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').then(whileReloading).then(m => ({ default: m.WeightsTab })))
+const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(whileReloading).then(m => ({ default: m.CardioTab })))
+const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(whileReloading).then(m => ({ default: m.MobilityTab })))
+const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(whileReloading).then(m => ({ default: m.ProfileTab })))
 
 // Body Weight and Donations folded onto Home 2026-08-31 (doctrine §5,
 // roadmap 014): capture and correction moved into the T2 sheets, the

@@ -11,6 +11,7 @@ import { today, daysBetween, fmtSets, fmtAgo, lastNightDate } from '../../../lib
 import { RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
+import { whileReloading } from '../../../lib/staleChunk'
 import { coverageLine, coverageParts } from '../adaptations/labels'
 import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
@@ -26,10 +27,10 @@ import type { WholeBodyQuality } from './QualitySheet'
 // charts, no lazy detail. The sheets below are T2: lazy chunks, prefetched on
 // the first pointer-down anywhere on the surface.
 
-const FoldSheet = lazy(() => import('./FoldSheet'))
-const MuscleSheet = lazy(() => import('./MuscleSheet'))
-const RecoverySheet = lazy(() => import('./RecoverySheet'))
-const QualitySheet = lazy(() => import('./QualitySheet'))
+const FoldSheet = lazy(() => import('./FoldSheet').then(whileReloading))
+const MuscleSheet = lazy(() => import('./MuscleSheet').then(whileReloading))
+const RecoverySheet = lazy(() => import('./RecoverySheet').then(whileReloading))
+const QualitySheet = lazy(() => import('./QualitySheet').then(whileReloading))
 
 type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true } | { quality: WholeBodyQuality }
 
@@ -194,7 +195,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const hasOpenPlan = plans.some(p => p.date === date && !p.loggedAs)
   const [previewFn, setPreviewFn] = useState<{ run: typeof PlanPreviewFn } | null>(null)
   useEffect(() => {
-    if (hasOpenPlan && !previewFn) import('../../../lib/planPreview').then(m => setPreviewFn({ run: m.planPreview }))
+    if (hasOpenPlan && !previewFn) import('../../../lib/planPreview').then(whileReloading).then(m => setPreviewFn({ run: m.planPreview }))
   }, [hasOpenPlan, previewFn])
   const preview = useMemo(
     () => previewFn?.run({ plans, weights, exerciseMuscles, aliases: exerciseAliases, muscleGroups, date }) ?? null,
