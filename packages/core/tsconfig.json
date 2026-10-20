@@ -1,0 +1,21 @@
+{
+  // The reads type-check on their own, without the DOM: a browser global used
+  // here fails the build, which is how the package stays usable on a server.
+  "compilerOptions": {
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.core.tsbuildinfo",
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "types": []
+  },
+  "include": ["src"]
+}

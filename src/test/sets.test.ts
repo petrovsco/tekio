@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { setsProblem, liftSetProblem, parseSets, toSetStr, fmtSet } from '../lib/sets'
+import { setsProblem, liftSetProblem, parseSets, toSetStr, fmtSet } from '@tekio/core'
 import { isSetPR, bestOneRM } from '../lib/utils'
 
 describe('a set that cannot be stored blocks the save', () => {

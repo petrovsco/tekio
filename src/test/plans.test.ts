@@ -20,8 +20,8 @@ vi.mock('../lib/db/weights', () => ({
 }))
 
 const { useAppStore } = await import('../store/app')
-const { muscleStates } = await import('../lib/fusedRead')
-const { adaptationCoverage } = await import('../lib/adaptations')
+const { muscleStates } = await import('@tekio/core')
+const { adaptationCoverage } = await import('@tekio/core')
 
 const TODAY = '2026-08-30'
 const logged: WeightEntry = { id: 'se-1', date: TODAY, exercise: 'Curls', sets: [{ weight: 20, reps: 10 }] }

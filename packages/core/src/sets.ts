@@ -1,4 +1,4 @@
-import type { LiftSet } from '../types'
+import type { LiftSet } from './types'
 
 /**
  * A set as a form holds it. Inputs are strings — a half-typed "6" must survive

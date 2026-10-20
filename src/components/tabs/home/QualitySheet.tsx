@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import type { Adaptation, CardioEntry, EditModalTarget, SportEntry } from '../../../types'
 import { useAppStore } from '../../../store/app'
-import { muscleWindow } from '../../../lib/fusedRead'
-import { classifyCardioAdaptations, classifySportAdaptations, type AdaptationSummary } from '../../../lib/adaptations'
+import {
+  muscleWindow, classifyCardioAdaptations, classifySportAdaptations, type AdaptationSummary,
+  MUSCLE_WINDOW_DAYS, today, daysBetween,
+} from '@tekio/core'
 import { useHrMax } from '../../../hooks/useHrMax'
-import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
-import { today, daysBetween, fmtAgo, formatDurationMins, fmtDate } from '../../../lib/utils'
+import { fmtAgo, formatDurationMins, fmtDate } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { QUALITY_SHORT } from '../adaptations/labels'
 

@@ -2,7 +2,10 @@ import { useRef, useState } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
-import { today, startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN, fmtDate } from '../../lib/utils'
+import { today } from '@tekio/core'
+import {
+  startOfWeek, weeklyMuscleVolume, uniqSorted, WEEKLY_STRETCH_TARGET_MIN, fmtDate,
+} from '../../lib/utils'
 import { MICRO_LABEL } from '../ui/Badges'
 import { Card, SecTitle } from '../ui/Card'
 import { Inp, SelEl } from '../ui/Input'

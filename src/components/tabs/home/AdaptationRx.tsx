@@ -1,4 +1,4 @@
-import type { AdaptationRx as Rx } from '../../../constants/adaptations'
+import type { AdaptationRx as Rx } from '@tekio/core'
 
 const ROWS: [keyof Rx, string][] = [
   ['load', 'Load'],

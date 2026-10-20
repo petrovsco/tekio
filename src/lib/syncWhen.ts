@@ -1,4 +1,5 @@
-import { daysBetween, fmtDate } from './utils'
+import { daysBetween } from '@tekio/core'
+import { fmtDate } from './utils'
 
 // The time on Home's "Garmin · 08:02" line (RFC 0110), on the phone's clock.
 

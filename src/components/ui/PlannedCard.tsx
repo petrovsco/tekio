@@ -1,5 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
-import { today, daysBetween, fmtDate } from '../../lib/utils'
+import { today, daysBetween } from '@tekio/core'
+import { fmtDate } from '../../lib/utils'
 import { MISSED_PLAN_KEPT_DAYS } from '../../constants/app'
 import { Card } from './Card'
 import { FIELD_LABEL } from './Input'

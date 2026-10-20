@@ -1,7 +1,7 @@
 import { useAppStore } from '../../../store/app'
 import { PlannedCard, PlanChips } from '../../ui/PlannedCard'
 import type { PlannedExercise } from '../../../types'
-import { fmtSet } from '../../../lib/sets'
+import { fmtSet } from '@tekio/core'
 
 /**
  * The day's planned exercises (RFC 0098), above the log form. A plan is a

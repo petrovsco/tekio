@@ -1,7 +1,13 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
-import { today, lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate } from '../../../lib/utils'
+import {
+  today, toSetStr, toLiftSet, parseSets, setsProblem, liftSetProblem, rowFilled, fmtSet,
+  isTimedSet, type SetStr,
+} from '@tekio/core'
+import {
+  lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate,
+} from '../../../lib/utils'
 import { Card, SecTitle } from '../../ui/Card'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn, RowActions, YesNo, ACT_CHIP } from '../../ui/Button'
@@ -11,8 +17,6 @@ import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
 import { Icon } from '../../ui/Icon'
-import { toSetStr, toLiftSet, parseSets, setsProblem, liftSetProblem, rowFilled, fmtSet, isTimedSet } from '../../../lib/sets'
-import type { SetStr } from '../../../lib/sets'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
 import type { PlannedExercise, LiftSet } from '../../../types'

@@ -1,15 +1,12 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
-import { today } from '../../lib/utils'
-import { whileReloading } from '../../lib/staleChunk'
-import { adaptationCoverage, weightSetsIn, thresholdEnduranceCount, targetShape, GAP_CUTOFF } from '../../lib/adaptations'
-import { useHrMax } from '../../hooks/useHrMax'
 import {
-  muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps,
-  type MuscleQuality, type WholeBodyQuality,
-} from '../../lib/fusedRead'
-import { ADAPTATIONS } from '../../constants/adaptations'
-import { MUSCLE_WINDOW_DAYS } from '../../constants/app'
+  today, adaptationCoverage, weightSetsIn, thresholdEnduranceCount, targetShape, GAP_CUTOFF,
+  muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps, type MuscleQuality,
+  type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
+} from '@tekio/core'
+import { whileReloading } from '../../lib/staleChunk'
+import { useHrMax } from '../../hooks/useHrMax'
 import type { Adaptation } from '../../types'
 import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'

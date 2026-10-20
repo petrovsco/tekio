@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
-import { READINESS_METHODS, systemicReadiness, type ReadinessMethod, type SystemicReadiness } from '../../../lib/fusedRead'
-import { today } from '../../../lib/utils'
+import {
+  READINESS_METHODS, systemicReadiness, type ReadinessMethod, type SystemicReadiness, today,
+} from '@tekio/core'
 import { METHOD_LABEL, METHOD_NAME, METHOD_NEEDS, METHOD_COST, OVERNIGHT_SOURCES } from '../../../constants/readiness'
 import { Card, SecTitle } from '../../ui/Card'
 

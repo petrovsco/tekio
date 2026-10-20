@@ -1,4 +1,4 @@
-import type { CardioEntry, SportEntry } from '../types'
+import type { CardioEntry, SportEntry } from './types'
 import { today } from './utils'
 
 // Every number below is tekio.rfcs/rfcs/done/0059-profile-hrmax-typed-hr-path.md#grounding.

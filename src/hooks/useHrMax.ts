@@ -2,9 +2,8 @@ import { useMemo } from 'react'
 import { useAppStore } from '../store/app'
 import { usePrefs } from '../store/prefs'
 import {
-  observedHrMax, resolveHrMax, formulaHrMax, hrMaxProposal,
-  type ObservedHrMax, type HrMaxSource,
-} from '../lib/hrMax'
+  observedHrMax, resolveHrMax, formulaHrMax, hrMaxProposal, type ObservedHrMax, type HrMaxSource,
+} from '@tekio/core'
 
 export interface HrMaxRead {
   /** The replicated peak in the synced rows, whether or not the user has accepted it. */

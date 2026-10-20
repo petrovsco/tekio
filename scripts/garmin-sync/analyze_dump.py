@@ -1,5 +1,5 @@
 """Summarise a garmin-activities.json dump: structure, per-type stats, and what
-the app's current cardio classifier (src/lib/adaptations.ts) would make of it.
+the app's current cardio classifier (packages/core/src/adaptations.ts) would make of it.
 
 usage: python3 analyze_dump.py <dump.json> [csv-out]
 """
@@ -100,7 +100,7 @@ def classify_old(a):
     return out
 
 
-# --- classifier mirror, AFTER 005 (src/lib/adaptations.ts classifyCardioAdaptations) ---
+# --- classifier mirror, AFTER 005 (packages/core/src/adaptations.ts classifyCardioAdaptations) ---
 # Grounded 2026-09-06 — tekio.rfcs/grounding/005-hr-zone-intensity-classification.md.
 VO2MAX_Z5_MIN = 8          # minutes at >= 90 % HRmax (Garmin Z5) that make a session VO2max work
 ANAEROBIC_BOUT_MAX_S = 120 # an intervals row with work bouts <= 2 min is anaerobic capacity, longer is VO2max

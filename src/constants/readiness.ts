@@ -1,4 +1,4 @@
-import type { ReadinessMethod } from '../lib/fusedRead'
+import type { ReadinessMethod } from '@tekio/core'
 
 // The words for each readiness method (RFC 0092), shared by Profile, the
 // readiness sheet and Home so a method is called the same thing everywhere.

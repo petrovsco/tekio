@@ -1,12 +1,12 @@
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, DonationEntry,
   SleepEntry, ExerciseMuscleLink, MuscleGroup, LiftSet, ReadinessInput, CheckInAnswers,
-} from '../types'
+} from './types'
 import {
   RECOVER_DAYS, RECOVER_MIN_SETS, HRV_BAND_Z, CHECK_IN_BAND, RESTING_HR_NOTE, SHORT_NIGHT_HOURS,
   QUALITY_STALENESS_DAYS, MUSCLE_WINDOW_DAYS,
   MUSCLE_SET_TARGET, DONATION_SUPPRESSION, DONATION_ELIGIBILITY_DAYS,
-} from '../constants/app'
+} from './constants/reads'
 import { LEVEL_WEIGHT, today, daysBetween, groupBy } from './utils'
 import {
   classifyCardioAdaptations, classifySportAdaptations,

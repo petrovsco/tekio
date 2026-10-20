@@ -44,7 +44,7 @@ import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/read
 import { loadPlans, savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
 import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, pruneMissedSessionPlans, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
-import { daysAgo } from '../lib/utils'
+import { daysAgo } from '@tekio/core'
 import { MISSED_PLAN_KEPT_DAYS } from '../constants/app'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'

@@ -1,12 +1,11 @@
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
-import { startOfWeek, today, fmtDate } from '../../../lib/utils'
-import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
-  readinessTrend, HRV_BASELINE_DAYS,
-  type ReadinessMethod, type SystemicReadiness, type ReadinessTrend as Trend,
-} from '../../../lib/fusedRead'
-import { CHECK_IN_BAND } from '../../../constants/app'
+  today, readinessTrend, HRV_BASELINE_DAYS, type ReadinessMethod, type SystemicReadiness,
+  type ReadinessTrend as Trend, CHECK_IN_BAND,
+} from '@tekio/core'
+import { startOfWeek, fmtDate } from '../../../lib/utils'
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { CheckInAnswers, SleepEntry } from '../../../types'
 import { METHOD_NAME, CHECK_IN_ITEMS } from '../../../constants/readiness'
 import { BottomSheet, SheetHeader, CaptureLabel } from './BottomSheet'

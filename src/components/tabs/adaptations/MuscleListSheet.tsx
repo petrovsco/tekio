@@ -1,9 +1,9 @@
-import { rankMuscleGaps, type MuscleQuality, type MuscleState } from '../../../lib/fusedRead'
-import { MUSCLE_WINDOW_DAYS } from '../../../constants/app'
+import {
+  rankMuscleGaps, type MuscleQuality, type MuscleState, MUSCLE_WINDOW_DAYS, type TargetShape,
+} from '@tekio/core'
 import { BottomSheet, SheetHeader } from '../home/BottomSheet'
 import { RAMP, rampStep } from '../home/GapMap'
 import { QUALITY_SHORT, UNIT_LABEL } from './labels'
-import type { TargetShape } from '../../../lib/adaptations'
 import { fmtAgo, fmtSets } from '../../../lib/utils'
 
 // The per-muscle detail for the selected quality (roadmap 031 §3a, §7 decision

@@ -1,16 +1,15 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
-  muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, fusedVerdict, checkInTotal,
-  type MuscleState, type SystemicReadiness, type DonationStatus, type FusedVerdict, type ReadinessBand,
-  type Gauge,
-} from '../../../lib/fusedRead'
+  muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness, donationStatus,
+  fusedVerdict, checkInTotal, type MuscleState, type SystemicReadiness, type DonationStatus,
+  type FusedVerdict, type ReadinessBand, type Gauge, today, daysBetween, lastNightDate,
+  RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS, adaptationCoverage, coverageState,
+  GAP_CUTOFF,
+} from '@tekio/core'
 import { useHrMax } from '../../../hooks/useHrMax'
-import { today, daysBetween, fmtSets, fmtAgo, lastNightDate } from '../../../lib/utils'
-import { RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from '../../../constants/app'
+import { fmtSets, fmtAgo } from '../../../lib/utils'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
-import { adaptationCoverage, coverageState, GAP_CUTOFF } from '../../../lib/adaptations'
 import { whileReloading } from '../../../lib/staleChunk'
 import { coverageLine, coverageParts } from '../adaptations/labels'
 import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'

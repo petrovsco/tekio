@@ -70,11 +70,12 @@ file is still gated.
 
 | Where | Claims |
 |---|---|
-| [src/constants/app.ts](../../../src/constants/app.ts) | `CYCLE`, `DELOAD_WEEK`, `DELOAD_REP_FACTOR`, `WATER_GOAL_ML`, `DONATION_ELIGIBILITY_DAYS`, `DONATION_SUPPRESSION`, `RECOVER_DAYS`, `HRV_BAND_Z`, `QUALITY_STALENESS_DAYS`, `WEEKLY_SET_FLOOR`, `MUSCLE_WINDOW_DAYS`, `MUSCLE_SET_TARGET` |
-| [src/constants/adaptations.ts](../../../src/constants/adaptations.ts) | `weeklyMuscleTarget`, `weeklySessionTarget`, `repRange`, every `rx` field (load / reps / sets / rest / effort / **cue**), `ADAPTATION_PRINCIPLE`, `KEYWORD_ADAPTATION` |
-| [src/lib/adaptations.ts](../../../src/lib/adaptations.ts) | the cardio classifier's thresholds — `ENDURANCE_FLOOR_MIN`, `TE_STIMULUS_THRESHOLD`, `VO2MAX_Z5_MIN`, `ANAEROBIC_BOUT_MAX_S` |
-| [src/lib/utils.ts](../../../src/lib/utils.ts) | `LEVEL_WEIGHT`, and the 1RM estimators `epley1RM` / `brzycki1RM` / `estimate1RM` |
-| [src/lib/fusedRead.ts](../../../src/lib/fusedRead.ts) | the overnight HRV calculator — `HRV_ROLLING_DAYS`, `HRV_BASELINE_DAYS`, `MIN_HRV_BASELINE_NIGHTS`, `HRV_LN_SD_FLOOR` |
+| [packages/core/src/constants/reads.ts](../../../packages/core/src/constants/reads.ts) | `DONATION_ELIGIBILITY_DAYS`, `DONATION_SUPPRESSION`, `RECOVER_DAYS`, `RECOVER_MIN_SETS`, `HRV_BAND_Z`, `CHECK_IN_BAND`, `RESTING_HR_NOTE`, `SHORT_NIGHT_HOURS`, `QUALITY_STALENESS_DAYS`, `WEEKLY_SET_FLOOR`, `MUSCLE_WINDOW_DAYS`, `MUSCLE_SET_TARGET` |
+| [packages/core/src/constants/adaptations.ts](../../../packages/core/src/constants/adaptations.ts) | `weeklyMuscleTarget`, `weeklySessionTarget`, `repRange`, every `rx` field (load / reps / sets / rest / effort / **cue**), `ADAPTATION_PRINCIPLE`, `KEYWORD_ADAPTATION` |
+| [packages/core/src/adaptations.ts](../../../packages/core/src/adaptations.ts) | the cardio classifier's thresholds — `ENDURANCE_FLOOR_MIN`, `TE_STIMULUS_THRESHOLD`, `VO2MAX_Z5_MIN`, `ANAEROBIC_BOUT_MAX_S` |
+| [packages/core/src/utils.ts](../../../packages/core/src/utils.ts) | `LEVEL_WEIGHT` |
+| [src/lib/utils.ts](../../../src/lib/utils.ts) | the 1RM estimators `brzycki1RM` / `oneRM` / `bestOneRM` |
+| [packages/core/src/fusedRead.ts](../../../packages/core/src/fusedRead.ts) | the overnight HRV calculator — `HRV_ROLLING_DAYS`, `HRV_BASELINE_DAYS`, `MIN_HRV_BASELINE_NIGHTS`, `HRV_LN_SD_FLOOR` |
 | [src/components/tabs/home/HomeTab.tsx](../../../src/components/tabs/home/HomeTab.tsx) | `STEADY_NOTE`, the instruction a moderate readiness band gives the day |
 | `adaptation_targets` (DB) | seeded defaults and any migration that writes `weekly_muscle_target` / `weekly_session_target` |
 | Local recovery | hours-since-stimulus thresholds, volume-load decay |

@@ -1,7 +1,7 @@
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, GarminIntensity, ExerciseMuscleLink, MuscleGroup,
-} from '../types'
-import { ADAPTATIONS, ADAPTATION_MAP, defaultAdaptationForExercise } from '../constants/adaptations'
+} from './types'
+import { ADAPTATIONS, ADAPTATION_MAP, defaultAdaptationForExercise } from './constants/adaptations'
 import { LEVEL_WEIGHT, today, groupBy } from './utils'
 
 // ── Classification ─────────────────────────────────────────────────────────────

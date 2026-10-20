@@ -7,14 +7,14 @@ Two kinds of activity are synced, into two tables:
 - **cardio** (cycling / running / swimming / rowing, plus Garmin's `hiit`
   profile mapped by the modality in its name — roadmap 054) -> `cardio_sessions`,
   with the Training-Effect / HR-zone data the app uses to classify each session
-  into the right cardio adaptation (see src/lib/adaptations.ts:classifyCardioAdaptations).
+  into the right cardio adaptation (see packages/core/src/adaptations.ts:classifyCardioAdaptations).
   An intervals row also gets its work-bout length from the summary's
   `splitSummaries` (roadmap 005) — see _bout_seconds.
 - **sport** (tennis, volleyball, every team, racket, board and skill sport in
   Garmin's catalogue) -> `sport_sessions` (roadmap 041), with duration,
   average HR and — since roadmap 058 — the same Training-Effect / HR-zone data
   a cardio row carries, so the app reads a synced match through the same rules
-  (src/lib/adaptations.ts:classifySportAdaptations). Quality, competitors and
+  (packages/core/src/adaptations.ts:classifySportAdaptations). Quality, competitors and
   the result stay manual — Garmin cannot know them — so a synced row shows up
   as an entry still to be rated. A row 041 synced before those columns existed
   is backfilled by the next run that sees its activity (see plan_sport).

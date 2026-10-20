@@ -3,17 +3,15 @@ import type { LiftSet } from '../../../types'
 import { useAppStore } from '../../../store/app'
 import {
   muscleStates, muscleWeeklySets, muscleSources, muscleQualityMix, windowMuscleTarget,
-  HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource,
-} from '../../../lib/fusedRead'
-import { RECOVER_DAYS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR } from '../../../constants/app'
-import { today, fmtSets, fmtAgo, fmtDate } from '../../../lib/utils'
+  HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource, RECOVER_DAYS, MUSCLE_WINDOW_DAYS,
+  MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR, today, GAP_CUTOFF, targetShape, isTimedSet,
+} from '@tekio/core'
+import { fmtSets, fmtAgo, fmtDate } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
-import { GAP_CUTOFF, targetShape } from '../../../lib/adaptations'
 import { RAMP, rampStep } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
 import { EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor, isTimedName } from '../../../constants/exerciseCatalogue'
-import { isTimedSet } from '../../../lib/sets'
 import { MOVEMENT_PATTERNS, type PatternKey } from '../../../constants/movementPatterns'
 import { normaliseExerciseName as norm, resolveExerciseName } from '../../../lib/exerciseName'
 import { MovementQuestion } from '../weights/MovementQuestion'

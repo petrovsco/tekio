@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { today } from '../../../lib/utils'
+import { today, toSetStr, parseSets, setsProblem, isTimedSet, type SetStr } from '@tekio/core'
 import { BottomSheet } from '../home/BottomSheet'
 import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { SmartInput } from '../../ui/SmartInput'
 import { SetsGrid } from '../../ui/SetsGrid'
-import { toSetStr, parseSets, setsProblem, isTimedSet, type SetStr } from '../../../lib/sets'
 import { Chip } from '../../ui/Chip'
 import type { ExerciseAlias, PlannedExercise } from '../../../types'
 

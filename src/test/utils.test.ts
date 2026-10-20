@@ -1,5 +1,10 @@
 import { describe, it, expect, vi } from 'vitest'
-import { lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame, weekKey, grainForFrame, rollupCardio, hasLonePoint, daysBetween, groupBy, uniqSorted, fmtSets, fmtAgo, formatDurationMins, parseDurationMins, fmtDate, today, startOfWeek, lastNightDate } from '../lib/utils'
+import { daysBetween, groupBy, today, lastNightDate } from '@tekio/core'
+import {
+  lastPerformance, mergeById, oneRM, bestOneRM, isSetPR, weightsPickerNames, withinTimeFrame,
+  weekKey, grainForFrame, rollupCardio, hasLonePoint, uniqSorted, fmtSets, fmtAgo,
+  formatDurationMins, parseDurationMins, fmtDate, startOfWeek,
+} from '../lib/utils'
 import type { WeightEntry, ExerciseMuscleLink } from '../types'
 
 // ---------------------------------------------------------------------------

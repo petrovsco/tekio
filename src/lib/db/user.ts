@@ -1,8 +1,7 @@
 import { supabase } from '../supabase'
 import { userId } from '../session'
 import type { WeekStartDay } from '../utils'
-import type { HrMaxSource } from '../hrMax'
-import { READINESS_METHODS, type ReadinessMethod } from '../fusedRead'
+import { READINESS_METHODS, type ReadinessMethod, type HrMaxSource } from '@tekio/core'
 
 export async function getOrCreateUser(): Promise<void> {
   const { error } = await supabase
