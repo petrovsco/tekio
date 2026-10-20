@@ -116,7 +116,7 @@ the site's redeploy in step 4; their reasoning is
 
 ```bash
 npm run dev          # Start Vite dev server
-npm run build        # TypeScript check + Vite build
+npm run build        # TypeScript check + Vite build + the API bundle
 npm run typecheck    # Type-check only — `tsc -b`, both project configs, the check build runs
 npm run lint         # ESLint (flat config in eslint.config.js)
 npm run knip         # Dead files, exports and dependencies (knip.jsonc)
@@ -197,6 +197,22 @@ fails if one creeps in. The web app imports it from `@tekio/core`; the API of
 phone apps and the agent. The package is TypeScript source with no build step:
 Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 `src/test/`, in the one `npm run test`.
+
+### The API (`packages/api/`)
+
+`@tekio/api` ([packages/api/src/app.ts](packages/api/src/app.ts)) is the HTTP API of
+`tekio.rfcs/rfcs/0094-one-api-shared-core.md`: Hono with `@hono/zod-openapi`, so
+`/api/openapi.json` is generated from the route definitions. It serves the three reads,
+`GET /api/read/home`, `/api/read/adaptations` and `/api/read/readiness`, each taking
+`date`, the person's own day (a server cannot know it). A call carries the Supabase
+access token as a bearer token; the rows load through `loadReadRows` from `@tekio/db`
+with a client sending that token, so the database policies decide, while Supabase Auth
+checks the token. It runs as one Vercel function, [api/index.ts](api/index.ts), which
+`vercel.json` sends every `/api/*` address to, and the cookie gate in
+[middleware.ts](middleware.ts) skips `/api/`. Vercel cannot load the workspace packages
+as TypeScript source, so `npm run build` ends by bundling the API with esbuild into
+`api/_bundle.mjs` ([scripts/build-api.mjs](scripts/build-api.mjs)), which the function
+imports; the bundle is build output and is not committed.
 
 ### Data layer (`src/lib/db/`)
 
