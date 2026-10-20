@@ -1,5 +1,5 @@
 import type { WeightEntry, MobilityEntry, ExerciseMuscleLink } from '../types'
-import { today, daysBetween } from '@tekio/core'
+import { today, daysBetween, type WeekStartDay } from '@tekio/core'
 
 /** The distinct values of `xs`, sorted. The picker lists, the type chips and
  *  every autocomplete are derived this way — nine call sites wrote it inline. */
@@ -56,8 +56,6 @@ export function fmtDate(
   const day = weekday ? `${WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ` : ''
   return `${day}${d} ${MONTHS[m - 1]}${yearPart}`
 }
-
-export type WeekStartDay = 'sunday' | 'monday'
 
 /** Returns the date (YYYY-MM-DD) of the start of the week containing `s`. */
 export const startOfWeek = (s: string, weekStart: WeekStartDay = 'monday'): string => {

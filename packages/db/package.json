@@ -1,0 +1,12 @@
+{
+  "name": "@tekio/db",
+  "private": true,
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@supabase/postgrest-js": "^2.105.4",
+    "@tekio/core": "*"
+  }
+}

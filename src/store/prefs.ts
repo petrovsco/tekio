@@ -4,7 +4,7 @@ import { loadSectionConfig, updateSectionField, saveSectionConfig } from '../lib
 import {
   loadProfile, updateWeekStartDay, updateHrMax, updateBirthDate, updateReadinessMethod,
 } from '../lib/db/user'
-import type { WeekStartDay } from '../lib/utils'
+import type { WeekStartDay } from '@tekio/core'
 import type { HrMaxSource, ReadinessMethod } from '@tekio/core'
 
 interface PrefsStore {

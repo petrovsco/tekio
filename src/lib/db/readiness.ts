@@ -2,42 +2,14 @@ import { supabase } from '../supabase'
 import { userId } from '../session'
 import type { ReadinessInput, CheckInAnswers } from '../../types'
 import { withOrigin } from '../env'
-import { userRows } from './_rows'
+import { appDb } from './_rows'
+import { READINESS_COLS as COLS, mapReadinessRow as mapRow, loadReadinessInputs as dbLoadReadinessInputs, type ReadinessRow } from '@tekio/db'
 
 // ── Typed readiness inputs (readiness_inputs, RFC 0092) ─────────────────────
 // One row per morning. A save writes only its own columns, so typing the
 // morning HRV never clears a check-in on the same day, and the other way round.
 
-type ReadinessRow = {
-  id: string
-  log_date: string
-  morning_hrv: number | string | null
-  energy: number | null
-  soreness: number | null
-  sleep_quality: number | null
-  stress: number | null
-  mood: number | null
-}
-
-const COLS = 'id, log_date, morning_hrv, energy, soreness, sleep_quality, stress, mood'
-
-function mapRow(r: ReadinessRow): ReadinessInput {
-  const complete = r.energy != null && r.soreness != null && r.sleep_quality != null
-    && r.stress != null && r.mood != null
-  return {
-    id: r.id,
-    date: r.log_date,
-    morningHrv: r.morning_hrv != null ? Number(r.morning_hrv) : undefined,
-    checkIn: complete
-      ? { energy: r.energy!, soreness: r.soreness!, sleepQuality: r.sleep_quality!, stress: r.stress!, mood: r.mood! }
-      : undefined,
-  }
-}
-
-export async function loadReadinessInputs(): Promise<ReadinessInput[]> {
-  const rows = await userRows('readiness_inputs', COLS, 'log_date')
-  return rows.map(mapRow)
-}
+export const loadReadinessInputs = (): Promise<ReadinessInput[]> => dbLoadReadinessInputs(appDb())
 
 async function upsertDay(date: string, cols: Record<string, number>): Promise<ReadinessInput> {
   const { data, error } = await supabase

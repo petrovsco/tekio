@@ -1,40 +1,12 @@
 import { supabase } from '../supabase'
 import { userId } from '../session'
-import type { SleepEntry, SaunaEntry, ColdEntry, SleepQuality } from '../../types'
+import type { SleepEntry, SaunaEntry, ColdEntry } from '../../types'
 import { withOrigin } from '../env'
-import { userRows, deleteRow } from './_rows'
+import { appDb, userRows, deleteRow } from './_rows'
+import { SLEEP_COLS, mapSleep, loadSleep as dbLoadSleep, type SleepRow } from '@tekio/db'
 
 // ── Sleep (sleep_logs: log_date / duration_hours / quality) ─────────────────
-
-type SleepRow = {
-  id: string
-  log_date: string
-  duration_hours: number | string | null
-  quality: number | null
-  sleep_score: number | null
-  sleep_score_qualifier: string | null
-  hrv: number | null
-  resting_hr: number | null
-  source: string | null
-  notes: string | null
-}
-
-const SLEEP_COLS = 'id, log_date, duration_hours, quality, sleep_score, sleep_score_qualifier, hrv, resting_hr, source, notes'
-
-function mapSleep(r: SleepRow): SleepEntry {
-  return {
-    id: r.id,
-    date: r.log_date,
-    hours: r.duration_hours != null ? Number(r.duration_hours) : 0,
-    quality: r.quality != null ? (r.quality as SleepQuality) : undefined,
-    score: r.sleep_score != null ? Number(r.sleep_score) : undefined,
-    scoreQualifier: r.sleep_score_qualifier ?? undefined,
-    hrv: r.hrv != null ? Number(r.hrv) : undefined,
-    restingHr: r.resting_hr != null ? Number(r.resting_hr) : undefined,
-    source: r.source === 'garmin' ? 'garmin' : 'manual',
-    notes: r.notes ?? undefined,
-  }
-}
+// Read and mapped in `@tekio/db`; the writes are here.
 
 /** The columns a save and an update both write. Deliberately not `sleep_score`,
  *  `hrv` or `resting_hr`: those are Garmin's and a typed night must not clear
@@ -46,10 +18,7 @@ const sleepRow = (entry: Omit<SleepEntry, 'id'>) => ({
   notes: entry.notes ?? null,
 })
 
-export async function loadSleep(): Promise<SleepEntry[]> {
-  const rows = await userRows('sleep_logs', SLEEP_COLS, 'log_date')
-  return rows.map(mapSleep)
-}
+export const loadSleep = (): Promise<SleepEntry[]> => dbLoadSleep(appDb())
 
 export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<SleepEntry> {
   // Upsert on the per-night key: if the daily Garmin sync already created this

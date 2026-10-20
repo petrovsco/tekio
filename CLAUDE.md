@@ -200,7 +200,7 @@ Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 
 ### Data layer (`src/lib/db/`)
 
-One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. Key points:
+One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. The loaders the reads stand on (weights, cardio, sport, sleep, donations, readiness inputs, muscles, adaptation targets, the profile) and their row ↔ entry mappers live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument so the API can load the same rows with the caller's token; the files here call them with `appDb()` from [_rows.ts](src/lib/db/_rows.ts) and keep the writes. Key points:
 
 - **Weights** ([src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExerciseRow`. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`.
 - **Section config** ([src/lib/db/sectionConfig.ts](src/lib/db/sectionConfig.ts)): `user_section_config` table. On first load, defaults are seeded via upsert with `ignoreDuplicates: true`.

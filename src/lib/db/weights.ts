@@ -6,7 +6,8 @@ import { withOrigin } from '../env'
 // One resolver for every write path (roadmap 044) — a second copy here is how
 // the alias fix would silently miss half the ways a set gets logged.
 import { getOrCreateExerciseRow } from './exercises'
-import { userRows, deleteRow } from './_rows'
+import { appDb, deleteRow } from './_rows'
+import { loadWeights as dbLoadWeights } from '@tekio/db'
 import { liftSetProblem } from '@tekio/core'
 import { KnownError } from '../errorReport'
 
@@ -56,40 +57,7 @@ async function deleteSessionIfEmpty(sessionId: string): Promise<void> {
   }
 }
 
-export async function loadWeights(): Promise<WeightEntry[]> {
-  const sessions = await userRows(
-    'training_sessions',
-    'session_date, session_exercises(id, sort_order, superset_group_id, exercises(name), session_sets(set_number, weight, reps, duration_s))',
-    'session_date',
-  )
-
-  const entries: WeightEntry[] = []
-  for (const session of sessions) {
-    const exercises = (session.session_exercises ?? []) as unknown as {
-      id: string
-      sort_order: number
-      superset_group_id: string | null
-      exercises: { name: string } | null
-      session_sets: { set_number: number; weight: number; reps: number; duration_s: number | null }[]
-    }[]
-
-    const sorted = [...exercises].sort((a, b) => a.sort_order - b.sort_order)
-    for (const se of sorted) {
-      const sets: LiftSet[] = [...(se.session_sets ?? [])]
-        .sort((a, b) => a.set_number - b.set_number)
-        .map(s => ({ weight: Number(s.weight), reps: s.reps, ...(s.duration_s != null ? { seconds: s.duration_s } : {}) }))
-
-      entries.push({
-        id: se.id,
-        date: session.session_date,
-        exercise: se.exercises?.name ?? '',
-        sets,
-        ...(se.superset_group_id ? { supersetId: se.superset_group_id } : {}),
-      })
-    }
-  }
-  return entries
-}
+export const loadWeights = () => dbLoadWeights(appDb())
 
 /** `linked` is true when this save created the exercise and wrote its muscle
  *  links (RFC 0074), so the caller knows the muscle read must be reloaded. */

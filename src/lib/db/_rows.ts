@@ -2,30 +2,18 @@
 // not a repository layer — CLAUDE.md's "no ORM, no repository abstraction" still
 // holds: each domain keeps its own columns, its own row ↔ entry mapping and its
 // own writes. Only the plumbing that was identical in ten files lives here.
+import { userRows as dbUserRows, type Db } from '@tekio/db'
 import { supabase } from '../supabase'
 import { userId } from '../session'
 
-/**
- * This user's rows from `table`, newest first.
- *
- * `cols` is generic over its own literal type on purpose. PostgREST parses the
- * select string at the *type* level to give the returned rows their column
- * names, and a parameter typed plain `string` collapses that to
- * `GenericStringError` — every `r.some_column` in the callers would stop
- * compiling. Passing the literal through a type parameter keeps the checking
- * the inline queries had, which is why `cols` must stay a literal at the call
- * site (a concatenation is just `string` again).
- *
- * `dateCol` is optional because one caller — `loadSportTypes` — reads a lookup
- * table that has no date to sort by.
- */
-export async function userRows<Q extends string>(table: string, cols: Q, dateCol?: string) {
-  let q = supabase.from(table).select(cols).eq('user_id', userId())
-  if (dateCol) q = q.order(dateCol, { ascending: false })
-  const { data, error } = await q
-  if (error) throw error
-  return data ?? []
-}
+/** The app's own reader: its client, and the signed-in id, read when a query
+ *  runs rather than when this is called, as `userId()` always was. */
+export const appDb = (): Db => ({ client: supabase, get userId() { return userId() } })
+
+/** This user's rows from `table`, newest first — `userRows` in `@tekio/db`,
+ *  which says why `cols` must stay a literal at the call site. */
+export const userRows = <Q extends string>(table: string, cols: Q, dateCol?: string) =>
+  dbUserRows(appDb(), table, cols, dateCol)
 
 /** Delete one row by primary key, throwing on failure. */
 export async function deleteRow(table: string, id: string): Promise<void> {

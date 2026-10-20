@@ -1,23 +1,9 @@
 import { supabase } from '../supabase'
 import { userId } from '../session'
-import { DONATION_TYPE_MAP, DONATION_TYPE_REVERSE } from '../../constants/app'
+import { DONATION_TYPE_MAP, DONATION_COLS as COLS, toDonationEntry as toEntry, loadDonations as dbLoadDonations } from '@tekio/db'
 import type { DonationEntry } from '../../types'
 import { withOrigin } from '../env'
-import { userRows, deleteRow } from './_rows'
-
-const COLS = 'id, donation_date, donation_type, notes'
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function toEntry(r: any): DonationEntry {
-  return {
-    id: r.id,
-    date: r.donation_date,
-    // The fallback is for a column value the app's own list has no name for.
-    type: (DONATION_TYPE_REVERSE[r.donation_type] ?? r.donation_type) as DonationEntry['type'],
-    notes: r.notes ?? '',
-  }
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */
+import { appDb, deleteRow } from './_rows'
 
 /** The columns a save and an update both write. `entry.type` is a closed union,
  *  so the map covers it and no fallback is reachable on the way in. */
@@ -27,10 +13,7 @@ const toRow = (entry: Omit<DonationEntry, 'id'>) => ({
   notes: entry.notes ?? null,
 })
 
-export async function loadDonations(): Promise<DonationEntry[]> {
-  const rows = await userRows('blood_donations', COLS, 'donation_date')
-  return rows.map(toEntry)
-}
+export const loadDonations = (): Promise<DonationEntry[]> => dbLoadDonations(appDb())
 
 export async function saveDonationEntry(entry: Omit<DonationEntry, 'id'>): Promise<DonationEntry> {
   const { data, error } = await supabase
