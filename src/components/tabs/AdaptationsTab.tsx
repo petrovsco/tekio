@@ -1,12 +1,10 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import {
-  today, adaptationCoverage, weightSetsIn, thresholdEnduranceCount, targetShape, GAP_CUTOFF,
-  muscleQualityStates, muscleWindow, qualityStates, rankMuscleGaps, type MuscleQuality,
-  type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
+  today, adaptationsRead, type MuscleQuality, type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
 } from '@tekio/core'
 import { whileReloading } from '../../lib/staleChunk'
-import { useHrMax } from '../../hooks/useHrMax'
+import { useReadRows } from '../../hooks/useReadRows'
 import type { Adaptation } from '../../types'
 import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'
@@ -40,13 +38,7 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
   const weights = useAppStore(s => s.weights)
   const cardio = useAppStore(s => s.cardio)
   const sports = useAppStore(s => s.sports)
-  const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
-  const muscleGroups = useAppStore(s => s.muscleGroups)
-  const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
-  const adaptationTargets = useAppStore(s => s.adaptationTargets)
-  const { hrMax } = useHrMax()
   const date = today()
-  const { from } = muscleWindow(date)
 
   // Default: hypertrophy — the quality Home's floor is grounded on (010 D10),
   // so the first picture is the one closest to Home's (031 §7 decision 3).
@@ -61,42 +53,16 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
     import('./home/MuscleSheet')
   }
 
-  const coverage = useMemo(
-    () => adaptationCoverage({
-      weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, windowDays: MUSCLE_WINDOW_DAYS,
-      overrides: exerciseAdaptations, targets: adaptationTargets, hrMax,
-    }),
-    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
-  )
-
-  const shape = useMemo(() => targetShape(quality, adaptationTargets), [quality, adaptationTargets])
-  const states = useMemo(
-    () => muscleQualityStates(weights, exerciseMuscles, muscleGroups, quality, shape, exerciseAdaptations, date),
-    [weights, exerciseMuscles, muscleGroups, quality, shape, exerciseAdaptations, date],
-  )
-  const gaps = useMemo(
-    () => rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF),
-    [states],
-  )
-  const wholeBody = useMemo(() => qualityStates(cardio, sports, date), [cardio, sports, date])
+  // One call shared with the API (RFC 0094 step 2b): the coverage behind the
+  // header line, and the map for the picked quality.
+  const rows = useReadRows()
+  const read = useMemo(() => adaptationsRead(rows, quality, date), [rows, quality, date])
+  const { coverage, shape, muscles: states, gaps, qualities: wholeBody, liftingSets, cardioSessions, atThreshold } = read
 
   const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
   const onTarget = ADAPTATIONS.filter(a => coverage[a.key].met).length
-  // Each set once — the four lifting volumes overlap (039 §6.0); each session
-  // once — a Garmin ride can feed two qualities (031 §7 decision 6).
-  const liftingSets = weightSetsIn(weights, from, date)
-  const inWindow = (d: string) => d >= from && d <= date
-  const cardioSessions = cardio.filter(c => inWindow(c.date)).length + sports.filter(s => inWindow(s.date)).length
-
   // The same sentence Home prints under its map — one helper, one split (062).
   const sub = coverageLine(coverage, MUSCLE_WINDOW_DAYS)
-
-  // Threshold sessions are a count inside the endurance band, never a band of
-  // their own — the seven stay seven (roadmap 057).
-  const atThreshold = useMemo(
-    () => thresholdEnduranceCount(cardio, sports, from, date, hrMax),
-    [cardio, sports, from, date, hrMax],
-  )
 
   const bands: SpectrumBand[] = SPECTRUM_QUALITIES.map(key => {
     const q = wholeBody.find(s => s.key === key)
