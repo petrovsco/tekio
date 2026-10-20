@@ -2,13 +2,13 @@
 // reaches every type through this one module.
 import type {
   LiftSet, WeightEntry, CardioType, CardioFormat, CardioEntry,
-  Adaptation, BodyRegion, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
+  Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
 } from '@tekio/core'
 
 export type {
   LiftSet, WeightEntry, CardioType, CardioFormat, CardioEntry,
-  Adaptation, BodyRegion, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
+  Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
 }
 

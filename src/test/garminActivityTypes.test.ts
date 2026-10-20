@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import catalogue from '../../scripts/garmin-sync/activity_types.json'
-import { CARDIO_TYPE_MAP } from '../constants/app'
+import { CARDIO_TYPE_MAP } from '@tekio/db'
 
 // tekio.rfcs/rfcs/done/0073-garmin-sync-every-activity-type.md: every type in
 // Garmin's catalogue is decided up front, so a sport never played before syncs

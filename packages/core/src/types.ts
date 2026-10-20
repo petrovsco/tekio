@@ -188,3 +188,6 @@ export interface ReadinessInput {
   morningHrv?: number
   checkIn?: CheckInAnswers
 }
+
+/** The day a calendar week starts on, the user's choice in Profile. */
+export type WeekStartDay = 'sunday' | 'monday'

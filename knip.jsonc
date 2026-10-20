@@ -25,6 +25,12 @@
     "packages/core": {
       "project": ["src/**/*.ts"],
       "includeEntryExports": true
+    },
+
+    // The row loaders the reads stand on (RFC 0094 step 2a), read the same way.
+    "packages/db": {
+      "project": ["src/**/*.ts"],
+      "includeEntryExports": true
     }
   },
 

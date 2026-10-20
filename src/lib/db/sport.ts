@@ -1,40 +1,9 @@
 import { supabase } from '../supabase'
 import { userId } from '../session'
-import type { SportEntry, SportTypeInfo, NewSportFlags, QualityRating, MatchResult } from '../../types'
+import type { SportEntry, SportTypeInfo, NewSportFlags } from '../../types'
 import { withOrigin } from '../env'
-import { userRows, deleteRow } from './_rows'
-
-// One literal on purpose: PostgREST parses the select string at the type level,
-// and a concatenation is just `string`, which costs the returned rows their
-// column names.
-const COLS = 'id, session_date, with_trainer, quality, duration_minutes, avg_heart_rate, notes, competitor_names, result, teammate_names, source, garmin_activity_id, max_heart_rate, aerobic_te, anaerobic_te, training_effect_label, training_load, zone_distribution, sport_types(name)'
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
-function toEntry(r: any): SportEntry {
-  return {
-    id: r.id,
-    date: r.session_date,
-    sport: ((r.sport_types as { name: string } | null)?.name ?? '') as SportEntry['sport'],
-    withTrainer: r.with_trainer,
-    quality: (r.quality ?? 0) as QualityRating,
-    duration: r.duration_minutes != null ? Number(r.duration_minutes) : undefined,
-    avgHr: r.avg_heart_rate != null ? Number(r.avg_heart_rate) : undefined,
-    notes: r.notes ?? '',
-    competitorNames: r.competitor_names ?? undefined,
-    result: (r.result ?? undefined) as MatchResult | undefined,
-    teammateNames: r.teammate_names ?? undefined,
-    source: (r.source ?? 'manual') as SportEntry['source'],
-    garminActivityId: r.garmin_activity_id ?? undefined,
-    // The Garmin intensity columns (roadmap 058) — written by the sync only, never typed.
-    maxHr: r.max_heart_rate != null ? Number(r.max_heart_rate) : undefined,
-    aerobicTe: r.aerobic_te != null ? Number(r.aerobic_te) : undefined,
-    anaerobicTe: r.anaerobic_te != null ? Number(r.anaerobic_te) : undefined,
-    trainingEffectLabel: r.training_effect_label ?? undefined,
-    trainingLoad: r.training_load != null ? Number(r.training_load) : undefined,
-    zoneDistribution: Array.isArray(r.zone_distribution) ? r.zone_distribution.map(Number) : undefined,
-  }
-}
-/* eslint-enable @typescript-eslint/no-explicit-any */
+import { appDb, userRows, deleteRow } from './_rows'
+import { SPORT_COLS as COLS, toSportEntry as toEntry, loadSports as dbLoadSports } from '@tekio/db'
 
 /** The columns a save and an update both write. The sport itself travels as a
  *  foreign key, so the caller resolves it first. */
@@ -81,10 +50,7 @@ export async function loadSportTypes(): Promise<SportTypeInfo[]> {
   return rows.map(r => ({ name: r.name, hasCompetitor: r.has_competitor, hasTeammate: r.has_teammate }))
 }
 
-export async function loadSports(): Promise<SportEntry[]> {
-  const rows = await userRows('sport_sessions', COLS, 'session_date')
-  return rows.map(toEntry)
-}
+export const loadSports = (): Promise<SportEntry[]> => dbLoadSports(appDb())
 
 export async function saveSportEntry(
   entry: Omit<SportEntry, 'id'>,
