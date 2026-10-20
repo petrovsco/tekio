@@ -99,13 +99,17 @@ export default async function middleware(request: Request): Promise<Response> {
   const authPass = process.env.BASIC_AUTH_PASSWORD ?? ''
   const token = btoa(`${authUser}:${authPass}`)
 
+  const url = new URL(request.url)
+
   // Already authenticated via session cookie
   const cookies = request.headers.get('cookie') ?? ''
   if (cookies.split(';').some(c => c.trim() === `${COOKIE}=${token}`)) {
+    // The form posted by someone the gate already knows. The app itself never
+    // posts to its own origin, and a POST passed on to the static files comes
+    // back as an empty 405 — a blank page that reloading only re-posts.
+    if (request.method === 'POST') return redirectBack(url)
     return next()
   }
-
-  const url = new URL(request.url)
 
   // Handle login form submission (POST to any path — same URL)
   if (request.method === 'POST') {
@@ -116,13 +120,7 @@ export default async function middleware(request: Request): Promise<Response> {
 
     if (u === authUser && p === authPass) {
       // Correct — set cookie and redirect back to the requested page
-      return new Response(null, {
-        status: 302,
-        headers: {
-          Location: url.pathname + url.search,
-          'Set-Cookie': `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=86400`,
-        },
-      })
+      return redirectBack(url, `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`)
     }
 
     // Wrong credentials
@@ -137,4 +135,15 @@ export default async function middleware(request: Request): Promise<Response> {
     status: 401,
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
   })
+}
+
+/** Back to the page that was asked for, as a GET. The browser keeps the
+ *  address's #fragment across the redirect, which is where a sign-in link
+ *  carries its tokens (RFC 0003). The cookie is Lax, not Strict, so that link —
+ *  a top-level visit from a mail app — carries it and skips this gate; Lax
+ *  still withholds it from a POST sent by another site. */
+function redirectBack(url: URL, setCookie?: string): Response {
+  const headers = new Headers({ Location: url.pathname + url.search })
+  if (setCookie) headers.set('Set-Cookie', setCookie)
+  return new Response(null, { status: 303, headers })
 }
