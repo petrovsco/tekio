@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import { getOrCreateExerciseRow } from './exercises'
 import type { MobilityEntry } from '../../types'
 import { withOrigin } from '../env'
@@ -98,7 +98,7 @@ export async function saveMobilityEntry(entry: Omit<MobilityEntry, 'id'>): Promi
   const totalDuration = entry.exercises.reduce((s, e) => s + e.duration, 0)
   const { data: session, error: sessionErr } = await supabase
     .from('mobility_sessions')
-    .insert(withOrigin({ user_id: USER_ID, session_date: entry.date, total_duration: totalDuration }))
+    .insert(withOrigin({ user_id: userId(), session_date: entry.date, total_duration: totalDuration }))
     .select('id')
     .single()
   if (sessionErr) throw sessionErr

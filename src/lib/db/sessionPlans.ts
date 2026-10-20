@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { PlannedSession, PlannedKind, CardioFormat, PlannedStretch } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -95,11 +95,11 @@ export async function saveSessionPlan(plan: SessionPlanPatch): Promise<PlannedSe
   const { count } = await supabase
     .from('planned_sessions')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('plan_date', plan.date)
   const { data, error } = await supabase
     .from('planned_sessions')
-    .insert(withOrigin({ user_id: USER_ID, ...toColumns(plan), sort_order: count ?? 0, planned_by: 'user' }))
+    .insert(withOrigin({ user_id: userId(), ...toColumns(plan), sort_order: count ?? 0, planned_by: 'user' }))
     .select(COLS)
     .single()
   if (error) throw error
@@ -127,7 +127,7 @@ export async function pruneMissedSessionPlans(day: string): Promise<void> {
   const { error } = await supabase
     .from('planned_sessions')
     .delete()
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .lt('plan_date', day)
     .is('cardio_session_id', null)
     .is('sport_session_id', null)

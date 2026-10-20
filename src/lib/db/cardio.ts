@@ -1,5 +1,6 @@
 import { supabase } from '../supabase'
-import { USER_ID, CARDIO_TYPE_MAP, CARDIO_TYPE_REVERSE } from '../../constants/app'
+import { userId } from '../session'
+import { CARDIO_TYPE_MAP, CARDIO_TYPE_REVERSE } from '../../constants/app'
 import type { CardioEntry } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -58,7 +59,7 @@ export async function loadCardio(): Promise<CardioEntry[]> {
 export async function saveCardioEntry(entry: Omit<CardioEntry, 'id'>): Promise<CardioEntry> {
   const { data, error } = await supabase
     .from('cardio_sessions')
-    .insert(withOrigin({ user_id: USER_ID, ...toRow(entry) }))
+    .insert(withOrigin({ user_id: userId(), ...toRow(entry) }))
     .select(COLS)
     .single()
   if (error) throw error

@@ -6,6 +6,7 @@ import { HomeSkeleton } from './components/tabs/HomeSkeleton'
 import { dismissSplash } from './lib/splash'
 import { setScreen } from './lib/errorReport'
 import { whileReloading } from './lib/staleChunk'
+import { startSession, onSignedOut } from './lib/session'
 
 // T3 — on demand (design-system tier table, roadmap 018 unit 5). Everything
 // reached by an explicit destination change is a lazy chunk with no prefetch;
@@ -16,6 +17,8 @@ const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').the
 const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(whileReloading).then(m => ({ default: m.CardioTab })))
 const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(whileReloading).then(m => ({ default: m.MobilityTab })))
 const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(whileReloading).then(m => ({ default: m.ProfileTab })))
+// Only a signed-out start ever draws it (RFC 0003).
+const SignIn = lazy(() => import('./components/layout/SignIn').then(whileReloading).then(m => ({ default: m.SignIn })))
 
 // Body Weight and Donations folded onto Home 2026-08-31 (doctrine §5,
 // roadmap 014): capture and correction moved into the T2 sheets, the
@@ -54,9 +57,29 @@ export default function App() {
   const [focusMuscle, setFocusMuscle] = useState<string | null>(null)
   const loading = useAppStore(s => s.loading)
   const bootstrap = useAppStore(s => s.bootstrap)
+  // RFC 0003: nothing loads before someone is signed in. Undefined while the
+  // session is being read, which for a returning visitor is one storage read.
+  const [session, setSession] = useState<{ signedIn: boolean; linkError?: string }>()
 
-  useEffect(() => { bootstrap() }, [])
+  useEffect(() => {
+    startSession().then(s => {
+      setSession(s)
+      if (s.signedIn) bootstrap()
+    })
+    // Signed out here or in another tab: start again from a clean page, so no
+    // one's rows stay in memory behind the sign-in screen.
+    return onSignedOut(() => window.location.reload())
+  }, [])
   useEffect(() => { if (!loading) dismissSplash() }, [loading])
+
+  if (session && !session.signedIn) {
+    return (
+      <Suspense fallback={null}>
+        <SignedOutSplash />
+        <SignIn linkError={session.linkError} />
+      </Suspense>
+    )
+  }
 
   const go = (t: string, muscle?: string) => {
     setScreen(t)
@@ -81,4 +104,11 @@ export default function App() {
       )}
     </AppShell>
   )
+}
+
+/** The splash waits for bootstrap; a signed-out start has none, so it goes
+ *  the moment the sign-in screen is drawn. */
+function SignedOutSplash() {
+  useEffect(() => { dismissSplash() }, [])
+  return null
 }

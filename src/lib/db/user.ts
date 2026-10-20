@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { WeekStartDay } from '../utils'
 import type { HrMaxSource } from '../hrMax'
 import { READINESS_METHODS, type ReadinessMethod } from '../fusedRead'
@@ -8,7 +8,7 @@ export async function getOrCreateUser(): Promise<void> {
   const { error } = await supabase
     .from('user_profiles')
     .upsert(
-      { id: USER_ID, units: 'metric', progression_model: 'volume', timezone: 'UTC', week_start_day: 'monday' },
+      { id: userId(), units: 'metric', progression_model: 'volume', timezone: 'UTC', week_start_day: 'monday' },
       { onConflict: 'id', ignoreDuplicates: true }
     )
   if (error) throw error
@@ -31,7 +31,7 @@ export async function loadProfile(): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('user_profiles')
     .select('week_start_day, hr_max_override, hr_max_source, birth_date, readiness_method')
-    .eq('id', USER_ID)
+    .eq('id', userId())
     .single()
   if (error) throw error
   const hrMax = data.hr_max_override == null ? null : Number(data.hr_max_override)
@@ -52,7 +52,7 @@ export async function updateWeekStartDay(value: WeekStartDay): Promise<void> {
   const { error } = await supabase
     .from('user_profiles')
     .update({ week_start_day: value })
-    .eq('id', USER_ID)
+    .eq('id', userId())
   if (error) throw error
 }
 
@@ -61,7 +61,7 @@ export async function updateHrMax(value: number | null, source: HrMaxSource): Pr
   const { error } = await supabase
     .from('user_profiles')
     .update({ hr_max_override: value, hr_max_source: value == null ? null : source })
-    .eq('id', USER_ID)
+    .eq('id', userId())
   if (error) throw error
 }
 
@@ -69,7 +69,7 @@ export async function updateBirthDate(value: string | null): Promise<void> {
   const { error } = await supabase
     .from('user_profiles')
     .update({ birth_date: value })
-    .eq('id', USER_ID)
+    .eq('id', userId())
   if (error) throw error
 }
 
@@ -77,6 +77,6 @@ export async function updateReadinessMethod(value: ReadinessMethod | null): Prom
   const { error } = await supabase
     .from('user_profiles')
     .update({ readiness_method: value })
-    .eq('id', USER_ID)
+    .eq('id', userId())
   if (error) throw error
 }

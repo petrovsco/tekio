@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { WeightEntry, LiftSet } from '../../types'
 import type { PatternKey } from '../../constants/movementPatterns'
 import { withOrigin } from '../env'
@@ -26,7 +26,7 @@ async function getOrCreateSession(date: string): Promise<{ id: string; exercises
   const { data: existing } = await supabase
     .from('training_sessions')
     .select('id, session_exercises(count)')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('session_date', date)
     .maybeSingle()
   if (existing) {
@@ -36,7 +36,7 @@ async function getOrCreateSession(date: string): Promise<{ id: string; exercises
 
   const { data, error } = await supabase
     .from('training_sessions')
-    .insert(withOrigin({ user_id: USER_ID, session_date: date }))
+    .insert(withOrigin({ user_id: userId(), session_date: date }))
     .select('id')
     .single()
   if (error) throw error

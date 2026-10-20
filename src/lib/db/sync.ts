@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import { KnownError } from '../errorReport'
 
 // ── Garmin sync runs (sync_runs, RFC 0110) ─────────────────────────────────
@@ -34,7 +34,7 @@ export async function loadLastGarminSync(): Promise<SyncRun | null> {
   const { data, error } = await supabase
     .from('sync_runs')
     .select(COLS)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('provider', 'garmin')
     .eq('status', 'ok')
     .order('finished_at', { ascending: false })
@@ -46,7 +46,7 @@ export async function loadLastGarminSync(): Promise<SyncRun | null> {
 /** Ask for a run now. Returns the run already open when one is (the function
  *  will not start two), else the new one. */
 export async function requestGarminSync(): Promise<SyncRun> {
-  const { data, error } = await supabase.rpc('request_garmin_sync', { p_user_id: USER_ID })
+  const { data, error } = await supabase.rpc('request_garmin_sync', { p_user_id: userId() })
   // P0001 is the function's own refusal (the daily limit): a sentence for the
   // screen, not a fault to report.
   if (error) throw error.code === 'P0001' ? new KnownError(error.message) : error

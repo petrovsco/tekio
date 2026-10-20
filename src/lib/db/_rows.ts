@@ -3,7 +3,7 @@
 // holds: each domain keeps its own columns, its own row ↔ entry mapping and its
 // own writes. Only the plumbing that was identical in ten files lives here.
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 
 /**
  * This user's rows from `table`, newest first.
@@ -20,7 +20,7 @@ import { USER_ID } from '../../constants/app'
  * table that has no date to sort by.
  */
 export async function userRows<Q extends string>(table: string, cols: Q, dateCol?: string) {
-  let q = supabase.from(table).select(cols).eq('user_id', USER_ID)
+  let q = supabase.from(table).select(cols).eq('user_id', userId())
   if (dateCol) q = q.order(dateCol, { ascending: false })
   const { data, error } = await q
   if (error) throw error

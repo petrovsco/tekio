@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 
 export interface SectionConfig {
   sectionKey: string
@@ -31,7 +31,7 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
     .from('user_section_config')
     .upsert(
       DEFAULTS.map(d => ({
-        user_id:      USER_ID,
+        user_id:      userId(),
         section_key:  d.sectionKey,
         show_in_menu: d.showInMenu,
         sort_order:   d.sortOrder,
@@ -42,7 +42,7 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
   const { data, error } = await supabase
     .from('user_section_config')
     .select('section_key, show_in_menu, sort_order')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .order('sort_order', { ascending: true })
 
   if (error) throw error
@@ -66,7 +66,7 @@ export async function updateSectionField(
   const { error } = await supabase
     .from('user_section_config')
     .update(update)
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('section_key', sectionKey)
 
   if (error) throw error
@@ -77,7 +77,7 @@ export async function saveSectionConfig(configs: SectionConfig[]): Promise<void>
     .from('user_section_config')
     .upsert(
       configs.map(c => ({
-        user_id:      USER_ID,
+        user_id:      userId(),
         section_key:  c.sectionKey,
         show_in_menu: c.showInMenu,
         sort_order:   c.sortOrder,

@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { PlannedExercise, LiftSet } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -48,12 +48,12 @@ export async function savePlan(plan: { date: string; exercise: string; targets: 
   const { count } = await supabase
     .from('planned_exercises')
     .select('id', { count: 'exact', head: true })
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('plan_date', plan.date)
   const { data, error } = await supabase
     .from('planned_exercises')
     .insert(withOrigin({
-      user_id: USER_ID,
+      user_id: userId(),
       plan_date: plan.date,
       exercise: plan.exercise,
       target_sets: plan.targets,
@@ -115,7 +115,7 @@ export async function pruneMissedPlans(day: string): Promise<void> {
   const { error } = await supabase
     .from('planned_exercises')
     .delete()
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .lt('plan_date', day)
     .is('session_exercise_id', null)
   if (error) throw error

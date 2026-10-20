@@ -7,24 +7,29 @@
 // the same URL and the same two headers — so this is that client, without the
 // 177 kB of login, WebSocket and file-storage code the app never reaches.
 //
-// When auth lands (roadmap 003) `@supabase/auth-js` comes back — but lazily, on
-// the sign-in path, rather than in the chunk that paints Home.
+// Since accounts (RFC 0003) `@supabase/auth-js` is back — but lazily, in
+// `auth.ts`, rather than in the chunk that paints Home. Only the token it
+// issues is needed here, and `session.ts` holds that.
 import { PostgrestClient } from '@supabase/postgrest-js'
+import { accessToken } from './session'
 
 const supabaseUrl: string = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY
+export const supabaseAnonKey: string = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 /** `https://<ref>.supabase.co/` — trailing slash, so `new URL(path, base)` keeps
  *  the host instead of resolving the path against the root. */
-const baseUrl = supabaseUrl.endsWith('/') ? supabaseUrl : supabaseUrl + '/'
+export const baseUrl = supabaseUrl.endsWith('/') ? supabaseUrl : supabaseUrl + '/'
 
-/** Sent on every request. With no session, `supabase-js` sends the anon key as
- *  the bearer token too; RLS is wide open, so this is what it already did. */
-const supabaseHeaders: Record<string, string> = {
-  apikey: supabaseAnonKey,
-  Authorization: `Bearer ${supabaseAnonKey}`,
+/** Every request carries the signed-in person's token, read at the moment it
+ *  is sent so a refreshed one is picked up; with no session, the anon key, as
+ *  `supabase-js` does. The policies decide what that token may touch. */
+const withToken: typeof fetch = (input, init) => {
+  const headers = new Headers(init?.headers)
+  headers.set('apikey', supabaseAnonKey)
+  headers.set('Authorization', `Bearer ${accessToken() ?? supabaseAnonKey}`)
+  return fetch(input, { ...init, headers })
 }
 
 export const supabase = new PostgrestClient(new URL('rest/v1', baseUrl).href, {
-  headers: supabaseHeaders,
+  fetch: withToken,
 })

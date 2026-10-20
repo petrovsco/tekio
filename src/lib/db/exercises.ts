@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import { withOrigin } from '../env'
 import { normaliseExerciseName, resolveExerciseName } from '../exerciseName'
 import { whileReloading } from '../staleChunk'
@@ -15,7 +15,7 @@ export async function loadExerciseAliases(): Promise<ExerciseAlias[]> {
   const { data, error } = await supabase
     .from('exercise_aliases')
     .select('alias, canonical_name, user_id')
-    .or(`user_id.eq.${USER_ID},user_id.is.null`)
+    .or(`user_id.eq.${userId()},user_id.is.null`)
   if (error) throw error
   return (data ?? [])
     .map(r => ({ alias: r.alias, canonicalName: r.canonical_name, isOwn: r.user_id !== null }))
@@ -51,7 +51,7 @@ export async function getOrCreateExerciseRow(
   const typed = name.trim()
 
   const [{ data: existing, error: exErr }, aliases, catalogue] = await Promise.all([
-    supabase.from('exercises').select('id, name').eq('user_id', USER_ID),
+    supabase.from('exercises').select('id, name').eq('user_id', userId()),
     loadExerciseAliases(),
     // A dynamic import keeps 270 lifts off the first paint: the store loads
     // this file at startup, and only a write ever needs the catalogue.
@@ -76,11 +76,11 @@ export async function getOrCreateExerciseRow(
 
   await supabase
     .from('exercises')
-    .upsert(withOrigin({ user_id: USER_ID, name: canonical, is_system: false }), { onConflict: 'user_id,name' })
+    .upsert(withOrigin({ user_id: userId(), name: canonical, is_system: false }), { onConflict: 'user_id,name' })
   const { data, error } = await supabase
     .from('exercises')
     .select('id')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('name', canonical)
     .single()
   if (error) throw error
