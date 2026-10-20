@@ -1,0 +1,16 @@
+{
+  "name": "@tekio/api",
+  "private": true,
+  "license": "Apache-2.0",
+  "version": "0.0.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@hono/zod-openapi": "^1.6.3",
+    "@supabase/postgrest-js": "^2.105.4",
+    "@tekio/core": "*",
+    "@tekio/db": "*",
+    "hono": "^4.10.0",
+    "zod": "^4.0.0"
+  }
+}

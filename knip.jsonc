@@ -11,12 +11,13 @@
       // `src/main.tsx` is found on its own. `middleware.ts` is not: Vercel loads
       // it by file-name convention, so without this line knip calls the auth
       // gate dead code and `@vercel/edge` an unused dependency.
-      "entry": ["middleware.ts"],
+      // `api/index.ts` likewise: Vercel serves it as the API (RFC 0094).
+      "entry": ["middleware.ts", "api/**/*.{ts,mts}"],
 
       // The two edge functions under `supabase/functions/` are a separate Deno
       // project — `jsr:` imports, a different runtime — so they are outside the
       // project rather than ignored inside it.
-      "project": ["src/**/*.{ts,tsx}"]
+      "project": ["src/**/*.{ts,tsx}", "api/**/*.{ts,mts}"]
     },
 
     // The reads (RFC 0094 step 1). Its entry is the package's `exports`, found
@@ -29,6 +30,12 @@
 
     // The row loaders the reads stand on (RFC 0094 step 2a), read the same way.
     "packages/db": {
+      "project": ["src/**/*.ts"],
+      "includeEntryExports": true
+    },
+
+    // The API (RFC 0094 step 2c), read the same way.
+    "packages/api": {
       "project": ["src/**/*.ts"],
       "includeEntryExports": true
     }

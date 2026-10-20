@@ -16,7 +16,7 @@ export default tseslint.config(
   {
     // Build output, dependencies, and the Deno edge functions — those run on a
     // different runtime with different globals and are linted by Deno, not here.
-    ignores: ['dist', 'node_modules', 'supabase/functions', 'scripts/garmin-sync'],
+    ignores: ['dist', 'node_modules', 'supabase/functions', 'scripts/garmin-sync', 'api/_bundle.mjs'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
