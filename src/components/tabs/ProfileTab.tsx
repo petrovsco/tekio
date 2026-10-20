@@ -14,7 +14,7 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { usePrefs } from '../../store/prefs'
 import { Card, SecTitle } from '../ui/Card'
 import { Inp } from '../ui/Input'
@@ -29,6 +29,10 @@ import { ImportPane } from '../layout/ImportPane'
 import { ExportPane } from '../layout/ExportPane'
 import type { SectionConfig } from '../../lib/db/sectionConfig'
 import { ReadinessMethodCard } from './profile/ReadinessMethodCard'
+import { whileReloading } from '../../lib/staleChunk'
+
+// RFC 0111 — the Terms load only when opened.
+const TermsSheet = lazy(() => import('./profile/TermsSheet').then(whileReloading).then(m => ({ default: m.TermsSheet })))
 
 // A section is named by the same stroke icon the nav uses for it (§7) — the
 // emoji that used to sit here was app chrome, not content.
@@ -105,6 +109,7 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
     setHrMaxStored, setBirthDate,
   } = usePrefs()
   const [dataAction, setDataAction] = useState<'import' | 'export' | null>(null)
+  const [termsOpen, setTermsOpen] = useState(false)
 
   // The profile HRmax (roadmap 060): the number the user set — typed here, or
   // the tracker peak accepted here — else the age estimate. The typed draft
@@ -249,6 +254,22 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
         </div>
       </div>
 
+      <div>
+        <SecTitle>Legal</SecTitle>
+        <button
+          onClick={() => setTermsOpen(true)}
+          className="w-full flex items-center gap-2.5 px-2.5 py-2.5 rounded-[3px] border border-line bg-white text-xs font-semibold text-ink hover:bg-hairline cursor-pointer transition-colors"
+        >
+          <Icon name="info" size={13} className="text-ink-2" />
+          Terms of Service
+        </button>
+      </div>
+
+      {termsOpen && (
+        <Suspense fallback={null}>
+          <TermsSheet onClose={() => setTermsOpen(false)} />
+        </Suspense>
+      )}
       {dataAction === 'import' && <ImportPane onClose={() => setDataAction(null)} />}
       {dataAction === 'export' && <ExportPane onClose={() => setDataAction(null)} />}
 
