@@ -46,3 +46,6 @@ scripts/garmin-sync/dumps/
 
 # Vercel CLI link (local, per-machine)
 .vercel
+
+# The API bundle `npm run build` writes for its Vercel function (scripts/build-api.mjs)
+api/_bundle.mjs

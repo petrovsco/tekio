@@ -12,12 +12,12 @@
       // it by file-name convention, so without this line knip calls the auth
       // gate dead code and `@vercel/edge` an unused dependency.
       // `api/[[...route]].ts` likewise: Vercel serves it as the API (RFC 0094).
-      "entry": ["middleware.ts", "api/**/*.ts"],
+      "entry": ["middleware.ts", "api/**/*.{ts,mts}"],
 
       // The two edge functions under `supabase/functions/` are a separate Deno
       // project — `jsr:` imports, a different runtime — so they are outside the
       // project rather than ignored inside it.
-      "project": ["src/**/*.{ts,tsx}", "api/**/*.ts"]
+      "project": ["src/**/*.{ts,tsx}", "api/**/*.{ts,mts}"]
     },
 
     // The reads (RFC 0094 step 1). Its entry is the package's `exports`, found

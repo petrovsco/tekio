@@ -6,7 +6,10 @@ export { createApi }
 
 /** The API as a Vercel function's handler, configured from the deployment's
  *  environment: the same Supabase project and public key the web app is built
- *  with, so each call reaches the database only as its caller. */
+ *  with, so each call reaches the database only as its caller.
+ *
+ *  @public — reached through the bundle scripts/build-api.mjs writes, which
+ *  knip cannot follow. */
 export function vercelHandler() {
   return handle(createApi({
     supabaseUrl: process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '',
