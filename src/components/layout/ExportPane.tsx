@@ -4,7 +4,7 @@ import { Btn } from '../ui/Button'
 import { Inp } from '../ui/Input'
 import { Modal } from '../ui/Modal'
 import { Toggle } from '../ui/Fields'
-import { today } from '../../lib/utils'
+import { today } from '@tekio/core'
 
 interface ExportPaneProps {
   onClose: () => void

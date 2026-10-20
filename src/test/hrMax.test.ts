@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
-  observedHrMax, resolveHrMax, formulaHrMax, ageAt, hrMaxProposal,
-  HR_MAX_WINDOW_MONTHS, HR_MAX_REPLICATION_BPM, HR_MAX_FORMULA_INTERCEPT, HR_MAX_FORMULA_SLOPE,
-} from '../lib/hrMax'
+  observedHrMax, resolveHrMax, formulaHrMax, ageAt, hrMaxProposal, HR_MAX_WINDOW_MONTHS,
+  HR_MAX_REPLICATION_BPM, HR_MAX_FORMULA_INTERCEPT, HR_MAX_FORMULA_SLOPE,
+} from '@tekio/core'
 import type { CardioEntry, SportEntry } from '../types'
 
 const row = (date: string, maxHr: number | undefined, type: CardioEntry['type'] = 'Indoor Rowing'): CardioEntry =>

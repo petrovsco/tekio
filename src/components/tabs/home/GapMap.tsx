@@ -1,6 +1,5 @@
 import { useId, type MouseEvent } from 'react'
-import type { MuscleState } from '../../../lib/fusedRead'
-import { GAP_CUTOFF } from '../../../lib/adaptations'
+import { GAP_CUTOFF, type MuscleState } from '@tekio/core'
 import { fmtSets } from '../../../lib/utils'
 import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './BodyMap'
 
@@ -17,7 +16,7 @@ export const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
 export const NO_DATA = '#eeeeec'
 
 /** Ramp band by share of the window target. The top band starts at GAP_CUTOFF
- *  (src/lib/adaptations.ts) — the same line the callouts stop at and the
+ *  (packages/core/src/adaptations.ts) — the same line the callouts stop at and the
  *  "on target" counter reads (roadmap 045). */
 export function rampStep(fraction: number): number {
   if (fraction < 0.10) return 0

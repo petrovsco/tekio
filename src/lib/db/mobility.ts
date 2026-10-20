@@ -4,7 +4,7 @@ import { getOrCreateExerciseRow } from './exercises'
 import type { MobilityEntry } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
-import { groupBy } from '../utils'
+import { groupBy } from '@tekio/core'
 
 /** Map of exercise_id → its muscle-group names (canonical, shared across sessions). */
 async function loadExerciseMuscleMap(): Promise<Map<string, string[]>> {

@@ -1,14 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
-  muscleStates, rankMuscleGaps, qualityStates, systemicReadiness,
-  donationStatus, fusedVerdict, overnightHrvReading, bandForZ, HISTORY_WEEKS,
-  morningHrvReading, checkInReading, checkInTotal, readinessNotes, autoReadinessMethod, overnightConnected,
-  wholeNumbers, readinessTrend, GAUGE_NORMAL,
-  muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates, muscleWindow,
-  type MuscleState, type MuscleQuality,
-} from '../lib/fusedRead'
-import { HRV_BAND_Z, RECOVER_DAYS, RECOVER_MIN_SETS, MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET } from '../constants/app'
-import type { TargetUnit } from '../lib/adaptations'
+  muscleStates, rankMuscleGaps, qualityStates, systemicReadiness, donationStatus, fusedVerdict,
+  overnightHrvReading, bandForZ, HISTORY_WEEKS, morningHrvReading, checkInReading, checkInTotal,
+  readinessNotes, autoReadinessMethod, overnightConnected, wholeNumbers, readinessTrend,
+  GAUGE_NORMAL, muscleWeeklySets, muscleSources, muscleQualityMix, muscleQualityStates,
+  muscleWindow, type MuscleState, type MuscleQuality, HRV_BAND_Z, RECOVER_DAYS, RECOVER_MIN_SETS,
+  MUSCLE_WINDOW_DAYS, MUSCLE_SET_TARGET, type TargetUnit,
+} from '@tekio/core'
 import type {
   Adaptation, WeightEntry, CardioEntry, SportEntry, SleepEntry, DonationEntry,
   ExerciseMuscleLink, MuscleGroup, ReadinessInput, CheckInAnswers,

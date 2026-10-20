@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import { usePrefs } from '../../../store/prefs'
-import { CARDIO_TYPES } from '../../../constants/app'
+import { CARDIO_TYPES } from '@tekio/core'
 import {
   TIME_FRAMES, withinTimeFrame, grainForFrame, rollupCardio, hasLonePoint, uniqSorted, fmtDate, type TimeFrame, type CardioBucket,
 } from '../../../lib/utils'

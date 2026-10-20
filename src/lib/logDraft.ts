@@ -1,4 +1,4 @@
-import type { SetStr } from './sets'
+import type { SetStr } from '@tekio/core'
 
 // The Weights log form as typed, kept on the device (RFC 0106). Each set is
 // written to the log the moment it is ticked; what is typed but not yet ticked

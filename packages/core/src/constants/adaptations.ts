@@ -34,7 +34,7 @@ export interface AdaptationMeta {
   /**
    * The three target shapes (roadmap 0012). Exactly one is non-zero, and which
    * one it is decides the unit the adaptation is counted and printed in —
-   * `targetShape` in `lib/adaptations.ts` is the one place that reads them.
+   * `targetShape` in `adaptations.ts` is the one place that reads them.
    *
    * Weekly per-muscle-group target in weighted sets. `0` = not set-shaped.
    */

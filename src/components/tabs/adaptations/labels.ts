@@ -1,6 +1,5 @@
 import type { Adaptation } from '../../../types'
-import type { MuscleQuality } from '../../../lib/fusedRead'
-import { splitCoverage, type AdaptationSummary, type TargetUnit } from '../../../lib/adaptations'
+import { splitCoverage, type AdaptationSummary, type TargetUnit, type MuscleQuality } from '@tekio/core'
 
 // Editorial short names for the Adaptations drill-down (roadmap 031). Home's
 // whole-body tiles already say VO₂MAX / ANAEROBIC / ENDURANCE and its muscle

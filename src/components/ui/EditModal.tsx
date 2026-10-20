@@ -3,8 +3,9 @@ import { parseDurationMins, formatDurationMins, calcPace, uniqSorted } from '../
 import { useAppStore } from '../../store/app'
 import { Modal } from './Modal'
 import { SetsGrid } from './SetsGrid'
-import { toSetStr, parseSets, setsProblem, isTimedSet } from '../../lib/sets'
-import type { SetStr } from '../../lib/sets'
+import {
+  toSetStr, parseSets, setsProblem, isTimedSet, CARDIO_TYPES, DONATION_TYPES, type SetStr,
+} from '@tekio/core'
 import { Inp, SelEl, FIELD_LABEL } from './Input'
 import { FieldLabel, Toggle, Rating } from './Fields'
 import { Btn, DelBtn } from './Button'
@@ -13,7 +14,7 @@ import { SSBadge } from './Badges'
 import { groupName } from '../../lib/supersets'
 import { SmartInput } from './SmartInput'
 import { ChipListInput } from './ChipListInput'
-import { CARDIO_TYPES, CARDIO_FORMATS, DONATION_TYPES } from '../../constants/app'
+import { CARDIO_FORMATS } from '../../constants/app'
 import type {
   EditModalTarget,
   WeightEntry,

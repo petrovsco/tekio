@@ -7,7 +7,7 @@ import { withOrigin } from '../env'
 // the alias fix would silently miss half the ways a set gets logged.
 import { getOrCreateExerciseRow } from './exercises'
 import { userRows, deleteRow } from './_rows'
-import { liftSetProblem } from '../sets'
+import { liftSetProblem } from '@tekio/core'
 import { KnownError } from '../errorReport'
 
 /** A set as its `session_sets` row: a hold is one rep and its seconds (RFC 0107). */

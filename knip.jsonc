@@ -6,15 +6,27 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
 
-  // `src/main.tsx` is found on its own. `middleware.ts` is not: Vercel loads it
-  // by file-name convention, so without this line knip calls the auth gate dead
-  // code and `@vercel/edge` an unused dependency.
-  "entry": ["middleware.ts"],
+  "workspaces": {
+    ".": {
+      // `src/main.tsx` is found on its own. `middleware.ts` is not: Vercel loads
+      // it by file-name convention, so without this line knip calls the auth
+      // gate dead code and `@vercel/edge` an unused dependency.
+      "entry": ["middleware.ts"],
 
-  // The two edge functions under `supabase/functions/` are a separate Deno
-  // project — `jsr:` imports, a different runtime — so they are outside the
-  // project rather than ignored inside it.
-  "project": ["src/**/*.{ts,tsx}"],
+      // The two edge functions under `supabase/functions/` are a separate Deno
+      // project — `jsr:` imports, a different runtime — so they are outside the
+      // project rather than ignored inside it.
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+
+    // The reads (RFC 0094 step 1). Its entry is the package's `exports`, found
+    // on its own. The web app is its only consumer today, so an export the app
+    // does not import is reported like any other, entry or not.
+    "packages/core": {
+      "project": ["src/**/*.ts"],
+      "includeEntryExports": true
+    }
+  },
 
   // "duplicates" reports two exported names resolving to one value. Its only
   // finding here is `DELOAD_WEEK = CYCLE` in constants/app.ts, and that alias is

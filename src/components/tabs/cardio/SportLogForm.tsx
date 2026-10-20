@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAppStore } from '../../../store/app'
-import { today, parseDurationMins, uniqSorted, formatDurationMins } from '../../../lib/utils'
+import { today } from '@tekio/core'
+import { parseDurationMins, uniqSorted, formatDurationMins } from '../../../lib/utils'
 import { Inp, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { FieldLabel, Toggle, Rating } from '../../ui/Fields'

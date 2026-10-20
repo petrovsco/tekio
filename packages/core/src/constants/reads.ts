@@ -1,0 +1,125 @@
+// The constants the reads stand on (RFC 0094 step 1): every grounded number
+// behind fusedRead.ts and adaptations.ts, and the two lists the domain types
+// derive from. What only the web app needs (column maps, USER_ID) stays in
+// src/constants/app.ts.
+
+// A cardio type is the modality. Custom is the one with no modality (EMOM,
+// slam/jump conditioning) — the row's notes say what it was. HIIT is never a
+// type here: it is a `format` on any of these (roadmap 054).
+export const CARDIO_TYPES = ['Running', 'Cycling', 'Swimming', 'Indoor Rowing', 'Custom'] as const
+
+export const DONATION_TYPES = ['Full Blood', 'Plasma'] as const
+
+/** 56 / 14 — donation-service eligibility rules, convention only (FDA 21 CFR
+ * 630.15; the plasma interval is national convention, 72 h-14 d across
+ * Europe), NOT physiology. Calendar countdown only - must not feed the
+ * readiness gate. See tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
+export const DONATION_ELIGIBILITY_DAYS: Record<string, number> = {
+  'Full Blood': 56,
+  Plasma: 14,
+}
+
+// ── Fused Home read (systemic × local) ──────────────────────────────────────
+// The grounded constants behind fusedRead.ts. Each carries its scout
+// verdict; the blocks live in tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding.
+
+/** 48 h (RECOVER_DAYS = 2) — floor of the 48–72 h post-session recovery window
+ * for a trained adult; dose-dependent, high-volume/failure sessions need 72 h+,
+ * see tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
+export const RECOVER_DAYS = 2
+
+/** 2 — level-weighted sets one muscle must get in a day before RECOVER_DAYS
+ * starts (a prime mover's set counts 1, a synergist's 0.5), so one set alone
+ * never flags a muscle. Convention inside a 1–3 bracket: 3 sets to failure
+ * delays recovery 24–48 h+, no study tests 1–2, and effort matters more than
+ * set count. See tekio.rfcs/rfcs/done/0108-recovering-minimum-dose.md#grounding */
+export const RECOVER_MIN_SETS = 2
+
+/** −0.5 / −1 SD — partially supported: the trialled three-tier rule cuts the
+ * 7-day rolling LnRMSSD against the person's own baseline — within 0.5 SD the
+ * session runs as planned, 0.5–1 SD it runs lighter, beyond 1 SD it is active
+ * recovery (DeBlauw 2021; Nuuttila 2022 the same shape). One-sided here, a
+ * recorded departure: HRV above baseline never lowers the band. Each value is
+ * the bottom edge of the band above it — z < −1 low, −1 ≤ z < −0.5 moderate,
+ * z ≥ −0.5 ok. See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding
+ * and tekio.rfcs/grounding/0085-readiness-inputs.md#grounding */
+export const HRV_BAND_Z = { moderate: -0.5, low: -1 } as const
+
+/** The check-in's lines — convention, by analogy to the HRV trials' own-baseline
+ * reading; the five-item 1–5 form is McLean 2010's. Today's total (5–25) is
+ * placed against the person's own 28 days before it, in SD units: moderate
+ * below −1 SD and at least 2 points under the mean, low below −2 SD and at
+ * least 4 points under. The point floors keep a very steady answerer (SD near
+ * 1) from dropping a band on a one-point dip. 14 check-ins before a verdict.
+ * See tekio.rfcs/grounding/0092-readiness-method.md */
+export const CHECK_IN_BAND = {
+  moderate: { z: -1, points: 2 },
+  low: { z: -2, points: 4 },
+  baselineDays: 28,
+  minEntries: 14,
+} as const
+
+/** Resting HR note: last night at least own 30-night mean + 1 SD and at least
+ * 5 bpm above it. Convention — resting HR is weak alone (Bosquet 2008), which
+ * is why it is a note and never moves the band; own baseline (Quer 2020).
+ * See tekio.rfcs/grounding/0092-readiness-method.md */
+export const RESTING_HR_NOTE = { sd: 1, bpm: 5, baselineDays: 30, minNights: 14 } as const
+
+/** Short-night note: under 6 h of device-measured sleep. Partially supported —
+ * acute sleep loss impairs performance (Craven 2022), 6 h nights accrue
+ * deficits (Van Dongen 2003); the exact cut is convention. Device duration
+ * only: typed duration overestimates (Lauderdale 2008).
+ * See tekio.rfcs/grounding/0092-readiness-method.md */
+export const SHORT_NIGHT_HOURS = 6
+
+/** staleness: vo2max 14 d, endurance 14 d, anaerobic 28 d — detraining onset in
+ * trained adults (Coyle 1984; Houmard 1992; Madsen 1993; Simoneau 1987;
+ * Mujika & Padilla 2000), see tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
+export const QUALITY_STALENESS_DAYS = {
+  vo2max: 14,
+  endurance: 14,
+  anaerobic_capacity: 28,
+} as const
+
+/** 10 — weekly hard-set floor per muscle, pooled across every rep range (1–5 / 6–15 / 16–30+) at full
+ * value: hypertrophy per hard set is load-independent from ~30–40 % 1RM up (Schoenfeld 2017, Lopez 2021,
+ * Lasevicius 2018; set = unit, Baz-Valle 2018) and it is the volume-hungriest quality (Pelland 2026,
+ * Androulakis-Korakakis 2020). Power-tagged sets are NOT hard sets — they count in byQuality.power only
+ * (Pareja-Blanco 2017, Jukic 2023). Says nothing about strength's load, endurance's rep range or
+ * power's velocity — the per-quality maps do. Value grounded in
+ * tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding (D10); the pooling in
+ * tekio.rfcs/grounding/039-adaptations-read.md#grounding (S3). */
+export const WEEKLY_SET_FLOOR = 10
+
+// 14 — MUSCLE_WINDOW_DAYS: rolling window for the per-muscle hard-set fill (target = WEEKLY_SET_FLOOR × 14 / 7 = 20).
+// Honest band 8–21 d. Lower edge: volume-equated, 1×/wk per muscle matches 2–5×/wk in trained men (Schoenfeld 2019,
+// Grgic 2018, Brigatto 2019, Gomes 2019), so a muscle 7 d silent is not under-dosed and the window must exceed one
+// weekly rhythm. Upper edge: strength holds ~3–4 wk without training (McMaster 2013, Mujika 2001, Hwang 2017) and the
+// earliest measured tissue loss in trained lifters is at 14 d (Hortobágyi 1993, type II fibre area −6.4 %). 14 is a
+// convention inside that band — whole weeks, one missed weekly dose = half fill, one rhythm with QUALITY_STALENESS_DAYS.
+// Not an MPS window: the per-session signal ends in 28–48 h (Tang 2008, Phillips 1997). The sum is frequency-blind by
+// design; recency lives in daysSince / RECOVER_DAYS. See tekio.rfcs/grounding/039-adaptations-read.md#grounding
+export const MUSCLE_WINDOW_DAYS = 14
+
+/** 20 — WEEKLY_SET_FLOOR × MUSCLE_WINDOW_DAYS / 7: the hard-set target the muscle map fills against. Rate
+ * grounded in 010 D10, pooling in 039 S3, window in 039 S12. A rolling window, never a training cycle (039 §6.6). */
+export const MUSCLE_SET_TARGET = WEEKLY_SET_FLOOR * MUSCLE_WINDOW_DAYS / 7
+
+/** 48 h acute, 21 d aerobic tail (range 14–28 d) — whole blood only, aerobic
+ * qualities only; plasma = 0 d. Endpoint contested (Ziegler 14 d / Judd 21 d /
+ * Meurrens 28 d). Never a global hold past 48 h. See
+ * tekio.rfcs/rfcs/done/0010-home-fused-reads.md#grounding */
+export const DONATION_SUPPRESSION = { acuteHours: 48, aerobicTailDays: 21 } as const
+
+// ── Recovery / Readiness axis ───────────────────────────────────────────────
+// Recovery sits parallel to the adaptations (it is NOT another adaptation).
+//
+// RECOVERY_WEIGHTS / RECOVERY_TARGETS / RECOVERY_ICONS were removed 2026-08-31
+// with RecoveryCard (roadmap 014 step 3, 018 unit 4). They rolled five weekly
+// adherence targets — sleep .45 / mobility .15 / sauna .15 / cold .15 /
+// habits .10 — into one "readiness %". The fused Home replaced that with
+// `systemicReadiness()` in fusedRead.ts: a baseline-relative HRV read
+// (since 0085 HRV alone; the device sleep score left the number). So the weights were not
+// reweighted, they were retired — the number they produced measured adherence
+// to a recovery routine, not recovery state. The before/after comparison on
+// real data is in tekio.rfcs/rfcs/done/0014-doctrine-ledger-execution.md.

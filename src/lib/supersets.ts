@@ -1,4 +1,4 @@
-import { groupBy } from './utils'
+import { groupBy } from '@tekio/core'
 
 // Supersets and circuits (RFC 0106): lifts sharing a group id are done back to
 // back. One shape for plans and logged entries alike, since a plan's group id

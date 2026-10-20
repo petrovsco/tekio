@@ -1,7 +1,6 @@
-import type { WholeBodyQuality } from '../../../lib/fusedRead'
+import type { WholeBodyQuality, TargetUnit } from '@tekio/core'
 import { RAMP, NO_DATA, rampStep } from '../home/GapMap'
 import { QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL } from './labels'
-import type { TargetUnit } from '../../../lib/adaptations'
 import { fmtAgo } from '../../../lib/utils'
 
 // The whole-body read of the Adaptations drill-down (roadmap 031 §3b): the

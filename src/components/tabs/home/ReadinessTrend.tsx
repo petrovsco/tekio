@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react'
-import type { ReadinessTrend as Trend, TrendDay } from '../../../lib/fusedRead'
+import type { ReadinessTrend as Trend, TrendDay } from '@tekio/core'
 import { fmtDate } from '../../../lib/utils'
 import { CHART } from '../../ui/chart'
 

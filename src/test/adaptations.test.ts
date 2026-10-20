@@ -1,38 +1,16 @@
 import { describe, it, expect } from 'vitest'
 import {
-  classifyWeightSet,
-  classifyCardio,
-  classifyCardioAdaptations,
-  classifySportAdaptations,
-  ENDURANCE_FLOOR_MIN,
-  TE_STIMULUS_THRESHOLD,
-  ANAEROBIC_BOUT_MAX_S,
-  VO2MAX_Z5_MIN,
-  SPORT_DEFAULT_ADAPTATION,
-  typedHrBand,
-  classifyTypedHr,
-  isThresholdCardio,
-  isThresholdSport,
-  thresholdEnduranceCount,
-  HR_ENDURANCE_MAX_PCT,
-  HR_VO2MAX_MIN_PCT,
-  resolveExerciseAdaptation,
-  adaptationCoverage,
-  splitCoverage,
-  coverageState,
-  buildMuscleStatusTree,
-  muscleStimulus,
-  weightSetsIn,
-  MUSCLE_QUALITIES,
-  GAP_CUTOFF,
-  type AdaptationSummary,
-  targetShape,
-} from '../lib/adaptations'
-import { muscleQualityStates, muscleWindow, rankMuscleGaps } from '../lib/fusedRead'
+  classifyWeightSet, classifyCardio, classifyCardioAdaptations, classifySportAdaptations,
+  ENDURANCE_FLOOR_MIN, TE_STIMULUS_THRESHOLD, ANAEROBIC_BOUT_MAX_S, VO2MAX_Z5_MIN,
+  SPORT_DEFAULT_ADAPTATION, typedHrBand, classifyTypedHr, isThresholdCardio, isThresholdSport,
+  thresholdEnduranceCount, HR_ENDURANCE_MAX_PCT, HR_VO2MAX_MIN_PCT, resolveExerciseAdaptation,
+  adaptationCoverage, splitCoverage, coverageState, buildMuscleStatusTree, muscleStimulus,
+  weightSetsIn, MUSCLE_QUALITIES, GAP_CUTOFF, type AdaptationSummary, targetShape,
+  muscleQualityStates, muscleWindow, rankMuscleGaps, ADAPTATIONS, ADAPTATION_MAP,
+  MUSCLE_WINDOW_DAYS,
+} from '@tekio/core'
 import { coverageLine, coverageParts } from '../components/tabs/adaptations/labels'
 import type { Adaptation, CardioEntry, CardioFormat, ExerciseMuscleLink, MuscleGroup, SportEntry, WeightEntry } from '../types'
-import { ADAPTATIONS, ADAPTATION_MAP } from '../constants/adaptations'
-import { MUSCLE_WINDOW_DAYS } from '../constants/app'
 
 // ── rx blocks (grounded values, roadmap 039 S5–S8) ──────────────────────────
 

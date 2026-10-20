@@ -1,4 +1,4 @@
-import { GAUGE_NORMAL, type Gauge } from '../../../lib/fusedRead'
+import { GAUGE_NORMAL, type Gauge } from '@tekio/core'
 
 // A reading against the person's own normal: a grey band for the normal, a
 // dot for the reading. It replaced a fill (Peter, 2026-10-14): a fill reads as

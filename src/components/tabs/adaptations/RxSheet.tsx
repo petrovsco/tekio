@@ -1,4 +1,4 @@
-import { ADAPTATION_MAP, ADAPTATION_PRINCIPLE } from '../../../constants/adaptations'
+import { ADAPTATION_MAP, ADAPTATION_PRINCIPLE } from '@tekio/core'
 import type { Adaptation } from '../../../types'
 import { BottomSheet, SheetHeader } from '../home/BottomSheet'
 import { AdaptationRxTable } from '../home/AdaptationRx'

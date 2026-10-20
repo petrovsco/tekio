@@ -13,7 +13,7 @@ data and upsert it into Supabase:
     distance, elevation, avg/max HR, HR-zone time, and **Aerobic / Anaerobic
     Training Effect**. The app uses the Training Effect + zones to classify
     each session into one cardio adaptation, or none
-    (`classifyCardioAdaptations` in `src/lib/adaptations.ts`, roadmap 005).
+    (`classifyCardioAdaptations` in `packages/core/src/adaptations.ts`, roadmap 005).
     Garmin's **HIIT** profile is a format, not a type: an activity named
     "… Rowing" lands as rowing, anything else (EMOM, slam/jump circuits) as
     *Custom*, both with `format = 'intervals'` and the Garmin name in `notes`

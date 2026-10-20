@@ -183,6 +183,21 @@ Two Zustand stores:
 - **`useAppStore`** ([src/store/app.ts](src/store/app.ts)) — holds all domain data (weights, bodyweight, cardio, mobility, sports, donations, sleep, sauna, cold) plus CRUD actions and `bootstrap()` which loads everything in parallel on startup. Also owns the global `editModal` and `toast` state.
 - **`usePrefs`** ([src/store/prefs.ts](src/store/prefs.ts)) — controls which sections appear in the drawer menu / home tab, and their sort order. Loaded as part of `bootstrap()`.
 
+### The reads (`packages/core/`)
+
+The product's reads live in an npm workspace package, `@tekio/core`
+([packages/core/src/index.ts](packages/core/src/index.ts)): the coverage read
+(`adaptations.ts`), the fused Home and readiness read (`fusedRead.ts`), set
+validation (`sets.ts`), observed HRmax (`hrMax.ts`), the grounded constants they
+stand on (`constants/`), and the domain types they take (`types.ts`, re-exported
+by [src/types/index.ts](src/types/index.ts)). Nothing in it imports React, the
+database or a browser global; its own `tsconfig.json` has no DOM, so the build
+fails if one creeps in. The web app imports it from `@tekio/core`; the API of
+`tekio.rfcs/rfcs/0094-one-api-shared-core.md` will serve the same reads to the
+phone apps and the agent. The package is TypeScript source with no build step:
+Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
+`src/test/`, in the one `npm run test`.
+
 ### Data layer (`src/lib/db/`)
 
 One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. Key points:

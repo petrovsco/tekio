@@ -2,7 +2,7 @@ import { MICRO_LABEL } from './Badges'
 import { DelBtn } from './Button'
 import { Icon } from './Icon'
 import { FIELD } from './Input'
-import { setsProblem, toLiftSet, fmtSet, rowFilled, type SetStr } from '../../lib/sets'
+import { setsProblem, toLiftSet, fmtSet, rowFilled, type SetStr } from '@tekio/core'
 
 interface SetsGridProps {
   sets: SetStr[]
