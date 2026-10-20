@@ -11,7 +11,7 @@
       // `src/main.tsx` is found on its own. `middleware.ts` is not: Vercel loads
       // it by file-name convention, so without this line knip calls the auth
       // gate dead code and `@vercel/edge` an unused dependency.
-      // `api/[[...route]].ts` likewise: Vercel serves it as the API (RFC 0094).
+      // `api/index.ts` likewise: Vercel serves it as the API (RFC 0094).
       "entry": ["middleware.ts", "api/**/*.{ts,mts}"],
 
       // The two edge functions under `supabase/functions/` are a separate Deno
