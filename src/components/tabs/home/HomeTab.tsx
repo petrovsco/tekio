@@ -1,20 +1,17 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
-  muscleStates, muscleWindow, rankMuscleGaps, qualityStates, systemicReadiness, donationStatus,
-  fusedVerdict, checkInTotal, type MuscleState, type SystemicReadiness, type DonationStatus,
+  homeRead, checkInTotal, type MuscleState, type SystemicReadiness, type DonationStatus,
   type FusedVerdict, type ReadinessBand, type Gauge, today, daysBetween, lastNightDate,
-  RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS, adaptationCoverage, coverageState,
-  GAP_CUTOFF,
+  RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS, coverageState,
 } from '@tekio/core'
-import { useHrMax } from '../../../hooks/useHrMax'
+import { useReadRows } from '../../../hooks/useReadRows'
 import { fmtSets, fmtAgo } from '../../../lib/utils'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
 import { whileReloading } from '../../../lib/staleChunk'
 import { coverageLine, coverageParts } from '../adaptations/labels'
 import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
-import { usePrefs } from '../../../store/prefs'
 import { METHOD_LABEL } from '../../../constants/readiness'
 import { SyncLine } from './SyncLine'
 import { ReadinessGauge } from './ReadinessGauge'
@@ -134,13 +131,9 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const weights = useAppStore(s => s.weights)
   const cardio = useAppStore(s => s.cardio)
   const sports = useAppStore(s => s.sports)
-  const sleep = useAppStore(s => s.sleep)
-  const donations = useAppStore(s => s.donations)
   const bodyweight = useAppStore(s => s.bodyweight)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const muscleGroups = useAppStore(s => s.muscleGroups)
-  const exerciseAdaptations = useAppStore(s => s.exerciseAdaptations)
-  const adaptationTargets = useAppStore(s => s.adaptationTargets)
 
   const [sheet, setSheet] = useState<OpenSheet | null>(null)
   const prefetched = useRef(false)
@@ -153,36 +146,11 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     import('./QualitySheet')
   }
 
-  const states = useMemo(
-    () => muscleStates(weights, exerciseMuscles, muscleGroups),
-    [weights, exerciseMuscles, muscleGroups],
-  )
-  const gaps = useMemo(
-    () => rankMuscleGaps(states).filter(m => m.fillFraction < GAP_CUTOFF),
-    [states],
-  )
-  const { hrMax } = useHrMax()
-  const qualities = useMemo(() => qualityStates(cardio, sports, undefined, hrMax), [cardio, sports, hrMax])
-  const readinessInputs = useAppStore(s => s.readinessInputs)
-  const readinessMethod = usePrefs(s => s.readinessMethod)
-  const sys = useMemo(
-    () => systemicReadiness(sleep, today(), readinessInputs, readinessMethod),
-    [sleep, readinessInputs, readinessMethod],
-  )
-  const don = useMemo(() => donationStatus(donations), [donations])
-
-  // The seven-quality coverage read, the same call the Adaptations tab makes
-  // (roadmap 062): Home names every quality that is untouched or short, by
-  // name, instead of a line hardcoded to power.
+  // The fused Home read, one call shared with the API (RFC 0094 step 2b).
+  const rows = useReadRows()
   const date = today()
-  const { from } = muscleWindow(date)
-  const coverage = useMemo(
-    () => adaptationCoverage({
-      weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, windowDays: MUSCLE_WINDOW_DAYS,
-      overrides: exerciseAdaptations, targets: adaptationTargets, hrMax,
-    }),
-    [weights, cardio, sports, exerciseMuscles, muscleGroups, from, date, exerciseAdaptations, adaptationTargets, hrMax],
-  )
+  const home = useMemo(() => homeRead(rows, date), [rows, date])
+  const { muscles: states, gaps, qualities, readiness: sys, donation: don, coverage, verdict } = home
   const missing = coverageParts(coverage)
 
   // RFC 0098's layer: today's open plan as an outline and one line. The fill,
@@ -210,7 +178,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       : `Today's plan reaches no gap. ${after}`
   }, [preview, gaps])
 
-  const verdict = fusedVerdict(sys.band, don)
   const gated = verdict.mode === 'hold'
   const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
 
@@ -237,7 +204,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' }
   // Today's typed answer for the method being read, shown even before the
   // baseline can turn it into a band.
-  const typedToday = readinessInputs.find(e => e.date === date)
+  const typedToday = rows.readinessInputs.find(e => e.date === date)
   const colMethod = sys.method ?? sys.chosen
   // The reading prints what the verdict reads, placed on the person's own
   // normal: the 7-night mean for HRV (one night is too noisy to act on), the

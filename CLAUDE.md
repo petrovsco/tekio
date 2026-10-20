@@ -147,7 +147,7 @@ that loads when you open a chart costs the first paint nothing. It fails at
 baseline + 5 %. Run `npm run build` first; re-baseline with `perf:update` in the
 same commit as the change that moved the number, and say why.
 [scripts/perf-baseline.json](scripts/perf-baseline.json) is the committed
-record: **336.39 kB first paint** (2026-10-10: unexpected errors reported on their own, RFC 0103 stage 1) **and 1039 ms to the Home read** (2026-09-08). That
+record: **353.78 kB first paint** (2026-10-20: sign-in, RFC 0003, and the reads composed in `@tekio/core`, RFC 0094 step 2b) **and 1039 ms to the Home read** (2026-09-08). That
 second number is the one doctrine §6 cares about — it is measured after
 `bootstrap()` has returned, not at DOMContentLoaded — and it is wall-clock
 against the live database, so read the trend, not the digit.
