@@ -88,8 +88,10 @@ const loginPage = (error = false) => `<!DOCTYPE html>
 </body>
 </html>`
 
+// Everything but the API (RFC 0094 step 2c): the bearer token is that route's
+// door, checked on every call, and a phone app has no cookie to show here.
 export const config = {
-  matcher: ['/(.*)'],
+  matcher: ['/((?!api/).*)'],
 }
 
 export default async function middleware(request: Request): Promise<Response> {

@@ -45,6 +45,7 @@ import { loadPlans, savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan
 import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, pruneMissedSessionPlans, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
 import { daysAgo } from '@tekio/core'
+import { exerciseAdaptationMap } from '@tekio/db'
 import { MISSED_PLAN_KEPT_DAYS } from '../constants/app'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
@@ -161,12 +162,6 @@ interface AppStore extends AppState {
 }
 
 /** Build the lowercased exercise-name → adaptation override map from loaded exercises. */
-function adaptationMap(exercises: { name: string; adaptation: Adaptation | null }[]): Record<string, Adaptation> {
-  const out: Record<string, Adaptation> = {}
-  for (const e of exercises) if (e.adaptation) out[e.name.toLowerCase()] = e.adaptation
-  return out
-}
-
 /** Muscle-group tags are canonical per exercise name, so propagate freshly-saved
  *  tags to every other mobility entry that uses the same exercise. */
 function applyMuscleTags(entries: MobilityEntry[], tagged: MobilityEntry['exercises']): MobilityEntry[] {
@@ -380,7 +375,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
         mobility,
         muscleGroups,
         exerciseMuscles,
-        exerciseAdaptations: adaptationMap(exercises),
+        exerciseAdaptations: exerciseAdaptationMap(exercises),
         sports,
         sportTypes,
         donations,
