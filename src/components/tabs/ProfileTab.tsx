@@ -30,6 +30,8 @@ import { ExportPane } from '../layout/ExportPane'
 import type { SectionConfig } from '../../lib/db/sectionConfig'
 import { ReadinessMethodCard } from './profile/ReadinessMethodCard'
 import { whileReloading } from '../../lib/staleChunk'
+import { signedInEmail } from '../../lib/session'
+import { useAppStore } from '../../store/app'
 
 // RFC 0111 — the Terms load only when opened.
 const TermsSheet = lazy(() => import('./profile/TermsSheet').then(whileReloading).then(m => ({ default: m.TermsSheet })))
@@ -110,6 +112,20 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
   } = usePrefs()
   const [dataAction, setDataAction] = useState<'import' | 'export' | null>(null)
   const [termsOpen, setTermsOpen] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  const setToast = useAppStore(s => s.setToast)
+  // RFC 0003. The library is already loaded by the time Profile opens; the
+  // import only hands it over. A failed sign-out leaves the session as it was,
+  // and says so. A good one reloads the app onto the sign-in screen.
+  const signOut = async () => {
+    setSigningOut(true)
+    try {
+      await (await import('../../lib/auth')).signOut()
+    } catch {
+      setSigningOut(false)
+      setToast('Could not sign out. Check your connection and try again.')
+    }
+  }
 
   // The profile HRmax (roadmap 060): the number the user set — typed here, or
   // the tracker peak accepted here — else the age estimate. The typed draft
@@ -252,6 +268,16 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
             </button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <SecTitle>Account</SecTitle>
+        <p className="text-xs text-ink-2 mb-2.5 leading-[1.4]">
+          Signed in as <span className="font-semibold text-ink">{signedInEmail() ?? 'you'}</span>.
+        </p>
+        <Btn variant="secondary" onClick={signOut} disabled={signingOut}>
+          {signingOut ? 'Signing out…' : 'Sign out'}
+        </Btn>
       </div>
 
       <div>

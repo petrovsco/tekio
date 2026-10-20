@@ -1,7 +1,5 @@
 import type { CardioFormat } from '../types'
 
-export const USER_ID = 'a0000000-0000-0000-0000-000000000001'
-
 // A cardio type is the modality. Custom is the one with no modality (EMOM,
 // slam/jump conditioning) — the row's notes say what it was. HIIT is never a
 // type here: it is a `format` on any of these (roadmap 054).

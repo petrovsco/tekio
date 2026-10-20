@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { SleepEntry, SaunaEntry, ColdEntry, SleepQuality } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -59,7 +59,7 @@ export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<Sle
   const { data, error } = await supabase
     .from('sleep_logs')
     .upsert(
-      withOrigin({ user_id: USER_ID, source: 'manual', ...sleepRow(entry) }),
+      withOrigin({ user_id: userId(), source: 'manual', ...sleepRow(entry) }),
       { onConflict: 'user_id,log_date' }
     )
     .select(SLEEP_COLS)
@@ -108,7 +108,7 @@ async function loadSessions(table: SessionTable) {
 async function saveSession(table: SessionTable, entry: SessionEntry) {
   const { data, error } = await supabase
     .from(table)
-    .insert(withOrigin({ user_id: USER_ID, ...sessionRow(entry) }))
+    .insert(withOrigin({ user_id: userId(), ...sessionRow(entry) }))
     .select(SESSION_COLS)
     .single()
   if (error) throw error

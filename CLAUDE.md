@@ -35,7 +35,7 @@ within a week.
 **Before `/code-review` or `/simplify` on this repo, read
 `tekio.rfcs/code-review.md`.** It is the list of things a good
 generic React reviewer gets wrong here — the deliberate decisions that look like
-defects (one hardcoded user, wide-open RLS, no router, `any` at the database
+defects (open RLS policies left beside the owner ones until the lock, no router, `any` at the database
 edge), where the real risk is (any number claiming physiological meaning is
 grounded and needs `/ground`, not an opinion), and what `npm run lint` and
 `npm run knip` already cover so a review need not. It is a link rather than an
@@ -164,9 +164,17 @@ VITE_SUPABASE_ANON_KEY=...
 
 **Stack**: React 19, TypeScript 5.8, Vite 6, Tailwind CSS v4 (via `@tailwindcss/vite` plugin — no `tailwind.config.js`), Zustand 5, `@supabase/postgrest-js`, Recharts, dnd-kit. No router — see *Routing and navigation* below.
 
-### Single-user design
+### Accounts
 
-The app is hardcoded to one user: `USER_ID` in [src/constants/app.ts](src/constants/app.ts). All Supabase queries filter by this constant. There is no auth flow.
+Sign-in is an email link through Supabase Auth (`tekio.rfcs/rfcs/0003-lock-the-database.md`).
+[src/lib/session.ts](src/lib/session.ts) holds the token, in the first-paint chunk;
+[src/lib/auth.ts](src/lib/auth.ts) is `@supabase/auth-js`, loaded lazily — a returning
+visitor's stored token starts Home's queries before the library arrives. Every query in
+`src/lib/db/` filters by `userId()`, read from the same token claims as the database's
+`app.current_user_id()`: `app_metadata.user_id` when the login adopted rows written
+before accounts, else the login's own id. Until the lock runs at a release sweep, the
+old open policies still stand beside the owner policies, because the build on `master`
+signs nobody in.
 
 ### State management
 

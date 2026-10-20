@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { ReadinessInput, CheckInAnswers } from '../../types'
 import { withOrigin } from '../env'
 import { userRows } from './_rows'
@@ -42,7 +42,7 @@ export async function loadReadinessInputs(): Promise<ReadinessInput[]> {
 async function upsertDay(date: string, cols: Record<string, number>): Promise<ReadinessInput> {
   const { data, error } = await supabase
     .from('readiness_inputs')
-    .upsert(withOrigin({ user_id: USER_ID, log_date: date, ...cols }), { onConflict: 'user_id,log_date' })
+    .upsert(withOrigin({ user_id: userId(), log_date: date, ...cols }), { onConflict: 'user_id,log_date' })
     .select(COLS)
     .single()
   if (error) throw error

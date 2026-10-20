@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { BodyweightEntry } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -17,7 +17,7 @@ export async function saveBodyweightEntry(entry: Omit<BodyweightEntry, 'id'>): P
   const { data, error } = await supabase
     .from('bodyweight_logs')
     .upsert(
-      withOrigin({ user_id: USER_ID, log_date: entry.date, weight: entry.weight }),
+      withOrigin({ user_id: userId(), log_date: entry.date, weight: entry.weight }),
       { onConflict: 'user_id,log_date' }
     )
     .select('id, log_date, weight')

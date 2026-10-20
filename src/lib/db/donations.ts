@@ -1,5 +1,6 @@
 import { supabase } from '../supabase'
-import { USER_ID, DONATION_TYPE_MAP, DONATION_TYPE_REVERSE } from '../../constants/app'
+import { userId } from '../session'
+import { DONATION_TYPE_MAP, DONATION_TYPE_REVERSE } from '../../constants/app'
 import type { DonationEntry } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -34,7 +35,7 @@ export async function loadDonations(): Promise<DonationEntry[]> {
 export async function saveDonationEntry(entry: Omit<DonationEntry, 'id'>): Promise<DonationEntry> {
   const { data, error } = await supabase
     .from('blood_donations')
-    .insert(withOrigin({ user_id: USER_ID, ...toRow(entry) }))
+    .insert(withOrigin({ user_id: userId(), ...toRow(entry) }))
     .select(COLS)
     .single()
   if (error) throw error

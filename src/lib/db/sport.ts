@@ -1,5 +1,5 @@
 import { supabase } from '../supabase'
-import { USER_ID } from '../../constants/app'
+import { userId } from '../session'
 import type { SportEntry, SportTypeInfo, NewSportFlags, QualityRating, MatchResult } from '../../types'
 import { withOrigin } from '../env'
 import { userRows, deleteRow } from './_rows'
@@ -55,7 +55,7 @@ async function getOrCreateSportType(name: string, newSportFlags?: NewSportFlags)
   const { data: existing, error: selectError } = await supabase
     .from('sport_types')
     .select('id')
-    .eq('user_id', USER_ID)
+    .eq('user_id', userId())
     .eq('name', name)
     .maybeSingle()
   if (selectError) throw selectError
@@ -64,7 +64,7 @@ async function getOrCreateSportType(name: string, newSportFlags?: NewSportFlags)
   const { data, error } = await supabase
     .from('sport_types')
     .insert(withOrigin({
-      user_id: USER_ID,
+      user_id: userId(),
       name,
       is_system: false,
       has_competitor: newSportFlags?.hasCompetitor ?? false,
@@ -93,7 +93,7 @@ export async function saveSportEntry(
   const sportTypeId = await getOrCreateSportType(entry.sport, newSportFlags)
   const { data, error } = await supabase
     .from('sport_sessions')
-    .insert(withOrigin({ user_id: USER_ID, ...toRow(entry, sportTypeId) }))
+    .insert(withOrigin({ user_id: userId(), ...toRow(entry, sportTypeId) }))
     .select(COLS)
     .single()
   if (error) throw error
