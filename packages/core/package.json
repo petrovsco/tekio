@@ -4,5 +4,8 @@
   "license": "Apache-2.0",
   "version": "0.0.0",
   "type": "module",
-  "exports": "./src/index.ts"
+  "exports": {
+    ".": "./src/index.ts",
+    "./catalogue": "./src/catalogue/index.ts"
+  }
 }

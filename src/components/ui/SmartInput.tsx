@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { KeyboardEvent } from 'react'
 import { FIELD } from './Input'
-import { normaliseExerciseName } from '../../lib/exerciseName'
+import { normaliseExerciseName } from '@tekio/core'
 import type { ExerciseAlias } from '../../types'
 
 interface SmartInputProps {

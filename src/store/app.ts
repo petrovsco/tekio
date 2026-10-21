@@ -49,7 +49,7 @@ import { exerciseAdaptationMap } from '@tekio/db'
 import { MISSED_PLAN_KEPT_DAYS } from '../constants/app'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
-import type { PatternKey } from '../constants/movementPatterns'
+import type { PatternKey } from '@tekio/core/catalogue'
 
 interface AppStore extends AppState {
   loading: boolean

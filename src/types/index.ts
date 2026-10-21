@@ -11,6 +11,7 @@ export type {
   Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
 }
+export type { ExerciseAlias } from '@tekio/core'
 
 export interface BodyweightEntry {
   id: string
@@ -23,12 +24,6 @@ export interface BodyweightEntry {
  * *name*, not at an exercise row, so the shipped list works for a user who has
  * not created a single exercise yet.
  */
-export interface ExerciseAlias {
-  alias: string
-  canonicalName: string
-  /** False for the list shipped with the app, true for this user's own rows. */
-  isOwn: boolean
-}
 
 export interface MobilityExercise {
   name: string

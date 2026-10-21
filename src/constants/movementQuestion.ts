@@ -3,7 +3,7 @@
 // area, then a plain name with a lift it is like. Every pattern appears exactly
 // once (src/test/exerciseCatalogue.test.ts holds it to that).
 
-import type { PatternKey } from './movementPatterns'
+import type { PatternKey } from '@tekio/core/catalogue'
 
 interface MovementChoice {
   pattern: PatternKey

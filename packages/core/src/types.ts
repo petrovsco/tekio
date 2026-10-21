@@ -191,3 +191,10 @@ export interface ReadinessInput {
 
 /** The day a calendar week starts on, the user's choice in Profile. */
 export type WeekStartDay = 'sunday' | 'monday'
+
+export interface ExerciseAlias {
+  alias: string
+  canonicalName: string
+  /** False for the list shipped with the app, true for this user's own rows. */
+  isOwn: boolean
+}

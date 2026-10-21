@@ -3,7 +3,7 @@ import { XAxis, YAxis, Tooltip, Line } from 'recharts'
 import { useAppStore } from '../../../store/app'
 import {
   today, toSetStr, toLiftSet, parseSets, setsProblem, liftSetProblem, rowFilled, fmtSet,
-  isTimedSet, type SetStr,
+  isTimedSet, type SetStr, normaliseExerciseName, resolveExerciseName,
 } from '@tekio/core'
 import {
   lastPerformance, bestOneRM, isSetPR, weightsPickerNames, uniqSorted, fmtDate,
@@ -20,9 +20,7 @@ import { Icon } from '../../ui/Icon'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
 import type { PlannedExercise, LiftSet } from '../../../types'
-import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor, isTimedName } from '../../../constants/exerciseCatalogue'
-import type { PatternKey } from '../../../constants/movementPatterns'
-import { normaliseExerciseName, resolveExerciseName } from '../../../lib/exerciseName'
+import { CATALOGUE_ALIASES, CATALOGUE_NAMES, catalogueEntryFor, isTimedName, type PatternKey } from '@tekio/core/catalogue'
 import { MovementQuestion } from './MovementQuestion'
 import { PlanCard } from './PlanCard'
 import { PlanSheet } from './PlanSheet'

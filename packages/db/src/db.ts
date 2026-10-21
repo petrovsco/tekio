@@ -10,6 +10,26 @@ export interface Db {
   readonly userId: string
 }
 
+/** The lift catalogue, loaded only when a write needs it: the web app keeps
+ *  it off the first paint, the API has it at hand. */
+type Catalogue = typeof import('@tekio/core/catalogue')
+
+/** What a write needs beyond a read (RFC 0094 step 2d). */
+export interface WriteDb extends Db {
+  /** Written to `origin` on the rows a write creates: null in production, else
+   *  the build that wrote it (tekio.rfcs/rfcs/done/0037-row-origin-tagging.md).
+   *  It marks, it never condemns: nothing deletes rows by it. */
+  readonly origin: string | null
+  catalogue(): Promise<Catalogue>
+}
+
+/** Stamp a row payload with its origin. In production the payload goes out
+ *  untouched, byte for byte what it was before origins existed. Only cascade
+ *  roots need it: children go with the row that owns them. */
+export function withOrigin<T extends object>(db: WriteDb, row: T): T {
+  return db.origin ? { ...row, origin: db.origin } : row
+}
+
 /**
  * This user's rows from `table`, newest first.
  *
