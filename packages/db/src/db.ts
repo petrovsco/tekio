@@ -58,10 +58,14 @@ export async function deleteRow(db: Db, table: string, id: string): Promise<void
   if (error) throw error
 }
 
-/** Whether row `id` of `table` is this user's. The API asks before an edit or
- *  a delete: until the lock (RFC 0003) the open policies still allow more. */
-export async function ownsRow(db: Db, table: string, id: string): Promise<boolean> {
-  const { data, error } = await db.client.from(table).select('id').eq('id', id).eq('user_id', db.userId)
+/** Whether every row of `table` in `ids` is this user's. The API asks before
+ *  an edit or a delete: until the lock (RFC 0003) the open policies still
+ *  allow more. */
+export async function ownsRows(db: Db, table: string, ids: string[]): Promise<boolean> {
+  const unique = [...new Set(ids)]
+  const { data, error } = await db.client.from(table).select('id').in('id', unique).eq('user_id', db.userId)
   if (error) throw error
-  return (data ?? []).length > 0
+  return (data ?? []).length === unique.length
 }
+
+export const ownsRow = (db: Db, table: string, id: string): Promise<boolean> => ownsRows(db, table, [id])

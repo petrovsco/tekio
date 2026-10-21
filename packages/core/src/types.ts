@@ -230,3 +230,56 @@ export interface MobilityEntry {
   exercises: MobilityExercise[]
   duration: number
 }
+
+/** A planned exercise (planned_exercises, RFC 0098): work written ahead of time
+ *  that has not happened yet. Never a `WeightEntry`, and never passed to a read,
+ *  so it cannot count as done. */
+export interface PlannedExercise {
+  id: string
+  date: string
+  exercise: string
+  /** Targets to aim at, not results. Named `targets`, not `sets`, so a plan
+   *  is not structurally a `WeightEntry` and no read will type-check with one. */
+  targets: LiftSet[]
+  plannedBy: 'user' | 'agent'
+  /** The logged entry this plan became; absent while it is still a plan. */
+  loggedAs?: string
+  /** Shared by the lifts of one superset or circuit (RFC 0106), and carried
+   *  unchanged onto the entries they are logged as. */
+  supersetId?: string
+}
+
+/** What a planned session is for (RFC 0104). Lifts are `PlannedExercise`. */
+export type PlannedKind = 'cardio' | 'sport' | 'mobility'
+
+/** A planned stretch: a name and the minutes to give it. */
+export interface PlannedStretch {
+  name: string
+  duration: number
+}
+
+/**
+ * A cardio, sport or mobility session written ahead of time (RFC 0104). Like a
+ * `PlannedExercise`, it counts for nothing until it is logged, and its fields
+ * are targets: logging may use other numbers.
+ */
+export interface PlannedSession {
+  id: string
+  date: string
+  kind: PlannedKind
+  /** The cardio type or the sport; empty for mobility. */
+  name: string
+  /** Target minutes (cardio, sport). */
+  duration?: number
+  /** Target km (cardio). */
+  distance?: number
+  format?: CardioFormat
+  boutSeconds?: number
+  /** The stretches (mobility). Named apart from `MobilityEntry.exercises` so a
+   *  plan is not structurally an entry and no read will type-check with one. */
+  stretches?: PlannedStretch[]
+  notes?: string
+  plannedBy: 'user' | 'agent'
+  /** The logged entry this plan became; absent while it is still a plan. */
+  loggedAs?: string
+}

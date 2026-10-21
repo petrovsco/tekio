@@ -89,6 +89,8 @@ describe('the API reads', () => {
       '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/weights', '/api/weights/{id}',
       ...['cardio', 'sleep', 'bodyweight', 'donations', 'sauna', 'cold', 'sport', 'mobility'].flatMap(p => [`/api/${p}`, `/api/${p}/{id}`]),
       '/api/readiness/{date}/morning-hrv', '/api/readiness/{date}/check-in',
+      '/api/plans/lifts', '/api/plans/lifts/{id}', '/api/plans/sessions', '/api/plans/sessions/{id}',
+      '/api/plans/lifts/{id}/logged', '/api/plans/sessions/{id}/logged',
     ])
   })
 })

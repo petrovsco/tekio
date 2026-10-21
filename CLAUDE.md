@@ -209,7 +209,10 @@ Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 (`cardio`, `sport`, `sleep`, `sauna`, `cold`, `bodyweight`, `donations`, `mobility`)
 `POST /api/<log>` and `PUT`/`DELETE /api/<log>/{id}`, and the morning's
 `PUT /api/readiness/{date}/morning-hrv` and `/check-in`, all built in
-[packages/api/src/capture.ts](packages/api/src/capture.ts). A write waits for Auth to
+[packages/api/src/capture.ts](packages/api/src/capture.ts); and the plans,
+`/api/plans/lifts` and `/api/plans/sessions` in the same three shapes, with
+`PATCH /api/plans/lifts` to group or move lifts and `PUT .../{id}/logged` to point a
+plan at the entry it became ([packages/api/src/plans.ts](packages/api/src/plans.ts)). A write waits for Auth to
 accept the token, an edit or delete first checks the entry is the caller's own, and an
 entry refused for what it holds (`KnownError` from `@tekio/core`) comes back as a 400
 with its reason. A call carries the Supabase
@@ -224,7 +227,7 @@ imports; the bundle is build output and is not committed.
 
 ### Data layer (`src/lib/db/`)
 
-One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. The loaders the reads stand on (weights, cardio, sport, sleep, donations, readiness inputs, muscles, adaptation targets, the profile) and their row ↔ entry mappers live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument so the API can load the same rows with the caller's token; the files here call them with `appDb()` from [_rows.ts](src/lib/db/_rows.ts). A domain's writes move there with its API capture route (weights, the other logs, mobility and the morning's inputs); the rest still live here. Key points:
+One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. The loaders the reads stand on (weights, cardio, sport, sleep, donations, readiness inputs, muscles, adaptation targets, the profile) and their row ↔ entry mappers live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument so the API can load the same rows with the caller's token; the files here call them with `appDb()` from [_rows.ts](src/lib/db/_rows.ts). Every capture write lives there too, beside its loader, so the API writes a row exactly as the app does. Key points:
 
 - **Weights** ([packages/db/src/weights.ts](packages/db/src/weights.ts), called through [src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExerciseRow` ([packages/db/src/exercises.ts](packages/db/src/exercises.ts)), the one place a typed name becomes a row. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`. Its writes live in `@tekio/db` so the API logs a lift exactly as the app does; they take a `WriteDb`, which adds the row origin and a lazy loader for the lift catalogue (`@tekio/core/catalogue`, kept off the first paint).
 - **Section config** ([src/lib/db/sectionConfig.ts](src/lib/db/sectionConfig.ts)): `user_section_config` table. On first load, defaults are seeded via upsert with `ignoreDuplicates: true`.

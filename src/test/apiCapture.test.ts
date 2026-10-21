@@ -30,8 +30,8 @@ function fakeSupabase() {
     const table = url.split('/rest/v1/')[1].split('?')[0]
     const body = init?.body ? JSON.parse(String(init.body)) : null
     calls.push({ method, table, url, body, auth })
-    if (method === 'GET' && url.includes('select=id&id=eq.') && url.includes('user_id=eq.rows-owner')) {
-      return json(url.includes('id=eq.own-1') ? [{ id: 'own-1' }] : [])
+    if (method === 'GET' && url.includes('select=id&id=in.') && url.includes('user_id=eq.rows-owner')) {
+      return json(url.includes('id=in.(own-1)') ? [{ id: 'own-1' }] : [])
     }
     if (method === 'GET' && table === 'sport_types') return json(null)
     if (method === 'POST' && table === 'sport_types') return json({ id: 'st-new' }, 201)

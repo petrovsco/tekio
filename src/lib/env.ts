@@ -33,22 +33,7 @@ export const IS_PRODUCTION = APP_ENV === 'production'
  * The value written to `origin` on rows this build creates — null in
  * production, so a row says which build wrote it. It marks, it never condemns:
  * a staging row is real data and nothing deletes rows by this tag
- * (supabase/README.md, the migration policy).
+ * (supabase/README.md, the migration policy). `withOrigin` in @tekio/db
+ * stamps it on a write; in production it sends the row untouched.
  */
 export const ROW_ORIGIN: AppEnv | null = IS_PRODUCTION ? null : APP_ENV
-
-/**
- * Stamp a row payload with its origin.
- *
- * In production `ROW_ORIGIN` is null and this is the identity function, so a
- * production build sends byte-identical payloads to the ones it sent before
- * roadmap 037 — that is the guarantee that the tagging cannot break production.
- * It is also why this returns the row untouched instead of writing an explicit
- * `origin: null`.
- *
- * Only *cascade roots* need this: children (`session_exercises`,
- * `session_sets`, …) are deleted along with the row that owns them.
- */
-export function withOrigin<T extends object>(row: T): T {
-  return ROW_ORIGIN ? { ...row, origin: ROW_ORIGIN } : row
-}

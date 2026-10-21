@@ -1,0 +1,124 @@
+import type { PlannedExercise, LiftSet } from '@tekio/core'
+import { userRows, withOrigin, deleteRow, type Db, type WriteDb } from './db'
+
+// ── Planned exercises (planned_exercises, RFC 0098) ──────────────────────────
+// A table of its own, which no read selects from: a plan cannot count as done
+// until it is logged through `saveWeightEntry`, like any other set.
+
+type PlanRow = {
+  id: string
+  plan_date: string
+  exercise: string
+  target_sets: { weight: number | string; reps?: number | string; seconds?: number | string }[] | null
+  sort_order: number
+  planned_by: 'user' | 'agent'
+  session_exercise_id: string | null
+  superset_group_id: string | null
+}
+
+const COLS = 'id, plan_date, exercise, target_sets, sort_order, planned_by, session_exercise_id, superset_group_id'
+
+function mapRow(r: PlanRow): PlannedExercise {
+  return {
+    id: r.id,
+    date: r.plan_date,
+    exercise: r.exercise,
+    // A timed target (RFC 0107) is `{"weight": 0, "seconds": 45}`: one rep, held.
+    targets: (r.target_sets ?? []).map(s => s.seconds != null
+      ? { weight: Number(s.weight), reps: 1, seconds: Number(s.seconds) }
+      : { weight: Number(s.weight), reps: Number(s.reps) }),
+    plannedBy: r.planned_by,
+    ...(r.session_exercise_id ? { loggedAs: r.session_exercise_id } : {}),
+    ...(r.superset_group_id ? { supersetId: r.superset_group_id } : {}),
+  }
+}
+
+/** Newest date first; within a day, in the order they were planned. */
+export async function loadPlans(db: Db): Promise<PlannedExercise[]> {
+  const rows = (await userRows(db, 'planned_exercises', COLS, 'plan_date')) as PlanRow[]
+  return [...rows]
+    .sort((a, b) => b.plan_date.localeCompare(a.plan_date) || a.sort_order - b.sort_order)
+    .map(mapRow)
+}
+
+export async function savePlan(
+  db: WriteDb,
+  plan: { date: string; exercise: string; targets: LiftSet[]; supersetId?: string },
+  plannedBy: PlannedExercise['plannedBy'] = 'user',
+): Promise<PlannedExercise> {
+  const { count } = await db.client
+    .from('planned_exercises')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', db.userId)
+    .eq('plan_date', plan.date)
+  const { data, error } = await db.client
+    .from('planned_exercises')
+    .insert(withOrigin(db, {
+      user_id: db.userId,
+      plan_date: plan.date,
+      exercise: plan.exercise,
+      target_sets: plan.targets,
+      sort_order: count ?? 0,
+      planned_by: plannedBy,
+      superset_group_id: plan.supersetId ?? null,
+    }))
+    .select(COLS)
+    .single()
+  if (error) throw error
+  return mapRow(data as PlanRow)
+}
+
+/** Change what a plan says: its day, its exercise, its targets, and the
+ *  superset it belongs to (`null` takes it out of one). */
+export async function updatePlan(
+  db: Db,
+  id: string,
+  patch: { date: string; exercise: string; targets: LiftSet[]; supersetId?: string | null },
+): Promise<void> {
+  const { error } = await db.client
+    .from('planned_exercises')
+    .update({
+      plan_date: patch.date,
+      exercise: patch.exercise,
+      target_sets: patch.targets,
+      ...(patch.supersetId !== undefined ? { superset_group_id: patch.supersetId } : {}),
+    })
+    .eq('id', id)
+  if (error) throw error
+}
+
+/** Puts plans into one superset (RFC 0106), or moves them to another day. */
+export async function patchPlans(db: Db, ids: string[], patch: { supersetId?: string; date?: string }): Promise<void> {
+  if (ids.length === 0) return
+  const { error } = await db.client
+    .from('planned_exercises')
+    .update({
+      ...(patch.supersetId !== undefined ? { superset_group_id: patch.supersetId } : {}),
+      ...(patch.date !== undefined ? { plan_date: patch.date } : {}),
+    })
+    .in('id', ids)
+  if (error) throw error
+}
+
+/** The plan became logged work: point it at the entry it became. */
+export async function markPlanLogged(db: Db, id: string, sessionExerciseId: string): Promise<void> {
+  const { error } = await db.client
+    .from('planned_exercises')
+    .update({ session_exercise_id: sessionExerciseId })
+    .eq('id', id)
+  if (error) throw error
+}
+
+export const deletePlan = (db: Db, id: string): Promise<void> => deleteRow(db, 'planned_exercises', id)
+
+/** Deletes the plans dated before `day` that were never logged: missed, and
+ *  kept on the card a week to be rescheduled or removed (RFC 0104). */
+export async function pruneMissedPlans(db: Db, day: string): Promise<void> {
+  const { error } = await db.client
+    .from('planned_exercises')
+    .delete()
+    .eq('user_id', db.userId)
+    .lt('plan_date', day)
+    .is('session_exercise_id', null)
+  if (error) throw error
+}

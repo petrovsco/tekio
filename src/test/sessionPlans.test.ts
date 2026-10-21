@@ -1,17 +1,16 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 
 // RFC 0104: cardio, sport and mobility plans read back from their table the
 // way an agent writes them, and a plan's link column follows its kind.
 
-vi.mock('../lib/supabase', () => ({ supabase: {} }))
-const rows = vi.hoisted(() => ({ value: [] as unknown[] }))
-vi.mock('../lib/db/_rows', () => ({
-  userRows: vi.fn(async () => rows.value),
-  deleteRow: vi.fn(async () => {}),
-}))
+import { loadSessionPlans as dbLoad, type Db } from '@tekio/db'
+import { planChips, planTitle } from '../components/tabs/plans/planText'
 
-const { loadSessionPlans } = await import('../lib/db/sessionPlans')
-const { planChips, planTitle } = await import('../components/tabs/plans/planText')
+// A client that answers every select with `rows.value`.
+const rows = { value: [] as unknown[] }
+const chain = { select: () => chain, eq: () => chain, order: async () => ({ data: rows.value, error: null }) }
+const db = { client: { from: () => chain }, userId: 'u' } as unknown as Db
+const loadSessionPlans = () => dbLoad(db)
 
 const base = {
   notes: null, sort_order: 0, planned_by: 'agent',

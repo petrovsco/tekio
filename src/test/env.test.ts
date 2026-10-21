@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { WriteDb } from '@tekio/db'
 
 // src/lib/env.ts resolves the environment once at module load, so every case
 // here re-imports it with a fresh module registry.
@@ -52,24 +53,29 @@ describe('environment resolution (roadmap 037)', () => {
 describe('withOrigin', () => {
   afterEach(() => vi.unstubAllEnvs())
 
+  // The app's writes stamp ROW_ORIGIN through `withOrigin` in @tekio/db.
+  const stamp = async (hostname: string, row: object) => {
+    const { ROW_ORIGIN } = await loadEnv({ hostname })
+    const { withOrigin } = await import('@tekio/db')
+    return { ROW_ORIGIN, stamped: withOrigin({ origin: ROW_ORIGIN } as WriteDb, row) }
+  }
+
   // The load-bearing guarantee: a production build must send byte-identical
   // payloads to the ones it sent before 037, so the tagging cannot break
   // production. That means no `origin` key at all — not `origin: null`.
   it('is the identity function in production', async () => {
-    const { withOrigin, ROW_ORIGIN } = await loadEnv({ hostname: 'tekio.fyi' })
     const row = { user_id: 'u', session_date: '2026-09-01' }
+    const { ROW_ORIGIN, stamped } = await stamp('tekio.fyi', row)
     expect(ROW_ORIGIN).toBeNull()
-    expect(withOrigin(row)).toEqual(row)
-    expect('origin' in withOrigin(row)).toBe(false)
+    expect(stamped).toEqual(row)
+    expect('origin' in stamped).toBe(false)
   })
 
   it('stamps the environment on staging', async () => {
-    const { withOrigin } = await loadEnv({ hostname: 'stg.tekio.fyi' })
-    expect(withOrigin({ user_id: 'u' })).toEqual({ user_id: 'u', origin: 'staging' })
+    expect((await stamp('stg.tekio.fyi', { user_id: 'u' })).stamped).toEqual({ user_id: 'u', origin: 'staging' })
   })
 
   it('stamps dev too, so localhost verification is identifiable', async () => {
-    const { withOrigin } = await loadEnv({ hostname: 'localhost' })
-    expect(withOrigin({ user_id: 'u' })).toEqual({ user_id: 'u', origin: 'dev' })
+    expect((await stamp('localhost', { user_id: 'u' })).stamped).toEqual({ user_id: 'u', origin: 'dev' })
   })
 })
