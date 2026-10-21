@@ -17,6 +17,7 @@ const WeightsTab = lazy(() => import('./components/tabs/weights/WeightsTab').the
 const CardioTab = lazy(() => import('./components/tabs/CardioTab').then(whileReloading).then(m => ({ default: m.CardioTab })))
 const MobilityTab = lazy(() => import('./components/tabs/MobilityTab').then(whileReloading).then(m => ({ default: m.MobilityTab })))
 const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(whileReloading).then(m => ({ default: m.ProfileTab })))
+const SettingsTab = lazy(() => import('./components/tabs/SettingsTab').then(whileReloading).then(m => ({ default: m.SettingsTab })))
 // Only a signed-out start ever draws it (RFC 0003).
 const SignIn = lazy(() => import('./components/layout/SignIn').then(whileReloading).then(m => ({ default: m.SignIn })))
 
@@ -26,7 +27,7 @@ const SignIn = lazy(() => import('./components/layout/SignIn').then(whileReloadi
 // (roadmap 035), and Water, folded with them, was deleted 2026-10-04 (RFC 0089)
 // — three sections, one slot of R1 headroom.
 type DrawerTab = 'Weights' | 'Cardio' | 'Mobility'
-type Tab = 'Home' | 'Adaptations' | 'Profile' | DrawerTab
+type Tab = 'Home' | 'Adaptations' | 'Profile' | 'Settings' | DrawerTab
 
 function TabContent(
   { tab, setTab, focusMuscle }: { tab: Tab; setTab: (t: string, muscle?: string) => void; focusMuscle: string | null },
@@ -38,6 +39,7 @@ function TabContent(
     case 'Cardio': return <CardioTab />
     case 'Mobility': return <MobilityTab />
     case 'Profile': return <ProfileTab focus={focusMuscle} />
+    case 'Settings': return <SettingsTab />
     // Recovery, Donations and Body Weight have no tab — they are reads and
     // captures on Home — and Habits and Water have none because they are
     // deleted. Fall

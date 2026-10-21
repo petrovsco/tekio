@@ -8,7 +8,7 @@ import type { SVGProps } from 'react'
 
 export type IconName =
   | 'home' | 'weights' | 'cardio' | 'menu' | 'mobility'
-  | 'adaptations' | 'profile'
+  | 'adaptations' | 'profile' | 'settings'
   | 'close' | 'trash' | 'edit' | 'chevronDown' | 'chevronUp' | 'plus' | 'check'
   | 'warmup' | 'sport' | 'recovery' | 'drag' | 'export' | 'import'
   | 'info' | 'list' | 'search' | 'heart' | 'pause' | 'arrowRight' | 'spinner' | 'sync'
@@ -28,6 +28,8 @@ const PATHS: Record<IconName, string> = {
   // Overlapping rings — the qualities read together, not alone.
   adaptations: 'M9.5 8.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9ZM14.5 6.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z',
   profile: 'M12 3.5a4 4 0 1 0 0 8 4 4 0 0 0 0-8ZM4.5 20.5c0-3.6 3.4-6 7.5-6s7.5 2.4 7.5 6',
+  // Two sliders, each with its knob — how the app behaves, not who uses it.
+  settings: 'M4 7.5h9M17 7.5h3M15 5.5v4M4 16.5h3M11 16.5h9M9 14.5v4',
   close: 'M6 6l12 12M18 6 6 18',
   trash: 'M4 6.5h16M9.5 6.5V4h5v2.5M6.5 6.5 7.5 20h9l1-13.5M10.5 10v6M13.5 10v6',
   edit: 'M4 20h4l10.5-10.5a2 2 0 0 0-2.8-2.8L5 17.5ZM15 6.5l2.5 2.5',

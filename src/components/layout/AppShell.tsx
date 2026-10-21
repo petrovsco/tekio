@@ -23,7 +23,8 @@ const TAB_TITLES: Record<string, string> = {
   Cardio: 'Cardio',
   Mobility: 'Mobility',
   Donations: 'Blood Donations',
-  Profile: 'Profile & Settings',
+  Profile: 'Profile',
+  Settings: 'Settings',
 }
 
 interface AppShellProps {
@@ -104,7 +105,7 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
               <button
                 onClick={() => setTab('Profile')}
                 className="w-9 h-9 -mr-2 flex items-center justify-center text-ink-2 hover:text-ink cursor-pointer transition-colors"
-                aria-label="Profile & Settings"
+                aria-label="Profile"
               >
                 <Icon name="profile" />
               </button>

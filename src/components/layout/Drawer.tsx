@@ -88,9 +88,11 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
           ))}
         </div>
 
-        {/* Profile & Settings */}
+        {/* Who is using the app, and how it behaves — two pages since the
+            split of "Profile & Settings". */}
         <GroupLabel>Account</GroupLabel>
-        <NavItem icon="profile" label="Profile & Settings" active={tab === 'Profile'} onClick={go('Profile')} />
+        <NavItem icon="profile" label="Profile" active={tab === 'Profile'} onClick={go('Profile')} />
+        <NavItem icon="settings" label="Settings" active={tab === 'Settings'} onClick={go('Settings')} />
         <div className="h-4" />
       </div>
     </>
