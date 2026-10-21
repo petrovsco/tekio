@@ -215,3 +215,18 @@ export interface ExposureBout {
   tempC?: number
   notes?: string
 }
+
+export interface MobilityExercise {
+  name: string
+  duration: number
+  notes: string
+  /** Muscle groups this stretch targets (names); drives weekly per-group volume. */
+  muscleGroups?: string[]
+}
+
+export interface MobilityEntry {
+  id: string
+  date: string
+  exercises: MobilityExercise[]
+  duration: number
+}

@@ -2,8 +2,8 @@
 import { describe, it, expect } from 'vitest'
 import { createApi } from '@tekio/api'
 
-// RFC 0094 step 2d: the one-row logs (cardio, sport, sleep, sauna, cold, body
-// weight, donations) written through the API land as the app writes them, as
+// RFC 0094 step 2d: the one-entry logs (cardio, sport, sleep, sauna, cold, body
+// weight, donations, mobility) and the morning's readiness inputs written through the API land as the app writes them, as
 // the caller, and only on the caller's own rows. Supabase is a fake that records
 // every request; every row, id and reading is invented.
 
@@ -30,13 +30,18 @@ function fakeSupabase() {
     const table = url.split('/rest/v1/')[1].split('?')[0]
     const body = init?.body ? JSON.parse(String(init.body)) : null
     calls.push({ method, table, url, body, auth })
-    if (method === 'GET' && url.includes('select=id&') && url.includes('user_id=eq.rows-owner')) {
+    if (method === 'GET' && url.includes('select=id&id=eq.') && url.includes('user_id=eq.rows-owner')) {
       return json(url.includes('id=eq.own-1') ? [{ id: 'own-1' }] : [])
     }
     if (method === 'GET' && table === 'sport_types') return json(null)
     if (method === 'POST' && table === 'sport_types') return json({ id: 'st-new' }, 201)
     if (method === 'POST' && table === 'cardio_sessions') return json({ id: 'c-new', ...body, source: 'manual' }, 201)
     if (method === 'POST' && table === 'sport_sessions') return json({ id: 's-new', ...body, sport_types: { name: 'Squash' } }, 201)
+    if (method === 'POST' && table === 'mobility_sessions') return json({ id: 'm-new' }, 201)
+    if (method === 'GET' && table === 'exercises' && url.includes('name=eq.')) return json({ id: 'ex-new' })
+    if (method === 'POST' && table === 'readiness_inputs') {
+      return json({ id: 'ri-1', log_date: body.log_date, morning_hrv: null, ...body }, 201)
+    }
     if (method === 'POST' && table === 'bodyweight_logs') return json({ id: 'bw-1', ...body }, 201)
     if (method === 'GET') return json(one ? null : [])
     return json(null, method === 'POST' ? 201 : 204)
@@ -52,7 +57,7 @@ const send = (api: ReturnType<typeof createApi>, method: string, path: string, b
     ...(body ? { body: JSON.stringify(body) } : {}),
   })
 
-describe('the one-row logs through the API', () => {
+describe('the one-entry logs through the API', () => {
   it('logs a cardio session as the app does, as the caller, tagged with the build', async () => {
     const { api, calls, writes } = fakeSupabase()
     const res = await send(api, 'POST', '/api/cardio', {
@@ -96,6 +101,32 @@ describe('the one-row logs through the API', () => {
       ['PATCH', 'sleep_logs', { log_date: DATE, duration_hours: 7.5, quality: 4, notes: null }],
       ['DELETE', 'sauna_sessions', null],
     ])
+  })
+
+  it('logs a mobility session with its stretches, counting its minutes', async () => {
+    const { api, writes } = fakeSupabase()
+    const res = await send(api, 'POST', '/api/mobility', {
+      date: DATE, exercises: [{ name: 'Couch stretch', duration: 4 }, { name: 'Pigeon', duration: 3, notes: 'left tight' }],
+    })
+    expect(res.status).toBe(201)
+    expect((await res.json()).duration).toBe(7)
+    const w = writes()
+    expect(w[0]).toMatchObject({ table: 'mobility_sessions', body: { user_id: 'rows-owner', session_date: DATE, total_duration: 7, origin: 'staging' } })
+    expect(w.find(c => c.table === 'mobility_exercises')?.body).toEqual([
+      { session_id: 'm-new', exercise_name: 'Couch stretch', duration_minutes: 4, notes: null, exercise_id: 'ex-new' },
+      { session_id: 'm-new', exercise_name: 'Pigeon', duration_minutes: 3, notes: 'left tight', exercise_id: 'ex-new' },
+    ])
+  })
+
+  it("saves the day's check-in without touching its morning HRV", async () => {
+    const { api, writes } = fakeSupabase()
+    const res = await send(api, 'PUT', `/api/readiness/${DATE}/check-in`, { energy: 4, soreness: 2, sleepQuality: 3, stress: 2, mood: 4 })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toMatchObject({ date: DATE, checkIn: { energy: 4, soreness: 2, sleepQuality: 3, stress: 2, mood: 4 } })
+    expect(writes()[0].body).toEqual({
+      user_id: 'rows-owner', log_date: DATE, energy: 4, soreness: 2, sleep_quality: 3, stress: 2, mood: 4, origin: 'staging',
+    })
+    expect((await send(api, 'PUT', `/api/readiness/${DATE}/morning-hrv`, { ms: 900 })).status).toBe(400)
   })
 
   it('refuses a malformed entry or a missing token before writing anything', async () => {

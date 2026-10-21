@@ -1,11 +1,11 @@
-import type { ReadinessInput } from '@tekio/core'
-import { userRows, type Db } from './db'
+import type { ReadinessInput, CheckInAnswers } from '@tekio/core'
+import { userRows, withOrigin, type Db, type WriteDb } from './db'
 
 // ── Typed readiness inputs (readiness_inputs, RFC 0092) ─────────────────────
 // One row per morning. A save writes only its own columns, so typing the
 // morning HRV never clears a check-in on the same day, and the other way round.
 
-export type ReadinessRow = {
+type ReadinessRow = {
   id: string
   log_date: string
   morning_hrv: number | string | null
@@ -16,9 +16,9 @@ export type ReadinessRow = {
   mood: number | null
 }
 
-export const READINESS_COLS = 'id, log_date, morning_hrv, energy, soreness, sleep_quality, stress, mood'
+const READINESS_COLS = 'id, log_date, morning_hrv, energy, soreness, sleep_quality, stress, mood'
 
-export function mapReadinessRow(r: ReadinessRow): ReadinessInput {
+function mapReadinessRow(r: ReadinessRow): ReadinessInput {
   const complete = r.energy != null && r.soreness != null && r.sleep_quality != null
     && r.stress != null && r.mood != null
   return {
@@ -35,3 +35,21 @@ export async function loadReadinessInputs(db: Db): Promise<ReadinessInput[]> {
   const rows = await userRows(db, 'readiness_inputs', READINESS_COLS, 'log_date')
   return rows.map(mapReadinessRow)
 }
+
+async function upsertDay(db: WriteDb, date: string, cols: Record<string, number>): Promise<ReadinessInput> {
+  const { data, error } = await db.client
+    .from('readiness_inputs')
+    .upsert(withOrigin(db, { user_id: db.userId, log_date: date, ...cols }), { onConflict: 'user_id,log_date' })
+    .select(READINESS_COLS)
+    .single()
+  if (error) throw error
+  return mapReadinessRow(data as ReadinessRow)
+}
+
+export const saveMorningHrv = (db: WriteDb, date: string, ms: number): Promise<ReadinessInput> =>
+  upsertDay(db, date, { morning_hrv: ms })
+
+export const saveCheckIn = (db: WriteDb, date: string, a: CheckInAnswers): Promise<ReadinessInput> =>
+  upsertDay(db, date, {
+    energy: a.energy, soreness: a.soreness, sleep_quality: a.sleepQuality, stress: a.stress, mood: a.mood,
+  })
