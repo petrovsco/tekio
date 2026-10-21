@@ -198,3 +198,20 @@ export interface ExerciseAlias {
   /** False for the list shipped with the app, true for this user's own rows. */
   isOwn: boolean
 }
+
+export interface BodyweightEntry {
+  id: string
+  date: string
+  weight: number
+}
+
+/** One timed heat- or cold-exposure bout. Sauna and cold plunge are the same
+ *  shape; the table a row came from is what tells them apart. */
+export interface ExposureBout {
+  id: string
+  date: string
+  duration: number
+  /** Temperature in °C, if tracked. */
+  tempC?: number
+  notes?: string
+}

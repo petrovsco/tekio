@@ -1,100 +1,20 @@
-import { supabase } from '../supabase'
-import { userId } from '../session'
 import type { SleepEntry, SaunaEntry, ColdEntry } from '../../types'
-import { withOrigin } from '../env'
-import { appDb, userRows, deleteRow } from './_rows'
-import { SLEEP_COLS, mapSleep, loadSleep as dbLoadSleep, type SleepRow } from '@tekio/db'
+import * as db from '@tekio/db'
+import { appDb } from './_rows'
 
-// ── Sleep (sleep_logs: log_date / duration_hours / quality) ─────────────────
-// Read and mapped in `@tekio/db`; the writes are here.
+// Sleep, sauna and cold: read and written in `@tekio/db`, so the API logs them
+// exactly as the app does (RFC 0094 step 2d).
+export const loadSleep = (): Promise<SleepEntry[]> => db.loadSleep(appDb())
+export const saveSleepEntry = (entry: Omit<SleepEntry, 'id'>): Promise<SleepEntry> => db.saveSleepEntry(appDb(), entry)
+export const updateSleepEntry = (id: string, patch: Omit<SleepEntry, 'id'>): Promise<void> => db.updateSleepEntry(appDb(), id, patch)
+export const deleteSleepEntry = (id: string): Promise<void> => db.deleteSleepEntry(appDb(), id)
 
-/** The columns a save and an update both write. Deliberately not `sleep_score`,
- *  `hrv` or `resting_hr`: those are Garmin's and a typed night must not clear
- *  them — see the upsert note below. */
-const sleepRow = (entry: Omit<SleepEntry, 'id'>) => ({
-  log_date: entry.date,
-  duration_hours: entry.hours,
-  quality: entry.quality ?? null,
-  notes: entry.notes ?? null,
-})
+export const loadSauna = (): Promise<SaunaEntry[]> => db.loadExposure(appDb(), 'sauna_sessions')
+export const saveSaunaEntry = (entry: Omit<SaunaEntry, 'id'>): Promise<SaunaEntry> => db.saveExposure(appDb(), 'sauna_sessions', entry)
+export const updateSaunaEntry = (id: string, patch: Omit<SaunaEntry, 'id'>): Promise<void> => db.updateExposure(appDb(), 'sauna_sessions', id, patch)
+export const deleteSaunaEntry = (id: string): Promise<void> => db.deleteExposure(appDb(), 'sauna_sessions', id)
 
-export const loadSleep = (): Promise<SleepEntry[]> => dbLoadSleep(appDb())
-
-export async function saveSleepEntry(entry: Omit<SleepEntry, 'id'>): Promise<SleepEntry> {
-  // Upsert on the per-night key: if the daily Garmin sync already created this
-  // night, a manual add updates the subjective fields and leaves the objective
-  // sleep_score untouched (it isn't in the payload). The origin tag is safe on
-  // the conflict branch too: the write-once trigger keeps the row's own origin.
-  const { data, error } = await supabase
-    .from('sleep_logs')
-    .upsert(
-      withOrigin({ user_id: userId(), source: 'manual', ...sleepRow(entry) }),
-      { onConflict: 'user_id,log_date' }
-    )
-    .select(SLEEP_COLS)
-    .single()
-  if (error) throw error
-  return mapSleep(data as SleepRow)
-}
-
-export async function updateSleepEntry(id: string, patch: Omit<SleepEntry, 'id'>): Promise<void> {
-  const { error } = await supabase.from('sleep_logs').update(sleepRow(patch)).eq('id', id)
-  if (error) throw error
-}
-
-export const deleteSleepEntry = (id: string): Promise<void> => deleteRow('sleep_logs', id)
-
-// ── Sauna & Cold (session tables, identical shape) ──────────────────────────
-
-function mapSession(r: { id: string; session_date: string; duration_minutes: number | string; temperature_c: number | string | null; notes: string | null }) {
-  return {
-    id: r.id,
-    date: r.session_date,
-    duration: Number(r.duration_minutes),
-    tempC: r.temperature_c != null ? Number(r.temperature_c) : undefined,
-    notes: r.notes ?? undefined,
-  }
-}
-
-const SESSION_COLS = 'id, session_date, duration_minutes, temperature_c, notes'
-
-type SessionEntry = { date: string; duration: number; tempC?: number; notes?: string }
-type SessionTable = 'sauna_sessions' | 'cold_sessions'
-
-/** The columns a save and an update both write. */
-const sessionRow = (entry: SessionEntry) => ({
-  session_date: entry.date,
-  duration_minutes: entry.duration,
-  temperature_c: entry.tempC ?? null,
-  notes: entry.notes ?? null,
-})
-
-async function loadSessions(table: SessionTable) {
-  const rows = await userRows(table, SESSION_COLS, 'session_date')
-  return rows.map(mapSession)
-}
-
-async function saveSession(table: SessionTable, entry: SessionEntry) {
-  const { data, error } = await supabase
-    .from(table)
-    .insert(withOrigin({ user_id: userId(), ...sessionRow(entry) }))
-    .select(SESSION_COLS)
-    .single()
-  if (error) throw error
-  return mapSession(data)
-}
-
-async function updateSession(table: SessionTable, id: string, patch: SessionEntry) {
-  const { error } = await supabase.from(table).update(sessionRow(patch)).eq('id', id)
-  if (error) throw error
-}
-
-export const loadSauna = (): Promise<SaunaEntry[]> => loadSessions('sauna_sessions')
-export const saveSaunaEntry = (entry: Omit<SaunaEntry, 'id'>): Promise<SaunaEntry> => saveSession('sauna_sessions', entry)
-export const updateSaunaEntry = (id: string, patch: Omit<SaunaEntry, 'id'>): Promise<void> => updateSession('sauna_sessions', id, patch)
-export const deleteSaunaEntry = (id: string): Promise<void> => deleteRow('sauna_sessions', id)
-
-export const loadCold = (): Promise<ColdEntry[]> => loadSessions('cold_sessions')
-export const saveColdEntry = (entry: Omit<ColdEntry, 'id'>): Promise<ColdEntry> => saveSession('cold_sessions', entry)
-export const updateColdEntry = (id: string, patch: Omit<ColdEntry, 'id'>): Promise<void> => updateSession('cold_sessions', id, patch)
-export const deleteColdEntry = (id: string): Promise<void> => deleteRow('cold_sessions', id)
+export const loadCold = (): Promise<ColdEntry[]> => db.loadExposure(appDb(), 'cold_sessions')
+export const saveColdEntry = (entry: Omit<ColdEntry, 'id'>): Promise<ColdEntry> => db.saveExposure(appDb(), 'cold_sessions', entry)
+export const updateColdEntry = (id: string, patch: Omit<ColdEntry, 'id'>): Promise<void> => db.updateExposure(appDb(), 'cold_sessions', id, patch)
+export const deleteColdEntry = (id: string): Promise<void> => db.deleteExposure(appDb(), 'cold_sessions', id)

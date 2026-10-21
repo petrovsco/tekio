@@ -4,13 +4,17 @@
 // requests are checked against.
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { PostgrestClient } from '@supabase/postgrest-js'
-import { KnownError, homeRead, adaptationsRead, readinessRead, type ReadRows } from '@tekio/core'
+import { KnownError, homeRead, adaptationsRead, readinessRead, type ReadRows, type ExposureBout } from '@tekio/core'
+import * as rows from '@tekio/db'
 import {
-  loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, type WriteDb,
+  loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, ownsRow, type WriteDb,
 } from '@tekio/db'
 import { bearer, tokenUserId, tokenAccepted } from './auth'
 import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
 import { logWeightRoute, editWeightRoute, deleteWeightRoute } from './weights'
+import {
+  cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, type CaptureRoutes,
+} from './capture'
 
 export interface ApiConfig {
   supabaseUrl: string
@@ -118,6 +122,65 @@ export function createApi(config: ApiConfig) {
     if (!(await loadOwnWeightSets(db, id))) return c.json(missing, 404)
     await deleteWeightEntry(db, id)
     return c.body(null, 204)
+  })
+
+  /** The three routes of a log that is one row each. Edits and deletes ask
+   *  first whether the row is the caller's, as the weights routes do. */
+  function capture<B>(
+    r: CaptureRoutes,
+    table: string,
+    ops: {
+      save(db: WriteDb, body: B): Promise<unknown>
+      replace(db: WriteDb, id: string, body: B): Promise<void>
+      remove(db: WriteDb, id: string): Promise<void>
+    },
+  ) {
+    const gone = { error: `No such ${r.noun} of yours.` }
+    app.openapi(r.log, async c => {
+      const db = await writerFor(c.req.header('authorization'))
+      if (!db) return c.json(refused, 401)
+      return c.json(await ops.save(db, c.req.valid('json') as B) as never, 201)
+    })
+    app.openapi(r.replace, async c => {
+      const db = await writerFor(c.req.header('authorization'))
+      if (!db) return c.json(refused, 401)
+      const { id } = c.req.valid('param')
+      if (!(await ownsRow(db, table, id))) return c.json(gone, 404)
+      await ops.replace(db, id, c.req.valid('json') as B)
+      return c.body(null, 204)
+    })
+    app.openapi(r.remove, async c => {
+      const db = await writerFor(c.req.header('authorization'))
+      if (!db) return c.json(refused, 401)
+      const { id } = c.req.valid('param')
+      if (!(await ownsRow(db, table, id))) return c.json(gone, 404)
+      await ops.remove(db, id)
+      return c.body(null, 204)
+    })
+  }
+
+  const plain = <B>(save: (db: WriteDb, b: B) => Promise<unknown>, replace: (db: WriteDb, id: string, b: B) => Promise<void>, remove: (db: WriteDb, id: string) => Promise<void>) =>
+    ({ save, replace, remove })
+
+  capture(cardioRoutes, 'cardio_sessions', plain(rows.saveCardioEntry, rows.updateCardioEntry, rows.deleteCardioEntry))
+  capture(sleepRoutes, 'sleep_logs', plain(rows.saveSleepEntry, rows.updateSleepEntry, rows.deleteSleepEntry))
+  capture(bodyweightRoutes, 'bodyweight_logs', plain(rows.saveBodyweightEntry, rows.updateBodyweightEntry, rows.deleteBodyweightEntry))
+  capture(donationRoutes, 'blood_donations', plain(rows.saveDonationEntry, rows.updateDonationEntry, rows.deleteDonationEntry))
+  for (const [r, table] of [[saunaRoutes, 'sauna_sessions'], [coldRoutes, 'cold_sessions']] as const) {
+    capture<Omit<ExposureBout, 'id'>>(r, table, {
+      save: (db, b) => rows.saveExposure(db, table, b),
+      replace: (db, id, b) => rows.updateExposure(db, table, id, b),
+      remove: (db, id) => rows.deleteExposure(db, table, id),
+    })
+  }
+  // A sport arrives by name; one typed for the first time is created with the
+  // flags sent beside it. An unrated session is stored unrated, as the app does.
+  type SportBody = Omit<rows.SportEntryInput, 'quality'> & { quality?: rows.SportEntryInput['quality']; newSport?: rows.NewSportFlags }
+  const sport = ({ newSport, ...b }: SportBody) => [{ ...b, quality: b.quality ?? 0 } as rows.SportEntryInput, newSport] as const
+  capture<SportBody>(sportRoutes, 'sport_sessions', {
+    save: (db, b) => rows.saveSportEntry(db, ...sport(b)),
+    replace: (db, id, b) => rows.updateSportEntry(db, id, ...sport(b)),
+    remove: rows.deleteSportEntry,
   })
 
   app.doc31('/openapi.json', {

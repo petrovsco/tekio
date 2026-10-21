@@ -4,20 +4,16 @@ import type {
   LiftSet, WeightEntry, CardioType, CardioFormat, CardioEntry,
   Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
+  BodyweightEntry, ExposureBout,
 } from '@tekio/core'
 
 export type {
   LiftSet, WeightEntry, CardioType, CardioFormat, CardioEntry,
   Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
+  BodyweightEntry,
 }
 export type { ExerciseAlias } from '@tekio/core'
-
-export interface BodyweightEntry {
-  id: string
-  date: string
-  weight: number
-}
 
 /**
  * Another spelling of an exercise name (roadmap 044). It points at a canonical
@@ -49,19 +45,8 @@ export interface SportTypeInfo {
 /** What a brand-new sport needs beyond its name — the rest of {@link SportTypeInfo}. */
 export type NewSportFlags = Omit<SportTypeInfo, 'name'>
 
-/** One timed heat- or cold-exposure bout. Sauna and cold plunge are the same
- *  shape; the table a row came from is what tells them apart, and the two names
- *  below are what the store, the edit modal and the db layer read. */
-interface ExposureBout {
-  id: string
-  date: string
-  duration: number
-  /** Temperature in °C, if tracked. */
-  tempC?: number
-  notes?: string
-}
-
-/** A single sauna bout. */
+/** A single sauna bout; the table a row came from is what tells the two apart,
+ *  and these names are what the store, the edit modal and the db layer read. */
 export type SaunaEntry = ExposureBout
 
 /** A single cold-exposure / plunge bout. */
