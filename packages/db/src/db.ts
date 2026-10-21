@@ -51,3 +51,17 @@ export async function userRows<Q extends string>(db: Db, table: string, cols: Q,
   if (error) throw error
   return data ?? []
 }
+
+/** Delete one row by primary key, throwing on failure. */
+export async function deleteRow(db: Db, table: string, id: string): Promise<void> {
+  const { error } = await db.client.from(table).delete().eq('id', id)
+  if (error) throw error
+}
+
+/** Whether row `id` of `table` is this user's. The API asks before an edit or
+ *  a delete: until the lock (RFC 0003) the open policies still allow more. */
+export async function ownsRow(db: Db, table: string, id: string): Promise<boolean> {
+  const { data, error } = await db.client.from(table).select('id').eq('id', id).eq('user_id', db.userId)
+  if (error) throw error
+  return (data ?? []).length > 0
+}

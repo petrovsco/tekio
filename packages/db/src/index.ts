@@ -1,8 +1,8 @@
 // @tekio/db — the rows the reads stand on, loaded and mapped once (RFC 0094
 // step 2a). The web app and the API call the same loaders with their own
 // client, so the two cannot read a row differently. A domain's writes move here
-// with its capture route (step 2d): weights and exercise names first; the rest
-// still live in the app's src/lib/db/.
+// with its capture route (step 2d), so the API writes a row exactly as the app
+// does.
 export * from './db'
 export * from './columns'
 export * from './weights'
@@ -10,6 +10,8 @@ export * from './cardio'
 export * from './sport'
 export * from './sleep'
 export * from './donations'
+export * from './bodyweight'
+export * from './exposure'
 export * from './readiness'
 export * from './muscles'
 export * from './exercises'
