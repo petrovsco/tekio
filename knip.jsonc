@@ -38,6 +38,13 @@
     "packages/api": {
       "project": ["src/**/*.ts"],
       "includeEntryExports": true
+    },
+
+    // The typed client (RFC 0094). Its schema.ts is generated whole by
+    // `npm run api:client`, so what it exports is the generator's call.
+    "packages/client": {
+      "project": ["src/**/*.ts"],
+      "ignore": ["src/schema.ts"]
     }
   },
 

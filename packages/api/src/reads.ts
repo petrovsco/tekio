@@ -4,24 +4,7 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { MUSCLE_QUALITIES } from '@tekio/core'
 import { DateQuery, json, failures } from './schemas'
-
-// The reads' answers are described by their top-level fields for now; each
-// field's full shape lands before a client is generated from this (RFC 0094).
-const Field = z.unknown()
-
-const HomeBody = z.object({
-  date: z.string(), muscles: Field, gaps: Field, qualities: Field, coverage: Field,
-  readiness: Field, donation: Field, verdict: Field,
-}).openapi('HomeRead')
-
-const AdaptationsBody = z.object({
-  date: z.string(), coverage: Field, quality: z.string(), shape: Field, muscles: Field, gaps: Field,
-  qualities: Field, liftingSets: Field, cardioSessions: Field, atThreshold: Field,
-}).openapi('AdaptationsRead')
-
-const ReadinessBody = z.object({
-  date: z.string(), readiness: Field, donation: Field, verdict: Field, trend: Field,
-}).openapi('ReadinessRead')
+import { HomeBody, AdaptationsBody, ReadinessBody } from './readShapes'
 
 export const homeRoute = createRoute({
   method: 'get', path: '/read/home', security: [{ bearer: [] }],
