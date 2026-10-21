@@ -7,30 +7,13 @@ import { useHrMax } from '../../hooks/useHrMax'
 import { fmtDate } from '../../lib/utils'
 import { HR_MAX_WINDOW_MONTHS, HR_MAX_FORMULA_INTERCEPT, HR_MAX_FORMULA_SLOPE } from '@tekio/core'
 import { ReadinessMethodCard } from './profile/ReadinessMethodCard'
-import { signedInEmail } from '../../lib/session'
-import { useAppStore } from '../../store/app'
 
-// Profile is who is using the app: the account, the body the reads are
-// computed for, and the devices that measure it. How the app behaves is
-// Settings.
+// Profile is who is using the app: the body the reads are computed for, and
+// the devices that measure it. How the app behaves is Settings; the account
+// (the address and Sign out) sits at the foot of the menu.
 
 export function ProfileTab({ focus = null }: { focus?: string | null }) {
   const { setHrMaxStored, setBirthDate } = usePrefs()
-  const [signingOut, setSigningOut] = useState(false)
-  const setToast = useAppStore(s => s.setToast)
-  // RFC 0003. The library is already loaded by the time Profile opens; the
-  // import only hands it over. A failed sign-out leaves the session as it was,
-  // and says so. A good one reloads the app onto the sign-in screen.
-  const signOut = async () => {
-    setSigningOut(true)
-    try {
-      await (await import('../../lib/auth')).signOut()
-    } catch {
-      setSigningOut(false)
-      setToast('Could not sign out. Check your connection and try again.')
-    }
-  }
-
   // The profile HRmax (roadmap 060): the number the user set — typed here, or
   // the tracker peak accepted here — else the age estimate. The typed draft
   // commits on blur or Enter; a sync never writes the number itself.
@@ -53,16 +36,6 @@ export function ProfileTab({ focus = null }: { focus?: string | null }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <SecTitle>Account</SecTitle>
-        <p className="text-xs text-ink-2 mb-2.5 leading-[1.4]">
-          Signed in as <span className="font-semibold text-ink">{signedInEmail() ?? 'you'}</span>.
-        </p>
-        <Btn variant="secondary" onClick={signOut} disabled={signingOut}>
-          {signingOut ? 'Signing out…' : 'Sign out'}
-        </Btn>
-      </Card>
-
       <Card>
         <SecTitle>Max heart rate</SecTitle>
         <p className="text-xs text-ink-2 mb-2.5 leading-[1.4]">

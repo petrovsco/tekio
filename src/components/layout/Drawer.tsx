@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { usePrefs } from '../../store/prefs'
+import { useAppStore } from '../../store/app'
+import { signedInEmail } from '../../lib/session'
 import { Icon, type IconName } from '../ui/Icon'
 import { FIELD_LABEL } from '../ui/Input'
 
@@ -27,10 +30,11 @@ function GroupLabel({ children }: { children: string }) {
   )
 }
 
-function NavItem({ icon, label, active, onClick }: { icon: IconName; label: string; active: boolean; onClick: () => void }) {
+function NavItem({ icon, label, active, onClick, disabled }: { icon: IconName; label: string; active: boolean; onClick: () => void; disabled?: boolean }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`relative flex items-center gap-3 px-4 py-2.5 w-full text-left cursor-pointer transition-colors ${
         active ? 'text-ink' : 'text-ink-2 hover:text-ink'
       }`}
@@ -54,6 +58,21 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
     : Object.entries(NAV_META).map(([key, meta]) => ({ key, ...meta }))
 
   const go = (t: string) => () => { setTab(t); onClose() }
+
+  const [signingOut, setSigningOut] = useState(false)
+  const setToast = useAppStore(s => s.setToast)
+  // RFC 0003. The library is already loaded by the time anyone opens the
+  // menu; the import only hands it over. A failed sign-out leaves the session
+  // as it was, and says so. A good one reloads the app onto the sign-in screen.
+  const signOut = async () => {
+    setSigningOut(true)
+    try {
+      await (await import('../../lib/auth')).signOut()
+    } catch {
+      setSigningOut(false)
+      setToast('Could not sign out. Check your connection and try again.')
+    }
+  }
 
   return (
     <>
@@ -91,8 +110,10 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
         {/* Who is using the app, and how it behaves — two pages since the
             split of "Profile & Settings". */}
         <GroupLabel>Account</GroupLabel>
+        <p className="px-4 pb-1.5 text-[11px] text-ink-2 truncate">{signedInEmail() ?? ''}</p>
         <NavItem icon="profile" label="Profile" active={tab === 'Profile'} onClick={go('Profile')} />
         <NavItem icon="settings" label="Settings" active={tab === 'Settings'} onClick={go('Settings')} />
+        <NavItem icon="signOut" label={signingOut ? 'Signing out…' : 'Sign out'} active={false} onClick={signOut} disabled={signingOut} />
         <div className="h-4" />
       </div>
     </>
