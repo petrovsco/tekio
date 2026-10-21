@@ -30,7 +30,7 @@ function fakeSupabase(accepted: string | null) {
     }
     return json([])
   }
-  return { api: createApi({ supabaseUrl: URL_, anonKey: 'anon', fetch: fakeFetch }), calls }
+  return { api: createApi({ supabaseUrl: URL_, anonKey: 'anon', origin: 'staging', fetch: fakeFetch }), calls }
 }
 
 const get = (api: ReturnType<typeof createApi>, path: string, token?: string) =>
@@ -85,6 +85,8 @@ describe('the API reads', () => {
   it('describes its routes as OpenAPI', async () => {
     const { api } = fakeSupabase(LIVE)
     const doc = await (await get(api, '/api/openapi.json')).json()
-    expect(Object.keys(doc.paths)).toEqual(['/api/read/home', '/api/read/adaptations', '/api/read/readiness'])
+    expect(Object.keys(doc.paths)).toEqual([
+      '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/weights', '/api/weights/{id}',
+    ])
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normaliseExerciseName, resolveExerciseName, spellingsFor } from '../lib/exerciseName'
+import { normaliseExerciseName, resolveExerciseName, spellingsFor } from '@tekio/core'
 import type { ExerciseAlias } from '../types'
 
 const sys = (alias: string, canonicalName: string): ExerciseAlias => ({ alias, canonicalName, isOwn: false })

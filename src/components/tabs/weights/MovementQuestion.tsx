@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Chip } from '../../ui/Chip'
 import { FIELD_LABEL } from '../../ui/Input'
 import { MOVEMENT_AREAS } from '../../../constants/movementQuestion'
-import type { PatternKey } from '../../../constants/movementPatterns'
+import type { PatternKey } from '@tekio/core/catalogue'
 
 /**
  * RFC 0074: asked only for a name nothing knows — not on file, not an alias,

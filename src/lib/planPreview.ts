@@ -1,7 +1,8 @@
 import type { PlannedExercise, WeightEntry, ExerciseMuscleLink, ExerciseAlias, MuscleGroup } from '../types'
-import { muscleStates, rankMuscleGaps, type MuscleState, GAP_CUTOFF, today } from '@tekio/core'
-import { normaliseExerciseName, resolveExerciseName } from './exerciseName'
-import { catalogueEntryFor, linksFor } from '../constants/exerciseCatalogue'
+import {
+  muscleStates, rankMuscleGaps, type MuscleState, GAP_CUTOFF, today, normaliseExerciseName, resolveExerciseName,
+} from '@tekio/core'
+import { catalogueEntryFor, linksFor } from '@tekio/core/catalogue'
 
 // RFC 0098's layer: what today's plan would reach, and what would still be
 // missing after it. A preview, never the read — Home's map, verdict and

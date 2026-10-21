@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { EXERCISE_CATALOGUE, catalogueEntryFor, catalogueProblems, linksFor, type CatalogueEntry } from '../constants/exerciseCatalogue'
-import { MOVEMENT_PATTERNS, MUSCLES } from '../constants/movementPatterns'
+import { EXERCISE_CATALOGUE, catalogueEntryFor, catalogueProblems, linksFor, type CatalogueEntry } from '@tekio/core/catalogue'
+import { MOVEMENT_PATTERNS, MUSCLES } from '@tekio/core/catalogue'
 import { MOVEMENT_AREAS } from '../constants/movementQuestion'
 
 describe('the exercise catalogue (RFC 0074 standing check)', () => {

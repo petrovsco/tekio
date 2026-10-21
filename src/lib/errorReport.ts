@@ -10,13 +10,13 @@
 //
 // The expected is never reported: a validation message the app already shows
 // throws a `KnownError`, and a network that is not there is not a bug.
+import { KnownError } from '@tekio/core'
 import { APP_ENV } from './env'
 import { sendErrorReport } from './db/errorReports'
 
-/** An error the app expects and already explains on screen. Never reported. */
-export class KnownError extends Error {
-  name = 'KnownError'
-}
+/** An error the app expects and already explains on screen. Never reported.
+ *  It lives in the core package so the API refuses the same entries the same way. */
+export { KnownError }
 
 export type ReportSource = 'render' | 'window' | 'promise' | 'write'
 

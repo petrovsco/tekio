@@ -5,15 +5,16 @@ import {
   muscleStates, muscleWeeklySets, muscleSources, muscleQualityMix, windowMuscleTarget,
   HISTORY_WEEKS, MUSCLE_QUALITIES, type MuscleSource, RECOVER_DAYS, MUSCLE_WINDOW_DAYS,
   MUSCLE_SET_TARGET, WEEKLY_SET_FLOOR, today, GAP_CUTOFF, targetShape, isTimedSet,
+  normaliseExerciseName as norm, resolveExerciseName,
 } from '@tekio/core'
 import { fmtSets, fmtAgo, fmtDate } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
 import { RAMP, rampStep } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
-import { EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor, isTimedName } from '../../../constants/exerciseCatalogue'
-import { MOVEMENT_PATTERNS, type PatternKey } from '../../../constants/movementPatterns'
-import { normaliseExerciseName as norm, resolveExerciseName } from '../../../lib/exerciseName'
+import {
+  EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor, isTimedName, MOVEMENT_PATTERNS, type PatternKey,
+} from '@tekio/core/catalogue'
 import { MovementQuestion } from '../weights/MovementQuestion'
 
 // The muscle drill-in (T2, roadmap 018 unit 3): what a tap on the map reveals.

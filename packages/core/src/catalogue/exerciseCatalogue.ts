@@ -3,7 +3,7 @@
 // unmapped exercise whose sets count for nothing on the muscle read.
 //
 // Each entry names its movement pattern and inherits that pattern's links
-// (src/constants/movementPatterns.ts). An entry that departs from its pattern
+// (movementPatterns.ts beside this file). An entry that departs from its pattern
 // carries its own complete link set AND a one-line reason; the standing check
 // in src/test/exerciseCatalogue.test.ts fails on links without one.
 //
@@ -12,7 +12,7 @@
 // hand-written links and no pattern yet.
 
 import { MOVEMENT_PATTERNS, type LinkSet, type PatternKey } from './movementPatterns'
-import { normaliseExerciseName as key } from '../lib/exerciseName'
+import { normaliseExerciseName as key } from '../exerciseName'
 import type { ExerciseAlias } from '../types'
 
 export interface CatalogueEntry {

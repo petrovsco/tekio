@@ -10,7 +10,7 @@
 // fuzzy or phonetic match would guess, and a wrong guess books sets onto the
 // wrong muscles.
 
-import type { ExerciseAlias } from '../types'
+import type { ExerciseAlias } from './types'
 
 /**
  * The match key for an exercise name: lowercased, letters and digits only.
