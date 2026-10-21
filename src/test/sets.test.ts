@@ -26,7 +26,6 @@ describe('a set that cannot be stored blocks the save', () => {
 
 const from = vi.fn()
 vi.mock('../lib/supabase', () => ({ supabase: { from: (t: string) => from(t) } }))
-vi.mock('../lib/db/exercises', () => ({ getOrCreateExerciseRow: vi.fn() }))
 
 describe('no entry is written without savable sets', () => {
   it('refuses before touching the database', async () => {

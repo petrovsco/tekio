@@ -4,14 +4,14 @@ import type {
   LiftSet, WeightEntry, CardioType, CardioFormat, CardioEntry,
   Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
-  BodyweightEntry, ExposureBout,
+  BodyweightEntry, ExposureBout, MobilityExercise, MobilityEntry,
 } from '@tekio/core'
 
 export type {
   LiftSet, WeightEntry, CardioType, CardioFormat, CardioEntry,
   Adaptation, MuscleGroup, ExerciseMuscleLink, QualityRating, MatchResult,
   SportEntry, SleepQuality, SleepEntry, DonationEntry, CheckInAnswers, ReadinessInput,
-  BodyweightEntry,
+  BodyweightEntry, MobilityExercise, MobilityEntry,
 }
 export type { ExerciseAlias } from '@tekio/core'
 
@@ -20,21 +20,6 @@ export type { ExerciseAlias } from '@tekio/core'
  * *name*, not at an exercise row, so the shipped list works for a user who has
  * not created a single exercise yet.
  */
-
-export interface MobilityExercise {
-  name: string
-  duration: number
-  notes: string
-  /** Muscle groups this stretch targets (names); drives weekly per-group volume. */
-  muscleGroups?: string[]
-}
-
-export interface MobilityEntry {
-  id: string
-  date: string
-  exercises: MobilityExercise[]
-  duration: number
-}
 
 export interface SportTypeInfo {
   name: string

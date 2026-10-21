@@ -87,7 +87,8 @@ describe('the API reads', () => {
     const doc = await (await get(api, '/api/openapi.json')).json()
     expect(Object.keys(doc.paths)).toEqual([
       '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/weights', '/api/weights/{id}',
-      ...['cardio', 'sleep', 'bodyweight', 'donations', 'sauna', 'cold', 'sport'].flatMap(p => [`/api/${p}`, `/api/${p}/{id}`]),
+      ...['cardio', 'sleep', 'bodyweight', 'donations', 'sauna', 'cold', 'sport', 'mobility'].flatMap(p => [`/api/${p}`, `/api/${p}/{id}`]),
+      '/api/readiness/{date}/morning-hrv', '/api/readiness/{date}/check-in',
     ])
   })
 })

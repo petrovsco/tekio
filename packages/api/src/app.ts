@@ -4,7 +4,9 @@
 // requests are checked against.
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { PostgrestClient } from '@supabase/postgrest-js'
-import { KnownError, homeRead, adaptationsRead, readinessRead, type ReadRows, type ExposureBout } from '@tekio/core'
+import {
+  KnownError, homeRead, adaptationsRead, readinessRead, type ReadRows, type ExposureBout, type MobilityEntry,
+} from '@tekio/core'
 import * as rows from '@tekio/db'
 import {
   loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, ownsRow, type WriteDb,
@@ -13,7 +15,8 @@ import { bearer, tokenUserId, tokenAccepted } from './auth'
 import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
 import { logWeightRoute, editWeightRoute, deleteWeightRoute } from './weights'
 import {
-  cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, type CaptureRoutes,
+  cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, mobilityRoutes,
+  morningHrvRoute, checkInRoute, type CaptureRoutes,
 } from './capture'
 
 export interface ApiConfig {
@@ -181,6 +184,27 @@ export function createApi(config: ApiConfig) {
     save: (db, b) => rows.saveSportEntry(db, ...sport(b)),
     replace: (db, id, b) => rows.updateSportEntry(db, id, ...sport(b)),
     remove: rows.deleteSportEntry,
+  })
+
+  // A session's minutes are the sum of its stretches, as the app counts them.
+  const withMinutes = (b: Omit<MobilityEntry, 'id' | 'duration'>) => ({ ...b, duration: b.exercises.reduce((s, e) => s + e.duration, 0) })
+  capture<Omit<MobilityEntry, 'id' | 'duration'>>(mobilityRoutes, 'mobility_sessions', {
+    save: (db, b) => rows.saveMobilityEntry(db, withMinutes(b)),
+    replace: (db, id, b) => rows.updateMobilityEntry(db, id, withMinutes(b)),
+    remove: rows.deleteMobilityEntry,
+  })
+
+  // One row a day, filed under the caller: nothing to own-check, the upsert
+  // can only touch the caller's own day.
+  app.openapi(morningHrvRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    return c.json(await rows.saveMorningHrv(db, c.req.valid('param').date, c.req.valid('json').ms), 200)
+  })
+  app.openapi(checkInRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    return c.json(await rows.saveCheckIn(db, c.req.valid('param').date, c.req.valid('json')), 200)
   })
 
   app.doc31('/openapi.json', {

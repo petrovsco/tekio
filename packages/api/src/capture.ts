@@ -1,7 +1,8 @@
-// The capture routes for the logs that are one row each (RFC 0094 step 2d):
-// cardio, sport, sleep, sauna, cold, body weight and blood donations. Each gets
-// the same three routes: log one, replace one, take one out. The body is the
-// whole entry, as the app's edit form sends it, so a replace is a PUT.
+// The capture routes for the logs that are one entry each (RFC 0094 step 2d):
+// cardio, sport, sleep, sauna, cold, body weight, blood donations and mobility.
+// Each gets the same three routes: log one, replace one, take one out. The body
+// is the whole entry, as the app's edit form sends it, so a replace is a PUT.
+// The morning's readiness inputs are one row a day, so they are put by day.
 import { createRoute, z } from '@hono/zod-openapi'
 import { CARDIO_TYPES, DONATION_TYPES } from '@tekio/core'
 import { DateQuery, ErrorBody, json, failures } from './schemas'
@@ -82,6 +83,19 @@ const BodyweightEntry = BodyweightBody.extend({ id: z.string(), date: z.string()
 const DonationBody = z.object({ date: DateQuery, type: z.enum(DONATION_TYPES), notes: z.string().default('') })
 const DonationEntry = DonationBody.extend({ id: z.string(), date: z.string() }).openapi('DonationEntry')
 
+const MobilityBody = z.object({
+  date: DateQuery,
+  exercises: z.array(z.object({
+    name: z.string().trim().min(1),
+    duration: Minutes,
+    notes: z.string().default(''),
+    muscleGroups: z.array(z.string()).optional().openapi({ description: 'Muscle-group names the stretch targets.' }),
+  })).min(1),
+})
+const MobilityEntry = MobilityBody.extend({
+  id: z.string(), date: z.string(), duration: z.number().openapi({ description: 'Minutes, the sum of the stretches.' }),
+}).openapi('MobilityEntry')
+
 const IdParam = z.object({ id: z.string().min(1) })
 
 /** Any one log's three routes, as the API registers them. */
@@ -118,3 +132,32 @@ export const saunaRoutes = routes('/sauna', 'sauna bout', BoutBody, BoutEntry)
 export const coldRoutes = routes('/cold', 'cold bout', BoutBody, BoutEntry)
 export const bodyweightRoutes = routes('/bodyweight', 'weigh-in', BodyweightBody, BodyweightEntry)
 export const donationRoutes = routes('/donations', 'donation', DonationBody, DonationEntry)
+export const mobilityRoutes = routes('/mobility', 'mobility session', MobilityBody, MobilityEntry)
+
+// ── The morning's readiness inputs (RFC 0092): one row a day ────────────────
+
+const Answer = z.number().int().min(1).max(5)
+const CheckIn = z.object({ energy: Answer, soreness: Answer, sleepQuality: Answer, stress: Answer, mood: Answer })
+  .openapi('CheckInAnswers', { description: 'Five answers, 1 to 5.' })
+const ReadinessInput = z.object({
+  id: z.string(), date: z.string(), morningHrv: z.number().optional(), checkIn: CheckIn.optional(),
+}).openapi('ReadinessInput')
+const DayParam = z.object({ date: DateQuery })
+const saved = { 200: json("The day's inputs as saved.", ReadinessInput), ...failures }
+
+export const morningHrvRoute = createRoute({
+  method: 'put', path: '/readiness/{date}/morning-hrv', security: [{ bearer: [] }],
+  summary: "Type the morning's HRV; a second one that day replaces it. The day's check-in is kept.",
+  request: {
+    params: DayParam,
+    body: { required: true, content: { 'application/json': { schema: z.object({ ms: z.number().gt(0).lt(400).openapi({ description: 'rMSSD in ms, on waking.' }) }) } } },
+  },
+  responses: saved,
+})
+
+export const checkInRoute = createRoute({
+  method: 'put', path: '/readiness/{date}/check-in', security: [{ bearer: [] }],
+  summary: "Answer the day's check-in; a second one that day replaces it. The morning HRV is kept.",
+  request: { params: DayParam, body: { required: true, content: { 'application/json': { schema: CheckIn } } } },
+  responses: saved,
+})
