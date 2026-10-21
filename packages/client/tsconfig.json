@@ -1,0 +1,21 @@
+{
+  // The typed client of the API, for any TypeScript caller: the web app today,
+  // a script or an agent's tool later. It needs `fetch`, so it has the DOM.
+  "compilerOptions": {
+    "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.client.tsbuildinfo",
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "types": []
+  },
+  "include": ["src"]
+}

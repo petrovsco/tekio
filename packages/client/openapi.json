@@ -1,0 +1,4735 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Tekiō API",
+    "version": "0"
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "The Supabase access token of a signed-in session."
+      }
+    },
+    "schemas": {
+      "HomeRead": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "muscles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuscleState"
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuscleState"
+            },
+            "description": "The muscles short of the map’s top band, largest gap first."
+          },
+          "qualities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualityState"
+            }
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "power": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "strength": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "hypertrophy": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "muscular_endurance": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "anaerobic_capacity": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "vo2max": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "endurance": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              }
+            }
+          },
+          "readiness": {
+            "$ref": "#/components/schemas/SystemicReadiness"
+          },
+          "donation": {
+            "$ref": "#/components/schemas/DonationStatus"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/Verdict"
+          }
+        },
+        "required": [
+          "date",
+          "muscles",
+          "gaps",
+          "qualities",
+          "coverage",
+          "readiness",
+          "donation",
+          "verdict"
+        ]
+      },
+      "MuscleState": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "leaf": {
+            "type": "boolean",
+            "description": "No other group names this one as its parent."
+          },
+          "sets": {
+            "type": "number",
+            "description": "Level-weighted hard sets in the window."
+          },
+          "daysSince": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Days since the last stimulus; null = never."
+          },
+          "recovering": {
+            "type": "boolean",
+            "description": "Inside the recovery window after a real dose."
+          },
+          "fillFraction": {
+            "type": "number",
+            "description": "Sets over the window target, uncapped: what the map colours by."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parentId",
+          "leaf",
+          "sets",
+          "daysSince",
+          "recovering",
+          "fillFraction"
+        ]
+      },
+      "QualityState": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "vo2max",
+              "endurance",
+              "anaerobic_capacity"
+            ]
+          },
+          "daysSince": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Days since the last qualifying session; null = never."
+          },
+          "windowDays": {
+            "type": "number"
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "Past its detraining window, or never trained: reads as missing."
+          }
+        },
+        "required": [
+          "key",
+          "daysSince",
+          "windowDays",
+          "stale"
+        ]
+      },
+      "AdaptationSummary": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "power",
+              "strength",
+              "hypertrophy",
+              "muscular_endurance",
+              "anaerobic_capacity",
+              "vo2max",
+              "endurance"
+            ]
+          },
+          "volume": {
+            "type": "number",
+            "description": "Volume over the window, in `unit`."
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "sets",
+              "sessions",
+              "minutes"
+            ]
+          },
+          "muscles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuscleStatusRow"
+            }
+          },
+          "onTrack": {
+            "type": "number"
+          },
+          "worked": {
+            "type": "number"
+          },
+          "totalMuscles": {
+            "type": "number"
+          },
+          "target": {
+            "type": "number",
+            "description": "Whole-body target over the window; 0 for a per-muscle quality."
+          },
+          "met": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "key",
+          "volume",
+          "unit",
+          "muscles",
+          "onTrack",
+          "worked",
+          "totalMuscles",
+          "target",
+          "met"
+        ]
+      },
+      "MuscleStatusRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "sets": {
+            "type": "number"
+          },
+          "aggSets": {
+            "type": "number",
+            "description": "The same, with the immediate children."
+          },
+          "target": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "on_track",
+              "needs_work",
+              "untouched"
+            ]
+          },
+          "fillFraction": {
+            "type": "number"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuscleStatusRow"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "parentId",
+          "sets",
+          "aggSets",
+          "target",
+          "status",
+          "fillFraction",
+          "children"
+        ]
+      },
+      "SystemicReadiness": {
+        "type": "object",
+        "properties": {
+          "readiness": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "0 to 100, 50 being the person’s own normal."
+          },
+          "band": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "low",
+              "moderate",
+              "ok",
+              null
+            ]
+          },
+          "method": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "overnight_hrv",
+              "morning_hrv",
+              "check_in",
+              null
+            ],
+            "description": "The method the verdict came from."
+          },
+          "chosen": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "overnight_hrv",
+              "morning_hrv",
+              "check_in",
+              null
+            ],
+            "description": "The method the person reads from."
+          },
+          "picked": {
+            "type": "boolean",
+            "description": "Chosen in Profile, rather than picked automatically."
+          },
+          "connected": {
+            "type": "boolean",
+            "description": "A watch or ring delivered HRV in the last 3 days."
+          },
+          "awaitingInput": {
+            "type": "boolean"
+          },
+          "progress": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "have": {
+                "type": "number"
+              },
+              "need": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "have",
+              "need"
+            ],
+            "description": "Readings toward the first verdict, while there is none."
+          },
+          "z": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "recent": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "normal": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "low": {
+                "type": "number"
+              },
+              "high": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "low",
+              "high"
+            ]
+          },
+          "gauge": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "side": {
+                "type": "string",
+                "enum": [
+                  "below",
+                  "inside",
+                  "above"
+                ]
+              },
+              "at": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "side",
+              "at"
+            ]
+          },
+          "notes": {
+            "type": "object",
+            "properties": {
+              "restingHrAbove": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "shortNight": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "restingHrAbove",
+              "shortNight"
+            ]
+          },
+          "sleepScore": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "sleepScoreDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "hrv": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "hrvDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "readiness",
+          "band",
+          "method",
+          "chosen",
+          "picked",
+          "connected",
+          "awaitingInput",
+          "progress",
+          "z",
+          "recent",
+          "normal",
+          "gauge",
+          "notes",
+          "sleepScore",
+          "sleepScoreDate",
+          "hrv",
+          "hrvDate"
+        ]
+      },
+      "DonationStatus": {
+        "type": "object",
+        "properties": {
+          "daysSince": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "Days since the last full-blood donation; null = never."
+          },
+          "acuteHold": {
+            "type": "boolean"
+          },
+          "aerobicSuppressed": {
+            "type": "boolean"
+          },
+          "eligibleInDays": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "daysSince",
+          "acuteHold",
+          "aerobicSuppressed",
+          "eligibleInDays"
+        ]
+      },
+      "Verdict": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "push",
+              "steady",
+              "hold"
+            ]
+          },
+          "cause": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "readiness",
+              "donation",
+              null
+            ]
+          }
+        },
+        "required": [
+          "mode",
+          "cause"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "AdaptationsRead": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "power": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "strength": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "hypertrophy": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "muscular_endurance": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "anaerobic_capacity": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "vo2max": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              },
+              "endurance": {
+                "$ref": "#/components/schemas/AdaptationSummary"
+              }
+            }
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "strength",
+              "hypertrophy",
+              "muscular_endurance",
+              "power"
+            ]
+          },
+          "shape": {
+            "type": "object",
+            "properties": {
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "sets",
+                  "sessions",
+                  "minutes"
+                ]
+              },
+              "weekly": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "unit",
+              "weekly"
+            ]
+          },
+          "muscles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuscleState"
+            }
+          },
+          "gaps": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MuscleState"
+            }
+          },
+          "qualities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualityState"
+            }
+          },
+          "liftingSets": {
+            "type": "number"
+          },
+          "cardioSessions": {
+            "type": "number"
+          },
+          "atThreshold": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "coverage",
+          "quality",
+          "shape",
+          "muscles",
+          "gaps",
+          "qualities",
+          "liftingSets",
+          "cardioSessions",
+          "atThreshold"
+        ]
+      },
+      "ReadinessRead": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "readiness": {
+            "$ref": "#/components/schemas/SystemicReadiness"
+          },
+          "donation": {
+            "$ref": "#/components/schemas/DonationStatus"
+          },
+          "verdict": {
+            "$ref": "#/components/schemas/Verdict"
+          },
+          "trend": {
+            "$ref": "#/components/schemas/ReadinessTrend"
+          }
+        },
+        "required": [
+          "date",
+          "readiness",
+          "donation",
+          "verdict",
+          "trend"
+        ]
+      },
+      "ReadinessTrend": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string"
+                },
+                "single": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "read": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "printed": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "date",
+                "single",
+                "read",
+                "printed"
+              ]
+            }
+          },
+          "normal": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "low": {
+                "type": "number"
+              },
+              "high": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "low",
+              "high"
+            ]
+          },
+          "full": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "days",
+          "normal",
+          "full"
+        ]
+      },
+      "WeightEntry": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "exercise": {
+            "type": "string",
+            "description": "The name the lift is filed under, which may differ from the one typed."
+          },
+          "sets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LiftSet"
+            }
+          },
+          "supersetId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "date",
+          "exercise",
+          "sets"
+        ]
+      },
+      "LiftSet": {
+        "type": "object",
+        "properties": {
+          "weight": {
+            "type": "number",
+            "description": "Load in kg; 0 for bodyweight."
+          },
+          "reps": {
+            "type": "number",
+            "description": "Whole reps; 1 for a hold."
+          },
+          "seconds": {
+            "type": "number",
+            "description": "How long a hold lasted, in whole seconds (RFC 0107)."
+          }
+        },
+        "required": [
+          "weight",
+          "reps"
+        ]
+      },
+      "CardioEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Running",
+              "Cycling",
+              "Swimming",
+              "Indoor Rowing",
+              "Custom"
+            ]
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Minutes."
+          },
+          "distance": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Kilometres."
+          },
+          "avgHr": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Beats per minute."
+          },
+          "notes": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "steady",
+              "intervals"
+            ]
+          },
+          "boutSeconds": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Work-bout length of an intervals session."
+          },
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "garmin"
+            ],
+            "description": "Typed, or pulled from the watch."
+          },
+          "garminActivityId": {
+            "type": "number"
+          },
+          "maxHr": {
+            "type": "number"
+          },
+          "aerobicTe": {
+            "type": "number"
+          },
+          "anaerobicTe": {
+            "type": "number"
+          },
+          "trainingEffectLabel": {
+            "type": "string"
+          },
+          "trainingLoad": {
+            "type": "number"
+          },
+          "zoneDistribution": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Seconds in heart-rate zones 1 to 5."
+          },
+          "elevationGain": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "type",
+          "duration",
+          "id"
+        ]
+      },
+      "SleepEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "hours": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 24
+          },
+          "quality": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5,
+            "description": "1 (poor) to 5 (great)."
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "score": {
+            "type": "number"
+          },
+          "scoreQualifier": {
+            "type": "string"
+          },
+          "hrv": {
+            "type": "number"
+          },
+          "restingHr": {
+            "type": "number"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "garmin"
+            ],
+            "description": "Typed, or pulled from the watch."
+          }
+        },
+        "required": [
+          "date",
+          "hours",
+          "id"
+        ]
+      },
+      "BodyweightEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Kilograms. One reading a day: a second one replaces the first."
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "weight",
+          "id"
+        ]
+      },
+      "DonationEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Full Blood",
+              "Plasma"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "default": ""
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "type",
+          "id"
+        ]
+      },
+      "ExposureBout": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Minutes."
+          },
+          "tempC": {
+            "type": "number",
+            "description": "°C, if tracked."
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "duration",
+          "id"
+        ]
+      },
+      "SportEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "sport": {
+            "type": "string",
+            "minLength": 1,
+            "description": "A new name creates the sport."
+          },
+          "withTrainer": {
+            "type": "boolean",
+            "default": false
+          },
+          "quality": {
+            "type": "number",
+            "description": "1 to 5; 0 while unrated."
+          },
+          "notes": {
+            "type": "string",
+            "default": ""
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Minutes."
+          },
+          "avgHr": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Beats per minute."
+          },
+          "competitorNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "win",
+              "loss",
+              "tie"
+            ]
+          },
+          "teammateNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "garmin"
+            ],
+            "description": "Typed, or pulled from the watch."
+          },
+          "garminActivityId": {
+            "type": "number"
+          },
+          "maxHr": {
+            "type": "number"
+          },
+          "aerobicTe": {
+            "type": "number"
+          },
+          "anaerobicTe": {
+            "type": "number"
+          },
+          "trainingEffectLabel": {
+            "type": "string"
+          },
+          "trainingLoad": {
+            "type": "number"
+          },
+          "zoneDistribution": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            },
+            "description": "Seconds in heart-rate zones 1 to 5."
+          }
+        },
+        "required": [
+          "date",
+          "sport",
+          "quality",
+          "id"
+        ]
+      },
+      "MobilityEntry": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "duration": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Minutes."
+                },
+                "notes": {
+                  "type": "string",
+                  "default": ""
+                },
+                "muscleGroups": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Muscle-group names the stretch targets."
+                }
+              },
+              "required": [
+                "name",
+                "duration"
+              ]
+            },
+            "minItems": 1
+          },
+          "id": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Minutes, the sum of the stretches."
+          }
+        },
+        "required": [
+          "date",
+          "exercises",
+          "id",
+          "duration"
+        ]
+      },
+      "ReadinessInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "morningHrv": {
+            "type": "number"
+          },
+          "checkIn": {
+            "$ref": "#/components/schemas/CheckInAnswers"
+          }
+        },
+        "required": [
+          "id",
+          "date"
+        ]
+      },
+      "CheckInAnswers": {
+        "type": "object",
+        "properties": {
+          "energy": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "soreness": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "sleepQuality": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "stress": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "mood": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          }
+        },
+        "required": [
+          "energy",
+          "soreness",
+          "sleepQuality",
+          "stress",
+          "mood"
+        ],
+        "description": "Five answers, 1 to 5."
+      },
+      "PlannedExercise": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "exercise": {
+            "type": "string",
+            "minLength": 1
+          },
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LiftSet"
+            },
+            "minItems": 1,
+            "description": "What to aim at, not results."
+          },
+          "plannedBy": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent"
+            ],
+            "default": "user",
+            "description": "Who wrote the plan: the person, or an agent on their behalf."
+          },
+          "id": {
+            "type": "string"
+          },
+          "supersetId": {
+            "type": "string"
+          },
+          "loggedAs": {
+            "type": "string",
+            "description": "The entry this plan became, once logged."
+          }
+        },
+        "required": [
+          "date",
+          "exercise",
+          "targets",
+          "id"
+        ]
+      },
+      "PlannedSession": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cardio",
+              "sport",
+              "mobility"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "description": "The cardio type (Running, Cycling, Swimming, Indoor Rowing, Custom) or the sport; empty for mobility."
+          },
+          "duration": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Minutes."
+          },
+          "distance": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "description": "Kilometres."
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "steady",
+              "intervals"
+            ]
+          },
+          "boutSeconds": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "stretches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "duration": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "name",
+                "duration"
+              ]
+            },
+            "description": "The stretches of a mobility plan, minutes each."
+          },
+          "notes": {
+            "type": "string"
+          },
+          "plannedBy": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent"
+            ],
+            "default": "user",
+            "description": "Who wrote the plan: the person, or an agent on their behalf."
+          },
+          "id": {
+            "type": "string"
+          },
+          "loggedAs": {
+            "type": "string",
+            "description": "The entry this plan became, once logged."
+          }
+        },
+        "required": [
+          "date",
+          "kind",
+          "name",
+          "id"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/read/home": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Home: what is missing, and whether today can push.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "date",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Home read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeRead"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/read/adaptations": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Adaptations: one muscle-linked quality, explained.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "date",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "strength",
+                "hypertrophy",
+                "muscular_endurance",
+                "power"
+              ],
+              "description": "The muscle-linked quality to map."
+            },
+            "required": true,
+            "description": "The muscle-linked quality to map.",
+            "name": "quality",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Adaptations read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdaptationsRead"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/read/readiness": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Readiness: today's reading and the days behind it.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "date",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The readiness read.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessRead"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/weights": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a lift: one exercise and its sets on a day.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "exercise": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "As typed: an alias or a catalogue spelling resolves to its lift."
+                  },
+                  "sets": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LiftSet"
+                    }
+                  },
+                  "supersetId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "description": "Shared by the lifts done as one superset."
+                  },
+                  "pattern": {
+                    "type": "string",
+                    "enum": [
+                      "squat",
+                      "lunge",
+                      "hingeStraightKnee",
+                      "hingeKneeBent",
+                      "hipExtensionBentKnee",
+                      "kneeFlexion",
+                      "kneeExtension",
+                      "hipAbduction",
+                      "hipAdduction",
+                      "plantarFlexion",
+                      "horizontalPush",
+                      "verticalPush",
+                      "elbowExtension",
+                      "shoulderAbduction",
+                      "uprightRow",
+                      "horizontalAdduction",
+                      "shoulderFlexion",
+                      "scapularElevation",
+                      "verticalPull",
+                      "horizontalPull",
+                      "elbowFlexion",
+                      "horizontalAbduction",
+                      "straightArmExtension",
+                      "wristAndGrip",
+                      "shoulderExternalRotation",
+                      "spinalFlexion",
+                      "hipFlexionTrunk",
+                      "antiExtension",
+                      "rotation",
+                      "lateralFlexion",
+                      "carry",
+                      "olympic"
+                    ],
+                    "description": "The movement, for a lift the catalogue doesn't know."
+                  }
+                },
+                "required": [
+                  "date",
+                  "exercise",
+                  "sets"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The lift as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "entry": {
+                      "$ref": "#/components/schemas/WeightEntry"
+                    },
+                    "linked": {
+                      "type": "boolean",
+                      "description": "True when this created the exercise and its muscle links."
+                    }
+                  },
+                  "required": [
+                    "entry",
+                    "linked"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/weights/{id}": {
+      "patch": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged lift's sets, and move it to another day if `date` is given.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The logged lift."
+            },
+            "required": true,
+            "description": "The logged lift.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sets": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LiftSet"
+                    }
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  }
+                },
+                "required": [
+                  "sets"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such lift of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged lift out, with its sets.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The logged lift."
+            },
+            "required": true,
+            "description": "The logged lift.",
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such lift of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cardio": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a cardio session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "Running",
+                      "Cycling",
+                      "Swimming",
+                      "Indoor Rowing",
+                      "Custom"
+                    ]
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Kilometres."
+                  },
+                  "avgHr": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Beats per minute."
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "steady",
+                      "intervals"
+                    ]
+                  },
+                  "boutSeconds": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Work-bout length of an intervals session."
+                  }
+                },
+                "required": [
+                  "date",
+                  "type",
+                  "duration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The cardio session as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CardioEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cardio/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged cardio session with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "Running",
+                      "Cycling",
+                      "Swimming",
+                      "Indoor Rowing",
+                      "Custom"
+                    ]
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "Kilometres."
+                  },
+                  "avgHr": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Beats per minute."
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "steady",
+                      "intervals"
+                    ]
+                  },
+                  "boutSeconds": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Work-bout length of an intervals session."
+                  }
+                },
+                "required": [
+                  "date",
+                  "type",
+                  "duration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged cardio session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged cardio session out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged cardio session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sleep": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a night.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The day the night ended on.",
+                    "example": "2026-10-20"
+                  },
+                  "hours": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 24
+                  },
+                  "quality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "1 (poor) to 5 (great)."
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "date",
+                  "hours"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The night as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SleepEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sleep/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged night with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The day the night ended on.",
+                    "example": "2026-10-20"
+                  },
+                  "hours": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 24
+                  },
+                  "quality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "1 (poor) to 5 (great)."
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "date",
+                  "hours"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged night of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged night out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged night of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bodyweight": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a weigh-in.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "weight": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Kilograms. One reading a day: a second one replaces the first."
+                  }
+                },
+                "required": [
+                  "date",
+                  "weight"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The weigh-in as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyweightEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/bodyweight/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged weigh-in with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "weight": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Kilograms. One reading a day: a second one replaces the first."
+                  }
+                },
+                "required": [
+                  "date",
+                  "weight"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged weigh-in of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged weigh-in out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged weigh-in of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donations": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a donation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "Full Blood",
+                      "Plasma"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "date",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The donation as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonationEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donations/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged donation with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "Full Blood",
+                      "Plasma"
+                    ]
+                  },
+                  "notes": {
+                    "type": "string",
+                    "default": ""
+                  }
+                },
+                "required": [
+                  "date",
+                  "type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged donation of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged donation out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged donation of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sauna": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a sauna bout.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "tempC": {
+                    "type": "number",
+                    "description": "°C, if tracked."
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "date",
+                  "duration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The sauna bout as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExposureBout"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sauna/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged sauna bout with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "tempC": {
+                    "type": "number",
+                    "description": "°C, if tracked."
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "date",
+                  "duration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged sauna bout of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged sauna bout out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged sauna bout of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cold": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a cold bout.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "tempC": {
+                    "type": "number",
+                    "description": "°C, if tracked."
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "date",
+                  "duration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The cold bout as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExposureBout"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cold/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged cold bout with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "tempC": {
+                    "type": "number",
+                    "description": "°C, if tracked."
+                  },
+                  "notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "date",
+                  "duration"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged cold bout of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged cold bout out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged cold bout of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sport": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a sport session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "sport": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "A new name creates the sport."
+                  },
+                  "withTrainer": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "quality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "1 (poor) to 5 (great)."
+                  },
+                  "notes": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "avgHr": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Beats per minute."
+                  },
+                  "competitorNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "win",
+                      "loss",
+                      "tie"
+                    ]
+                  },
+                  "teammateNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "newSport": {
+                    "type": "object",
+                    "properties": {
+                      "hasCompetitor": {
+                        "type": "boolean"
+                      },
+                      "hasTeammate": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "hasCompetitor",
+                      "hasTeammate"
+                    ],
+                    "description": "What a sport typed for the first time records; ignored for a known one."
+                  }
+                },
+                "required": [
+                  "date",
+                  "sport"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The sport session as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SportEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sport/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged sport session with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "sport": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "A new name creates the sport."
+                  },
+                  "withTrainer": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "quality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "1 (poor) to 5 (great)."
+                  },
+                  "notes": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "avgHr": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "description": "Beats per minute."
+                  },
+                  "competitorNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "result": {
+                    "type": "string",
+                    "enum": [
+                      "win",
+                      "loss",
+                      "tie"
+                    ]
+                  },
+                  "teammateNames": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "newSport": {
+                    "type": "object",
+                    "properties": {
+                      "hasCompetitor": {
+                        "type": "boolean"
+                      },
+                      "hasTeammate": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "hasCompetitor",
+                      "hasTeammate"
+                    ],
+                    "description": "What a sport typed for the first time records; ignored for a known one."
+                  }
+                },
+                "required": [
+                  "date",
+                  "sport"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged sport session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged sport session out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged sport session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mobility": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Log a mobility session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "exercises": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "duration": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "description": "Minutes."
+                        },
+                        "notes": {
+                          "type": "string",
+                          "default": ""
+                        },
+                        "muscleGroups": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Muscle-group names the stretch targets."
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "duration"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "date",
+                  "exercises"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The mobility session as logged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobilityEntry"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mobility/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a logged mobility session with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "exercises": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "duration": {
+                          "type": "number",
+                          "exclusiveMinimum": 0,
+                          "description": "Minutes."
+                        },
+                        "notes": {
+                          "type": "string",
+                          "default": ""
+                        },
+                        "muscleGroups": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Muscle-group names the stretch targets."
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "duration"
+                      ]
+                    },
+                    "minItems": 1
+                  }
+                },
+                "required": [
+                  "date",
+                  "exercises"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged mobility session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a logged mobility session out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such logged mobility session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/readiness/{date}/morning-hrv": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Type the morning's HRV; a second one that day replaces it. The day's check-in is kept.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "date",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ms": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "exclusiveMaximum": 400,
+                    "description": "rMSSD in ms, on waking."
+                  }
+                },
+                "required": [
+                  "ms"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The day's inputs as saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessInput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/readiness/{date}/check-in": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Answer the day's check-in; a second one that day replaces it. The morning HRV is kept.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "date",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckInAnswers"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The day's inputs as saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessInput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans/lifts": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Plan a lift.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "exercise": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "targets": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LiftSet"
+                    },
+                    "minItems": 1,
+                    "description": "What to aim at, not results."
+                  },
+                  "supersetId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "description": "Shared by the lifts of one superset; null takes a plan out of one."
+                  },
+                  "plannedBy": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "agent"
+                    ],
+                    "default": "user",
+                    "description": "Who wrote the plan: the person, or an agent on their behalf."
+                  }
+                },
+                "required": [
+                  "date",
+                  "exercise",
+                  "targets"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The lift as planned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannedExercise"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Put planned lifts into one superset, or move them to another day.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minItems": 1
+                  },
+                  "supersetId": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  }
+                },
+                "required": [
+                  "ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned item of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans/lifts/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a planned lift with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "exercise": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "targets": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/LiftSet"
+                    },
+                    "minItems": 1,
+                    "description": "What to aim at, not results."
+                  },
+                  "supersetId": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid",
+                    "description": "Shared by the lifts of one superset; null takes a plan out of one."
+                  },
+                  "plannedBy": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "agent"
+                    ],
+                    "default": "user",
+                    "description": "Who wrote the plan: the person, or an agent on their behalf."
+                  }
+                },
+                "required": [
+                  "date",
+                  "exercise",
+                  "targets"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned lift of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a planned lift out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned lift of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans/sessions": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Plan a session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "cardio",
+                      "sport",
+                      "mobility"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "The cardio type (Running, Cycling, Swimming, Indoor Rowing, Custom) or the sport; empty for mobility."
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Kilometres."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "steady",
+                      "intervals"
+                    ]
+                  },
+                  "boutSeconds": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "stretches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "duration": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "duration"
+                      ]
+                    },
+                    "description": "The stretches of a mobility plan, minutes each."
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "plannedBy": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "agent"
+                    ],
+                    "default": "user",
+                    "description": "Who wrote the plan: the person, or an agent on their behalf."
+                  }
+                },
+                "required": [
+                  "date",
+                  "kind",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The session as planned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlannedSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans/sessions/{id}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a planned session with the one sent.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "The person's own calendar day, YYYY-MM-DD.",
+                    "example": "2026-10-20"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "cardio",
+                      "sport",
+                      "mobility"
+                    ]
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "The cardio type (Running, Cycling, Swimming, Indoor Rowing, Custom) or the sport; empty for mobility."
+                  },
+                  "duration": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Minutes."
+                  },
+                  "distance": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "description": "Kilometres."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "steady",
+                      "intervals"
+                    ]
+                  },
+                  "boutSeconds": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "stretches": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "duration": {
+                          "type": "number",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "duration"
+                      ]
+                    },
+                    "description": "The stretches of a mobility plan, minutes each."
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "plannedBy": {
+                    "type": "string",
+                    "enum": [
+                      "user",
+                      "agent"
+                    ],
+                    "default": "user",
+                    "description": "Who wrote the plan: the person, or an agent on their behalf."
+                  }
+                },
+                "required": [
+                  "date",
+                  "kind",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Take a planned session out.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned session of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans/lifts/{id}/logged": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Point a planned lift at the logged lift it became.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "entryId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The logged entry the plan became."
+                  }
+                },
+                "required": [
+                  "entryId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned item of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/plans/sessions/{id}/logged": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Point a planned session at the logged session it became.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "entryId": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The logged entry the plan became."
+                  }
+                },
+                "required": [
+                  "entryId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such planned item of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

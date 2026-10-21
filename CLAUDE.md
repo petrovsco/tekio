@@ -123,6 +123,7 @@ npm run knip         # Dead files, exports and dependencies (knip.jsonc)
 npm run perf         # First-paint bundle size vs the committed baseline (needs a build)
 npm run perf:update  # Re-baseline, deliberately
 npm run perf:startup # Time the production build in a real browser
+npm run api:client   # Regenerate the API's OpenAPI description and the typed client
 npm run test         # Run all tests once (Vitest)
 npm run test:watch   # Vitest in watch mode
 npm run preview      # Preview production build locally
@@ -224,6 +225,14 @@ checks the token. It runs as one Vercel function, [api/index.ts](api/index.ts), 
 as TypeScript source, so `npm run build` ends by bundling the API with esbuild into
 `api/_bundle.mjs` ([scripts/build-api.mjs](scripts/build-api.mjs)), which the function
 imports; the bundle is build output and is not committed.
+
+The reads' answers are described field by field in
+[packages/api/src/readShapes.ts](packages/api/src/readShapes.ts), each schema typed as the
+core type it describes, so the build fails when the two disagree. `@tekio/client`
+([packages/client/src/index.ts](packages/client/src/index.ts)) is the typed client:
+`openapi-fetch` over types generated from the description. `npm run api:client` writes
+`packages/client/openapi.json` and `src/schema.ts`, both committed; a test fails when they
+no longer match the routes, so a route change is committed with the regenerated pair.
 
 ### Data layer (`src/lib/db/`)
 

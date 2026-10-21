@@ -1,0 +1,3127 @@
+// Generated from packages/client/openapi.json by `npm run api:client`. Do not edit.
+
+export interface paths {
+    "/api/read/home": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Home: what is missing, and whether today can push. */
+        get: {
+            parameters: {
+                query: {
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    date: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The Home read. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["HomeRead"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/read/adaptations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Adaptations: one muscle-linked quality, explained. */
+        get: {
+            parameters: {
+                query: {
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    date: string;
+                    /** @description The muscle-linked quality to map. */
+                    quality: "strength" | "hypertrophy" | "muscular_endurance" | "power";
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The Adaptations read. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["AdaptationsRead"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/read/readiness": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Readiness: today's reading and the days behind it. */
+        get: {
+            parameters: {
+                query: {
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    date: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The readiness read. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReadinessRead"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/weights": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a lift: one exercise and its sets on a day. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description As typed: an alias or a catalogue spelling resolves to its lift. */
+                        exercise: string;
+                        sets: components["schemas"]["LiftSet"][];
+                        /**
+                         * Format: uuid
+                         * @description Shared by the lifts done as one superset.
+                         */
+                        supersetId?: string;
+                        /**
+                         * @description The movement, for a lift the catalogue doesn't know.
+                         * @enum {string}
+                         */
+                        pattern?: "squat" | "lunge" | "hingeStraightKnee" | "hingeKneeBent" | "hipExtensionBentKnee" | "kneeFlexion" | "kneeExtension" | "hipAbduction" | "hipAdduction" | "plantarFlexion" | "horizontalPush" | "verticalPush" | "elbowExtension" | "shoulderAbduction" | "uprightRow" | "horizontalAdduction" | "shoulderFlexion" | "scapularElevation" | "verticalPull" | "horizontalPull" | "elbowFlexion" | "horizontalAbduction" | "straightArmExtension" | "wristAndGrip" | "shoulderExternalRotation" | "spinalFlexion" | "hipFlexionTrunk" | "antiExtension" | "rotation" | "lateralFlexion" | "carry" | "olympic";
+                    };
+                };
+            };
+            responses: {
+                /** @description The lift as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            entry: components["schemas"]["WeightEntry"];
+                            /** @description True when this created the exercise and its muscle links. */
+                            linked: boolean;
+                        };
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/weights/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Take a logged lift out, with its sets. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The logged lift. */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such lift of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /** Replace a logged lift's sets, and move it to another day if `date` is given. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The logged lift. */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        sets: components["schemas"]["LiftSet"][];
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such lift of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/cardio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a cardio session. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @enum {string} */
+                        type: "Running" | "Cycling" | "Swimming" | "Indoor Rowing" | "Custom";
+                        /** @description Minutes. */
+                        duration: number;
+                        /** @description Kilometres. */
+                        distance?: number;
+                        /** @description Beats per minute. */
+                        avgHr?: number;
+                        notes?: string;
+                        /** @enum {string} */
+                        format?: "steady" | "intervals";
+                        /** @description Work-bout length of an intervals session. */
+                        boutSeconds?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description The cardio session as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CardioEntry"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cardio/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged cardio session with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @enum {string} */
+                        type: "Running" | "Cycling" | "Swimming" | "Indoor Rowing" | "Custom";
+                        /** @description Minutes. */
+                        duration: number;
+                        /** @description Kilometres. */
+                        distance?: number;
+                        /** @description Beats per minute. */
+                        avgHr?: number;
+                        notes?: string;
+                        /** @enum {string} */
+                        format?: "steady" | "intervals";
+                        /** @description Work-bout length of an intervals session. */
+                        boutSeconds?: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged cardio session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged cardio session out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged cardio session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sleep": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a night. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The day the night ended on.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        hours: number;
+                        /** @description 1 (poor) to 5 (great). */
+                        quality?: number;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description The night as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SleepEntry"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sleep/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged night with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The day the night ended on.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        hours: number;
+                        /** @description 1 (poor) to 5 (great). */
+                        quality?: number;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged night of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged night out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged night of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bodyweight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a weigh-in. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description Kilograms. One reading a day: a second one replaces the first. */
+                        weight: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description The weigh-in as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["BodyweightEntry"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bodyweight/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged weigh-in with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description Kilograms. One reading a day: a second one replaces the first. */
+                        weight: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged weigh-in of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged weigh-in out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged weigh-in of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/donations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a donation. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @enum {string} */
+                        type: "Full Blood" | "Plasma";
+                        /** @default  */
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description The donation as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DonationEntry"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/donations/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged donation with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @enum {string} */
+                        type: "Full Blood" | "Plasma";
+                        /** @default  */
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged donation of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged donation out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged donation of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sauna": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a sauna bout. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description Minutes. */
+                        duration: number;
+                        /** @description °C, if tracked. */
+                        tempC?: number;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description The sauna bout as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ExposureBout"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sauna/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged sauna bout with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description Minutes. */
+                        duration: number;
+                        /** @description °C, if tracked. */
+                        tempC?: number;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged sauna bout of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged sauna bout out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged sauna bout of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cold": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a cold bout. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description Minutes. */
+                        duration: number;
+                        /** @description °C, if tracked. */
+                        tempC?: number;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description The cold bout as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ExposureBout"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cold/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged cold bout with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description Minutes. */
+                        duration: number;
+                        /** @description °C, if tracked. */
+                        tempC?: number;
+                        notes?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged cold bout of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged cold bout out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged cold bout of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sport": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a sport session. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description A new name creates the sport. */
+                        sport: string;
+                        /** @default false */
+                        withTrainer?: boolean;
+                        /** @description 1 (poor) to 5 (great). */
+                        quality?: number;
+                        /** @default  */
+                        notes?: string;
+                        /** @description Minutes. */
+                        duration?: number;
+                        /** @description Beats per minute. */
+                        avgHr?: number;
+                        competitorNames?: string[];
+                        /** @enum {string} */
+                        result?: "win" | "loss" | "tie";
+                        teammateNames?: string[];
+                        /** @description What a sport typed for the first time records; ignored for a known one. */
+                        newSport?: {
+                            hasCompetitor: boolean;
+                            hasTeammate: boolean;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description The sport session as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["SportEntry"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sport/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged sport session with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @description A new name creates the sport. */
+                        sport: string;
+                        /** @default false */
+                        withTrainer?: boolean;
+                        /** @description 1 (poor) to 5 (great). */
+                        quality?: number;
+                        /** @default  */
+                        notes?: string;
+                        /** @description Minutes. */
+                        duration?: number;
+                        /** @description Beats per minute. */
+                        avgHr?: number;
+                        competitorNames?: string[];
+                        /** @enum {string} */
+                        result?: "win" | "loss" | "tie";
+                        teammateNames?: string[];
+                        /** @description What a sport typed for the first time records; ignored for a known one. */
+                        newSport?: {
+                            hasCompetitor: boolean;
+                            hasTeammate: boolean;
+                        };
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged sport session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged sport session out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged sport session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mobility": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Log a mobility session. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        exercises: {
+                            name: string;
+                            /** @description Minutes. */
+                            duration: number;
+                            /** @default  */
+                            notes?: string;
+                            /** @description Muscle-group names the stretch targets. */
+                            muscleGroups?: string[];
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description The mobility session as logged. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["MobilityEntry"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/mobility/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a logged mobility session with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        exercises: {
+                            name: string;
+                            /** @description Minutes. */
+                            duration: number;
+                            /** @default  */
+                            notes?: string;
+                            /** @description Muscle-group names the stretch targets. */
+                            muscleGroups?: string[];
+                        }[];
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged mobility session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a logged mobility session out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such logged mobility session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/readiness/{date}/morning-hrv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Type the morning's HRV; a second one that day replaces it. The day's check-in is kept. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description rMSSD in ms, on waking. */
+                        ms: number;
+                    };
+                };
+            };
+            responses: {
+                /** @description The day's inputs as saved. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReadinessInput"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/readiness/{date}/check-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Answer the day's check-in; a second one that day replaces it. The morning HRV is kept. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    date: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CheckInAnswers"];
+                };
+            };
+            responses: {
+                /** @description The day's inputs as saved. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ReadinessInput"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/lifts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Plan a lift. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        exercise: string;
+                        /** @description What to aim at, not results. */
+                        targets: components["schemas"]["LiftSet"][];
+                        /**
+                         * Format: uuid
+                         * @description Shared by the lifts of one superset; null takes a plan out of one.
+                         */
+                        supersetId?: string | null;
+                        /**
+                         * @description Who wrote the plan: the person, or an agent on their behalf.
+                         * @default user
+                         * @enum {string}
+                         */
+                        plannedBy?: "user" | "agent";
+                    };
+                };
+            };
+            responses: {
+                /** @description The lift as planned. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlannedExercise"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Put planned lifts into one superset, or move them to another day. */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        ids: string[];
+                        /** Format: uuid */
+                        supersetId?: string;
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned item of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/api/plans/lifts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a planned lift with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        exercise: string;
+                        /** @description What to aim at, not results. */
+                        targets: components["schemas"]["LiftSet"][];
+                        /**
+                         * Format: uuid
+                         * @description Shared by the lifts of one superset; null takes a plan out of one.
+                         */
+                        supersetId?: string | null;
+                        /**
+                         * @description Who wrote the plan: the person, or an agent on their behalf.
+                         * @default user
+                         * @enum {string}
+                         */
+                        plannedBy?: "user" | "agent";
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned lift of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a planned lift out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned lift of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Plan a session. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @enum {string} */
+                        kind: "cardio" | "sport" | "mobility";
+                        /** @description The cardio type (Running, Cycling, Swimming, Indoor Rowing, Custom) or the sport; empty for mobility. */
+                        name: string;
+                        /** @description Minutes. */
+                        duration?: number;
+                        /** @description Kilometres. */
+                        distance?: number;
+                        /** @enum {string} */
+                        format?: "steady" | "intervals";
+                        boutSeconds?: number;
+                        /** @description The stretches of a mobility plan, minutes each. */
+                        stretches?: {
+                            name: string;
+                            duration: number;
+                        }[];
+                        notes?: string;
+                        /**
+                         * @description Who wrote the plan: the person, or an agent on their behalf.
+                         * @default user
+                         * @enum {string}
+                         */
+                        plannedBy?: "user" | "agent";
+                    };
+                };
+            };
+            responses: {
+                /** @description The session as planned. */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["PlannedSession"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Replace a planned session with the one sent. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /**
+                         * @description The person's own calendar day, YYYY-MM-DD.
+                         * @example 2026-10-20
+                         */
+                        date: string;
+                        /** @enum {string} */
+                        kind: "cardio" | "sport" | "mobility";
+                        /** @description The cardio type (Running, Cycling, Swimming, Indoor Rowing, Custom) or the sport; empty for mobility. */
+                        name: string;
+                        /** @description Minutes. */
+                        duration?: number;
+                        /** @description Kilometres. */
+                        distance?: number;
+                        /** @enum {string} */
+                        format?: "steady" | "intervals";
+                        boutSeconds?: number;
+                        /** @description The stretches of a mobility plan, minutes each. */
+                        stretches?: {
+                            name: string;
+                            duration: number;
+                        }[];
+                        notes?: string;
+                        /**
+                         * @description Who wrote the plan: the person, or an agent on their behalf.
+                         * @default user
+                         * @enum {string}
+                         */
+                        plannedBy?: "user" | "agent";
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        /** Take a planned session out. */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deleted. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned session of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/lifts/{id}/logged": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Point a planned lift at the logged lift it became. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description The logged entry the plan became. */
+                        entryId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned item of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/plans/sessions/{id}/logged": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Point a planned session at the logged session it became. */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": {
+                        /** @description The logged entry the plan became. */
+                        entryId: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description Saved. */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No such planned item of yours. */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
+export type webhooks = Record<string, never>;
+export interface components {
+    schemas: {
+        HomeRead: {
+            date: string;
+            muscles: components["schemas"]["MuscleState"][];
+            /** @description The muscles short of the map’s top band, largest gap first. */
+            gaps: components["schemas"]["MuscleState"][];
+            qualities: components["schemas"]["QualityState"][];
+            coverage: {
+                power?: components["schemas"]["AdaptationSummary"];
+                strength?: components["schemas"]["AdaptationSummary"];
+                hypertrophy?: components["schemas"]["AdaptationSummary"];
+                muscular_endurance?: components["schemas"]["AdaptationSummary"];
+                anaerobic_capacity?: components["schemas"]["AdaptationSummary"];
+                vo2max?: components["schemas"]["AdaptationSummary"];
+                endurance?: components["schemas"]["AdaptationSummary"];
+            };
+            readiness: components["schemas"]["SystemicReadiness"];
+            donation: components["schemas"]["DonationStatus"];
+            verdict: components["schemas"]["Verdict"];
+        };
+        MuscleState: {
+            id: string;
+            name: string;
+            parentId: string | null;
+            /** @description No other group names this one as its parent. */
+            leaf: boolean;
+            /** @description Level-weighted hard sets in the window. */
+            sets: number;
+            /** @description Days since the last stimulus; null = never. */
+            daysSince: number | null;
+            /** @description Inside the recovery window after a real dose. */
+            recovering: boolean;
+            /** @description Sets over the window target, uncapped: what the map colours by. */
+            fillFraction: number;
+        };
+        QualityState: {
+            /** @enum {string} */
+            key: "vo2max" | "endurance" | "anaerobic_capacity";
+            /** @description Days since the last qualifying session; null = never. */
+            daysSince: number | null;
+            windowDays: number;
+            /** @description Past its detraining window, or never trained: reads as missing. */
+            stale: boolean;
+        };
+        AdaptationSummary: {
+            /** @enum {string} */
+            key: "power" | "strength" | "hypertrophy" | "muscular_endurance" | "anaerobic_capacity" | "vo2max" | "endurance";
+            /** @description Volume over the window, in `unit`. */
+            volume: number;
+            /** @enum {string} */
+            unit: "sets" | "sessions" | "minutes";
+            muscles: components["schemas"]["MuscleStatusRow"][];
+            onTrack: number;
+            worked: number;
+            totalMuscles: number;
+            /** @description Whole-body target over the window; 0 for a per-muscle quality. */
+            target: number;
+            met: boolean;
+        };
+        MuscleStatusRow: {
+            id: string;
+            name: string;
+            parentId: string | null;
+            sets: number;
+            /** @description The same, with the immediate children. */
+            aggSets: number;
+            target: number;
+            /** @enum {string} */
+            status: "on_track" | "needs_work" | "untouched";
+            fillFraction: number;
+            children: components["schemas"]["MuscleStatusRow"][];
+        };
+        SystemicReadiness: {
+            /** @description 0 to 100, 50 being the person’s own normal. */
+            readiness: number | null;
+            /** @enum {string|null} */
+            band: "low" | "moderate" | "ok" | null;
+            /**
+             * @description The method the verdict came from.
+             * @enum {string|null}
+             */
+            method: "overnight_hrv" | "morning_hrv" | "check_in" | null;
+            /**
+             * @description The method the person reads from.
+             * @enum {string|null}
+             */
+            chosen: "overnight_hrv" | "morning_hrv" | "check_in" | null;
+            /** @description Chosen in Profile, rather than picked automatically. */
+            picked: boolean;
+            /** @description A watch or ring delivered HRV in the last 3 days. */
+            connected: boolean;
+            awaitingInput: boolean;
+            /** @description Readings toward the first verdict, while there is none. */
+            progress: {
+                have: number;
+                need: number;
+            } | null;
+            z: number | null;
+            recent: number | null;
+            normal: {
+                low: number;
+                high: number;
+            } | null;
+            gauge: {
+                /** @enum {string} */
+                side: "below" | "inside" | "above";
+                at: number;
+            } | null;
+            notes: {
+                restingHrAbove: number | null;
+                shortNight: number | null;
+            };
+            sleepScore: number | null;
+            sleepScoreDate: string | null;
+            hrv: number | null;
+            hrvDate: string | null;
+        };
+        DonationStatus: {
+            /** @description Days since the last full-blood donation; null = never. */
+            daysSince: number | null;
+            acuteHold: boolean;
+            aerobicSuppressed: boolean;
+            eligibleInDays: number;
+        };
+        Verdict: {
+            /** @enum {string} */
+            mode: "push" | "steady" | "hold";
+            /** @enum {string|null} */
+            cause: "readiness" | "donation" | null;
+        };
+        Error: {
+            error: string;
+        };
+        AdaptationsRead: {
+            date: string;
+            coverage: {
+                power?: components["schemas"]["AdaptationSummary"];
+                strength?: components["schemas"]["AdaptationSummary"];
+                hypertrophy?: components["schemas"]["AdaptationSummary"];
+                muscular_endurance?: components["schemas"]["AdaptationSummary"];
+                anaerobic_capacity?: components["schemas"]["AdaptationSummary"];
+                vo2max?: components["schemas"]["AdaptationSummary"];
+                endurance?: components["schemas"]["AdaptationSummary"];
+            };
+            /** @enum {string} */
+            quality: "strength" | "hypertrophy" | "muscular_endurance" | "power";
+            shape: {
+                /** @enum {string} */
+                unit: "sets" | "sessions" | "minutes";
+                weekly: number;
+            };
+            muscles: components["schemas"]["MuscleState"][];
+            gaps: components["schemas"]["MuscleState"][];
+            qualities: components["schemas"]["QualityState"][];
+            liftingSets: number;
+            cardioSessions: number;
+            atThreshold: number;
+        };
+        ReadinessRead: {
+            date: string;
+            readiness: components["schemas"]["SystemicReadiness"];
+            donation: components["schemas"]["DonationStatus"];
+            verdict: components["schemas"]["Verdict"];
+            trend: components["schemas"]["ReadinessTrend"];
+        };
+        ReadinessTrend: {
+            days: {
+                date: string;
+                single: number | null;
+                read: number | null;
+                printed: number | null;
+            }[];
+            normal: {
+                low: number;
+                high: number;
+            } | null;
+            full: boolean;
+        } | null;
+        WeightEntry: {
+            id: string;
+            date: string;
+            /** @description The name the lift is filed under, which may differ from the one typed. */
+            exercise: string;
+            sets: components["schemas"]["LiftSet"][];
+            supersetId?: string;
+        };
+        LiftSet: {
+            /** @description Load in kg; 0 for bodyweight. */
+            weight: number;
+            /** @description Whole reps; 1 for a hold. */
+            reps: number;
+            /** @description How long a hold lasted, in whole seconds (RFC 0107). */
+            seconds?: number;
+        };
+        CardioEntry: {
+            date: string;
+            /** @enum {string} */
+            type: "Running" | "Cycling" | "Swimming" | "Indoor Rowing" | "Custom";
+            /** @description Minutes. */
+            duration: number;
+            /** @description Kilometres. */
+            distance?: number;
+            /** @description Beats per minute. */
+            avgHr?: number;
+            notes?: string;
+            /** @enum {string} */
+            format?: "steady" | "intervals";
+            /** @description Work-bout length of an intervals session. */
+            boutSeconds?: number;
+            id: string;
+            /**
+             * @description Typed, or pulled from the watch.
+             * @enum {string}
+             */
+            source?: "manual" | "garmin";
+            garminActivityId?: number;
+            maxHr?: number;
+            aerobicTe?: number;
+            anaerobicTe?: number;
+            trainingEffectLabel?: string;
+            trainingLoad?: number;
+            /** @description Seconds in heart-rate zones 1 to 5. */
+            zoneDistribution?: number[];
+            elevationGain?: number;
+        };
+        SleepEntry: {
+            date: string;
+            hours: number;
+            /** @description 1 (poor) to 5 (great). */
+            quality?: number;
+            notes?: string;
+            id: string;
+            score?: number;
+            scoreQualifier?: string;
+            hrv?: number;
+            restingHr?: number;
+            /**
+             * @description Typed, or pulled from the watch.
+             * @enum {string}
+             */
+            source?: "manual" | "garmin";
+        };
+        BodyweightEntry: {
+            date: string;
+            /** @description Kilograms. One reading a day: a second one replaces the first. */
+            weight: number;
+            id: string;
+        };
+        DonationEntry: {
+            date: string;
+            /** @enum {string} */
+            type: "Full Blood" | "Plasma";
+            /** @default  */
+            notes: string;
+            id: string;
+        };
+        ExposureBout: {
+            date: string;
+            /** @description Minutes. */
+            duration: number;
+            /** @description °C, if tracked. */
+            tempC?: number;
+            notes?: string;
+            id: string;
+        };
+        SportEntry: {
+            date: string;
+            /** @description A new name creates the sport. */
+            sport: string;
+            /** @default false */
+            withTrainer: boolean;
+            /** @description 1 to 5; 0 while unrated. */
+            quality: number;
+            /** @default  */
+            notes: string;
+            /** @description Minutes. */
+            duration?: number;
+            /** @description Beats per minute. */
+            avgHr?: number;
+            competitorNames?: string[];
+            /** @enum {string} */
+            result?: "win" | "loss" | "tie";
+            teammateNames?: string[];
+            id: string;
+            /**
+             * @description Typed, or pulled from the watch.
+             * @enum {string}
+             */
+            source?: "manual" | "garmin";
+            garminActivityId?: number;
+            maxHr?: number;
+            aerobicTe?: number;
+            anaerobicTe?: number;
+            trainingEffectLabel?: string;
+            trainingLoad?: number;
+            /** @description Seconds in heart-rate zones 1 to 5. */
+            zoneDistribution?: number[];
+        };
+        MobilityEntry: {
+            date: string;
+            exercises: {
+                name: string;
+                /** @description Minutes. */
+                duration: number;
+                /** @default  */
+                notes: string;
+                /** @description Muscle-group names the stretch targets. */
+                muscleGroups?: string[];
+            }[];
+            id: string;
+            /** @description Minutes, the sum of the stretches. */
+            duration: number;
+        };
+        ReadinessInput: {
+            id: string;
+            date: string;
+            morningHrv?: number;
+            checkIn?: components["schemas"]["CheckInAnswers"];
+        };
+        /** @description Five answers, 1 to 5. */
+        CheckInAnswers: {
+            energy: number;
+            soreness: number;
+            sleepQuality: number;
+            stress: number;
+            mood: number;
+        };
+        PlannedExercise: {
+            date: string;
+            exercise: string;
+            /** @description What to aim at, not results. */
+            targets: components["schemas"]["LiftSet"][];
+            /**
+             * @description Who wrote the plan: the person, or an agent on their behalf.
+             * @default user
+             * @enum {string}
+             */
+            plannedBy: "user" | "agent";
+            id: string;
+            supersetId?: string;
+            /** @description The entry this plan became, once logged. */
+            loggedAs?: string;
+        };
+        PlannedSession: {
+            date: string;
+            /** @enum {string} */
+            kind: "cardio" | "sport" | "mobility";
+            /** @description The cardio type (Running, Cycling, Swimming, Indoor Rowing, Custom) or the sport; empty for mobility. */
+            name: string;
+            /** @description Minutes. */
+            duration?: number;
+            /** @description Kilometres. */
+            distance?: number;
+            /** @enum {string} */
+            format?: "steady" | "intervals";
+            boutSeconds?: number;
+            /** @description The stretches of a mobility plan, minutes each. */
+            stretches?: {
+                name: string;
+                duration: number;
+            }[];
+            notes?: string;
+            /**
+             * @description Who wrote the plan: the person, or an agent on their behalf.
+             * @default user
+             * @enum {string}
+             */
+            plannedBy: "user" | "agent";
+            id: string;
+            /** @description The entry this plan became, once logged. */
+            loggedAs?: string;
+        };
+    };
+    responses: never;
+    parameters: never;
+    requestBodies: never;
+    headers: never;
+    pathItems: never;
+}
+export type $defs = Record<string, never>;
+export type operations = Record<string, never>;
