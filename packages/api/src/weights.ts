@@ -6,7 +6,7 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { MOVEMENT_PATTERNS, type PatternKey } from '@tekio/core/catalogue'
 import { DateQuery, ErrorBody, json, failures } from './schemas'
 
-const LiftSetBody = z.object({
+export const LiftSetBody = z.object({
   weight: z.number().openapi({ description: 'Load in kg; 0 for bodyweight.' }),
   reps: z.number().openapi({ description: 'Whole reps; 1 for a hold.' }),
   seconds: z.number().optional().openapi({ description: 'How long a hold lasted, in whole seconds (RFC 0107).' }),

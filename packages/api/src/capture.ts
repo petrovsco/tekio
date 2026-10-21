@@ -7,7 +7,7 @@ import { createRoute, z } from '@hono/zod-openapi'
 import { CARDIO_TYPES, DONATION_TYPES } from '@tekio/core'
 import { DateQuery, ErrorBody, json, failures } from './schemas'
 
-const Minutes = z.number().positive().openapi({ description: 'Minutes.' })
+export const Minutes = z.number().positive().openapi({ description: 'Minutes.' })
 const Bpm = z.number().int().positive().openapi({ description: 'Beats per minute.' })
 const Rating = z.number().int().min(1).max(5).openapi({ description: '1 (poor) to 5 (great).' })
 const Notes = z.string().optional()
@@ -96,29 +96,34 @@ const MobilityEntry = MobilityBody.extend({
   id: z.string(), date: z.string(), duration: z.number().openapi({ description: 'Minutes, the sum of the stretches.' }),
 }).openapi('MobilityEntry')
 
-const IdParam = z.object({ id: z.string().min(1) })
+export const IdParam = z.object({ id: z.string().min(1) })
 
 /** Any one log's three routes, as the API registers them. */
 export type CaptureRoutes = ReturnType<typeof routes<z.ZodObject, z.ZodType>>
 
-function routes<B extends z.ZodObject, E extends z.ZodType>(path: string, noun: string, body: B, entry: E) {
+/** Log one, replace one, take one out. `done` is how the summaries speak of
+ *  one already there: a logged session, a planned lift. */
+export function routes<B extends z.ZodObject, E extends z.ZodType>(
+  path: string, noun: string, body: B, entry: E, { verb = 'Log', done = 'logged' } = {},
+) {
   const security = [{ bearer: [] }]
   const content = { 'application/json': { schema: body } }
-  const notFound = { 404: json(`No such ${noun} of yours.`, ErrorBody) }
+  const what = `${done} ${noun}`
+  const notFound = { 404: json(`No such ${what} of yours.`, ErrorBody) }
   return {
-    noun,
+    what,
     log: createRoute({
-      method: 'post', path, security, summary: `Log a ${noun}.`,
+      method: 'post', path, security, summary: `${verb} a ${noun}.`,
       request: { body: { required: true, content } },
-      responses: { 201: json(`The ${noun} as logged.`, entry), ...failures },
+      responses: { 201: json(`The ${noun} as ${done}.`, entry), ...failures },
     }),
     replace: createRoute({
-      method: 'put', path: `${path}/{id}`, security, summary: `Replace a logged ${noun} with the one sent.`,
+      method: 'put', path: `${path}/{id}`, security, summary: `Replace a ${what} with the one sent.`,
       request: { params: IdParam, body: { required: true, content } },
       responses: { 204: { description: 'Saved.' }, ...failures, ...notFound },
     }),
     remove: createRoute({
-      method: 'delete', path: `${path}/{id}`, security, summary: `Take a logged ${noun} out.`,
+      method: 'delete', path: `${path}/{id}`, security, summary: `Take a ${what} out.`,
       request: { params: IdParam },
       responses: { 204: { description: 'Deleted.' }, ...failures, ...notFound },
     }),

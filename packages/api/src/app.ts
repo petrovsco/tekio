@@ -9,7 +9,7 @@ import {
 } from '@tekio/core'
 import * as rows from '@tekio/db'
 import {
-  loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, ownsRow, type WriteDb,
+  loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, ownsRow, ownsRows, type WriteDb,
 } from '@tekio/db'
 import { bearer, tokenUserId, tokenAccepted } from './auth'
 import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
@@ -18,6 +18,7 @@ import {
   cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, mobilityRoutes,
   morningHrvRoute, checkInRoute, type CaptureRoutes,
 } from './capture'
+import { planLiftRoutes, planSessionRoutes, groupLiftsRoute, liftLoggedRoute, sessionLoggedRoute } from './plans'
 
 export interface ApiConfig {
   supabaseUrl: string
@@ -138,7 +139,7 @@ export function createApi(config: ApiConfig) {
       remove(db: WriteDb, id: string): Promise<void>
     },
   ) {
-    const gone = { error: `No such ${r.noun} of yours.` }
+    const gone = { error: `No such ${r.what} of yours.` }
     app.openapi(r.log, async c => {
       const db = await writerFor(c.req.header('authorization'))
       if (!db) return c.json(refused, 401)
@@ -205,6 +206,47 @@ export function createApi(config: ApiConfig) {
     const db = await writerFor(c.req.header('authorization'))
     if (!db) return c.json(refused, 401)
     return c.json(await rows.saveCheckIn(db, c.req.valid('param').date, c.req.valid('json')), 200)
+  })
+
+  // Plans: written as the app writes them, with who planned them.
+  type LiftPlan = Parameters<typeof rows.savePlan>[1] & { plannedBy: 'user' | 'agent'; supersetId?: string | null }
+  capture<LiftPlan>(planLiftRoutes, 'planned_exercises', {
+    save: (db, { plannedBy, supersetId, ...plan }) => rows.savePlan(db, { ...plan, supersetId: supersetId ?? undefined }, plannedBy),
+    replace: (db, id, { plannedBy: _, ...plan }) => rows.updatePlan(db, id, plan),
+    remove: rows.deletePlan,
+  })
+  type SessionPlan = rows.SessionPlanPatch & { plannedBy: 'user' | 'agent' }
+  capture<SessionPlan>(planSessionRoutes, 'planned_sessions', {
+    save: (db, { plannedBy, ...plan }) => rows.saveSessionPlan(db, plan, plannedBy),
+    replace: (db, id, { plannedBy: _, ...plan }) => rows.updateSessionPlan(db, id, plan),
+    remove: rows.deleteSessionPlan,
+  })
+
+  const noPlan = { error: 'No such planned item of yours.' }
+  app.openapi(groupLiftsRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    const { ids, ...patch } = c.req.valid('json')
+    if (!(await ownsRows(db, 'planned_exercises', ids))) return c.json(noPlan, 404)
+    await rows.patchPlans(db, ids, patch)
+    return c.body(null, 204)
+  })
+  app.openapi(liftLoggedRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    const { id } = c.req.valid('param')
+    if (!(await ownsRow(db, 'planned_exercises', id))) return c.json(noPlan, 404)
+    await rows.markPlanLogged(db, id, c.req.valid('json').entryId)
+    return c.body(null, 204)
+  })
+  app.openapi(sessionLoggedRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    const { id } = c.req.valid('param')
+    const kind = await rows.ownSessionPlanKind(db, id)
+    if (!kind) return c.json(noPlan, 404)
+    await rows.markSessionPlanLogged(db, id, kind, c.req.valid('json').entryId)
+    return c.body(null, 204)
   })
 
   app.doc31('/openapi.json', {
