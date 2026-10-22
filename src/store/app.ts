@@ -20,31 +20,29 @@ import type {
   PlannedSession,
 } from '../types'
 import { getOrCreateUser } from '../lib/db/user'
-import { loadExerciseAliases } from '../lib/db/exercises'
-import { loadMuscleGroups, loadExerciseMuscleLinks, loadExercises } from '../lib/db/muscles'
-import { loadAdaptationTargets, type AdaptationTargetMap } from '../lib/db/adaptationTargets'
+import { loadStart } from '../lib/db/start'
+import { loadExerciseMuscleLinks } from '../lib/db/muscles'
+import type { AdaptationTargetMap } from '@tekio/db'
 import {
-  loadWeights,
   saveWeightEntry,
   deleteWeightEntry,
   updateWeightEntry,
 } from '../lib/db/weights'
-import { loadBodyweight, saveBodyweightEntry, deleteBodyweightEntry, updateBodyweightEntry } from '../lib/db/bodyweight'
+import { saveBodyweightEntry, deleteBodyweightEntry, updateBodyweightEntry } from '../lib/db/bodyweight'
 import { loadCardio, saveCardioEntry, deleteCardioEntry, updateCardioEntry } from '../lib/db/cardio'
-import { loadMobility, saveMobilityEntry, deleteMobilityEntry, updateMobilityEntry } from '../lib/db/mobility'
-import { loadSports, loadSportTypes, saveSportEntry, deleteSportEntry, updateSportEntry } from '../lib/db/sport'
-import { loadDonations, saveDonationEntry, deleteDonationEntry, updateDonationEntry } from '../lib/db/donations'
+import { saveMobilityEntry, deleteMobilityEntry, updateMobilityEntry } from '../lib/db/mobility'
+import { loadSports, saveSportEntry, deleteSportEntry, updateSportEntry } from '../lib/db/sport'
+import { saveDonationEntry, deleteDonationEntry, updateDonationEntry } from '../lib/db/donations'
 import {
   loadSleep, saveSleepEntry, updateSleepEntry, deleteSleepEntry,
-  loadSauna, saveSaunaEntry, updateSaunaEntry, deleteSaunaEntry,
-  loadCold, saveColdEntry, updateColdEntry, deleteColdEntry,
+  saveSaunaEntry, updateSaunaEntry, deleteSaunaEntry,
+  saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
-import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
-import { loadPlans, savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
-import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, type SessionPlanPatch } from '../lib/db/sessionPlans'
+import { saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
+import { savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
+import { saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
 import { daysAgo } from '@tekio/core'
-import { exerciseAdaptationMap } from '@tekio/db'
 import { MISSED_PLAN_KEPT_DAYS } from '../constants/app'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
@@ -344,54 +342,15 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     set({ loading: true })
     try {
       await getOrCreateUser()
+      // A missed plan is deleted a week after its day (RFC 0104). The prune
+      // runs beside the start rather than ahead of it, and the plans it is
+      // deleting are left out as they load, so the card reads the same
+      // whether it has landed yet or not; a failed one costs a stale row.
       const missedBefore = daysAgo(MISSED_PLAN_KEPT_DAYS)
       const kept = (p: { date: string; loggedAs?: string }) => p.loggedAs != null || p.date >= missedBefore
       void pruneMissedPlans(missedBefore).catch(() => {})
-      const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs, plans, sessionPlans] = await Promise.all([
-        loadWeights(),
-        loadBodyweight(),
-        loadCardio(),
-        loadMobility(),
-        loadMuscleGroups(),
-        loadExerciseMuscleLinks(),
-        loadExercises(),
-        loadSports(),
-        loadSportTypes(),
-        loadDonations(),
-        loadSleep(),
-        loadSauna(),
-        loadCold(),
-        loadAdaptationTargets(),
-        loadExerciseAliases(),
-        loadReadinessInputs(),
-        // A missed plan is deleted a week after its day (RFC 0104). The prune
-        // runs beside the start rather than ahead of it, and the plans it is
-        // deleting are left out as they load, so the card reads the same
-        // whether it has landed yet or not; a failed one costs a stale row.
-        loadPlans().then(ps => ps.filter(kept)),
-        loadSessionPlans().then(ps => ps.filter(kept)),
-        usePrefs.getState().loadPrefs(),
-      ])
-      set({
-        weights,
-        bodyweight,
-        cardio,
-        mobility,
-        muscleGroups,
-        exerciseMuscles,
-        exerciseAdaptations: exerciseAdaptationMap(exercises),
-        sports,
-        sportTypes,
-        donations,
-        sleep,
-        sauna,
-        cold,
-        adaptationTargets,
-        exerciseAliases,
-        readinessInputs,
-        plans,
-        sessionPlans,
-      })
+      const [start] = await Promise.all([loadStart(), usePrefs.getState().loadPrefs()])
+      set({ ...start, plans: start.plans.filter(kept), sessionPlans: start.sessionPlans.filter(kept) })
     } finally {
       set({ loading: false })
     }

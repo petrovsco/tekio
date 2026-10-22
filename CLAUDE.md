@@ -122,7 +122,7 @@ npm run lint         # ESLint (flat config in eslint.config.js)
 npm run knip         # Dead files, exports and dependencies (knip.jsonc)
 npm run perf         # First-paint bundle size vs the committed baseline (needs a build)
 npm run perf:update  # Re-baseline, deliberately
-npm run perf:startup # Time the production build in a real browser
+npm run perf:startup # Time Home's answer in a real browser (signed in once with -- --sign-in)
 npm run api:client   # Regenerate the API's OpenAPI description and the typed client
 npm run test         # Run all tests once (Vitest)
 npm run test:watch   # Vitest in watch mode
@@ -151,7 +151,12 @@ same commit as the change that moved the number, and say why.
 record: **353.78 kB first paint** (2026-10-20: sign-in, RFC 0003, and the reads composed in `@tekio/core`, RFC 0094 step 2b) **and 1039 ms to the Home read** (2026-09-08). That
 second number is the one doctrine §6 cares about — it is measured after
 `bootstrap()` has returned, not at DOMContentLoaded — and it is wall-clock
-against the live database, so read the trend, not the digit.
+against the live database, so read the trend, not the digit. Home answers only
+a signed-in person, so the run opens the app in a saved browser profile, signed
+in once by hand with `npm run perf:startup -- --sign-in`; `--url <address>`
+times a deployed build instead of the local one, and `--url <address> --roads`
+times the app opening straight from the database against opening through the
+API's `GET /api/start` (`?start=api`, RFC 0094 step 4), turn and turn about.
 
 ## Environment Setup
 
@@ -205,7 +210,8 @@ Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 `tekio.rfcs/rfcs/0094-one-api-shared-core.md`: Hono with `@hono/zod-openapi`, so
 `/api/openapi.json` is generated from the route definitions. It serves the three reads,
 `GET /api/read/home`, `/api/read/adaptations` and `/api/read/readiness`, each taking
-`date`, the person's own day (a server cannot know it), and the capture routes:
+`date`, the person's own day (a server cannot know it); `GET /api/start`, every row the
+web app opens with in one answer; and the capture routes:
 `POST /api/weights` and `PATCH`/`DELETE /api/weights/{id}`, for each other log
 (`cardio`, `sport`, `sleep`, `sauna`, `cold`, `bodyweight`, `donations`, `mobility`)
 `POST /api/<log>` and `PUT`/`DELETE /api/<log>/{id}`, and the morning's
@@ -239,7 +245,7 @@ no longer match the routes, so a route change is committed with the regenerated 
 
 ### Data layer (`src/lib/db/`)
 
-One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. The loaders the reads stand on (weights, cardio, sport, sleep, donations, readiness inputs, muscles, adaptation targets, the profile) and their row ↔ entry mappers live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument so the API can load the same rows with the caller's token; the files here call them with `appDb()` from [_rows.ts](src/lib/db/_rows.ts). Every capture write lives there too, beside its loader, so the API writes a row exactly as the app does. The app is moving onto the API one domain at a time (RFC 0094 step 4): a moved domain's file writes through `api` from [src/lib/api.ts](src/lib/api.ts), the typed `@tekio/client` sending the session's token, which turns a 400's reason back into a `KnownError`: so far every log, lifts included, the morning's HRV and check-in, and the plans; only the loads still query the database directly. `npm run dev` serves `/api` from `packages/api` itself (the `devApi` plugin in [vite.config.ts](vite.config.ts)), so local writes reach the same routes. Key points:
+One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. The loaders the reads stand on (weights, cardio, sport, sleep, donations, readiness inputs, muscles, adaptation targets, the profile) and their row ↔ entry mappers live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument so the API can load the same rows with the caller's token; the files here call them with `appDb()` from [_rows.ts](src/lib/db/_rows.ts). Every capture write lives there too, beside its loader, so the API writes a row exactly as the app does. The app is moving onto the API one domain at a time (RFC 0094 step 4): a moved domain's file writes through `api` from [src/lib/api.ts](src/lib/api.ts), the typed `@tekio/client` sending the session's token, which turns a 400's reason back into a `KnownError`: every log, lifts included, the morning's HRV and check-in, and the plans. The opening load ([start.ts](src/lib/db/start.ts)) reads the same rows through `loadStartRows` either straight from the database or, with `?start=api` in the address, through `GET /api/start`, while the two are timed against each other; the profile, section order, Garmin sync and error reports still query the database directly. `npm run dev` serves `/api` from `packages/api` itself (the `devApi` plugin in [vite.config.ts](vite.config.ts)), so local writes reach the same routes. Key points:
 
 - **Weights** ([packages/db/src/weights.ts](packages/db/src/weights.ts), called through [src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExerciseRow` ([packages/db/src/exercises.ts](packages/db/src/exercises.ts)), the one place a typed name becomes a row. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`. Its writes live in `@tekio/db` so the API logs a lift exactly as the app does; they take a `WriteDb`, which adds the row origin and a lazy loader for the lift catalogue (`@tekio/core/catalogue`, kept off the first paint).
 - **Section config** ([src/lib/db/sectionConfig.ts](src/lib/db/sectionConfig.ts)): `user_section_config` table. On first load, defaults are seeded via upsert with `ignoreDuplicates: true`.

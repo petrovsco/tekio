@@ -13,6 +13,7 @@ import {
 } from '@tekio/db'
 import { bearer, tokenUserId, tokenAccepted } from './auth'
 import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
+import { startRoute } from './start'
 import { logWeightRoute, editWeightRoute, deleteWeightRoute } from './weights'
 import {
   cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, mobilityRoutes,
@@ -61,16 +62,19 @@ export function createApi(config: ApiConfig) {
 
   /** The caller's rows, or null when the token is refused. The rows load while
    *  Auth checks the token, so the check costs no extra round trip. */
-  async function rowsFor(authorization: string | undefined, date: string): Promise<ReadRows | null> {
+  async function loadedFor<T>(authorization: string | undefined, load: (db: WriteDb) => Promise<T>): Promise<T | null> {
     const who = caller(authorization)
     if (!who) return null
-    const rows = loadReadRows(who.db, date)
+    const loaded = load(who.db)
     if (!(await who.accepted)) {
-      rows.catch(() => {})
+      loaded.catch(() => {})
       return null
     }
-    return rows
+    return loaded
   }
+
+  const rowsFor = (authorization: string | undefined, date: string): Promise<ReadRows | null> =>
+    loadedFor(authorization, db => loadReadRows(db, date))
 
   /** The caller, for a write: nothing is written before Auth accepts the token. */
   async function writerFor(authorization: string | undefined): Promise<WriteDb | null> {
@@ -114,6 +118,11 @@ export function createApi(config: ApiConfig) {
     const { date } = c.req.valid('query')
     const rows = await rowsFor(c.req.header('authorization'), date)
     return rows ? c.json(readinessRead(rows, date), 200) : c.json(refused, 401)
+  })
+
+  app.openapi(startRoute, async c => {
+    const start = await loadedFor(c.req.header('authorization'), rows.loadStartRows)
+    return start ? c.json(start, 200) : c.json(refused, 401)
   })
 
   app.openapi(logWeightRoute, async c => {

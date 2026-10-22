@@ -10,7 +10,7 @@ import {
   type ReadinessTrend, type TargetShape, type HomeRead, type AdaptationsRead, type ReadinessRead,
 } from '@tekio/core'
 
-const ADAPTATIONS = [
+export const ADAPTATIONS = [
   'power', 'strength', 'hypertrophy', 'muscular_endurance', 'anaerobic_capacity', 'vo2max', 'endurance',
 ] as const satisfies readonly Adaptation[]
 

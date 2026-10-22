@@ -62,6 +62,20 @@ describe('the API reads', () => {
     expect(await ready.json()).toHaveProperty('verdict')
   })
 
+  it('serves every row the app opens with in one answer, with the caller\'s token', async () => {
+    const { api, calls } = fakeSupabase(LIVE)
+    const res = await get(api, '/api/start', LIVE)
+    expect(res.status).toBe(200)
+    expect(Object.keys(await res.json())).toEqual([
+      'weights', 'bodyweight', 'cardio', 'mobility', 'muscleGroups', 'exerciseMuscles', 'exerciseAdaptations',
+      'sports', 'sportTypes', 'donations', 'sleep', 'sauna', 'cold', 'adaptationTargets', 'exerciseAliases',
+      'readinessInputs', 'plans', 'sessionPlans',
+    ])
+    const rest = calls.filter(c => c.url.includes('/rest/v1/'))
+    expect(rest.every(c => c.auth === `Bearer ${LIVE}`)).toBe(true)
+    expect((await get(fakeSupabase(null).api, '/api/start', LIVE)).status).toBe(401)
+  })
+
   it('refuses a call with no token before touching the database', async () => {
     const { api, calls } = fakeSupabase(LIVE)
     expect((await get(api, `/api/read/home?date=${DATE}`)).status).toBe(401)
@@ -86,7 +100,7 @@ describe('the API reads', () => {
     const { api } = fakeSupabase(LIVE)
     const doc = await (await get(api, '/api/openapi.json')).json()
     expect(Object.keys(doc.paths)).toEqual([
-      '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/weights', '/api/weights/{id}',
+      '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/start', '/api/weights', '/api/weights/{id}',
       ...['cardio', 'sleep', 'bodyweight', 'donations', 'sauna', 'cold', 'sport', 'mobility'].flatMap(p => [`/api/${p}`, `/api/${p}/{id}`]),
       '/api/readiness/{date}/morning-hrv', '/api/readiness/{date}/check-in',
       '/api/plans/lifts', '/api/plans/lifts/{id}', '/api/plans/sessions', '/api/plans/sessions/{id}',

@@ -4,12 +4,14 @@
 // is the whole entry, as the app's edit form sends it, so a replace is a PUT.
 // The morning's readiness inputs are one row a day, so they are put by day.
 import { createRoute, z } from '@hono/zod-openapi'
-import { CARDIO_TYPES, DONATION_TYPES } from '@tekio/core'
+import { CARDIO_TYPES, DONATION_TYPES, type QualityRating } from '@tekio/core'
 import { DateQuery, ErrorBody, json, failures } from './schemas'
 
 export const Minutes = z.number().positive().openapi({ description: 'Minutes.' })
 const Bpm = z.number().int().positive().openapi({ description: 'Beats per minute.' })
-const Rating = z.number().int().min(1).max(5).openapi({ description: '1 (poor) to 5 (great).' })
+// Checked as a whole number from 1 to 5, which is what the core's rating type
+// spells out as a union.
+const Rating = z.number().int().min(1).max(5).openapi({ description: '1 (poor) to 5 (great).' }) as unknown as z.ZodType<QualityRating>
 const Notes = z.string().optional()
 
 /** What the watch adds to a synced session; never sent by a client. */
@@ -34,7 +36,7 @@ const CardioBody = z.object({
   format: z.enum(['steady', 'intervals']).optional(),
   boutSeconds: z.number().int().positive().optional().openapi({ description: 'Work-bout length of an intervals session.' }),
 })
-const CardioEntry = CardioBody.extend({ id: z.string(), date: z.string(), ...Garmin, elevationGain: z.number().optional() }).openapi('CardioEntry')
+export const CardioEntry = CardioBody.extend({ id: z.string(), date: z.string(), ...Garmin, elevationGain: z.number().optional() }).openapi('CardioEntry')
 
 const SportBody = z.object({
   date: DateQuery,
@@ -50,7 +52,7 @@ const SportBody = z.object({
   newSport: z.object({ hasCompetitor: z.boolean(), hasTeammate: z.boolean() }).optional()
     .openapi({ description: 'What a sport typed for the first time records; ignored for a known one.' }),
 })
-const SportEntry = SportBody.omit({ newSport: true }).extend({
+export const SportEntry = SportBody.omit({ newSport: true }).extend({
   id: z.string(), date: z.string(), quality: z.number().openapi({ description: '1 to 5; 0 while unrated.' }), ...Garmin,
 }).openapi('SportEntry')
 
@@ -60,7 +62,7 @@ const SleepBody = z.object({
   quality: Rating.optional(),
   notes: Notes,
 })
-const SleepEntry = SleepBody.extend({
+export const SleepEntry = SleepBody.extend({
   id: z.string(), date: z.string(),
   score: z.number().optional(), scoreQualifier: z.string().optional(),
   hrv: z.number().optional(), restingHr: z.number().optional(), source: Garmin.source,
@@ -72,16 +74,16 @@ const BoutBody = z.object({
   tempC: z.number().optional().openapi({ description: '°C, if tracked.' }),
   notes: Notes,
 })
-const BoutEntry = BoutBody.extend({ id: z.string(), date: z.string() }).openapi('ExposureBout')
+export const BoutEntry = BoutBody.extend({ id: z.string(), date: z.string() }).openapi('ExposureBout')
 
 const BodyweightBody = z.object({
   date: DateQuery,
   weight: z.number().positive().openapi({ description: 'Kilograms. One reading a day: a second one replaces the first.' }),
 })
-const BodyweightEntry = BodyweightBody.extend({ id: z.string(), date: z.string() }).openapi('BodyweightEntry')
+export const BodyweightEntry = BodyweightBody.extend({ id: z.string(), date: z.string() }).openapi('BodyweightEntry')
 
 const DonationBody = z.object({ date: DateQuery, type: z.enum(DONATION_TYPES), notes: z.string().default('') })
-const DonationEntry = DonationBody.extend({ id: z.string(), date: z.string() }).openapi('DonationEntry')
+export const DonationEntry = DonationBody.extend({ id: z.string(), date: z.string() }).openapi('DonationEntry')
 
 const MobilityBody = z.object({
   date: DateQuery,
@@ -92,7 +94,7 @@ const MobilityBody = z.object({
     muscleGroups: z.array(z.string()).optional().openapi({ description: 'Muscle-group names the stretch targets.' }),
   })).min(1),
 })
-const MobilityEntry = MobilityBody.extend({
+export const MobilityEntry = MobilityBody.extend({
   id: z.string(), date: z.string(), duration: z.number().openapi({ description: 'Minutes, the sum of the stretches.' }),
 }).openapi('MobilityEntry')
 
@@ -144,7 +146,7 @@ export const mobilityRoutes = routes('/mobility', 'mobility session', MobilityBo
 const Answer = z.number().int().min(1).max(5)
 const CheckIn = z.object({ energy: Answer, soreness: Answer, sleepQuality: Answer, stress: Answer, mood: Answer })
   .openapi('CheckInAnswers', { description: 'Five answers, 1 to 5.' })
-const ReadinessInput = z.object({
+export const ReadinessInput = z.object({
   id: z.string(), date: z.string(), morningHrv: z.number().optional(), checkIn: CheckIn.optional(),
 }).openapi('ReadinessInput')
 const DayParam = z.object({ date: DateQuery })

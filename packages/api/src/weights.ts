@@ -12,7 +12,7 @@ export const LiftSetBody = z.object({
   seconds: z.number().optional().openapi({ description: 'How long a hold lasted, in whole seconds (RFC 0107).' }),
 }).openapi('LiftSet')
 
-const WeightEntryBody = z.object({
+export const WeightEntryBody = z.object({
   id: z.string(),
   date: z.string(),
   exercise: z.string().openapi({ description: 'The name the lift is filed under, which may differ from the one typed.' }),

@@ -1,13 +1,9 @@
-// The weights loads still read straight from the database; a lift is logged,
-// edited and taken out through the API (RFC 0094 step 4), so the app writes
-// it exactly as a phone app or the agent does.
+// A lift is logged, edited and taken out through the API (RFC 0094 step 4), so
+// the app writes it exactly as a phone app or the agent does; the lifts load
+// with the rest at start (./start.ts).
 import type { WeightEntry, LiftSet } from '../../types'
 import type { PatternKey } from '@tekio/core/catalogue'
-import { appDb } from './_rows'
-import { loadWeights as dbLoadWeights } from '@tekio/db'
 import { api, body, done } from '../api'
-
-export const loadWeights = () => dbLoadWeights(appDb())
 
 /** `linked` is true when this save created the exercise and wrote its muscle
  *  links (RFC 0074), so the caller knows the muscle read must be reloaded. */

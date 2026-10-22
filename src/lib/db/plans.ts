@@ -1,14 +1,11 @@
 import type { PlannedExercise, LiftSet } from '../../types'
-import * as db from '@tekio/db'
-import { appDb } from './_rows'
 import { api, body, done } from '../api'
 
 // ── Planned exercises (planned_exercises, RFC 0098) ──────────────────────────
-// Loaded straight from the database still; written through the API (RFC 0094
-// step 4), so the app plans a lift exactly as the agent will.
+// Written through the API (RFC 0094 step 4), so the app plans a lift exactly
+// as the agent will; loaded with the rest at start (./start.ts).
 type LiftPlan = { date: string; exercise: string; targets: LiftSet[] }
 
-export const loadPlans = (): Promise<PlannedExercise[]> => db.loadPlans(appDb())
 export const savePlan = (plan: LiftPlan & { supersetId?: string }): Promise<PlannedExercise> =>
   body(api.POST('/api/plans/lifts', { body: { ...plan, plannedBy: 'user' } }))
 export const updatePlan = (id: string, patch: LiftPlan & { supersetId?: string | null }): Promise<void> =>

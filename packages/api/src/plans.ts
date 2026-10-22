@@ -20,7 +20,7 @@ const PlanLiftBody = z.object({
     .openapi({ description: 'Shared by the lifts of one superset; null takes a plan out of one.' }),
   plannedBy: PlannedBy,
 })
-const PlannedExercise = PlanLiftBody.omit({ supersetId: true }).extend({
+export const PlannedExercise = PlanLiftBody.omit({ supersetId: true }).extend({
   id: z.string(), date: z.string(), supersetId: z.string().optional(), ...Logged,
 }).openapi('PlannedExercise')
 
@@ -37,7 +37,7 @@ const PlanSessionBody = z.object({
   notes: z.string().optional(),
   plannedBy: PlannedBy,
 })
-const PlannedSession = PlanSessionBody.extend({ id: z.string(), date: z.string(), ...Logged }).openapi('PlannedSession')
+export const PlannedSession = PlanSessionBody.extend({ id: z.string(), date: z.string(), ...Logged }).openapi('PlannedSession')
 
 export const planLiftRoutes = routes('/plans/lifts', 'lift', PlanLiftBody, PlannedExercise, { verb: 'Plan', done: 'planned' })
 export const planSessionRoutes = routes('/plans/sessions', 'session', PlanSessionBody, PlannedSession, { verb: 'Plan', done: 'planned' })
