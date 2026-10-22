@@ -1,11 +1,9 @@
 import { supabase } from '../supabase'
 import { userId } from '../session'
+import type { SectionConfig } from '@tekio/db'
+import { api, done } from '../api'
 
-export interface SectionConfig {
-  sectionKey: string
-  showInMenu: boolean
-  sortOrder: number
-}
+export type { SectionConfig }
 
 // Three menu sections, one slot of headroom — doctrine R1's cap of four, met
 // for the first time (roadmap 014). Body Weight, Donations and Recovery are
@@ -55,35 +53,12 @@ export async function loadSectionConfig(): Promise<SectionConfig[]> {
 }
 
 /** Only `showInMenu` is ever patched one field at a time — reordering writes the
- *  whole list through `saveSectionConfig`. */
-export async function updateSectionField(
-  sectionKey: string,
-  patch: Partial<Pick<SectionConfig, 'showInMenu'>>
-): Promise<void> {
-  const update: Record<string, unknown> = {}
-  if (patch.showInMenu !== undefined) update.show_in_menu = patch.showInMenu
+ *  whole list through `saveSectionConfig`. Both write through the API (RFC 0094
+ *  step 4); the load above stays on the start path until it is timed. */
+export const updateSectionField = (sectionKey: string, patch: Partial<Pick<SectionConfig, 'showInMenu'>>): Promise<void> =>
+  patch.showInMenu === undefined
+    ? Promise.resolve()
+    : done(api.PATCH('/api/sections/{key}', { params: { path: { key: sectionKey } }, body: { showInMenu: patch.showInMenu } }))
 
-  const { error } = await supabase
-    .from('user_section_config')
-    .update(update)
-    .eq('user_id', userId())
-    .eq('section_key', sectionKey)
-
-  if (error) throw error
-}
-
-export async function saveSectionConfig(configs: SectionConfig[]): Promise<void> {
-  const { error } = await supabase
-    .from('user_section_config')
-    .upsert(
-      configs.map(c => ({
-        user_id:      userId(),
-        section_key:  c.sectionKey,
-        show_in_menu: c.showInMenu,
-        sort_order:   c.sortOrder,
-      })),
-      { onConflict: 'user_id,section_key' }
-    )
-
-  if (error) throw error
-}
+export const saveSectionConfig = (configs: SectionConfig[]): Promise<void> =>
+  done(api.PUT('/api/sections', { body: configs }))

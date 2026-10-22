@@ -3,7 +3,7 @@ import type { Db } from './db'
 
 /** Everything the prefs store reads off the profile row. One select rather than
  *  one per setting — they all live in `user_profiles`, and bootstrap wants them
- *  all at once. Writes stay one column at a time, in the app's src/lib/db/user.ts. */
+ *  all at once. */
 export interface UserProfile {
   weekStartDay: WeekStartDay
   /** The HRmax the user set and where it came from, plus the birth date the age estimate needs (roadmap 060). */
@@ -33,4 +33,28 @@ export async function loadProfile(db: Db): Promise<UserProfile> {
       ? data.readiness_method as ReadinessMethod
       : null,
   }
+}
+
+/** The settings a person changes, any of them at once. An HRmax travels with
+ *  where it came from: typing one and accepting the tracker's peak write the
+ *  same column, last write wins, and clearing it clears its source too. */
+export interface ProfilePatch {
+  weekStartDay?: WeekStartDay
+  hrMax?: { value: number | null; source: HrMaxSource }
+  birthDate?: string | null
+  readinessMethod?: ReadinessMethod | null
+}
+
+export async function updateProfile(db: Db, patch: ProfilePatch): Promise<void> {
+  const row: Record<string, unknown> = {}
+  if (patch.weekStartDay !== undefined) row.week_start_day = patch.weekStartDay
+  if (patch.hrMax !== undefined) {
+    row.hr_max_override = patch.hrMax.value
+    row.hr_max_source = patch.hrMax.value == null ? null : patch.hrMax.source
+  }
+  if (patch.birthDate !== undefined) row.birth_date = patch.birthDate
+  if (patch.readinessMethod !== undefined) row.readiness_method = patch.readinessMethod
+  if (!Object.keys(row).length) return
+  const { error } = await db.client.from('user_profiles').update(row).eq('id', db.userId)
+  if (error) throw error
 }
