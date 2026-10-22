@@ -105,6 +105,7 @@ describe('the API reads', () => {
       '/api/readiness/{date}/morning-hrv', '/api/readiness/{date}/check-in',
       '/api/plans/lifts', '/api/plans/lifts/{id}', '/api/plans/sessions', '/api/plans/sessions/{id}',
       '/api/plans/lifts/{id}/logged', '/api/plans/sessions/{id}/logged', '/api/plans/missed',
+      '/api/profile', '/api/sections', '/api/sections/{key}', '/api/sync/garmin', '/api/sync/runs/{id}', '/api/error-reports',
     ])
   })
 })

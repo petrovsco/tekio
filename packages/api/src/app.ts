@@ -14,6 +14,9 @@ import {
 import { bearer, tokenUserId, tokenAccepted } from './auth'
 import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
 import { startRoute } from './start'
+import {
+  profileRoute, sectionsRoute, sectionShownRoute, lastSyncRoute, requestSyncRoute, syncRunRoute, errorReportRoute,
+} from './settings'
 import { logWeightRoute, editWeightRoute, deleteWeightRoute } from './weights'
 import {
   cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, mobilityRoutes,
@@ -279,6 +282,57 @@ export function createApi(config: ApiConfig) {
     if (!db) return c.json(refused, 401)
     const { before } = c.req.valid('query')
     await Promise.all([rows.pruneMissedPlans(db, before), rows.pruneMissedSessionPlans(db, before)])
+    return c.body(null, 204)
+  })
+
+  // Settings, filed under the caller: nothing to own-check.
+  app.openapi(profileRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    await rows.updateProfile(db, c.req.valid('json'))
+    return c.body(null, 204)
+  })
+  app.openapi(sectionsRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    await rows.saveSections(db, c.req.valid('json'))
+    return c.body(null, 204)
+  })
+  app.openapi(sectionShownRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    await rows.setSectionShown(db, c.req.valid('param').key, c.req.valid('json').showInMenu)
+    return c.body(null, 204)
+  })
+
+  app.openapi(lastSyncRoute, async c => {
+    // Wrapped: a run of null is an answer, not a refusal.
+    const run = await loadedFor(c.req.header('authorization'), async db => ({ run: await rows.loadLastGarminSync(db) }))
+    return run === null ? c.json(refused, 401) : c.json(run.run, 200)
+  })
+  app.openapi(requestSyncRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    return c.json(await rows.requestGarminSync(db), 200)
+  })
+  app.openapi(syncRunRoute, async c => {
+    const { id } = c.req.valid('param')
+    const run = await loadedFor(c.req.header('authorization'), async db => ({ run: await rows.loadSyncRun(db, id) }))
+    if (run === null) return c.json(refused, 401)
+    return run.run ? c.json(run.run, 200) : c.json({ error: 'No such run of yours.' }, 404)
+  })
+
+  // A report goes through with whatever token came with it, or none: the
+  // database function is the only way into the table and reads nothing back,
+  // and a forged token is refused by the database itself.
+  app.openapi(errorReportRoute, async c => {
+    const token = bearer(c.req.header('authorization')) ?? config.anonKey
+    const client = new PostgrestClient(`${config.supabaseUrl}/rest/v1`, {
+      headers: { apikey: config.anonKey, Authorization: `Bearer ${token}` },
+      fetch: fetchFn,
+    })
+    const { signature, payload } = c.req.valid('json')
+    await rows.sendErrorReport(client, signature, payload)
     return c.body(null, 204)
   })
 

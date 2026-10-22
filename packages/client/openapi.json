@@ -1761,6 +1761,187 @@
           "name",
           "id"
         ]
+      },
+      "ProfilePatch": {
+        "type": "object",
+        "properties": {
+          "weekStartDay": {
+            "type": "string",
+            "enum": [
+              "monday",
+              "sunday"
+            ]
+          },
+          "hrMax": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "exclusiveMinimum": 0,
+                "description": "Beats per minute; null goes back to the age estimate."
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "typed",
+                  "tracker"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source"
+            ],
+            "description": "The HRmax the person set, and where it came from."
+          },
+          "birthDate": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "For the age estimate of HRmax.",
+            "example": "2026-10-20"
+          },
+          "readinessMethod": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "overnight_hrv",
+              "morning_hrv",
+              "check_in",
+              null
+            ],
+            "description": "How readiness is read; null picks the best one with data."
+          }
+        }
+      },
+      "Section": {
+        "type": "object",
+        "properties": {
+          "sectionKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "showInMenu": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "sectionKey",
+          "showInMenu",
+          "sortOrder"
+        ]
+      },
+      "SyncRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "ok",
+              "failed"
+            ]
+          },
+          "requestedAt": {
+            "type": "string"
+          },
+          "finishedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "requestedAt"
+        ]
+      },
+      "ErrorReport": {
+        "type": "object",
+        "properties": {
+          "signature": {
+            "type": "string",
+            "minLength": 1
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "build": {
+                "type": "string"
+              },
+              "screen": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "render",
+                  "window",
+                  "promise",
+                  "write"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "stack": {
+                "type": "string"
+              },
+              "componentStack": {
+                "type": "string"
+              },
+              "userAgent": {
+                "type": "string"
+              },
+              "trail": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "at": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "version",
+              "build",
+              "screen",
+              "source",
+              "name",
+              "message",
+              "userAgent",
+              "trail",
+              "at"
+            ]
+          }
+        },
+        "required": [
+          "signature",
+          "payload"
+        ]
       }
     },
     "parameters": {}
@@ -5214,6 +5395,346 @@
           },
           "401": {
             "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile": {
+      "patch": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change any of the profile’s settings; the ones not sent stay as they are.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sections": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save the menu’s sections in their new order.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Section"
+                },
+                "minItems": 1
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sections/{key}": {
+      "patch": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Show a section in the menu, or hide it.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "key",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "showInMenu": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "showInMenu"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved."
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sync/garmin": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The newest Garmin sync that brought data in; null when there has been none.",
+        "responses": {
+          "200": {
+            "description": "The run, or null.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SyncRun"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Ask for a Garmin sync now. A run already open is returned rather than a second one started.",
+        "responses": {
+          "200": {
+            "description": "The run asked for.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sync/runs/{id}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "One of the caller’s sync runs, to follow it to its end.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The run.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such run of yours.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/error-reports": {
+      "post": {
+        "summary": "Report an error the app did not expect. Needs no sign-in: it can happen before one.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ErrorReport"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Received."
+          },
+          "400": {
+            "description": "A field is missing or malformed.",
             "content": {
               "application/json": {
                 "schema": {

@@ -1,9 +1,14 @@
 import { supabase } from '../supabase'
 import { userId } from '../session'
-import { loadProfile as dbLoadProfile } from '@tekio/db'
+import { loadProfile as dbLoadProfile, type ProfilePatch } from '@tekio/db'
 import type { ReadinessMethod, HrMaxSource, WeekStartDay } from '@tekio/core'
 import { appDb } from './_rows'
+import { api, done } from '../api'
 
+// Opening the app still makes sure the profile row exists and reads it
+// straight from the database, beside the rest of the start-up, while the two
+// ways of starting are timed (RFC 0094 step 4). A setting changed in Profile
+// or Settings is written through the API.
 export async function getOrCreateUser(): Promise<void> {
   const { error } = await supabase
     .from('user_profiles')
@@ -16,35 +21,14 @@ export async function getOrCreateUser(): Promise<void> {
 
 export const loadProfile = () => dbLoadProfile(appDb())
 
-export async function updateWeekStartDay(value: WeekStartDay): Promise<void> {
-  const { error } = await supabase
-    .from('user_profiles')
-    .update({ week_start_day: value })
-    .eq('id', userId())
-  if (error) throw error
-}
+const patchProfile = (body: ProfilePatch) =>
+  done(api.PATCH('/api/profile', { body }))
+
+export const updateWeekStartDay = (value: WeekStartDay): Promise<void> => patchProfile({ weekStartDay: value })
 
 /** One stored number, last write wins: typing and accepting the tracker's peak write the same column. */
-export async function updateHrMax(value: number | null, source: HrMaxSource): Promise<void> {
-  const { error } = await supabase
-    .from('user_profiles')
-    .update({ hr_max_override: value, hr_max_source: value == null ? null : source })
-    .eq('id', userId())
-  if (error) throw error
-}
+export const updateHrMax = (value: number | null, source: HrMaxSource): Promise<void> => patchProfile({ hrMax: { value, source } })
 
-export async function updateBirthDate(value: string | null): Promise<void> {
-  const { error } = await supabase
-    .from('user_profiles')
-    .update({ birth_date: value })
-    .eq('id', userId())
-  if (error) throw error
-}
+export const updateBirthDate = (value: string | null): Promise<void> => patchProfile({ birthDate: value })
 
-export async function updateReadinessMethod(value: ReadinessMethod | null): Promise<void> {
-  const { error } = await supabase
-    .from('user_profiles')
-    .update({ readiness_method: value })
-    .eq('id', userId())
-  if (error) throw error
-}
+export const updateReadinessMethod = (value: ReadinessMethod | null): Promise<void> => patchProfile({ readinessMethod: value })
