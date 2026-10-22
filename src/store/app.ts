@@ -18,7 +18,6 @@ import type {
   CheckInAnswers,
   PlannedExercise,
   PlannedSession,
-  PlannedKind,
 } from '../types'
 import { getOrCreateUser } from '../lib/db/user'
 import { loadExerciseAliases } from '../lib/db/exercises'
@@ -42,7 +41,7 @@ import {
 } from '../lib/db/recovery'
 import { loadReadinessInputs, saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
 import { loadPlans, savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
-import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, pruneMissedSessionPlans, type SessionPlanPatch } from '../lib/db/sessionPlans'
+import { loadSessionPlans, saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
 import { daysAgo } from '@tekio/core'
 import { exerciseAdaptationMap } from '@tekio/db'
@@ -100,7 +99,7 @@ interface AppStore extends AppState {
   removeSessionPlan: (id: string) => Promise<void>
   editSessionPlan: (id: string, patch: SessionPlanPatch) => Promise<void>
   /** The plan was logged as the `kind` entry `entryId`. */
-  markSessionPlanLogged: (id: string, kind: PlannedKind, entryId: string) => Promise<void>
+  markSessionPlanLogged: (id: string, entryId: string) => Promise<void>
 
 
 
@@ -345,6 +344,9 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     set({ loading: true })
     try {
       await getOrCreateUser()
+      const missedBefore = daysAgo(MISSED_PLAN_KEPT_DAYS)
+      const kept = (p: { date: string; loggedAs?: string }) => p.loggedAs != null || p.date >= missedBefore
+      void pruneMissedPlans(missedBefore).catch(() => {})
       const [weights, bodyweight, cardio, mobility, muscleGroups, exerciseMuscles, exercises, sports, sportTypes, donations, sleep, sauna, cold, adaptationTargets, exerciseAliases, readinessInputs, plans, sessionPlans] = await Promise.all([
         loadWeights(),
         loadBodyweight(),
@@ -362,10 +364,12 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
         loadAdaptationTargets(),
         loadExerciseAliases(),
         loadReadinessInputs(),
-        // A missed plan is deleted a week after its day (RFC 0104). A failed
-        // prune costs nothing but a stale row, so it never holds up the start.
-        pruneMissedPlans(daysAgo(MISSED_PLAN_KEPT_DAYS)).catch(() => {}).then(loadPlans),
-        pruneMissedSessionPlans(daysAgo(MISSED_PLAN_KEPT_DAYS)).catch(() => {}).then(loadSessionPlans),
+        // A missed plan is deleted a week after its day (RFC 0104). The prune
+        // runs beside the start rather than ahead of it, and the plans it is
+        // deleting are left out as they load, so the card reads the same
+        // whether it has landed yet or not; a failed one costs a stale row.
+        loadPlans().then(ps => ps.filter(kept)),
+        loadSessionPlans().then(ps => ps.filter(kept)),
         usePrefs.getState().loadPrefs(),
       ])
       set({
@@ -478,8 +482,8 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     await updateSessionPlan(id, patch)
     set(s => ({ sessionPlans: patchId(s.sessionPlans, id, patch) }))
   },
-  markSessionPlanLogged: async (id, kind, entryId) => {
-    await markSessionPlanLogged(id, kind, entryId)
+  markSessionPlanLogged: async (id, entryId) => {
+    await markSessionPlanLogged(id, entryId)
     set(s => ({ sessionPlans: patchId(s.sessionPlans, id, { loggedAs: entryId }) }))
   },
 
