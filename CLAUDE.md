@@ -225,6 +225,9 @@ checks the token. It runs as one Vercel function, [api/index.ts](api/index.ts), 
 as TypeScript source, so `npm run build` ends by bundling the API with esbuild into
 `api/_bundle.mjs` ([scripts/build-api.mjs](scripts/build-api.mjs)), which the function
 imports; the bundle is build output and is not committed.
+The function runs in Dublin (`"regions": ["dub1"]` in `vercel.json`), beside the
+Supabase project in eu-west-1: every read is several round trips to the database, so
+the function sits next to it rather than next to the default US region.
 
 The reads' answers are described field by field in
 [packages/api/src/readShapes.ts](packages/api/src/readShapes.ts), each schema typed as the
