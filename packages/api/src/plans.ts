@@ -79,3 +79,10 @@ export const sessionLoggedRoute = createRoute({
   request: { params: IdParam, body: { required: true, content: { 'application/json': { schema: LoggedBody } } } },
   responses: { 204: { description: 'Saved.' }, ...failures, ...missing },
 })
+
+export const pruneMissedRoute = createRoute({
+  method: 'delete', path: '/plans/missed', security,
+  summary: 'Delete the plans dated before `before` that were never logged: missed, and kept a while to be moved or removed.',
+  request: { query: z.object({ before: DateQuery }) },
+  responses: { 204: { description: 'Deleted.' }, ...failures },
+})

@@ -18,7 +18,7 @@ import {
   cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, mobilityRoutes,
   morningHrvRoute, checkInRoute, type CaptureRoutes,
 } from './capture'
-import { planLiftRoutes, planSessionRoutes, groupLiftsRoute, liftLoggedRoute, sessionLoggedRoute } from './plans'
+import { planLiftRoutes, planSessionRoutes, groupLiftsRoute, liftLoggedRoute, sessionLoggedRoute, pruneMissedRoute } from './plans'
 
 export interface ApiConfig {
   supabaseUrl: string
@@ -261,6 +261,15 @@ export function createApi(config: ApiConfig) {
     if (!w) return c.json(refused, 401)
     if (!w.found) return c.json(noPlan, 404)
     await rows.markSessionPlanLogged(w.db, id, w.found, c.req.valid('json').entryId)
+    return c.body(null, 204)
+  })
+
+  // Missed plans of both kinds, filed under the caller: nothing to own-check.
+  app.openapi(pruneMissedRoute, async c => {
+    const db = await writerFor(c.req.header('authorization'))
+    if (!db) return c.json(refused, 401)
+    const { before } = c.req.valid('query')
+    await Promise.all([rows.pruneMissedPlans(db, before), rows.pruneMissedSessionPlans(db, before)])
     return c.body(null, 204)
   })
 

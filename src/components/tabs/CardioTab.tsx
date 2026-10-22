@@ -63,7 +63,7 @@ export function CardioTab() {
   // A plan of the other kind than the form showing is no plan for it.
   const plan = fromPlan?.kind === mode ? fromPlan : null
   const onLogged = async (entryId: string) => {
-    if (plan) await markSessionPlanLogged(plan.id, plan.kind, entryId)
+    if (plan) await markSessionPlanLogged(plan.id, entryId)
     setFromPlan(null)
   }
 

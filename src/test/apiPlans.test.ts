@@ -108,4 +108,14 @@ describe('plans through the API', () => {
       ['PATCH', { plan_date: DATE, exercise: 'Back squat', target_sets: [{ weight: 95, reps: 5 }], superset_group_id: null }],
     ])
   })
+
+  it('deletes the caller’s missed plans of both kinds, only those never logged', async () => {
+    const { api, writes } = fakeSupabase()
+    expect((await api.request('/api/plans/missed?before=2026-10-15', { method: 'DELETE' })).status).toBe(401)
+    expect((await send(api, 'DELETE', '/api/plans/missed?before=2026-10-15')).status).toBe(204)
+    expect(writes().map(c => c.url.split('/rest/v1/')[1]).sort()).toEqual([
+      'planned_exercises?user_id=eq.rows-owner&plan_date=lt.2026-10-15&session_exercise_id=is.null',
+      'planned_sessions?user_id=eq.rows-owner&plan_date=lt.2026-10-15&cardio_session_id=is.null&sport_session_id=is.null&mobility_session_id=is.null',
+    ])
+  })
 })

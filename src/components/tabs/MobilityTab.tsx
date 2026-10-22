@@ -88,7 +88,7 @@ export function MobilityTab() {
     if (valid.length === 0) return
     await withToast(async () => {
       const saved = await addMobilityEntry({ date, exercises: valid, duration: valid.reduce((s, e) => s + e.duration, 0) })
-      if (fromPlan) await markSessionPlanLogged(fromPlan.id, 'mobility', saved.id)
+      if (fromPlan) await markSessionPlanLogged(fromPlan.id, saved.id)
       setExercises([emptyExercise()])
       setRevealedEx(1)
       setMuscleOpen(null)
