@@ -174,6 +174,60 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every row the web app opens with, in one answer. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description The person's rows. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["StartRows"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/weights": {
         parameters: {
             query?: never;
@@ -2977,6 +3031,66 @@ export interface components {
             } | null;
             full: boolean;
         } | null;
+        StartRows: {
+            weights: components["schemas"]["WeightEntry"][];
+            bodyweight: components["schemas"]["BodyweightEntry"][];
+            cardio: components["schemas"]["CardioEntry"][];
+            mobility: components["schemas"]["MobilityEntry"][];
+            muscleGroups: components["schemas"]["MuscleGroup"][];
+            exerciseMuscles: components["schemas"]["ExerciseMuscleLink"][];
+            /** @description Lower-cased exercise name to the adaptation the catalogue tags it with. */
+            exerciseAdaptations: {
+                [key: string]: "power" | "strength" | "hypertrophy" | "muscular_endurance" | "anaerobic_capacity" | "vo2max" | "endurance";
+            };
+            sports: components["schemas"]["SportEntry"][];
+            sportTypes: components["schemas"]["SportType"][];
+            donations: components["schemas"]["DonationEntry"][];
+            sleep: components["schemas"]["SleepEntry"][];
+            sauna: components["schemas"]["ExposureBout"][];
+            cold: components["schemas"]["ExposureBout"][];
+            /** @description Weekly targets the person set, overriding the built-in ones. */
+            adaptationTargets: {
+                power?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+                strength?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+                hypertrophy?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+                muscular_endurance?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+                anaerobic_capacity?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+                vo2max?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+                endurance?: {
+                    weeklyMuscleTarget: number;
+                    weeklySessionTarget: number;
+                    weeklyMinutesTarget: number;
+                };
+            };
+            exerciseAliases: components["schemas"]["ExerciseAlias"][];
+            readinessInputs: components["schemas"]["ReadinessInput"][];
+            plans: components["schemas"]["PlannedExercise"][];
+            sessionPlans: components["schemas"]["PlannedSession"][];
+        };
         WeightEntry: {
             id: string;
             date: string;
@@ -2992,6 +3106,12 @@ export interface components {
             reps: number;
             /** @description How long a hold lasted, in whole seconds (RFC 0107). */
             seconds?: number;
+        };
+        BodyweightEntry: {
+            date: string;
+            /** @description Kilograms. One reading a day: a second one replaces the first. */
+            weight: number;
+            id: string;
         };
         CardioEntry: {
             date: string;
@@ -3024,45 +3144,38 @@ export interface components {
             zoneDistribution?: number[];
             elevationGain?: number;
         };
-        SleepEntry: {
+        MobilityEntry: {
             date: string;
-            hours: number;
-            /** @description 1 (poor) to 5 (great). */
-            quality?: number;
-            notes?: string;
+            exercises: {
+                name: string;
+                /** @description Minutes. */
+                duration: number;
+                /** @default  */
+                notes: string;
+                /** @description Muscle-group names the stretch targets. */
+                muscleGroups?: string[];
+            }[];
             id: string;
-            score?: number;
-            scoreQualifier?: string;
-            hrv?: number;
-            restingHr?: number;
-            /**
-             * @description Typed, or pulled from the watch.
-             * @enum {string}
-             */
-            source?: "manual" | "garmin";
-        };
-        BodyweightEntry: {
-            date: string;
-            /** @description Kilograms. One reading a day: a second one replaces the first. */
-            weight: number;
-            id: string;
-        };
-        DonationEntry: {
-            date: string;
-            /** @enum {string} */
-            type: "Full Blood" | "Plasma";
-            /** @default  */
-            notes: string;
-            id: string;
-        };
-        ExposureBout: {
-            date: string;
-            /** @description Minutes. */
+            /** @description Minutes, the sum of the stretches. */
             duration: number;
-            /** @description °C, if tracked. */
-            tempC?: number;
-            notes?: string;
+        };
+        MuscleGroup: {
             id: string;
+            name: string;
+            /** @enum {string} */
+            bodyRegion: "upper" | "lower" | "core" | "full_body";
+            /** @description The group this one sits under; absent at the top. */
+            parentId?: string | null;
+        };
+        ExerciseMuscleLink: {
+            exercise: string;
+            group: string;
+            /** @enum {string} */
+            region: "upper" | "lower" | "core" | "full_body";
+            /** @description 1 is the most direct. */
+            level: 1 | 2 | 3;
+            /** @enum {string} */
+            contribution: "stimulus" | "recovery";
         };
         SportEntry: {
             date: string;
@@ -3097,20 +3210,50 @@ export interface components {
             /** @description Seconds in heart-rate zones 1 to 5. */
             zoneDistribution?: number[];
         };
-        MobilityEntry: {
+        SportType: {
+            name: string;
+            hasCompetitor: boolean;
+            hasTeammate: boolean;
+        };
+        DonationEntry: {
             date: string;
-            exercises: {
-                name: string;
-                /** @description Minutes. */
-                duration: number;
-                /** @default  */
-                notes: string;
-                /** @description Muscle-group names the stretch targets. */
-                muscleGroups?: string[];
-            }[];
+            /** @enum {string} */
+            type: "Full Blood" | "Plasma";
+            /** @default  */
+            notes: string;
             id: string;
-            /** @description Minutes, the sum of the stretches. */
+        };
+        SleepEntry: {
+            date: string;
+            hours: number;
+            /** @description 1 (poor) to 5 (great). */
+            quality?: number;
+            notes?: string;
+            id: string;
+            score?: number;
+            scoreQualifier?: string;
+            hrv?: number;
+            restingHr?: number;
+            /**
+             * @description Typed, or pulled from the watch.
+             * @enum {string}
+             */
+            source?: "manual" | "garmin";
+        };
+        ExposureBout: {
+            date: string;
+            /** @description Minutes. */
             duration: number;
+            /** @description °C, if tracked. */
+            tempC?: number;
+            notes?: string;
+            id: string;
+        };
+        ExerciseAlias: {
+            alias: string;
+            canonicalName: string;
+            /** @description The person's own, rather than shipped with the app. */
+            isOwn: boolean;
         };
         ReadinessInput: {
             id: string;

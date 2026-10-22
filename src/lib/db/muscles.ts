@@ -2,6 +2,4 @@
 import * as db from '@tekio/db'
 import { appDb } from './_rows'
 
-export const loadMuscleGroups = () => db.loadMuscleGroups(appDb())
-export const loadExercises = () => db.loadExercises(appDb())
 export const loadExerciseMuscleLinks = () => db.loadExerciseMuscleLinks(appDb())

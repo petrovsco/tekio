@@ -23,7 +23,7 @@ export type { ExerciseAlias } from '@tekio/core'
  * not created a single exercise yet.
  */
 
-export interface SportTypeInfo {
+interface SportTypeInfo {
   name: string
   hasCompetitor: boolean
   hasTeammate: boolean
