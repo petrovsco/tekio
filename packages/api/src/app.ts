@@ -78,6 +78,23 @@ export function createApi(config: ApiConfig) {
     return who && (await who.accepted) ? who.db : null
   }
 
+  /** The caller, for an edit or a delete, with the read that says the target
+   *  is theirs made while Auth checks the token, so the check costs no round
+   *  trip of its own. Nothing is written before both have answered. */
+  async function writerChecking<T>(
+    authorization: string | undefined,
+    check: (db: WriteDb) => Promise<T>,
+  ): Promise<{ db: WriteDb; found: T } | null> {
+    const who = caller(authorization)
+    if (!who) return null
+    const found = check(who.db)
+    if (!(await who.accepted)) {
+      found.catch(() => {})
+      return null
+    }
+    return { db: who.db, found: await found }
+  }
+
   const refused = { error: 'Sign in again: no valid access token.' }
   const missing = { error: 'No such lift of yours.' }
 
@@ -110,21 +127,20 @@ export function createApi(config: ApiConfig) {
   // policies still allow more than that until the lock (RFC 0003), and the
   // check costs the edit nothing, because it reads the sets the edit compares.
   app.openapi(editWeightRoute, async c => {
-    const db = await writerFor(c.req.header('authorization'))
-    if (!db) return c.json(refused, 401)
     const { id } = c.req.valid('param')
-    const prev = await loadOwnWeightSets(db, id)
-    if (!prev) return c.json(missing, 404)
-    await updateWeightEntry(db, id, c.req.valid('json'), prev)
+    const w = await writerChecking(c.req.header('authorization'), db => loadOwnWeightSets(db, id))
+    if (!w) return c.json(refused, 401)
+    if (!w.found) return c.json(missing, 404)
+    await updateWeightEntry(w.db, id, c.req.valid('json'), w.found)
     return c.body(null, 204)
   })
 
   app.openapi(deleteWeightRoute, async c => {
-    const db = await writerFor(c.req.header('authorization'))
-    if (!db) return c.json(refused, 401)
     const { id } = c.req.valid('param')
-    if (!(await loadOwnWeightSets(db, id))) return c.json(missing, 404)
-    await deleteWeightEntry(db, id)
+    const w = await writerChecking(c.req.header('authorization'), db => loadOwnWeightSets(db, id))
+    if (!w) return c.json(refused, 401)
+    if (!w.found) return c.json(missing, 404)
+    await deleteWeightEntry(w.db, id)
     return c.body(null, 204)
   })
 
@@ -146,19 +162,19 @@ export function createApi(config: ApiConfig) {
       return c.json(await ops.save(db, c.req.valid('json') as B) as never, 201)
     })
     app.openapi(r.replace, async c => {
-      const db = await writerFor(c.req.header('authorization'))
-      if (!db) return c.json(refused, 401)
       const { id } = c.req.valid('param')
-      if (!(await ownsRow(db, table, id))) return c.json(gone, 404)
-      await ops.replace(db, id, c.req.valid('json') as B)
+      const w = await writerChecking(c.req.header('authorization'), db => ownsRow(db, table, id))
+      if (!w) return c.json(refused, 401)
+      if (!w.found) return c.json(gone, 404)
+      await ops.replace(w.db, id, c.req.valid('json') as B)
       return c.body(null, 204)
     })
     app.openapi(r.remove, async c => {
-      const db = await writerFor(c.req.header('authorization'))
-      if (!db) return c.json(refused, 401)
       const { id } = c.req.valid('param')
-      if (!(await ownsRow(db, table, id))) return c.json(gone, 404)
-      await ops.remove(db, id)
+      const w = await writerChecking(c.req.header('authorization'), db => ownsRow(db, table, id))
+      if (!w) return c.json(refused, 401)
+      if (!w.found) return c.json(gone, 404)
+      await ops.remove(w.db, id)
       return c.body(null, 204)
     })
   }
@@ -224,28 +240,27 @@ export function createApi(config: ApiConfig) {
 
   const noPlan = { error: 'No such planned item of yours.' }
   app.openapi(groupLiftsRoute, async c => {
-    const db = await writerFor(c.req.header('authorization'))
-    if (!db) return c.json(refused, 401)
     const { ids, ...patch } = c.req.valid('json')
-    if (!(await ownsRows(db, 'planned_exercises', ids))) return c.json(noPlan, 404)
-    await rows.patchPlans(db, ids, patch)
+    const w = await writerChecking(c.req.header('authorization'), db => ownsRows(db, 'planned_exercises', ids))
+    if (!w) return c.json(refused, 401)
+    if (!w.found) return c.json(noPlan, 404)
+    await rows.patchPlans(w.db, ids, patch)
     return c.body(null, 204)
   })
   app.openapi(liftLoggedRoute, async c => {
-    const db = await writerFor(c.req.header('authorization'))
-    if (!db) return c.json(refused, 401)
     const { id } = c.req.valid('param')
-    if (!(await ownsRow(db, 'planned_exercises', id))) return c.json(noPlan, 404)
-    await rows.markPlanLogged(db, id, c.req.valid('json').entryId)
+    const w = await writerChecking(c.req.header('authorization'), db => ownsRow(db, 'planned_exercises', id))
+    if (!w) return c.json(refused, 401)
+    if (!w.found) return c.json(noPlan, 404)
+    await rows.markPlanLogged(w.db, id, c.req.valid('json').entryId)
     return c.body(null, 204)
   })
   app.openapi(sessionLoggedRoute, async c => {
-    const db = await writerFor(c.req.header('authorization'))
-    if (!db) return c.json(refused, 401)
     const { id } = c.req.valid('param')
-    const kind = await rows.ownSessionPlanKind(db, id)
-    if (!kind) return c.json(noPlan, 404)
-    await rows.markSessionPlanLogged(db, id, kind, c.req.valid('json').entryId)
+    const w = await writerChecking(c.req.header('authorization'), db => rows.ownSessionPlanKind(db, id))
+    if (!w) return c.json(refused, 401)
+    if (!w.found) return c.json(noPlan, 404)
+    await rows.markSessionPlanLogged(w.db, id, w.found, c.req.valid('json').entryId)
     return c.body(null, 204)
   })
 

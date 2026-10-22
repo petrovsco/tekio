@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import { saveWeightEntry, updateWeightEntry, type WriteDb } from '@tekio/db'
 import { setsProblem, liftSetProblem, parseSets, toSetStr, fmtSet } from '@tekio/core'
 import { isSetPR, bestOneRM } from '../lib/utils'
 
@@ -24,15 +25,19 @@ describe('a set that cannot be stored blocks the save', () => {
   })
 })
 
+// The writers in @tekio/db, which the API runs for the app (RFC 0094 step 4),
+// over a fake client.
 const from = vi.fn()
-vi.mock('../lib/supabase', () => ({ supabase: { from: (t: string) => from(t) } }))
+const db = {
+  client: { from: (t: string) => from(t) } as unknown as WriteDb['client'],
+  userId: 'u', origin: null, catalogue: () => import('@tekio/core/catalogue'),
+} satisfies WriteDb
 
 describe('no entry is written without savable sets', () => {
   it('refuses before touching the database', async () => {
-    const { saveWeightEntry, updateWeightEntry } = await import('../lib/db/weights')
-    await expect(saveWeightEntry({ date: '2026-10-08', exercise: 'Cable Woodchop', sets: [] })).rejects.toThrow(/at least one set/)
-    await expect(saveWeightEntry({ date: '2026-10-08', exercise: 'Cable Woodchop', sets: [{ weight: 7.5, reps: 12.5 }] })).rejects.toThrow(/whole number/)
-    await expect(updateWeightEntry('x', { sets: [{ weight: 7.5, reps: 12.5 }] })).rejects.toThrow(/whole number/)
+    await expect(saveWeightEntry(db, { date: '2026-10-08', exercise: 'Cable Woodchop', sets: [] })).rejects.toThrow(/at least one set/)
+    await expect(saveWeightEntry(db, { date: '2026-10-08', exercise: 'Cable Woodchop', sets: [{ weight: 7.5, reps: 12.5 }] })).rejects.toThrow(/whole number/)
+    await expect(updateWeightEntry(db, 'x', { sets: [{ weight: 7.5, reps: 12.5 }] })).rejects.toThrow(/whole number/)
     expect(from).not.toHaveBeenCalled()
   })
 })
@@ -53,24 +58,21 @@ describe('ticking the next set writes only that set', () => {
   it('appends one row when a set is ticked on', async () => {
     calls.length = 0
     from.mockImplementation(chain)
-    const { updateWeightEntry } = await import('../lib/db/weights')
-    await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }])
+    await updateWeightEntry(db, 'se1', { sets: [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }])
     expect(calls).toEqual(['session_sets.insert [{"session_exercise_id":"se1","set_number":2,"weight":60,"reps":7}]'])
   })
 
   it('removes only the last row when it is ticked off', async () => {
     calls.length = 0
     from.mockImplementation(chain)
-    const { updateWeightEntry } = await import('../lib/db/weights')
-    await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 8 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
+    await updateWeightEntry(db, 'se1', { sets: [{ weight: 60, reps: 8 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
     expect(calls).toEqual(['session_sets.delete', 'eq session_exercise_id=se1', 'gt set_number>1'])
   })
 
   it('rewrites every set when an earlier one changed', async () => {
     calls.length = 0
     from.mockImplementation(chain)
-    const { updateWeightEntry } = await import('../lib/db/weights')
-    await updateWeightEntry('se1', { sets: [{ weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
+    await updateWeightEntry(db, 'se1', { sets: [{ weight: 60, reps: 7 }] }, [{ weight: 60, reps: 8 }, { weight: 60, reps: 7 }])
     expect(calls[0]).toBe('session_sets.delete')
     expect(calls).toContain('session_sets.insert [{"session_exercise_id":"se1","set_number":1,"weight":60,"reps":7}]')
   })

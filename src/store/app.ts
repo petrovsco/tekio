@@ -429,7 +429,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     }))
   },
   editWeightEntry: async (id, patch) => {
-    await updateWeightEntry(id, patch, get().weights.find(w => w.id === id)?.sets)
+    await updateWeightEntry(id, patch)
     set(s => ({
       weights: patchId(s.weights, id, { sets: patch.sets, ...(patch.date ? { date: patch.date } : {}) }),
     }))
