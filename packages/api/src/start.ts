@@ -76,7 +76,7 @@ export const StartBody: z.ZodType<StartRows & StartSettings> = z.object({
 }).openapi('StartRows')
 
 export const startRoute = createRoute({
-  method: 'get', path: '/start', security: [{ bearer: [] }],
+  method: 'get', path: '/start', security: [{ bearer: [] }], operationId: 'getStart',
   summary: 'Every row the web app opens with, in one answer; a first call writes the profile and the default sections.',
   responses: { 200: json("The person's rows.", StartBody), ...failures },
 })

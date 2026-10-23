@@ -39,15 +39,15 @@ const PlanSessionBody = z.object({
 })
 export const PlannedSession = PlanSessionBody.extend({ id: z.string(), date: z.string(), ...Logged }).openapi('PlannedSession')
 
-export const planLiftRoutes = routes('/plans/lifts', 'lift', PlanLiftBody, PlannedExercise, { verb: 'Plan', done: 'planned' })
-export const planSessionRoutes = routes('/plans/sessions', 'session', PlanSessionBody, PlannedSession, { verb: 'Plan', done: 'planned' })
+export const planLiftRoutes = routes('/plans/lifts', 'lift', PlanLiftBody, PlannedExercise, { name: 'Lift', verb: 'Plan', done: 'planned' })
+export const planSessionRoutes = routes('/plans/sessions', 'session', PlanSessionBody, PlannedSession, { name: 'Session', verb: 'Plan', done: 'planned' })
 
 const security = [{ bearer: [] }]
 const missing = { 404: json('No such planned item of yours.', ErrorBody) }
 const LoggedBody = z.object({ entryId: z.string().min(1).openapi({ description: 'The logged entry the plan became.' }) })
 
 export const groupLiftsRoute = createRoute({
-  method: 'patch', path: '/plans/lifts', security,
+  method: 'patch', path: '/plans/lifts', security, operationId: 'groupPlannedLifts',
   summary: 'Put planned lifts into one superset, or move them to another day.',
   request: {
     body: {
@@ -67,21 +67,21 @@ export const groupLiftsRoute = createRoute({
 })
 
 export const liftLoggedRoute = createRoute({
-  method: 'put', path: '/plans/lifts/{id}/logged', security,
+  method: 'put', path: '/plans/lifts/{id}/logged', security, operationId: 'markLiftPlanLogged',
   summary: 'Point a planned lift at the logged lift it became.',
   request: { params: IdParam, body: { required: true, content: { 'application/json': { schema: LoggedBody } } } },
   responses: { 204: { description: 'Saved.' }, ...failures, ...missing },
 })
 
 export const sessionLoggedRoute = createRoute({
-  method: 'put', path: '/plans/sessions/{id}/logged', security,
+  method: 'put', path: '/plans/sessions/{id}/logged', security, operationId: 'markSessionPlanLogged',
   summary: 'Point a planned session at the logged session it became.',
   request: { params: IdParam, body: { required: true, content: { 'application/json': { schema: LoggedBody } } } },
   responses: { 204: { description: 'Saved.' }, ...failures, ...missing },
 })
 
 export const pruneMissedRoute = createRoute({
-  method: 'delete', path: '/plans/missed', security,
+  method: 'delete', path: '/plans/missed', security, operationId: 'deleteMissedPlans',
   summary: 'Delete the plans dated before `before` that were never logged: missed, and kept a while to be moved or removed.',
   request: { query: z.object({ before: DateQuery }) },
   responses: { 204: { description: 'Deleted.' }, ...failures },

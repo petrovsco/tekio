@@ -394,27 +394,7 @@
             ]
           },
           "gauge": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "properties": {
-              "side": {
-                "type": "string",
-                "enum": [
-                  "below",
-                  "inside",
-                  "above"
-                ]
-              },
-              "at": {
-                "type": "number"
-              }
-            },
-            "required": [
-              "side",
-              "at"
-            ]
+            "$ref": "#/components/schemas/Gauge"
           },
           "notes": {
             "type": "object",
@@ -482,6 +462,30 @@
           "hrvDate"
         ]
       },
+      "Gauge": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {
+          "side": {
+            "type": "string",
+            "enum": [
+              "below",
+              "inside",
+              "above"
+            ]
+          },
+          "at": {
+            "type": "number",
+            "description": "The dot's place along the track, 0 to 1."
+          }
+        },
+        "required": [
+          "side",
+          "at"
+        ]
+      },
       "DonationStatus": {
         "type": "object",
         "properties": {
@@ -546,6 +550,346 @@
         },
         "required": [
           "error"
+        ]
+      },
+      "HomeView": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "zeroData": {
+            "type": "boolean"
+          },
+          "readinessLabel": {
+            "type": "string"
+          },
+          "verdict": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "sub": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "text",
+              "sub"
+            ]
+          },
+          "readiness": {
+            "type": "object",
+            "properties": {
+              "gated": {
+                "type": "boolean",
+                "description": "A held day: the card inverts to ink."
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "band": {
+                "type": "string"
+              },
+              "columns": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GateColumn"
+                }
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "hint": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "gated",
+              "method",
+              "band",
+              "columns",
+              "note",
+              "hint"
+            ]
+          },
+          "banner": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "map": {
+            "type": "object",
+            "properties": {
+              "muscles": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MuscleState"
+                }
+              },
+              "callouts": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/MapCallout"
+                }
+              }
+            },
+            "required": [
+              "muscles",
+              "callouts"
+            ]
+          },
+          "qualities": {
+            "type": "object",
+            "properties": {
+              "untouched": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The untouched names, printed in the accent."
+              },
+              "short": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "line": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "The whole line, when neither half applies."
+              }
+            },
+            "required": [
+              "untouched",
+              "short",
+              "line"
+            ]
+          },
+          "wholeBody": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QualityTile"
+            }
+          },
+          "folds": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FoldTile"
+            }
+          }
+        },
+        "required": [
+          "date",
+          "zeroData",
+          "readinessLabel",
+          "verdict",
+          "readiness",
+          "banner",
+          "map",
+          "qualities",
+          "wholeBody",
+          "folds"
+        ]
+      },
+      "GateColumn": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "pct": {
+            "type": "number",
+            "description": "An amount out of 100, drawn as a fill."
+          },
+          "gauge": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "side": {
+                "type": "string",
+                "enum": [
+                  "below",
+                  "inside",
+                  "above"
+                ]
+              },
+              "at": {
+                "type": "number",
+                "description": "The dot's place along the track, 0 to 1."
+              }
+            },
+            "required": [
+              "side",
+              "at"
+            ],
+            "description": "A reading on the person’s own normal: a dot on its range; null draws the empty track; absent draws the fill."
+          },
+          "tone": {
+            "type": "string",
+            "enum": [
+              "ink",
+              "mid",
+              "accent",
+              "off"
+            ]
+          },
+          "ask": {
+            "type": "boolean",
+            "description": "A typed reading still to give today: the value reads as a prompt."
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value",
+          "tone"
+        ]
+      },
+      "MapCallout": {
+        "type": "object",
+        "properties": {
+          "muscle": {
+            "type": "string"
+          },
+          "rank": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "1 to 4, or null for the lighter unnumbered fifth."
+          },
+          "label": {
+            "type": "string"
+          },
+          "sub": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "muscle",
+          "rank",
+          "label",
+          "sub"
+        ]
+      },
+      "QualityTile": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "vo2max",
+              "anaerobic_capacity",
+              "endurance"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "step": {
+            "anyOf": [
+              {
+                "type": "number",
+                "enum": [
+                  0
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  1
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  2
+                ]
+              },
+              {
+                "type": "number",
+                "enum": [
+                  3
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "0 to 3 on the stimulus ramp; null is white."
+          },
+          "edge": {
+            "type": "string",
+            "enum": [
+              "blank",
+              "accent",
+              "ramp",
+              "ink"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "note",
+          "step",
+          "edge"
+        ]
+      },
+      "FoldTile": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "weight",
+              "blood"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "accent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "value",
+          "note",
+          "accent"
         ]
       },
       "AdaptationsRead": {
@@ -1936,6 +2280,34 @@
           "requestedAt"
         ]
       },
+      "Session": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string",
+            "description": "The bearer token every other route takes."
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "number",
+            "description": "When the access token runs out, in seconds since 1970."
+          },
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "accessToken",
+          "refreshToken",
+          "expiresAt",
+          "email"
+        ]
+      },
       "ErrorReport": {
         "type": "object",
         "properties": {
@@ -2021,6 +2393,7 @@
             "bearer": []
           }
         ],
+        "operationId": "getHomeRead",
         "summary": "Home: what is missing, and whether today can push.",
         "parameters": [
           {
@@ -2070,6 +2443,75 @@
         }
       }
     },
+    "/api/view/home": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "operationId": "getHomeView",
+        "summary": "Home as it is printed: the verdict, the readiness card, the map’s callouts and the tiles.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "date",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The wake date the person’s clock calls last night: `date`, or the day before until 04:00.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The wake date the person’s clock calls last night: `date`, or the day before until 04:00.",
+            "name": "lastNight",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Home view.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeView"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/read/adaptations": {
       "get": {
         "security": [
@@ -2077,6 +2519,7 @@
             "bearer": []
           }
         ],
+        "operationId": "getAdaptationsRead",
         "summary": "Adaptations: one muscle-linked quality, explained.",
         "parameters": [
           {
@@ -2149,6 +2592,7 @@
             "bearer": []
           }
         ],
+        "operationId": "getReadinessRead",
         "summary": "Readiness: today's reading and the days behind it.",
         "parameters": [
           {
@@ -2205,6 +2649,7 @@
             "bearer": []
           }
         ],
+        "operationId": "getStart",
         "summary": "Every row the web app opens with, in one answer; a first call writes the profile and the default sections.",
         "responses": {
           "200": {
@@ -2247,6 +2692,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logWeights",
         "summary": "Log a lift: one exercise and its sets on a day.",
         "requestBody": {
           "required": true,
@@ -2379,6 +2825,7 @@
             "bearer": []
           }
         ],
+        "operationId": "editWeights",
         "summary": "Replace a logged lift's sets, and move it to another day if `date` is given.",
         "parameters": [
           {
@@ -2462,6 +2909,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteWeights",
         "summary": "Take a logged lift out, with its sets.",
         "parameters": [
           {
@@ -2520,6 +2968,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logCardio",
         "summary": "Log a cardio session.",
         "requestBody": {
           "required": true,
@@ -2625,6 +3074,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceCardio",
         "summary": "Replace a logged cardio session with the one sent.",
         "parameters": [
           {
@@ -2742,6 +3192,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteCardio",
         "summary": "Take a logged cardio session out.",
         "parameters": [
           {
@@ -2798,6 +3249,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logSleep",
         "summary": "Log a night.",
         "requestBody": {
           "required": true,
@@ -2876,6 +3328,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceSleep",
         "summary": "Replace a logged night with the one sent.",
         "parameters": [
           {
@@ -2966,6 +3419,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteSleep",
         "summary": "Take a logged night out.",
         "parameters": [
           {
@@ -3022,6 +3476,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logBodyweight",
         "summary": "Log a weigh-in.",
         "requestBody": {
           "required": true,
@@ -3091,6 +3546,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceBodyweight",
         "summary": "Replace a logged weigh-in with the one sent.",
         "parameters": [
           {
@@ -3172,6 +3628,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteBodyweight",
         "summary": "Take a logged weigh-in out.",
         "parameters": [
           {
@@ -3228,6 +3685,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logDonation",
         "summary": "Log a donation.",
         "requestBody": {
           "required": true,
@@ -3303,6 +3761,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceDonation",
         "summary": "Replace a logged donation with the one sent.",
         "parameters": [
           {
@@ -3390,6 +3849,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteDonation",
         "summary": "Take a logged donation out.",
         "parameters": [
           {
@@ -3446,6 +3906,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logSauna",
         "summary": "Log a sauna bout.",
         "requestBody": {
           "required": true,
@@ -3522,6 +3983,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceSauna",
         "summary": "Replace a logged sauna bout with the one sent.",
         "parameters": [
           {
@@ -3610,6 +4072,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteSauna",
         "summary": "Take a logged sauna bout out.",
         "parameters": [
           {
@@ -3666,6 +4129,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logCold",
         "summary": "Log a cold bout.",
         "requestBody": {
           "required": true,
@@ -3742,6 +4206,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceCold",
         "summary": "Replace a logged cold bout with the one sent.",
         "parameters": [
           {
@@ -3830,6 +4295,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteCold",
         "summary": "Take a logged cold bout out.",
         "parameters": [
           {
@@ -3886,6 +4352,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logSport",
         "summary": "Log a sport session.",
         "requestBody": {
           "required": true,
@@ -4015,6 +4482,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceSport",
         "summary": "Replace a logged sport session with the one sent.",
         "parameters": [
           {
@@ -4156,6 +4624,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteSport",
         "summary": "Take a logged sport session out.",
         "parameters": [
           {
@@ -4212,6 +4681,7 @@
             "bearer": []
           }
         ],
+        "operationId": "logMobility",
         "summary": "Log a mobility session.",
         "requestBody": {
           "required": true,
@@ -4309,6 +4779,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replaceMobility",
         "summary": "Replace a logged mobility session with the one sent.",
         "parameters": [
           {
@@ -4418,6 +4889,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteMobility",
         "summary": "Take a logged mobility session out.",
         "parameters": [
           {
@@ -4474,6 +4946,7 @@
             "bearer": []
           }
         ],
+        "operationId": "putMorningHrv",
         "summary": "Type the morning's HRV; a second one that day replaces it. The day's check-in is kept.",
         "parameters": [
           {
@@ -4551,6 +5024,7 @@
             "bearer": []
           }
         ],
+        "operationId": "putCheckIn",
         "summary": "Answer the day's check-in; a second one that day replaces it. The morning HRV is kept.",
         "parameters": [
           {
@@ -4617,6 +5091,7 @@
             "bearer": []
           }
         ],
+        "operationId": "planLift",
         "summary": "Plan a lift.",
         "requestBody": {
           "required": true,
@@ -4709,6 +5184,7 @@
             "bearer": []
           }
         ],
+        "operationId": "groupPlannedLifts",
         "summary": "Put planned lifts into one superset, or move them to another day.",
         "requestBody": {
           "required": true,
@@ -4787,6 +5263,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replacePlannedLift",
         "summary": "Replace a planned lift with the one sent.",
         "parameters": [
           {
@@ -4893,6 +5370,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deletePlannedLift",
         "summary": "Take a planned lift out.",
         "parameters": [
           {
@@ -4949,6 +5427,7 @@
             "bearer": []
           }
         ],
+        "operationId": "planSession",
         "summary": "Plan a session.",
         "requestBody": {
           "required": true,
@@ -5080,6 +5559,7 @@
             "bearer": []
           }
         ],
+        "operationId": "replacePlannedSession",
         "summary": "Replace a planned session with the one sent.",
         "parameters": [
           {
@@ -5223,6 +5703,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deletePlannedSession",
         "summary": "Take a planned session out.",
         "parameters": [
           {
@@ -5279,6 +5760,7 @@
             "bearer": []
           }
         ],
+        "operationId": "markLiftPlanLogged",
         "summary": "Point a planned lift at the logged lift it became.",
         "parameters": [
           {
@@ -5355,6 +5837,7 @@
             "bearer": []
           }
         ],
+        "operationId": "markSessionPlanLogged",
         "summary": "Point a planned session at the logged session it became.",
         "parameters": [
           {
@@ -5431,6 +5914,7 @@
             "bearer": []
           }
         ],
+        "operationId": "deleteMissedPlans",
         "summary": "Delete the plans dated before `before` that were never logged: missed, and kept a while to be moved or removed.",
         "parameters": [
           {
@@ -5480,6 +5964,7 @@
             "bearer": []
           }
         ],
+        "operationId": "updateProfile",
         "summary": "Change any of the profile’s settings; the ones not sent stay as they are.",
         "requestBody": {
           "required": true,
@@ -5525,6 +6010,7 @@
             "bearer": []
           }
         ],
+        "operationId": "saveSections",
         "summary": "Save the menu’s sections in their new order.",
         "requestBody": {
           "required": true,
@@ -5574,6 +6060,7 @@
             "bearer": []
           }
         ],
+        "operationId": "showSection",
         "summary": "Show a section in the menu, or hide it.",
         "parameters": [
           {
@@ -5638,6 +6125,7 @@
             "bearer": []
           }
         ],
+        "operationId": "getLastGarminSync",
         "summary": "The newest Garmin sync that brought data in; null when there has been none.",
         "responses": {
           "200": {
@@ -5685,6 +6173,7 @@
             "bearer": []
           }
         ],
+        "operationId": "requestGarminSync",
         "summary": "Ask for a Garmin sync now. A run already open is returned rather than a second one started.",
         "responses": {
           "200": {
@@ -5727,6 +6216,7 @@
             "bearer": []
           }
         ],
+        "operationId": "getSyncRun",
         "summary": "One of the caller’s sync runs, to follow it to its end.",
         "parameters": [
           {
@@ -5783,8 +6273,162 @@
         }
       }
     },
+    "/api/sign-in/link": {
+      "post": {
+        "operationId": "sendSignInLink",
+        "summary": "Email a sign-in link; the account is made the first time an address asks.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "redirectTo": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Where the link comes back to: the app’s own address, on the project’s allow list."
+                  },
+                  "codeChallenge": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 128,
+                    "description": "The base64url SHA-256 of the verifier the app keeps (PKCE, S256)."
+                  }
+                },
+                "required": [
+                  "email",
+                  "redirectTo",
+                  "codeChallenge"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Sent."
+          },
+          "400": {
+            "description": "Not sent, for instance too many links in a row. The reason is in `error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sign-in/session": {
+      "post": {
+        "operationId": "exchangeSignInCode",
+        "summary": "Turn the code a sign-in link came back with into a session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "codeVerifier": {
+                    "type": "string",
+                    "minLength": 43,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "code",
+                  "codeVerifier"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The session.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A used, expired or foreign code. The reason is in `error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sign-in/refresh": {
+      "post": {
+        "operationId": "refreshSession",
+        "summary": "A fresh access token for a refresh token; each refresh token works once.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "refreshToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The session, with its new refresh token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The session has ended: sign in again. The reason is in `error`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/error-reports": {
       "post": {
+        "operationId": "sendErrorReport",
         "summary": "Report an error the app did not expect. Needs no sign-in: it can happen before one.",
         "requestBody": {
           "required": true,

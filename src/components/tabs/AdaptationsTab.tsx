@@ -2,6 +2,7 @@ import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import {
   today, adaptationsRead, type MuscleQuality, type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
+  coverageLine, mapCallouts,
 } from '@tekio/core'
 import { whileReloading } from '../../lib/staleChunk'
 import { useReadRows } from '../../hooks/useReadRows'
@@ -10,7 +11,7 @@ import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 import { GapMap } from './home/GapMap'
 import { EffortSpectrum, type SpectrumBand } from './adaptations/EffortSpectrum'
-import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL, coverageLine } from './adaptations/labels'
+import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL } from './adaptations/labels'
 
 // The Adaptations drill-down (roadmap 031): a second Home. One body map with a
 // four-way quality toggle for the muscle-linked four, one effort spectrum for
@@ -123,7 +124,7 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
             </button>
           ))}
         </div>
-        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={openMuscle} unit={UNIT_LABEL[shape.unit]} />
+        <GapMap states={states} callouts={mapCallouts(gaps, UNIT_LABEL[shape.unit])} zeroData={zeroData} onPick={openMuscle} />
         <div className="flex items-center gap-1 mt-1 -mb-0.5">
           <Btn variant="ghost" small className="flex items-center gap-1.5 !px-1.5" onClick={() => setSheet({ rx: quality })}>
             <Icon name="info" size={13} /> How to train it

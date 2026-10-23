@@ -10,7 +10,8 @@ import {
 import { fmtSets, fmtAgo, fmtDate } from '../../../lib/utils'
 import { BottomSheet, SheetHeader } from './BottomSheet'
 import { Icon } from '../../ui/Icon'
-import { RAMP, rampStep } from './GapMap'
+import { rampStep } from '@tekio/core'
+import { RAMP } from './GapMap'
 import { QUALITY_SHORT } from '../adaptations/labels'
 import {
   EXERCISE_CATALOGUE, CATALOGUE_ALIASES, catalogueEntryFor, linksFor, isTimedName, MOVEMENT_PATTERNS, type PatternKey,

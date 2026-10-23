@@ -5,14 +5,14 @@
 import { OpenAPIHono } from '@hono/zod-openapi'
 import { PostgrestClient } from '@supabase/postgrest-js'
 import {
-  KnownError, homeRead, adaptationsRead, readinessRead, type ReadRows, type ExposureBout, type MobilityEntry,
+  KnownError, homeRead, homeView, adaptationsRead, readinessRead, type ReadRows, type ExposureBout, type MobilityEntry,
 } from '@tekio/core'
 import * as rows from '@tekio/db'
 import {
   loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, ownsRow, ownsRows, type WriteDb,
 } from '@tekio/db'
 import { bearer, tokenUserId, tokenAccepted } from './auth'
-import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
+import { homeRoute, adaptationsRoute, readinessRoute, homeViewRoute } from './reads'
 import { startRoute } from './start'
 import {
   profileRoute, sectionsRoute, sectionShownRoute, lastSyncRoute, requestSyncRoute, syncRunRoute, errorReportRoute,
@@ -22,6 +22,7 @@ import {
   cardioRoutes, sportRoutes, sleepRoutes, saunaRoutes, coldRoutes, bodyweightRoutes, donationRoutes, mobilityRoutes,
   morningHrvRoute, checkInRoute, type CaptureRoutes,
 } from './capture'
+import { signInLinkRoute, signInSessionRoute, refreshSessionRoute, sendLink, exchangeCode, refresh } from './signIn'
 import { planLiftRoutes, planSessionRoutes, groupLiftsRoute, liftLoggedRoute, sessionLoggedRoute, pruneMissedRoute } from './plans'
 
 export interface ApiConfig {
@@ -109,6 +110,16 @@ export function createApi(config: ApiConfig) {
     const { date } = c.req.valid('query')
     const rows = await rowsFor(c.req.header('authorization'), date)
     return rows ? c.json(homeRead(rows, date), 200) : c.json(refused, 401)
+  })
+
+  // The latest weigh-in loads beside the rows: Home's weight tile reads it.
+  app.openapi(homeViewRoute, async c => {
+    const { date, lastNight } = c.req.valid('query')
+    const loaded = await loadedFor(c.req.header('authorization'), db =>
+      Promise.all([loadReadRows(db, date), rows.loadBodyweight(db)]))
+    if (!loaded) return c.json(refused, 401)
+    const [read, bodyweight] = loaded
+    return c.json(homeView(homeRead(read, date), read, lastNight, bodyweight[0] ?? null), 200)
   })
 
   app.openapi(adaptationsRoute, async c => {
@@ -329,6 +340,22 @@ export function createApi(config: ApiConfig) {
     const run = await loadedFor(c.req.header('authorization'), async db => ({ run: await rows.loadSyncRun(db, id) }))
     if (run === null) return c.json(refused, 401)
     return run.run ? c.json(run.run, 200) : c.json({ error: 'No such run of yours.' }, 404)
+  })
+
+  // Signing in from a phone app: no token yet, so none is asked for. Supabase
+  // Auth decides, and its reason for a refusal is passed on.
+  const authConfig = { supabaseUrl: config.supabaseUrl, anonKey: config.anonKey, fetch: fetchFn }
+  app.openapi(signInLinkRoute, async c => {
+    const sent = await sendLink(authConfig, c.req.valid('json'))
+    return sent.ok ? c.body(null, 204) : c.json({ error: sent.error }, 400)
+  })
+  app.openapi(signInSessionRoute, async c => {
+    const s = await exchangeCode(authConfig, c.req.valid('json'))
+    return s.ok ? c.json(s.value, 200) : c.json({ error: s.error }, 400)
+  })
+  app.openapi(refreshSessionRoute, async c => {
+    const s = await refresh(authConfig, c.req.valid('json').refreshToken)
+    return s.ok ? c.json(s.value, 200) : c.json({ error: s.error }, 400)
   })
 
   // A report goes through with whatever token came with it, or none: the

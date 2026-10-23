@@ -8,6 +8,7 @@ import {
   MUSCLE_QUALITIES, READINESS_METHODS, type Adaptation, type AdaptationSummary, type MuscleStatusRow,
   type MuscleState, type QualityState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
   type ReadinessTrend, type TargetShape, type HomeRead, type AdaptationsRead, type ReadinessRead,
+  type Gauge, type HomeView, type GateColumn, type MapCallout, type QualityTile, type FoldTile,
 } from '@tekio/core'
 
 export const ADAPTATIONS = [
@@ -16,6 +17,10 @@ export const ADAPTATIONS = [
 
 const days = (what: string) => z.number().nullable().openapi({ description: `Days since ${what}; null = never.` })
 const Range = z.object({ low: z.number(), high: z.number() })
+const GaugeShape: z.ZodType<Gauge> = z.object({
+  side: z.enum(['below', 'inside', 'above']),
+  at: z.number().openapi({ description: "The dot's place along the track, 0 to 1." }),
+}).openapi('Gauge')
 
 const MuscleStateShape: z.ZodType<MuscleState> = z.object({
   id: z.string(),
@@ -79,7 +84,7 @@ const SystemicReadinessShape: z.ZodType<SystemicReadiness> = z.object({
   z: z.number().nullable(),
   recent: z.number().nullable(),
   normal: Range.nullable(),
-  gauge: z.object({ side: z.enum(['below', 'inside', 'above']), at: z.number() }).nullable(),
+  gauge: GaugeShape.nullable(),
   notes: z.object({ restingHrAbove: z.number().nullable(), shortNight: z.number().nullable() }),
   sleepScore: z.number().nullable(),
   sleepScoreDate: z.string().nullable(),
@@ -140,3 +145,64 @@ export const ReadinessBody: z.ZodType<ReadinessRead> = z.object({
   verdict: VerdictShape,
   trend: TrendShape.nullable(),
 }).openapi('ReadinessRead')
+
+// ── What Home prints (RFC 0096) ─────────────────────────────────────────────
+
+const GateColumnShape: z.ZodType<GateColumn> = z.object({
+  label: z.string(),
+  value: z.string(),
+  pct: z.number().optional().openapi({ description: 'An amount out of 100, drawn as a fill.' }),
+  gauge: GaugeShape.nullable().optional()
+    .openapi({ description: 'A reading on the person’s own normal: a dot on its range; null draws the empty track; absent draws the fill.' }),
+  tone: z.enum(['ink', 'mid', 'accent', 'off']),
+  ask: z.boolean().optional().openapi({ description: 'A typed reading still to give today: the value reads as a prompt.' }),
+  note: z.string().optional(),
+}).openapi('GateColumn')
+
+const MapCalloutShape: z.ZodType<MapCallout> = z.object({
+  muscle: z.string(),
+  rank: z.number().nullable().openapi({ description: '1 to 4, or null for the lighter unnumbered fifth.' }),
+  label: z.string(),
+  sub: z.string(),
+}).openapi('MapCallout')
+
+const QualityTileShape: z.ZodType<QualityTile> = z.object({
+  key: z.enum(['vo2max', 'anaerobic_capacity', 'endurance']),
+  name: z.string(),
+  note: z.string(),
+  step: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).nullable()
+    .openapi({ description: '0 to 3 on the stimulus ramp; null is white.' }),
+  edge: z.enum(['blank', 'accent', 'ramp', 'ink']),
+}).openapi('QualityTile')
+
+const FoldTileShape: z.ZodType<FoldTile> = z.object({
+  kind: z.enum(['weight', 'blood']),
+  label: z.string(),
+  value: z.string(),
+  note: z.string(),
+  accent: z.boolean(),
+}).openapi('FoldTile')
+
+export const HomeViewBody: z.ZodType<HomeView> = z.object({
+  date: z.string(),
+  zeroData: z.boolean(),
+  readinessLabel: z.string(),
+  verdict: z.object({ text: z.string(), sub: z.string() }),
+  readiness: z.object({
+    gated: z.boolean().openapi({ description: 'A held day: the card inverts to ink.' }),
+    method: z.string().nullable(),
+    band: z.string(),
+    columns: z.array(GateColumnShape),
+    note: z.string().nullable(),
+    hint: z.string().nullable(),
+  }),
+  banner: z.string().nullable(),
+  map: z.object({ muscles: z.array(MuscleStateShape), callouts: z.array(MapCalloutShape) }),
+  qualities: z.object({
+    untouched: z.string().nullable().openapi({ description: 'The untouched names, printed in the accent.' }),
+    short: z.string().nullable(),
+    line: z.string().nullable().openapi({ description: 'The whole line, when neither half applies.' }),
+  }),
+  wholeBody: z.array(QualityTileShape),
+  folds: z.array(FoldTileShape),
+}).openapi('HomeView')
