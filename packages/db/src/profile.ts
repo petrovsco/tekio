@@ -14,6 +14,18 @@ export interface UserProfile {
   readinessMethod: ReadinessMethod | null
 }
 
+/** A first sign-in has no profile row yet; this writes one with the defaults
+ *  and leaves an existing one as it is. */
+export async function ensureProfile(db: Db): Promise<void> {
+  const { error } = await db.client
+    .from('user_profiles')
+    .upsert(
+      { id: db.userId, units: 'metric', progression_model: 'volume', timezone: 'UTC', week_start_day: 'monday' },
+      { onConflict: 'id', ignoreDuplicates: true },
+    )
+  if (error) throw error
+}
+
 export async function loadProfile(db: Db): Promise<UserProfile> {
   const { data, error } = await db.client
     .from('user_profiles')

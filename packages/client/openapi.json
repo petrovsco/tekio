@@ -999,6 +999,15 @@
             "items": {
               "$ref": "#/components/schemas/PlannedSession"
             }
+          },
+          "profile": {
+            "$ref": "#/components/schemas/UserProfile"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Section"
+            }
           }
         },
         "required": [
@@ -1019,7 +1028,9 @@
           "exerciseAliases",
           "readinessInputs",
           "plans",
-          "sessionPlans"
+          "sessionPlans",
+          "profile",
+          "sections"
         ]
       },
       "WeightEntry": {
@@ -1762,6 +1773,83 @@
           "id"
         ]
       },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "weekStartDay": {
+            "type": "string",
+            "enum": [
+              "monday",
+              "sunday"
+            ]
+          },
+          "hrMaxStored": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "description": "The HRmax the person set, in bpm; null when there is none."
+          },
+          "hrMaxSource": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "typed",
+              "tracker",
+              null
+            ]
+          },
+          "birthDate": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "readinessMethod": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "overnight_hrv",
+              "morning_hrv",
+              "check_in",
+              null
+            ],
+            "description": "Null picks the best one with data."
+          }
+        },
+        "required": [
+          "weekStartDay",
+          "hrMaxStored",
+          "hrMaxSource",
+          "birthDate",
+          "readinessMethod"
+        ]
+      },
+      "Section": {
+        "type": "object",
+        "properties": {
+          "sectionKey": {
+            "type": "string",
+            "minLength": 1
+          },
+          "showInMenu": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "sectionKey",
+          "showInMenu",
+          "sortOrder"
+        ]
+      },
       "ProfilePatch": {
         "type": "object",
         "properties": {
@@ -1820,27 +1908,6 @@
             "description": "How readiness is read; null picks the best one with data."
           }
         }
-      },
-      "Section": {
-        "type": "object",
-        "properties": {
-          "sectionKey": {
-            "type": "string",
-            "minLength": 1
-          },
-          "showInMenu": {
-            "type": "boolean"
-          },
-          "sortOrder": {
-            "type": "integer",
-            "minimum": 0
-          }
-        },
-        "required": [
-          "sectionKey",
-          "showInMenu",
-          "sortOrder"
-        ]
       },
       "SyncRun": {
         "type": "object",
@@ -2138,7 +2205,7 @@
             "bearer": []
           }
         ],
-        "summary": "Every row the web app opens with, in one answer.",
+        "summary": "Every row the web app opens with, in one answer; a first call writes the profile and the default sections.",
         "responses": {
           "200": {
             "description": "The person's rows.",

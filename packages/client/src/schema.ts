@@ -181,7 +181,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Every row the web app opens with, in one answer. */
+        /** Every row the web app opens with, in one answer; a first call writes the profile and the default sections. */
         get: {
             parameters: {
                 query?: never;
@@ -3466,6 +3466,8 @@ export interface components {
             readinessInputs: components["schemas"]["ReadinessInput"][];
             plans: components["schemas"]["PlannedExercise"][];
             sessionPlans: components["schemas"]["PlannedSession"][];
+            profile: components["schemas"]["UserProfile"];
+            sections: components["schemas"]["Section"][];
         };
         WeightEntry: {
             id: string;
@@ -3690,6 +3692,25 @@ export interface components {
             /** @description The entry this plan became, once logged. */
             loggedAs?: string;
         };
+        UserProfile: {
+            /** @enum {string} */
+            weekStartDay: "monday" | "sunday";
+            /** @description The HRmax the person set, in bpm; null when there is none. */
+            hrMaxStored: number | null;
+            /** @enum {string|null} */
+            hrMaxSource: "typed" | "tracker" | null;
+            birthDate: string | null;
+            /**
+             * @description Null picks the best one with data.
+             * @enum {string|null}
+             */
+            readinessMethod: "overnight_hrv" | "morning_hrv" | "check_in" | null;
+        };
+        Section: {
+            sectionKey: string;
+            showInMenu: boolean;
+            sortOrder: number;
+        };
         ProfilePatch: {
             /** @enum {string} */
             weekStartDay?: "monday" | "sunday";
@@ -3710,11 +3731,6 @@ export interface components {
              * @enum {string|null}
              */
             readinessMethod?: "overnight_hrv" | "morning_hrv" | "check_in" | null;
-        };
-        Section: {
-            sectionKey: string;
-            showInMenu: boolean;
-            sortOrder: number;
         };
         SyncRun: {
             id: number;

@@ -2,7 +2,7 @@
   "name": "tekio",
   "private": true,
   "license": "Apache-2.0",
-  "version": "2.2.61",
+  "version": "2.2.62",
   "type": "module",
   "workspaces": [
     "packages/*"
@@ -27,7 +27,6 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@supabase/auth-js": "^2.118.0",
-    "@supabase/postgrest-js": "^2.105.4",
     "@tekio/api": "*",
     "@tekio/client": "*",
     "@tekio/core": "*",
@@ -40,6 +39,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@supabase/postgrest-js": "^2.105.4",
     "@tailwindcss/vite": "^4.1.6",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

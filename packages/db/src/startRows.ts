@@ -1,5 +1,7 @@
 // Every row the web app opens with, loaded at once (RFC 0094 step 4): the
-// store's bootstrap, as one call the API can answer in one round trip.
+// store's bootstrap, as one call the API can answer in one round trip. The
+// profile and the menu's sections come after their rows are made sure of, so
+// they load in a second step (`loadStartSettings`), beside the rest.
 import type {
   Adaptation, WeightEntry, BodyweightEntry, CardioEntry, MobilityEntry, MuscleGroup, ExerciseMuscleLink,
   SportEntry, DonationEntry, SleepEntry, ExposureBout, ExerciseAlias, ReadinessInput, PlannedExercise, PlannedSession,
@@ -20,6 +22,8 @@ import { loadReadinessInputs } from './readiness'
 import { loadPlans } from './plans'
 import { loadSessionPlans } from './sessionPlans'
 import { exerciseAdaptationMap } from './readRows'
+import { ensureProfile, loadProfile, type UserProfile } from './profile'
+import { seedSections, loadSections, type SectionConfig } from './sections'
 
 export interface StartRows {
   weights: WeightEntry[]
@@ -40,6 +44,19 @@ export interface StartRows {
   readinessInputs: ReadinessInput[]
   plans: PlannedExercise[]
   sessionPlans: PlannedSession[]
+}
+
+export interface StartSettings {
+  profile: UserProfile
+  sections: SectionConfig[]
+}
+
+/** The profile and the sections, each row written first if it is missing, so
+ *  this is a write: the API runs it only once Auth has accepted the token. */
+export async function loadStartSettings(db: Db): Promise<StartSettings> {
+  await Promise.all([ensureProfile(db), seedSections(db)])
+  const [profile, sections] = await Promise.all([loadProfile(db), loadSections(db)])
+  return { profile, sections }
 }
 
 export async function loadStartRows(db: Db): Promise<StartRows> {

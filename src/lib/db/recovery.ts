@@ -1,12 +1,9 @@
 import type { SleepEntry, SaunaEntry, ColdEntry } from '../../types'
-import * as db from '@tekio/db'
-import { appDb } from './_rows'
 import { api, body, done } from '../api'
 
 // Sleep, sauna and cold: written through the API (RFC 0094 step 4), so they
 // are logged exactly as a phone app or the agent logs them. They load with the
-// rest at start (./start.ts); sleep is read again here after a Garmin sync.
-export const loadSleep = (): Promise<SleepEntry[]> => db.loadSleep(appDb())
+// rest at start (./start.ts).
 export const saveSleepEntry = async (entry: Omit<SleepEntry, 'id'>): Promise<SleepEntry> =>
   (await body(api.POST('/api/sleep', { body: entry }))) as SleepEntry
 export const updateSleepEntry = (id: string, patch: Omit<SleepEntry, 'id'>): Promise<void> =>

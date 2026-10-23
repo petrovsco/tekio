@@ -148,15 +148,14 @@ that loads when you open a chart costs the first paint nothing. It fails at
 baseline + 5 %. Run `npm run build` first; re-baseline with `perf:update` in the
 same commit as the change that moved the number, and say why.
 [scripts/perf-baseline.json](scripts/perf-baseline.json) is the committed
-record: **353.78 kB first paint** (2026-10-20: sign-in, RFC 0003, and the reads composed in `@tekio/core`, RFC 0094 step 2b) **and 1039 ms to the Home read** (2026-09-08). That
+record: **322.26 kB first paint** (2026-10-23: the app reads and writes only through the API, so `@supabase/postgrest-js` left it, RFC 0094 step 4) **and 1039 ms to the Home read** (2026-09-08). That
 second number is the one doctrine §6 cares about — it is measured after
 `bootstrap()` has returned, not at DOMContentLoaded — and it is wall-clock
 against the live database, so read the trend, not the digit. Home answers only
 a signed-in person, so the run opens the app in a saved browser profile, signed
-in once by hand with `npm run perf:startup -- --sign-in`; `--url <address>`
-times a deployed build instead of the local one, and `--url <address> --roads`
-times the app opening straight from the database against opening through the
-API's `GET /api/start` (`?start=api`, RFC 0094 step 4), turn and turn about.
+in once by hand with `npm run perf:startup -- --sign-in --url <address>`. Every
+run takes `--url`: the app opens through `GET /api/start`, which `vite preview`
+does not serve, so it times a deployed build such as staging.
 
 ## Environment Setup
 
@@ -168,15 +167,15 @@ VITE_SUPABASE_ANON_KEY=...
 
 ## Architecture
 
-**Stack**: React 19, TypeScript 5.8, Vite 6, Tailwind CSS v4 (via `@tailwindcss/vite` plugin — no `tailwind.config.js`), Zustand 5, `@supabase/postgrest-js`, Recharts, dnd-kit. No router — see *Routing and navigation* below.
+**Stack**: React 19, TypeScript 5.8, Vite 6, Tailwind CSS v4 (via `@tailwindcss/vite` plugin — no `tailwind.config.js`), Zustand 5, the typed API client `@tekio/client`, Recharts, dnd-kit. No router — see *Routing and navigation* below.
 
 ### Accounts
 
 Sign-in is an email link through Supabase Auth (`tekio.rfcs/rfcs/0003-lock-the-database.md`).
 [src/lib/session.ts](src/lib/session.ts) holds the token, in the first-paint chunk;
 [src/lib/auth.ts](src/lib/auth.ts) is `@supabase/auth-js`, loaded lazily — a returning
-visitor's stored token starts Home's queries before the library arrives. Every query in
-`src/lib/db/` filters by `userId()`, read from the same token claims as the database's
+visitor's stored token starts Home's load before the library arrives. The API files every
+query under the id read from the same token claims as the database's
 `app.current_user_id()`: `app_metadata.user_id` when the login adopted rows written
 before accounts, else the login's own id. Until the lock runs at a release sweep, the
 old open policies still stand beside the owner policies, because the build on `master`
@@ -245,10 +244,10 @@ no longer match the routes, so a route change is committed with the regenerated 
 
 ### Data layer (`src/lib/db/`)
 
-One file per domain. Each file talks directly to Supabase — no ORM, no repository abstraction. The loaders the reads stand on (weights, cardio, sport, sleep, donations, readiness inputs, muscles, adaptation targets, the profile) and their row ↔ entry mappers live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument so the API can load the same rows with the caller's token; the files here call them with `appDb()` from [_rows.ts](src/lib/db/_rows.ts). Every capture write lives there too, beside its loader, so the API writes a row exactly as the app does. The app is moving onto the API one domain at a time (RFC 0094 step 4): a moved domain's file writes through `api` from [src/lib/api.ts](src/lib/api.ts), the typed `@tekio/client` sending the session's token, which turns a 400's reason back into a `KnownError`: every log, lifts included, the morning's HRV and check-in, and the plans. The opening load ([start.ts](src/lib/db/start.ts)) reads the same rows through `loadStartRows` either straight from the database or, with `?start=api` in the address, through `GET /api/start`, while the two are timed against each other; the settings, the Garmin sync and error reports go through the API too, and only start-up's profile row and section order still query the database directly. `npm run dev` serves `/api` from `packages/api` itself (the `devApi` plugin in [vite.config.ts](vite.config.ts)), so local writes reach the same routes. Key points:
+One file per domain, and none of them talks to the database: since 2.2.62 the app reads and writes only through the API (RFC 0094 step 4). Each file calls `api` from [src/lib/api.ts](src/lib/api.ts), the typed `@tekio/client` sending the session's token, which turns a 400's reason back into a `KnownError`. The opening load ([start.ts](src/lib/db/start.ts)) is one `GET /api/start`, which also writes the profile row and the default sections on a first sign-in and is read again after a Garmin sync and after a lift's first log writes its muscle links. The loaders, the row ↔ entry mappers and every write live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument, which the API calls with the caller's token. It was timed before the direct road was deleted: from a phone each table's query waited on the round trip to the database, a median about 650 ms in all on 2026-10-23, while from Dublin the same queries answer in tens of milliseconds. `npm run dev` serves `/api` from `packages/api` itself (the `devApi` plugin in [vite.config.ts](vite.config.ts)), so local writes reach the same routes. Key points:
 
-- **Weights** ([packages/db/src/weights.ts](packages/db/src/weights.ts), called through [src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExerciseRow` ([packages/db/src/exercises.ts](packages/db/src/exercises.ts)), the one place a typed name becomes a row. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`. Its writes live in `@tekio/db` so the API logs a lift exactly as the app does; they take a `WriteDb`, which adds the row origin and a lazy loader for the lift catalogue (`@tekio/core/catalogue`, kept off the first paint).
-- **Section config** ([src/lib/db/sectionConfig.ts](src/lib/db/sectionConfig.ts)): `user_section_config` table. On first load, defaults are seeded via upsert with `ignoreDuplicates: true`.
+- **Weights** ([packages/db/src/weights.ts](packages/db/src/weights.ts), reached through the API from [src/lib/db/weights.ts](src/lib/db/weights.ts)): The DB is normalized: `training_sessions` → `session_exercises` → `session_sets`. The in-memory `WeightEntry.id` maps to `session_exercise.id`. Exercises are auto-created via `getOrCreateExerciseRow` ([packages/db/src/exercises.ts](packages/db/src/exercises.ts)), the one place a typed name becomes a row. Sessions are auto-created/cleaned up by `getOrCreateSession` / `deleteWeightEntry`. Its writes live in `@tekio/db` so the API logs a lift exactly as the app does; they take a `WriteDb`, which adds the row origin and a lazy loader for the lift catalogue (`@tekio/core/catalogue`, kept off the first paint).
+- **Section config** ([packages/db/src/sections.ts](packages/db/src/sections.ts)): `user_section_config` table. On first load, `GET /api/start` seeds the defaults via upsert with `ignoreDuplicates: true`.
 
 ### No programs, no cycle
 

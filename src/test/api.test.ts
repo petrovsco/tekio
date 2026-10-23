@@ -15,11 +15,11 @@ const DATE = '2026-10-20'
 /** A Supabase that accepts `accepted` and answers every table with no rows,
  *  but a profile. Records each request's address and bearer token. */
 function fakeSupabase(accepted: string | null) {
-  const calls: { url: string; auth: string | null }[] = []
+  const calls: { url: string; auth: string | null; method: string }[] = []
   const fakeFetch: typeof fetch = async (input, init) => {
     const url = String(input)
     const auth = new Headers(init?.headers).get('authorization')
-    calls.push({ url, auth })
+    calls.push({ url, auth, method: init?.method ?? 'GET' })
     const json = (body: unknown, status = 200) =>
       new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
     if (url.includes('/auth/v1/user')) {
@@ -69,11 +69,20 @@ describe('the API reads', () => {
     expect(Object.keys(await res.json())).toEqual([
       'weights', 'bodyweight', 'cardio', 'mobility', 'muscleGroups', 'exerciseMuscles', 'exerciseAdaptations',
       'sports', 'sportTypes', 'donations', 'sleep', 'sauna', 'cold', 'adaptationTargets', 'exerciseAliases',
-      'readinessInputs', 'plans', 'sessionPlans',
+      'readinessInputs', 'plans', 'sessionPlans', 'profile', 'sections',
     ])
     const rest = calls.filter(c => c.url.includes('/rest/v1/'))
     expect(rest.every(c => c.auth === `Bearer ${LIVE}`)).toBe(true)
+    // A first sign-in gets its profile row and the default sections.
+    expect(calls.filter(c => c.method === 'POST').map(c => c.url.split('/rest/v1/')[1].split('?')[0]).sort())
+      .toEqual(['user_profiles', 'user_section_config'])
     expect((await get(fakeSupabase(null).api, '/api/start', LIVE)).status).toBe(401)
+  })
+
+  it('writes no profile or sections for a token Auth refuses', async () => {
+    const { api, calls } = fakeSupabase(null)
+    expect((await get(api, '/api/start', LIVE)).status).toBe(401)
+    expect(calls.filter(c => c.method !== 'GET')).toEqual([])
   })
 
   it('refuses a call with no token before touching the database', async () => {

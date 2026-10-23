@@ -19,9 +19,7 @@ import type {
   PlannedExercise,
   PlannedSession,
 } from '../types'
-import { getOrCreateUser } from '../lib/db/user'
 import { loadStart } from '../lib/db/start'
-import { loadExerciseMuscleLinks } from '../lib/db/muscles'
 import type { AdaptationTargetMap } from '@tekio/db'
 import {
   saveWeightEntry,
@@ -29,12 +27,12 @@ import {
   updateWeightEntry,
 } from '../lib/db/weights'
 import { saveBodyweightEntry, deleteBodyweightEntry, updateBodyweightEntry } from '../lib/db/bodyweight'
-import { loadCardio, saveCardioEntry, deleteCardioEntry, updateCardioEntry } from '../lib/db/cardio'
+import { saveCardioEntry, deleteCardioEntry, updateCardioEntry } from '../lib/db/cardio'
 import { saveMobilityEntry, deleteMobilityEntry, updateMobilityEntry } from '../lib/db/mobility'
-import { loadSports, saveSportEntry, deleteSportEntry, updateSportEntry } from '../lib/db/sport'
+import { saveSportEntry, deleteSportEntry, updateSportEntry } from '../lib/db/sport'
 import { saveDonationEntry, deleteDonationEntry, updateDonationEntry } from '../lib/db/donations'
 import {
-  loadSleep, saveSleepEntry, updateSleepEntry, deleteSleepEntry,
+  saveSleepEntry, updateSleepEntry, deleteSleepEntry,
   saveSaunaEntry, updateSaunaEntry, deleteSaunaEntry,
   saveColdEntry, updateColdEntry, deleteColdEntry,
 } from '../lib/db/recovery'
@@ -341,7 +339,6 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   bootstrap: async () => {
     set({ loading: true })
     try {
-      await getOrCreateUser()
       // A missed plan is deleted a week after its day (RFC 0104). The prune
       // runs beside the start rather than ahead of it, and the plans it is
       // deleting are left out as they load, so the card reads the same
@@ -349,15 +346,18 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
       const missedBefore = daysAgo(MISSED_PLAN_KEPT_DAYS)
       const kept = (p: { date: string; loggedAs?: string }) => p.loggedAs != null || p.date >= missedBefore
       void pruneMissedPlans(missedBefore).catch(() => {})
-      const [start] = await Promise.all([loadStart(), usePrefs.getState().loadPrefs()])
+      const { profile, sections, ...start } = await loadStart()
+      usePrefs.setState({ sections, ...profile })
       set({ ...start, plans: start.plans.filter(kept), sessionPlans: start.sessionPlans.filter(kept) })
     } finally {
       set({ loading: false })
     }
   },
 
+  // A sync brings sleep, cardio and sport in; they are read again from the
+  // one start call rather than a route each.
   refreshSynced: async () => {
-    const [sleep, cardio, sports] = await Promise.all([loadSleep(), loadCardio(), loadSports()])
+    const { sleep, cardio, sports } = await loadStart()
     set({ sleep, cardio, sports })
   },
 
@@ -378,7 +378,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
     const { entry: saved, linked } = await saveWeightEntry(entry, pattern)
     // A first log of a catalogue lift writes its links; without the reload the
     // set would count for nothing on the muscle read until the next start.
-    const exerciseMuscles = linked ? await loadExerciseMuscleLinks() : undefined
+    const exerciseMuscles = linked ? (await loadStart()).exerciseMuscles : undefined
     set(s => ({ weights: insert(s.weights, saved), ...(exerciseMuscles ? { exerciseMuscles } : {}) }))
     return saved
   },

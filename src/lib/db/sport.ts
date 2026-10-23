@@ -1,15 +1,12 @@
 import type { SportEntry, NewSportFlags } from '../../types'
-import * as db from '@tekio/db'
-import { appDb } from './_rows'
 import { api, body, done } from '../api'
 
-// Written through the API (RFC 0094 step 4); loaded with the rest at start
-// (./start.ts), and read again here after a Garmin sync. A synced session not rated yet holds quality 0 in the app, which
-// the API spells as no rating.
+// Written through the API (RFC 0094 step 4) and loaded with the rest at start
+// (./start.ts). A synced session not rated yet holds quality 0 in the app,
+// which the API spells as no rating.
 const sent = ({ quality, ...entry }: Omit<SportEntry, 'id'>, newSport?: NewSportFlags) =>
   ({ ...entry, quality: quality || undefined, newSport })
 
-export const loadSports = (): Promise<SportEntry[]> => db.loadSports(appDb())
 export const saveSportEntry = async (entry: Omit<SportEntry, 'id'>, newSportFlags?: NewSportFlags): Promise<SportEntry> =>
   (await body(api.POST('/api/sport', { body: sent(entry, newSportFlags) }))) as SportEntry
 export const updateSportEntry = (id: string, patch: Omit<SportEntry, 'id'>, newSportFlags?: NewSportFlags): Promise<void> =>
