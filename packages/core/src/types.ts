@@ -244,8 +244,9 @@ export interface PlannedExercise {
   plannedBy: 'user' | 'agent'
   /** The logged entry this plan became; absent while it is still a plan. */
   loggedAs?: string
-  /** Shared by the lifts of one superset or circuit (RFC 0106), and carried
-   *  unchanged onto the entries they are logged as. */
+  /** Shared by the lifts planned as one superset or circuit (RFC 0106). The
+   *  Planned card no longer draws the group: each Log hands one plan to the
+   *  form, and the lifts logged from it are entries of their own. */
   supersetId?: string
 }
 

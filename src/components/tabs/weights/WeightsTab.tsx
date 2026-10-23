@@ -187,10 +187,9 @@ export function WeightsTab() {
   // The ref stops a double tap that lands before the button redraws disabled.
   const [busy, setBusy] = useState<'one' | 'all' | null>(null)
   const finishing = useRef(false)
-  // The button names everything it will save: a superset's Finish saves every
-  // lift on the form, not only the one showing (RFC 0106).
-  const together = lifts.length > 1 && lifts.every(l => l.supersetId && l.supersetId === lifts[0].supersetId)
-  const what = together ? groupName(lifts.length).toLowerCase() : lifts.length > 1 ? `${lifts.length} exercises` : 'exercise'
+  // The button names everything it will save: every lift on the form, not
+  // only the one showing (RFC 0106).
+  const what = lifts.length > 1 ? `${lifts.length} exercises` : 'exercise'
   const saveLabel = `${anySaved ? 'Finish' : 'Save'} ${what}`
   // With more than one lift on the form, the one showing can be finished on
   // its own: it leaves the switcher and the rest stay.
@@ -243,7 +242,7 @@ export function WeightsTab() {
 
   /**
    * Writes a lift's chosen rows to the log (RFC 0106): the first set creates
-   * its entry, in its superset and ticking its plan; later ones change the
+   * its entry and ticking its plan; later ones change the
    * entry's sets; none left removes it. Returns whether the write went in.
    */
   const writeLift = async (l: OnLog, saved: boolean[], toast: string): Promise<boolean> => {
@@ -256,7 +255,7 @@ export function WeightsTab() {
       let id = entryId
       if (!id && chosen.length) {
         const entry = await addWeightEntry(
-          { date: l.date, exercise: l.ex.trim(), sets: chosen, ...(l.supersetId ? { supersetId: l.supersetId } : {}) },
+          { date: l.date, exercise: l.ex.trim(), sets: chosen },
           l.pattern,
         )
         id = entry.id
@@ -407,31 +406,25 @@ export function WeightsTab() {
     sets: p.targets.length ? toSetStr(p.targets) : [{ weight: '', reps: '' }],
     revealed: p.targets.length || 1,
     planId: p.id,
-    ...(p.supersetId ? { supersetId: p.supersetId } : {}),
     ...(p.targets.some(isTimedSet) ? { timed: true } : {}),
   })
 
-  /** Log on a plan: a lift already on the form is shown as typed; otherwise the
-   *  plan, with the rest of its superset, joins the form. An untouched form is
-   *  replaced; one with typing keeps it, beside the new lifts. */
+  /** Log on a plan: a lift already on the form is shown as typed; otherwise
+   *  that one plan joins the form, whatever superset it was planned in, and
+   *  leaves the Planned card while it is there. An untouched form is replaced;
+   *  one with typing keeps it, beside the new lift. */
   const logFromPlan = (p: PlannedExercise) => {
     setSelEx(p.exercise)
     setDraft(x => {
       const at = x.lifts.findIndex(l => l.planId === p.id)
       if (at >= 0) return { ...x, active: at }
-      const group = p.supersetId
-        ? plans.filter(q => q.supersetId === p.supersetId && !q.loggedAs && !x.lifts.some(l => l.planId === q.id))
-        : [p]
       const kept = x.lifts.filter(liftTouched)
-      const added = group.map(liftFromPlan)
-      return {
-        date: kept.length ? x.date : today(),
-        lifts: [...kept, ...added],
-        active: kept.length + Math.max(0, group.findIndex(q => q.id === p.id)),
-      }
+      return { date: kept.length ? x.date : today(), lifts: [...kept, liftFromPlan(p)], active: kept.length }
     })
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+
+  const onForm = useMemo(() => new Set(lifts.flatMap(l => (l.planId ? [l.planId] : []))), [lifts])
 
   const chartEx = selEx || exercises[0] || ''
   // A hold's progress is how long it lasted (RFC 0107); it has no volume load.
@@ -456,7 +449,7 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PlanCard onLog={logFromPlan} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
+      <PlanCard onForm={onForm} onLog={logFromPlan} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
       {planSheet && (
         <PlanSheet plan={planSheet.plan} suggestions={suggestions} aliases={aliases} timedOf={timedOf} onClose={() => setPlanSheet(null)} />
       )}
@@ -465,12 +458,6 @@ export function WeightsTab() {
           <SecTitle>Log Exercise</SecTitle>
           {lifts.length > 1 && (
             <div className="flex flex-col gap-1.5 mb-2.5">
-              {lifts.every(l => l.supersetId && l.supersetId === lifts[0].supersetId) && (
-                <div className="flex items-center gap-1.5">
-                  <SSBadge />
-                  <span className={MICRO_LABEL}>{groupName(lifts.length)}</span>
-                </div>
-              )}
               <div className="flex flex-wrap gap-1">
                 {lifts.map((l, i) => (
                   <Chip key={l.id} small active={i === active} className="inline-flex items-center gap-0.5" onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>

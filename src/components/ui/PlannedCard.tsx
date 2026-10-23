@@ -6,8 +6,7 @@ import { Card } from './Card'
 import { FIELD_LABEL } from './Input'
 import { DelBtn, ACT_CHIP } from './Button'
 import { Icon } from './Icon'
-import { MicroLabel, MICRO_LABEL, SSBadge } from './Badges'
-import { groupRuns, groupName } from '../../lib/supersets'
+import { MicroLabel, MICRO_LABEL } from './Badges'
 
 
 /** What every plan has, whatever it plans: a lift (RFC 0098) or a cardio,
@@ -35,20 +34,20 @@ const writeFolded = (key: string, v: boolean) => {
  * then deleted. Each tab supplies its plans, how one reads, and when one counts
  * as logged.
  */
-export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, details, groupOf, onLog, onEdit, onRemove, onAdd }: {
+export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, onLog, onEdit, onRemove, onAdd }: {
   plans: P[]
   /** A logged plan has become work: it leaves the card, and the tab's history
    *  shows it like any other entry. */
   isLogged: (plan: P) => boolean
+  /** A plan already on the tab's log form leaves the card while it is there,
+   *  so it shows in one place; taking it off the form brings it back. */
+  onForm?: (plan: P) => boolean
   /** localStorage key for the fold. */
   foldKey: string
   /** The plan's name, on its row and in the not-logged line. */
   title: (plan: P) => string
   /** Its targets, under the name. */
   details: (plan: P) => ReactNode
-  /** The superset or circuit a plan belongs to (RFC 0106): plans sharing one
-   *  are drawn as one block. */
-  groupOf?: (plan: P) => string | undefined
   onLog: (plan: P) => void
   /** Opens the plan sheet on this plan; on a missed one, that is a reschedule. */
   onEdit: (plan: P) => void
@@ -56,17 +55,18 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
   /** Opens the plan sheet, for a new plan. */
   onAdd: () => void
 }) {
-  const { todays, doneToday, later, missed } = useMemo(() => {
+  const { todays, doneToday, formToday, later, missed } = useMemo(() => {
     const t = today()
     const byDay = (a: P, b: P) => a.date.localeCompare(b.date)
-    const open = plans.filter(p => !isLogged(p))
+    const open = plans.filter(p => !isLogged(p) && !onForm?.(p))
     return {
       todays: open.filter(p => p.date === t),
       doneToday: plans.some(p => p.date === t && isLogged(p)),
+      formToday: plans.some(p => p.date === t && !isLogged(p) && onForm?.(p)),
       later: open.filter(p => p.date > t).sort(byDay),
       missed: open.filter(p => p.date < t && daysBetween(p.date, t) <= MISSED_PLAN_KEPT_DAYS).sort(byDay),
     }
-  }, [plans, isLogged])
+  }, [plans, isLogged, onForm])
 
   const [folded, setFolded] = useState(() => readFolded(foldKey))
   const toggle = () => setFolded(f => { writeFolded(foldKey, !f); return !f })
@@ -105,19 +105,8 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
     </div>
   )
 
-  // A group is drawn where its first plan stands, its plans as rows inside.
   const rows = (ps: P[], when?: (p: P) => string, isMissed = false) =>
-    groupRuns(ps, p => groupOf?.(p)).map(run => run.length === 1
-      ? row(run[0], when?.(run[0]), isMissed)
-      : (
-        <div key={run[0].id} className="my-1.5 border border-planned rounded-[3px] px-2.5 pt-2">
-          <div className="flex items-center gap-1.5">
-            <SSBadge />
-            <span className={MICRO_LABEL}>{groupName(run.length)}</span>
-          </div>
-          {run.map(p => row(p, when?.(p), isMissed))}
-        </div>
-      ))
+    ps.map(p => row(p, when?.(p), isMissed))
 
   return (
     <Card className="!bg-planned-tint !border-planned">
@@ -136,7 +125,7 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, foldKey, title, d
       <span className={MICRO_LABEL}>Today</span>
       {todays.length > 0
         ? rows(todays)
-        : <p className="text-[11px] text-ink-3 py-1">{doneToday ? 'All of today\'s plan is logged.' : 'Nothing planned today.'}</p>}
+        : <p className="text-[11px] text-ink-3 py-1">{formToday ? 'The rest of today\'s plan is on the log form.' : doneToday ? 'All of today\'s plan is logged.' : 'Nothing planned today.'}</p>}
       {later.length > 0 && (
         <div className="mt-3">
           <span className={MICRO_LABEL}>Later</span>
