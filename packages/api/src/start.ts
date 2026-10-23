@@ -25,7 +25,9 @@ const MuscleGroup = z.object({
 
 const ExerciseMuscleLink = z.object({
   exercise: z.string(), group: z.string(), region: Region,
-  level: z.union([z.literal(1), z.literal(2), z.literal(3)]).openapi({ description: '1 is the most direct.' }),
+  // A whole number from 1 to 3, as the core's union spells it: a generated
+  // Kotlin client cannot take an enum of numbers.
+  level: z.number().int().min(1).max(3).openapi({ description: '1 to 3; 1 is the most direct.' }) as unknown as z.ZodType<1 | 2 | 3>,
   contribution: z.enum(['stimulus', 'recovery']),
 }).openapi('ExerciseMuscleLink')
 

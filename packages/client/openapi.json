@@ -715,9 +715,17 @@
           "value": {
             "type": "string"
           },
+          "bar": {
+            "type": "string",
+            "enum": [
+              "fill",
+              "gauge"
+            ],
+            "description": "An amount out of 100 as a fill, or a reading as a dot on the person’s own normal."
+          },
           "pct": {
             "type": "number",
-            "description": "An amount out of 100, drawn as a fill."
+            "description": "The fill’s amount, out of 100."
           },
           "gauge": {
             "type": [
@@ -742,7 +750,7 @@
               "side",
               "at"
             ],
-            "description": "A reading on the person’s own normal: a dot on its range; null draws the empty track; absent draws the fill."
+            "description": "The gauge’s reading; null or absent draws the empty track."
           },
           "tone": {
             "type": "string",
@@ -764,6 +772,7 @@
         "required": [
           "label",
           "value",
+          "bar",
           "tone"
         ]
       },
@@ -812,35 +821,12 @@
             "type": "string"
           },
           "step": {
-            "anyOf": [
-              {
-                "type": "number",
-                "enum": [
-                  0
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  1
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  2
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  3
-                ]
-              },
-              {
-                "type": "null"
-              }
+            "type": [
+              "integer",
+              "null"
             ],
+            "minimum": 0,
+            "maximum": 3,
             "description": "0 to 3 on the stimulus ramp; null is white."
           },
           "edge": {
@@ -1647,27 +1633,10 @@
             ]
           },
           "level": {
-            "anyOf": [
-              {
-                "type": "number",
-                "enum": [
-                  1
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  2
-                ]
-              },
-              {
-                "type": "number",
-                "enum": [
-                  3
-                ]
-              }
-            ],
-            "description": "1 is the most direct."
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "description": "1 to 3; 1 is the most direct."
           },
           "contribution": {
             "type": "string",

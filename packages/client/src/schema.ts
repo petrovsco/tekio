@@ -884,9 +884,14 @@ export interface components {
         GateColumn: {
             label: string;
             value: string;
-            /** @description An amount out of 100, drawn as a fill. */
+            /**
+             * @description An amount out of 100 as a fill, or a reading as a dot on the person’s own normal.
+             * @enum {string}
+             */
+            bar: "fill" | "gauge";
+            /** @description The fill’s amount, out of 100. */
             pct?: number;
-            /** @description A reading on the person’s own normal: a dot on its range; null draws the empty track; absent draws the fill. */
+            /** @description The gauge’s reading; null or absent draws the empty track. */
             gauge?: {
                 /** @enum {string} */
                 side: "below" | "inside" | "above";
@@ -912,7 +917,7 @@ export interface components {
             name: string;
             note: string;
             /** @description 0 to 3 on the stimulus ramp; null is white. */
-            step: 0 | 1 | 2 | 3 | null;
+            step: number | null;
             /** @enum {string} */
             edge: "blank" | "accent" | "ramp" | "ink";
         };
@@ -1112,8 +1117,8 @@ export interface components {
             group: string;
             /** @enum {string} */
             region: "upper" | "lower" | "core" | "full_body";
-            /** @description 1 is the most direct. */
-            level: 1 | 2 | 3;
+            /** @description 1 to 3; 1 is the most direct. */
+            level: number;
             /** @enum {string} */
             contribution: "stimulus" | "recovery";
         };

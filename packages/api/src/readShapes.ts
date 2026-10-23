@@ -151,9 +151,10 @@ export const ReadinessBody: z.ZodType<ReadinessRead> = z.object({
 const GateColumnShape: z.ZodType<GateColumn> = z.object({
   label: z.string(),
   value: z.string(),
-  pct: z.number().optional().openapi({ description: 'An amount out of 100, drawn as a fill.' }),
+  bar: z.enum(['fill', 'gauge']).openapi({ description: 'An amount out of 100 as a fill, or a reading as a dot on the person’s own normal.' }),
+  pct: z.number().optional().openapi({ description: 'The fill’s amount, out of 100.' }),
   gauge: GaugeShape.nullable().optional()
-    .openapi({ description: 'A reading on the person’s own normal: a dot on its range; null draws the empty track; absent draws the fill.' }),
+    .openapi({ description: 'The gauge’s reading; null or absent draws the empty track.' }),
   tone: z.enum(['ink', 'mid', 'accent', 'off']),
   ask: z.boolean().optional().openapi({ description: 'A typed reading still to give today: the value reads as a prompt.' }),
   note: z.string().optional(),
@@ -170,7 +171,9 @@ const QualityTileShape: z.ZodType<QualityTile> = z.object({
   key: z.enum(['vo2max', 'anaerobic_capacity', 'endurance']),
   name: z.string(),
   note: z.string(),
-  step: z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]).nullable()
+  // Described as a whole number from 0 to 3, which the core's type spells out
+  // as a union: a generated Kotlin client cannot take an enum of numbers.
+  step: (z.number().int().min(0).max(3) as unknown as z.ZodType<0 | 1 | 2 | 3>).nullable()
     .openapi({ description: '0 to 3 on the stimulus ramp; null is white.' }),
   edge: z.enum(['blank', 'accent', 'ramp', 'ink']),
 }).openapi('QualityTile')

@@ -146,8 +146,8 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
               <div className={`text-[9px] tracking-[0.05em] mb-[3px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.label}</div>
               <div className={`text-xs font-semibold ${col.ask && !gated ? 'text-signal' : ''}`}>{col.value}</div>
               <div className="mt-1">
-                {col.gauge !== undefined ? (
-                  <ReadinessGauge gauge={col.gauge} inverted={gated} />
+                {col.bar === 'gauge' ? (
+                  <ReadinessGauge gauge={col.gauge ?? null} inverted={gated} />
                 ) : (
                   <div className={`h-[3px] rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
                     <div

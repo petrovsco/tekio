@@ -18,10 +18,12 @@ import { coverageLine, coverageParts, fmtAgo, fmtSets, joinNames, MAPPED_MUSCLES
 export interface GateColumn {
   label: string
   value: string
-  /** An amount out of 100, drawn as a fill: the sleep score. */
+  /** How the bar reads: an amount out of 100 as a fill (the sleep score), or
+   *  a reading as a dot on the person's own normal. */
+  bar: 'fill' | 'gauge'
+  /** The fill's amount, out of 100. */
   pct?: number
-  /** A reading against the person's own normal, drawn as a dot on its range;
-   *  null keeps the empty track until there is one. Absent draws a fill. */
+  /** The gauge's reading; null keeps the empty track until there is one. */
   gauge?: Gauge | null
   /** The fill's tone; a held day inverts each one. */
   tone: 'ink' | 'mid' | 'accent' | 'off'
@@ -206,8 +208,8 @@ export function homeView(read: HomeRead, rows: ReadRows, lastNight: string, body
   // The score keeps one day of grace for a late sync, so say when it is the
   // night before's: a sync that ran before Garmin had last night is not news.
   const sleepCol: GateColumn = sys.sleepScore != null
-    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink', note: (sys.sleepScoreDate ?? '') < lastNight ? 'last night not in yet' : undefined }
-    : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' }
+    ? { label: 'SLEEP', bar: 'fill', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink', note: (sys.sleepScoreDate ?? '') < lastNight ? 'last night not in yet' : undefined }
+    : { label: 'SLEEP', bar: 'fill', value: '—', pct: 0, tone: 'off' }
   // Today's typed answer for the method being read, shown even before the
   // baseline can turn it into a band.
   const typedToday = rows.readinessInputs.find(e => e.date === date)
@@ -220,22 +222,22 @@ export function homeView(read: HomeRead, rows: ReadRows, lastNight: string, body
     : undefined
   const readingCol: GateColumn =
     sys.awaitingInput
-      ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', gauge: null, tone: 'off', ask: true }
+      ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', bar: 'gauge', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', gauge: null, tone: 'off', ask: true }
       : sys.method && sys.gauge && sys.recent != null && sys.normal
         ? sys.method === 'check_in'
-          ? { label: 'CHECK-IN', value: `${sys.recent} of 25`, gauge: sys.gauge, tone: 'ink', note: `your usual ${sys.normal.low}–${sys.normal.high}` }
+          ? { label: 'CHECK-IN', bar: 'gauge', value: `${sys.recent} of 25`, gauge: sys.gauge, tone: 'ink', note: `your usual ${sys.normal.low}–${sys.normal.high}` }
           : {
-              label: sys.method === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS',
+              label: sys.method === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS', bar: 'gauge',
               value: `${sys.recent} ms`, gauge: sys.gauge, tone: 'ink',
               note: `your normal ${sys.normal.low}–${sys.normal.high} ms`,
             }
         : colMethod === 'check_in'
-          ? { label: 'CHECK-IN', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', gauge: null, tone: 'off', note: building }
+          ? { label: 'CHECK-IN', bar: 'gauge', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', gauge: null, tone: 'off', note: building }
           : colMethod === 'morning_hrv'
-            ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', gauge: null, tone: 'off', note: building }
+            ? { label: 'MORNING HRV', bar: 'gauge', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', gauge: null, tone: 'off', note: building }
             : sys.hrv != null
-              ? { label: sys.hrvDate != null && sys.hrvDate >= lastNight ? 'HRV · LAST NIGHT' : 'HRV · NIGHT BEFORE', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
-              : { label: 'HRV', value: '—', gauge: null, tone: 'off' }
+              ? { label: sys.hrvDate != null && sys.hrvDate >= lastNight ? 'HRV · LAST NIGHT' : 'HRV · NIGHT BEFORE', bar: 'gauge', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
+              : { label: 'HRV', bar: 'gauge', value: '—', gauge: null, tone: 'off' }
   const columns = colMethod === 'overnight_hrv' || colMethod === null
     ? [sleepCol, readingCol]
     : [readingCol, sleepCol]
