@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { usePrefs } from '../../store/prefs'
 import { useAppStore } from '../../store/app'
 import { signedInEmail } from '../../lib/session'
+import { whileReloading } from '../../lib/staleChunk'
 import { Icon, type IconName } from '../ui/Icon'
 import { FIELD_LABEL } from '../ui/Input'
 
@@ -67,7 +68,7 @@ export function Drawer({ open, onClose, tab, setTab }: DrawerProps) {
   const signOut = async () => {
     setSigningOut(true)
     try {
-      await (await import('../../lib/auth')).signOut()
+      await (await import('../../lib/auth').then(whileReloading)).signOut()
     } catch {
       setSigningOut(false)
       setToast('Could not sign out. Check your connection and try again.')

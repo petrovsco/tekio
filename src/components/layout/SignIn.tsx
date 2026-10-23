@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Btn } from '../ui/Button'
 import { Inp } from '../ui/Input'
 import { Icon } from '../ui/Icon'
+import { whileReloading } from '../../lib/staleChunk'
 
 // RFC 0003 — the one screen a signed-out person sees. An address and a link by
 // email: no password to choose, forget or leak. The account is made the first
@@ -34,7 +35,7 @@ export function SignIn({ linkError }: { linkError?: string }) {
     setError(null)
     try {
       const address = email.trim()
-      await (await import('../../lib/auth')).sendSignInLink(address)
+      await (await import('../../lib/auth').then(whileReloading)).sendSignInLink(address)
       setSentTo(address)
     } catch (err) {
       setError(sendError(err))
