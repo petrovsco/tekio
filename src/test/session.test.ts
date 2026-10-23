@@ -9,6 +9,14 @@ vi.mock('../lib/auth', () => ({
   restore: vi.fn(async () => ({ signedIn: false })),
 }))
 
+// Error report #43: while a stale-chunk reload is under way, Vite resolves a
+// failed import to undefined, and `.restore()` on it threw. `reloading` stands
+// in for that state, which only a real failed chunk load produces.
+const stale = vi.hoisted(() => ({ reloading: false }))
+vi.mock('../lib/staleChunk', () => ({
+  whileReloading: <T,>(mod: T) => (stale.reloading ? new Promise<T>(() => {}) : Promise.resolve(mod)),
+}))
+
 /** An unsigned token with these claims — the app never verifies the signature;
  *  the database does. */
 function jwt(claims: Record<string, unknown>): string {
@@ -22,6 +30,7 @@ const NEW_LOGIN = '11111111-1111-1111-1111-111111111111'
 const ADOPTED = 'a0000000-0000-0000-0000-000000000001'
 
 beforeEach(() => {
+  stale.reloading = false
   setAccessToken(null)
   localStorage.clear()
   history.replaceState(null, '', '/')
@@ -76,5 +85,16 @@ describe('startSession', () => {
     vi.mocked(auth.restore).mockClear()
     await startSession()
     expect(auth.restore).toHaveBeenCalledOnce()
+  })
+
+  it('waits for the reload instead of throwing when the login library failed to load', async () => {
+    stale.reloading = true
+    const auth = await import('../lib/auth')
+    vi.mocked(auth.restore).mockClear()
+    const settled = vi.fn()
+    startSession().then(settled, settled)
+    await new Promise(r => setTimeout(r, 0))
+    expect(settled).not.toHaveBeenCalled()
+    expect(auth.restore).not.toHaveBeenCalled()
   })
 })

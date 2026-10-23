@@ -11,6 +11,8 @@
 // allow. A login that adopted the rows written before accounts carries that id
 // in `app_metadata.user_id`; every other login files under its own id.
 
+import { whileReloading } from './staleChunk'
+
 /** Where `auth.ts` keeps the session. Named here, not left to the library's
  *  default, because the fast path below reads it without the library. */
 export const AUTH_STORAGE_KEY = 'tekio-auth'
@@ -83,10 +85,12 @@ export async function startSession(): Promise<{ signedIn: boolean; linkError?: s
   if (stored) {
     setAccessToken(stored)
     // Not awaited: the library only has to be there before the token runs out.
-    void import('./auth').then(a => a.keepFresh())
+    void import('./auth').then(whileReloading).then(a => a.keepFresh())
     return { signedIn: true }
   }
-  const auth = await import('./auth')
+  // whileReloading: a failed load during a stale-chunk reload resolves to
+  // undefined (error report #43), so wait for the reload instead.
+  const auth = await import('./auth').then(whileReloading)
   return auth.restore()
 }
 
