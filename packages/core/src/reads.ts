@@ -23,6 +23,7 @@ import {
   type ReadinessMethod,
 } from './fusedRead'
 import { MUSCLE_WINDOW_DAYS } from './constants/reads'
+import { homeWords, type HomeWords } from './homeWords'
 
 /** Everything a read is computed from: one person's logged rows, the shared
  *  muscle catalogue, and the settings that change the arithmetic. */
@@ -77,6 +78,8 @@ export interface HomeRead {
   donation: DonationStatus
   /** Push, steady or hold: readiness and an acute donation together. */
   verdict: FusedVerdict
+  /** The read as Home words it, for a client that prints it (RFC 0099). */
+  words: HomeWords
 }
 
 /** Home: which muscles are short, which qualities untouched, and whether
@@ -85,14 +88,19 @@ export function homeRead(rows: ReadRows, date: string): HomeRead {
   const muscles = muscleStates(rows.weights, rows.exerciseMuscles, rows.muscleGroups, date)
   const readiness = systemicReadiness(rows.sleep, date, rows.readinessInputs, rows.readinessMethod)
   const donation = donationStatus(rows.donations, date)
+  const gaps = rankMuscleGaps(muscles).filter(m => m.fillFraction < GAP_CUTOFF)
+  const coverage = coverageOn(rows, date)
+  const verdict = fusedVerdict(readiness.band, donation)
+  const zeroData = rows.weights.length === 0 && rows.cardio.length === 0 && rows.sports.length === 0
   return {
     date,
     muscles,
-    gaps: rankMuscleGaps(muscles).filter(m => m.fillFraction < GAP_CUTOFF),
+    gaps,
     qualities: qualityStates(rows.cardio, rows.sports, date, rows.hrMax),
-    coverage: coverageOn(rows, date),
+    coverage,
     readiness,
     donation,
-    verdict: fusedVerdict(readiness.band, donation),
+    verdict,
+    words: homeWords({ zeroData, verdict, sys: readiness, don: donation, gaps, states: muscles, coverage }),
   }
 }
