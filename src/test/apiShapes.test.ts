@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest'
 import { homeRead, adaptationsRead, readinessRead, MUSCLE_QUALITIES, type ReadRows } from '@tekio/core'
-import type { StartRows } from '@tekio/db'
+import type { StartRows, StartSettings } from '@tekio/db'
 import { HomeBody, AdaptationsBody, ReadinessBody } from '../../packages/api/src/readShapes'
 import { StartBody } from '../../packages/api/src/start'
 
@@ -67,7 +67,7 @@ describe('the reads’ OpenAPI shapes', () => {
 
 describe('the opening load’s OpenAPI shape', () => {
   it('describes every field the app opens with, synced and planned rows included', () => {
-    const start: StartRows = {
+    const start: StartRows & StartSettings = {
       weights: [...rows.weights, { id: 'w3', date: DATE, exercise: 'Plank', sets: [{ weight: 0, reps: 1, seconds: 45 }], supersetId: 'g1' }],
       bodyweight: [{ id: 'b1', date: DATE, weight: 75 }],
       cardio: [{
@@ -93,6 +93,8 @@ describe('the opening load’s OpenAPI shape', () => {
         { id: 'ps1', date: DATE, kind: 'cardio', name: 'Indoor Rowing', duration: 30, distance: 6, format: 'steady', plannedBy: 'agent', notes: '' },
         { id: 'ps2', date: DATE, kind: 'mobility', name: '', stretches: [{ name: 'Pigeon', duration: 5 }], plannedBy: 'user', loggedAs: 'm1' },
       ],
+      profile: { weekStartDay: 'sunday', hrMaxStored: 190, hrMaxSource: 'tracker', birthDate: '1990-01-01', readinessMethod: 'check_in' },
+      sections: [{ sectionKey: 'Weights', showInMenu: true, sortOrder: 0 }],
     }
     roundTrip(StartBody, start)
   })

@@ -25,7 +25,7 @@ export const profileRoute = createRoute({
   responses: { 204: { description: 'Saved.' }, ...failures },
 })
 
-const Section = z.object({
+export const Section = z.object({
   sectionKey: z.string().min(1), showInMenu: z.boolean(), sortOrder: z.number().int().nonnegative(),
 }).openapi('Section')
 

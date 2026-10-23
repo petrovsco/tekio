@@ -4,7 +4,6 @@ import type { PlannedExercise, WeightEntry, ExerciseMuscleLink, MuscleGroup } fr
 // RFC 0098: a planned exercise never counts. Plans live in their own table and
 // their own store list, and no read takes one. These tests hold both halves.
 
-vi.mock('../lib/supabase', () => ({ supabase: {} }))
 vi.mock('../lib/db/plans', () => ({
   loadPlans: vi.fn(async () => []),
   savePlan: vi.fn(async (p: { date: string; exercise: string; targets: PlannedExercise['targets'] }) =>

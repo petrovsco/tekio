@@ -4,7 +4,6 @@ import { groupRuns, groupName } from '../lib/supersets'
 
 // RFC 0106: planned lifts grouped into supersets and circuits.
 
-vi.mock('../lib/supabase', () => ({ supabase: {} }))
 vi.mock('../lib/db/plans', () => ({
   loadPlans: vi.fn(async () => []),
   savePlan: vi.fn(async (p: Pick<PlannedExercise, 'date' | 'exercise' | 'targets' | 'supersetId'>) =>

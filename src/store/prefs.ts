@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import type { SectionConfig } from '../lib/db/sectionConfig'
-import { loadSectionConfig, updateSectionField, saveSectionConfig } from '../lib/db/sectionConfig'
+import { updateSectionField, saveSectionConfig } from '../lib/db/sectionConfig'
 import {
-  loadProfile, updateWeekStartDay, updateHrMax, updateBirthDate, updateReadinessMethod,
+  updateWeekStartDay, updateHrMax, updateBirthDate, updateReadinessMethod,
 } from '../lib/db/user'
 import type { WeekStartDay } from '@tekio/core'
 import type { HrMaxSource, ReadinessMethod } from '@tekio/core'
@@ -17,7 +17,6 @@ interface PrefsStore {
   birthDate: string | null
   /** The readiness method picked in Profile; null = the best one with data (RFC 0092). */
   readinessMethod: ReadinessMethod | null
-  loadPrefs: () => Promise<void>
   setSection: (key: string, patch: Partial<Pick<SectionConfig, 'showInMenu'>>) => Promise<void>
   reorderSections: (newOrder: string[]) => Promise<void>
   setWeekStartDay: (value: WeekStartDay) => Promise<void>
@@ -33,11 +32,6 @@ export const usePrefs = create<PrefsStore>((set, get) => ({
   hrMaxSource: null,
   birthDate: null,
   readinessMethod: null,
-
-  loadPrefs: async () => {
-    const [sections, profile] = await Promise.all([loadSectionConfig(), loadProfile()])
-    set({ sections, ...profile })
-  },
 
   setSection: async (key, patch) => {
     // Optimistic update

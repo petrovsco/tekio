@@ -123,9 +123,18 @@ export function createApi(config: ApiConfig) {
     return rows ? c.json(readinessRead(rows, date), 200) : c.json(refused, 401)
   })
 
+  // The rows load while Auth checks the token; the profile and the sections,
+  // which may write their defaults first, start once it has said yes.
   app.openapi(startRoute, async c => {
-    const start = await loadedFor(c.req.header('authorization'), rows.loadStartRows)
-    return start ? c.json(start, 200) : c.json(refused, 401)
+    const who = caller(c.req.header('authorization'))
+    if (!who) return c.json(refused, 401)
+    const start = rows.loadStartRows(who.db)
+    if (!(await who.accepted)) {
+      start.catch(() => {})
+      return c.json(refused, 401)
+    }
+    const [loaded, settings] = await Promise.all([start, rows.loadStartSettings(who.db)])
+    return c.json({ ...loaded, ...settings }, 200)
   })
 
   app.openapi(logWeightRoute, async c => {

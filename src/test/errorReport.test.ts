@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // RFC 0103, stage 1: an unexpected error is sent on its own, built from a
 // whitelist, and the expected is never sent.
 
-vi.mock('../lib/supabase', () => ({ supabase: {} }))
 const send = vi.fn(async () => {})
 vi.mock('../lib/db/errorReports', () => ({
   sendErrorReport: (...a: unknown[]) => send(...(a as [])),
