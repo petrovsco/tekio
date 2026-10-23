@@ -198,7 +198,7 @@ stand on (`constants/`), and the domain types they take (`types.ts`, re-exported
 by [src/types/index.ts](src/types/index.ts)). Nothing in it imports React, the
 database or a browser global; its own `tsconfig.json` has no DOM, so the build
 fails if one creeps in. The web app imports it from `@tekio/core`; the API of
-`tekio.rfcs/rfcs/0094-one-api-shared-core.md` will serve the same reads to the
+`tekio.rfcs/rfcs/done/0094-one-api-shared-core.md` will serve the same reads to the
 phone apps and the agent. The package is TypeScript source with no build step:
 Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 `src/test/`, in the one `npm run test`.
@@ -206,7 +206,7 @@ Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 ### The API (`packages/api/`)
 
 `@tekio/api` ([packages/api/src/app.ts](packages/api/src/app.ts)) is the HTTP API of
-`tekio.rfcs/rfcs/0094-one-api-shared-core.md`: Hono with `@hono/zod-openapi`, so
+`tekio.rfcs/rfcs/done/0094-one-api-shared-core.md`: Hono with `@hono/zod-openapi`, so
 `/api/openapi.json` is generated from the route definitions. It serves the three reads,
 `GET /api/read/home`, `/api/read/adaptations` and `/api/read/readiness`, each taking
 `date`, the person's own day (a server cannot know it); `GET /api/start`, every row the
