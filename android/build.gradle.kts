@@ -1,8 +1,3 @@
-// Every Kotlin plugin is declared here, once, so the modules share one copy of
-// it: a module asking for one the root already carries, with a version, fails.
-plugins {
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-}
+// No plugins here on purpose. Each module loads its own Kotlin plugin: :app's
+// must sit beside the Android plugin it extends, which only :app can load,
+// because the cloud sessions cannot download it and leave :app out.
