@@ -1,0 +1,340 @@
+{
+ "date": "2026-10-20",
+ "windowDays": 14,
+ "zeroData": false,
+ "readinessLabel": "readiness",
+ "verdict": {
+  "text": "Push. Ant delt and biceps are the gap.",
+  "sub": "Ant delt: never trained. Biceps: never trained. Chest still recovering (2 days). Blood: full donation 10 d ago — aerobic work is suppressed (~21 d)."
+ },
+ "readiness": {
+  "gated": false,
+  "method": null,
+  "band": "OK",
+  "columns": [
+   {
+    "label": "SLEEP",
+    "bar": "fill",
+    "value": "80",
+    "pct": 80,
+    "tone": "ink"
+   },
+   {
+    "label": "HRV · 7 NIGHTS",
+    "bar": "gauge",
+    "value": "50 ms",
+    "gauge": {
+     "side": "inside",
+     "at": 0.4251678226441766
+    },
+    "tone": "ink",
+    "note": "your normal 50–51 ms"
+   }
+  ],
+  "note": null,
+  "hint": null
+ },
+ "banner": null,
+ "map": {
+  "muscles": [
+   {
+    "id": "g0",
+    "name": "Chest",
+    "parentId": null,
+    "leaf": true,
+    "sets": 4,
+    "daysSince": 1,
+    "recovering": true,
+    "fillFraction": 0.2
+   },
+   {
+    "id": "g1",
+    "name": "Quadriceps",
+    "parentId": null,
+    "leaf": true,
+    "sets": 3,
+    "daysSince": 5,
+    "recovering": false,
+    "fillFraction": 0.15
+   },
+   {
+    "id": "g2",
+    "name": "Hamstrings",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g3",
+    "name": "Glutes",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g4",
+    "name": "Lats",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g5",
+    "name": "Biceps",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g6",
+    "name": "Triceps",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g7",
+    "name": "Calves",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g8",
+    "name": "Anterior Deltoid",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   },
+   {
+    "id": "g9",
+    "name": "Rectus Abdominis",
+    "parentId": null,
+    "leaf": true,
+    "sets": 0,
+    "daysSince": null,
+    "recovering": false,
+    "fillFraction": 0
+   }
+  ],
+  "zones": [
+   {
+    "muscle": "Upper Back / Traps",
+    "step": 0,
+    "recovering": false,
+    "pick": "Upper Back / Traps"
+   },
+   {
+    "muscle": "Anterior Deltoid",
+    "step": 0,
+    "recovering": false,
+    "pick": "Anterior Deltoid"
+   },
+   {
+    "muscle": "Lateral Deltoid",
+    "step": 0,
+    "recovering": false,
+    "pick": "Lateral Deltoid"
+   },
+   {
+    "muscle": "Chest",
+    "step": 1,
+    "recovering": true,
+    "pick": "Chest"
+   },
+   {
+    "muscle": "Biceps",
+    "step": 0,
+    "recovering": false,
+    "pick": "Biceps"
+   },
+   {
+    "muscle": "Forearms",
+    "step": 0,
+    "recovering": false,
+    "pick": "Forearms"
+   },
+   {
+    "muscle": "Obliques",
+    "step": 0,
+    "recovering": false,
+    "pick": "Obliques"
+   },
+   {
+    "muscle": "Rectus Abdominis",
+    "step": 0,
+    "recovering": false,
+    "pick": "Rectus Abdominis"
+   },
+   {
+    "muscle": "Hip Flexors",
+    "step": 0,
+    "recovering": false,
+    "pick": "Hip Flexors"
+   },
+   {
+    "muscle": "Quadriceps",
+    "step": 1,
+    "recovering": false,
+    "pick": "Quadriceps"
+   },
+   {
+    "muscle": "Adductors",
+    "step": 0,
+    "recovering": false,
+    "pick": "Adductors"
+   },
+   {
+    "muscle": "Calves",
+    "step": 0,
+    "recovering": false,
+    "pick": "Calves"
+   },
+   {
+    "muscle": "Lats",
+    "step": 0,
+    "recovering": false,
+    "pick": "Lats"
+   },
+   {
+    "muscle": "Rhomboids",
+    "step": 0,
+    "recovering": false,
+    "pick": "Rhomboids"
+   },
+   {
+    "muscle": "Rotator Cuff",
+    "step": 0,
+    "recovering": false,
+    "pick": "Rotator Cuff"
+   },
+   {
+    "muscle": "Posterior Deltoid",
+    "step": 0,
+    "recovering": false,
+    "pick": "Posterior Deltoid"
+   },
+   {
+    "muscle": "Triceps",
+    "step": 0,
+    "recovering": false,
+    "pick": "Triceps"
+   },
+   {
+    "muscle": "Erectors",
+    "step": 0,
+    "recovering": false,
+    "pick": "Erectors"
+   },
+   {
+    "muscle": "Glutes",
+    "step": 0,
+    "recovering": false,
+    "pick": "Glutes"
+   },
+   {
+    "muscle": "Hamstrings",
+    "step": 0,
+    "recovering": false,
+    "pick": "Hamstrings"
+   }
+  ],
+  "callouts": [
+   {
+    "muscle": "Anterior Deltoid",
+    "rank": 1,
+    "label": "1 · ANT DELT",
+    "sub": "never trained"
+   },
+   {
+    "muscle": "Biceps",
+    "rank": 2,
+    "label": "2 · BICEPS",
+    "sub": "never trained"
+   },
+   {
+    "muscle": "Calves",
+    "rank": 3,
+    "label": "3 · CALVES",
+    "sub": "never trained"
+   },
+   {
+    "muscle": "Glutes",
+    "rank": 4,
+    "label": "4 · GLUTES",
+    "sub": "never trained"
+   },
+   {
+    "muscle": "Hamstrings",
+    "rank": null,
+    "label": "HAMS",
+    "sub": "never trained"
+   }
+  ]
+ },
+ "qualities": {
+  "untouched": "power, muscular endurance, anaerobic, VO₂max",
+  "short": "strength, hypertrophy, endurance",
+  "line": null
+ },
+ "wholeBody": [
+  {
+   "key": "vo2max",
+   "name": "VO₂MAX",
+   "note": "never",
+   "step": null,
+   "edge": "accent"
+  },
+  {
+   "key": "anaerobic_capacity",
+   "name": "ANAEROBIC",
+   "note": "never",
+   "step": null,
+   "edge": "accent"
+  },
+  {
+   "key": "endurance",
+   "name": "ENDURANCE",
+   "note": "4 d ago",
+   "step": 1,
+   "edge": "ramp"
+  }
+ ],
+ "folds": [
+  {
+   "kind": "weight",
+   "label": "WEIGHT",
+   "value": "70.4 kg",
+   "note": "yesterday",
+   "accent": false
+  },
+  {
+   "kind": "blood",
+   "label": "BLOOD",
+   "value": "10 d",
+   "note": "aerobic tail",
+   "accent": true
+  }
+ ]
+}

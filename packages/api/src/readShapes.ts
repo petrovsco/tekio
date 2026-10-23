@@ -196,6 +196,7 @@ const FoldTileShape: z.ZodType<FoldTile> = z.object({
 
 export const HomeViewBody: z.ZodType<HomeView> = z.object({
   date: z.string(),
+  windowDays: z.number().int(),
   zeroData: z.boolean(),
   readinessLabel: z.string(),
   verdict: z.object({ text: z.string(), sub: z.string() }),

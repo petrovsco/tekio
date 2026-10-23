@@ -69,6 +69,8 @@ export interface FoldTile {
 
 export interface HomeView {
   date: string
+  /** The days every count on Home covers, as its labels print them. */
+  windowDays: number
   /** Nothing logged yet: the map sits at no-data and the line says so. */
   zeroData: boolean
   /** "readiness", or "no readiness data", beside TODAY. */
@@ -300,6 +302,7 @@ export function homeView(read: HomeRead, rows: ReadRows, lastNight: string, body
   const missing = coverageParts(coverage)
   return {
     date,
+    windowDays: MUSCLE_WINDOW_DAYS,
     zeroData,
     readinessLabel: sys.readiness === null ? 'no readiness data' : 'readiness',
     verdict: verdictCopy({ zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince }),

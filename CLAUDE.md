@@ -250,6 +250,18 @@ core type it describes, so the build fails when the two disagree. `@tekio/client
 `packages/client/openapi.json` and `src/schema.ts`, both committed; a test fails when they
 no longer match the routes, so a route change is committed with the regenerated pair.
 
+### The Android app (`android/`)
+
+Kotlin and Jetpack Compose, one Gradle build (`tekio.rfcs/rfcs/0096-mobile-apps.md`).
+`:api` is plain Kotlin on the JVM: the client generated at build time from
+`packages/client/openapi.json`, the email-link sign-in in the PKCE flow through
+`/api/sign-in/*` (no build carries the Supabase key), and `bodyMap.json` copied in
+from core. `:app` draws what `GET /api/view/home` returns and decides nothing of
+its own. `./gradlew :api:test` runs anywhere; `:app` needs the Android SDK and is
+left out of the build without one, so in a cloud session it compiles only in
+[.github/workflows/android.yml](.github/workflows/android.yml), which also uploads
+the test APK (`fyi.tekio.app.test`, pointed at staging) to sideload.
+
 ### Data layer (`src/lib/db/`)
 
 One file per domain, and none of them talks to the database: since 2.2.62 the app reads and writes only through the API (RFC 0094 step 4). Each file calls `api` from [src/lib/api.ts](src/lib/api.ts), the typed `@tekio/client` sending the session's token, which turns a 400's reason back into a `KnownError`. The opening load ([start.ts](src/lib/db/start.ts)) is one `GET /api/start`, which also writes the profile row and the default sections on a first sign-in and is read again after a Garmin sync and after a lift's first log writes its muscle links. The loaders, the row ↔ entry mappers and every write live in a second workspace package, `@tekio/db` ([packages/db/src/index.ts](packages/db/src/index.ts)), taking the client and the user id as a `Db` argument, which the API calls with the caller's token. It was timed before the direct road was deleted: from a phone each table's query waited on the round trip to the database, a median about 650 ms in all on 2026-10-23, while from Dublin the same queries answer in tens of milliseconds. `npm run dev` serves `/api` from `packages/api` itself (the `devApi` plugin in [vite.config.ts](vite.config.ts)), so local writes reach the same routes. Key points:

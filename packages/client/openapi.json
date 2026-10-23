@@ -558,6 +558,9 @@
           "date": {
             "type": "string"
           },
+          "windowDays": {
+            "type": "integer"
+          },
           "zeroData": {
             "type": "boolean"
           },
@@ -702,6 +705,7 @@
         },
         "required": [
           "date",
+          "windowDays",
           "zeroData",
           "readinessLabel",
           "verdict",

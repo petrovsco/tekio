@@ -851,6 +851,7 @@ export interface components {
         };
         HomeView: {
             date: string;
+            windowDays: number;
             zeroData: boolean;
             readinessLabel: string;
             verdict: {
