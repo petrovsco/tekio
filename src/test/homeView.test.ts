@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { homeRead, homeView, mapCallouts, BODY_MAP, MAPPED_MUSCLES, muscleShort, type ReadRows } from '@tekio/core'
+import { homeRead, homeView, mapCallouts, zoneFills, BODY_MAP, MAPPED_MUSCLES, muscleShort, type ReadRows } from '@tekio/core'
 
 // RFC 0096: what Home prints, written once for every client. Every figure
 // below is invented for the test; none is anyone's reading.
@@ -75,5 +75,16 @@ describe('the body map is one geometry for every client', () => {
       expect(zoned.has(m), m).toBe(true)
       expect(muscleShort(m), m).toMatch(/^[A-Z ]+$/)
     }
+  })
+})
+
+describe('each zone of the map arrives already filled', () => {
+  it('a zone with no sets of its own follows a trained parent, and no data leaves every zone blank', () => {
+    const child = [...BODY_MAP.front, ...BODY_MAP.back].find(z => z.parent && z.parent !== z.muscle)!
+    const parent = { name: child.parent, sets: 12, fillFraction: 0.5, recovering: true }
+    const fills = zoneFills([parent] as never, false)
+    expect(fills.find(f => f.muscle === child.muscle)).toEqual({ muscle: child.muscle, step: 2, recovering: true, pick: child.parent })
+    expect(new Set(fills.map(f => f.muscle)).size).toBe(fills.length)
+    expect(zoneFills([parent] as never, true).every(f => f.step === null && !f.recovering)).toBe(true)
   })
 })

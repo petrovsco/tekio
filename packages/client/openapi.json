@@ -638,6 +638,12 @@
                   "$ref": "#/components/schemas/MuscleState"
                 }
               },
+              "zones": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ZoneFill"
+                }
+              },
               "callouts": {
                 "type": "array",
                 "items": {
@@ -647,6 +653,7 @@
             },
             "required": [
               "muscles",
+              "zones",
               "callouts"
             ]
           },
@@ -774,6 +781,38 @@
           "value",
           "bar",
           "tone"
+        ]
+      },
+      "ZoneFill": {
+        "type": "object",
+        "properties": {
+          "muscle": {
+            "type": "string",
+            "description": "The zone, by the muscle the body map names it after."
+          },
+          "step": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 3,
+            "description": "0 to 3 on the stimulus ramp; null on a day with no data at all."
+          },
+          "recovering": {
+            "type": "boolean",
+            "description": "Drawn with the recovery hatch."
+          },
+          "pick": {
+            "type": "string",
+            "description": "The muscle a tap on the zone opens."
+          }
+        },
+        "required": [
+          "muscle",
+          "step",
+          "recovering",
+          "pick"
         ]
       },
       "MapCallout": {

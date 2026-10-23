@@ -2,6 +2,8 @@
 // drawn on, on every client (RFC 0096). The data is JSON, so the phone apps
 // read the very same file (bodyMap.json); this module only types it.
 import data from './bodyMap.json'
+import type { MuscleState } from './fusedRead'
+import { rampStep } from './words'
 
 export interface BodyZone {
   /** DB muscle-group name this zone represents (child, or top-level for Chest). */
@@ -35,3 +37,36 @@ interface BodyMapData {
 }
 
 export const BODY_MAP = data as BodyMapData
+
+/** The muscles the body map can point a callout at. */
+export const MAPPED_MUSCLES: readonly string[] = Object.keys(BODY_MAP.anchors)
+
+/** How one zone of the map is drawn: its step on the stimulus ramp (null on a
+ *  day with no data at all), the hatch, and the muscle a tap on it opens. */
+export interface ZoneFill {
+  muscle: string
+  step: 0 | 1 | 2 | 3 | null
+  recovering: boolean
+  pick: string
+}
+
+/** Every zone's fill, from the muscles' states. A zone follows its own muscle;
+ *  with no sets of its own it falls back to a directly-trained top-level
+ *  parent (an exercise mapped to the parent, no child breakdown). */
+export function zoneFills(states: MuscleState[], zeroData: boolean): ZoneFill[] {
+  const byName = new Map(states.map(s => [s.name.toLowerCase(), s]))
+  const seen = new Set<string>()
+  const fills: ZoneFill[] = []
+  for (const zone of [...BODY_MAP.front, ...BODY_MAP.back]) {
+    if (seen.has(zone.muscle)) continue
+    seen.add(zone.muscle)
+    const own = byName.get(zone.muscle.toLowerCase())
+    const parent = byName.get(zone.parent.toLowerCase())
+    const eff = own && own.sets > 0 ? own : parent && parent.sets > 0 ? parent : own
+    const pick = eff?.name ?? zone.muscle
+    fills.push(zeroData ? { muscle: zone.muscle, step: null, recovering: false, pick }
+      : !eff ? { muscle: zone.muscle, step: 0, recovering: false, pick }
+      : { muscle: zone.muscle, step: rampStep(eff.fillFraction), recovering: eff.recovering, pick })
+  }
+  return fills
+}

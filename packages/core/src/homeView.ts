@@ -12,7 +12,8 @@ import { RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS } from './consta
 import type { HomeRead, ReadRows } from './reads'
 import type { BodyweightEntry } from './types'
 import { daysBetween } from './utils'
-import { coverageLine, coverageParts, fmtAgo, fmtSets, joinNames, MAPPED_MUSCLES, METHOD_LABEL, muscleShort, rampStep } from './words'
+import { MAPPED_MUSCLES, zoneFills, type ZoneFill } from './bodyMap'
+import { coverageLine, coverageParts, fmtAgo, fmtSets, joinNames, METHOD_LABEL, muscleShort, rampStep } from './words'
 
 /** One column of the readiness card. */
 export interface GateColumn {
@@ -91,6 +92,8 @@ export interface HomeView {
   banner: string | null
   map: {
     muscles: MuscleState[]
+    /** How each zone of the body map is drawn. */
+    zones: ZoneFill[]
     callouts: MapCallout[]
   }
   /** The seven qualities by name: the untouched half (in the accent), the
@@ -311,7 +314,7 @@ export function homeView(read: HomeRead, rows: ReadRows, lastNight: string, body
         : null,
     },
     banner,
-    map: { muscles: states, callouts: zeroData ? [] : mapCallouts(gaps) },
+    map: { muscles: states, zones: zoneFills(states, zeroData), callouts: zeroData ? [] : mapCallouts(gaps) },
     qualities: zeroData
       ? { untouched: null, short: null, line: 'All seven qualities — no data yet.' }
       : missing.untouched || missing.short

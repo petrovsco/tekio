@@ -869,6 +869,7 @@ export interface components {
             banner: string | null;
             map: {
                 muscles: components["schemas"]["MuscleState"][];
+                zones: components["schemas"]["ZoneFill"][];
                 callouts: components["schemas"]["MapCallout"][];
             };
             qualities: {
@@ -903,6 +904,16 @@ export interface components {
             /** @description A typed reading still to give today: the value reads as a prompt. */
             ask?: boolean;
             note?: string;
+        };
+        ZoneFill: {
+            /** @description The zone, by the muscle the body map names it after. */
+            muscle: string;
+            /** @description 0 to 3 on the stimulus ramp; null on a day with no data at all. */
+            step: number | null;
+            /** @description Drawn with the recovery hatch. */
+            recovering: boolean;
+            /** @description The muscle a tap on the zone opens. */
+            pick: string;
         };
         MapCallout: {
             muscle: string;

@@ -3,7 +3,6 @@
 // read can never say one thing on the web and another on a phone. Moved here
 // from the web app's components when the Android app needed them.
 import { GAP_CUTOFF, splitCoverage, type AdaptationSummary } from './adaptations'
-import { BODY_MAP } from './bodyMap'
 import type { ReadinessMethod } from './fusedRead'
 import type { Adaptation } from './types'
 
@@ -57,8 +56,6 @@ export function muscleShort(name: string): string {
   return MUSCLE_SHORT[name] ?? name.toUpperCase()
 }
 
-/** The muscles the body map can point a callout at. */
-export const MAPPED_MUSCLES: readonly string[] = Object.keys(BODY_MAP.anchors)
 
 /** The readiness method's name, as a label (RFC 0092). */
 export const METHOD_LABEL: Record<ReadinessMethod, string> = {

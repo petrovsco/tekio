@@ -1,5 +1,5 @@
 import { useId, type MouseEvent } from 'react'
-import { BODY_MAP, rampStep, type MapCallout, type MuscleState } from '@tekio/core'
+import { BODY_MAP, zoneFills, type MapCallout, type MuscleState } from '@tekio/core'
 import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './BodyMap'
 
 // The T1 "what is missing" read (design-system §§1, 4): the anatomical figure
@@ -83,18 +83,11 @@ export function GapMap({ states, callouts, zeroData, onPick, planned }: GapMapPr
   const uid = useId()
   const hatchId = `${uid}h`
 
-  const byName = new Map(states.map(s => [s.name.toLowerCase(), s]))
-  // A zone follows its own muscle; with no sets of its own it falls back to a
-  // directly-trained top-level parent (exercise mapped to the parent, no child
-  // breakdown), same rule as the adaptations map.
+  // Each zone's step and hatch, from the same call the phone apps draw from.
+  const fills = new Map(zoneFills(states, zeroData).map(f => [f.muscle, f]))
   const resolve = (zone: Zone): { fill: string; recovering: boolean; pick: string } => {
-    const own = byName.get(zone.muscle.toLowerCase())
-    const parent = byName.get(zone.parent.toLowerCase())
-    const eff = own && own.sets > 0 ? own : parent && parent.sets > 0 ? parent : own
-    const pick = eff?.name ?? zone.muscle
-    if (zeroData) return { fill: NO_DATA, recovering: false, pick }
-    if (!eff) return { fill: RAMP[0], recovering: false, pick }
-    return { fill: RAMP[rampStep(eff.fillFraction)], recovering: eff.recovering, pick }
+    const f = fills.get(zone.muscle)!
+    return { fill: f.step === null ? NO_DATA : RAMP[f.step], recovering: f.recovering, pick: f.pick }
   }
 
   const placed = zeroData ? [] : placeCallouts(callouts)

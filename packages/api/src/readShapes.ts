@@ -8,7 +8,7 @@ import {
   MUSCLE_QUALITIES, READINESS_METHODS, type Adaptation, type AdaptationSummary, type MuscleStatusRow,
   type MuscleState, type QualityState, type SystemicReadiness, type DonationStatus, type FusedVerdict,
   type ReadinessTrend, type TargetShape, type HomeRead, type AdaptationsRead, type ReadinessRead,
-  type Gauge, type HomeView, type GateColumn, type MapCallout, type QualityTile, type FoldTile,
+  type Gauge, type HomeView, type GateColumn, type MapCallout, type QualityTile, type FoldTile, type ZoneFill,
 } from '@tekio/core'
 
 export const ADAPTATIONS = [
@@ -160,6 +160,14 @@ const GateColumnShape: z.ZodType<GateColumn> = z.object({
   note: z.string().optional(),
 }).openapi('GateColumn')
 
+const ZoneFillShape: z.ZodType<ZoneFill> = z.object({
+  muscle: z.string().openapi({ description: 'The zone, by the muscle the body map names it after.' }),
+  step: (z.number().int().min(0).max(3) as unknown as z.ZodType<0 | 1 | 2 | 3>).nullable()
+    .openapi({ description: '0 to 3 on the stimulus ramp; null on a day with no data at all.' }),
+  recovering: z.boolean().openapi({ description: 'Drawn with the recovery hatch.' }),
+  pick: z.string().openapi({ description: 'The muscle a tap on the zone opens.' }),
+}).openapi('ZoneFill')
+
 const MapCalloutShape: z.ZodType<MapCallout> = z.object({
   muscle: z.string(),
   rank: z.number().nullable().openapi({ description: '1 to 4, or null for the lighter unnumbered fifth.' }),
@@ -200,7 +208,7 @@ export const HomeViewBody: z.ZodType<HomeView> = z.object({
     hint: z.string().nullable(),
   }),
   banner: z.string().nullable(),
-  map: z.object({ muscles: z.array(MuscleStateShape), callouts: z.array(MapCalloutShape) }),
+  map: z.object({ muscles: z.array(MuscleStateShape), zones: z.array(ZoneFillShape), callouts: z.array(MapCalloutShape) }),
   qualities: z.object({
     untouched: z.string().nullable().openapi({ description: 'The untouched names, printed in the accent.' }),
     short: z.string().nullable(),
