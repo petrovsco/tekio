@@ -1,6 +1,6 @@
 import { groupBy, type MobilityEntry } from '@tekio/core'
 import { getOrCreateExerciseRow } from './exercises'
-import { userRows, withOrigin, deleteRow, type Db, type WriteDb } from './db'
+import { userRows, withOrigin, withWriter, deleteRow, type Db, type WriteDb } from './db'
 
 
 /** Map of exercise_id → its muscle-group names (canonical, shared across sessions). */
@@ -96,7 +96,7 @@ export async function saveMobilityEntry(db: WriteDb, entry: Omit<MobilityEntry, 
   const totalDuration = entry.exercises.reduce((s, e) => s + e.duration, 0)
   const { data: session, error: sessionErr } = await db.client
     .from('mobility_sessions')
-    .insert(withOrigin(db, { user_id: db.userId, session_date: entry.date, total_duration: totalDuration }))
+    .insert(withWriter(db, withOrigin(db, { user_id: db.userId, session_date: entry.date, total_duration: totalDuration })))
     .select('id')
     .single()
   if (sessionErr) throw sessionErr

@@ -7,6 +7,7 @@
   "exports": "./src/index.ts",
   "dependencies": {
     "@hono/zod-openapi": "^1.6.3",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@supabase/postgrest-js": "^2.105.4",
     "@tekio/core": "*",
     "@tekio/db": "*",
