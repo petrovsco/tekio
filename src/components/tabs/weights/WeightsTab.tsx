@@ -308,7 +308,16 @@ export function WeightsTab() {
     })
     setDraft(x => ({ ...x, lifts: x.lifts.map(y => (y.id === lift.id ? { ...y, saved } : y)) }))
     void enqueue(() => syncLift(lift.id))
+    // The last set ticked: the lift is done, so the form offers to finish it.
+    setAskDone(on && allTicked(lift, saved) ? lift.id : null)
   }
+
+  /** Every set on the lift is ticked. */
+  const allTicked = (l: DraftLift, saved = savedOf(l)) =>
+    l.revealed > 0 && l.sets.slice(0, l.revealed).every((_, i) => saved[i])
+  // Asked once per last tick; any later tap on the lift's sets puts it away.
+  const [askDone, setAskDone] = useState<string | null>(null)
+  const doneAsked = askDone === lift.id && allTicked(lift) && !busy
 
   /** Takes a lift off the form; the next one along shows. */
   const dropLift = (id: string) => setDraft(x => {
@@ -626,7 +635,17 @@ export function WeightsTab() {
             </div>
           )}
 
-          {askedRows.length > 0 ? (
+          {doneAsked && askedRows.length === 0 ? (
+            <div className="flex flex-col gap-2 px-2.5 py-2.5 bg-hairline rounded-[3px]">
+              <p className="text-[12px] text-ink leading-snug">
+                Every set of {ex.trim()} is ticked. Finish it?
+              </p>
+              <div className="flex gap-2">
+                <Btn variant="secondary" onClick={() => setAskDone(null)} className="flex-1">Not yet</Btn>
+                <Btn onClick={() => { setAskDone(null); void addEntry([lift]) }} className="flex-1">Finish</Btn>
+              </div>
+            </div>
+          ) : askedRows.length > 0 ? (
             <div className="flex flex-col gap-2 px-2.5 py-2.5 bg-hairline rounded-[3px]">
               <p className="text-[12px] text-ink leading-snug">
                 {askedRows.length === 1 ? '1 set isn’t' : `${askedRows.length} sets aren’t`} ticked:{' '}
