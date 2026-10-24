@@ -15,7 +15,22 @@ export function vercelHandler() {
     supabaseUrl: process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL ?? '',
     anonKey: process.env.SUPABASE_ANON_KEY ?? process.env.VITE_SUPABASE_ANON_KEY ?? '',
     origin: rowOrigin(),
+    fetch: fetchSayingUptime(Date.now()),
   }))
+}
+
+/** Every call to Supabase names, as its user agent, how long the process and
+ *  this module had been up. Vercel keeps no logs of a cold start here, while
+ *  Supabase's edge logs keep the user agent, so the first call after a cold
+ *  start says how much of the wait was the platform starting Node (the process)
+ *  and how much was this code loading (the module). */
+function fetchSayingUptime(loadedAt: number): typeof fetch {
+  return (input, init) => {
+    const headers = new Headers(init?.headers)
+    const processMs = Math.round(process.uptime() * 1000)
+    headers.set('User-Agent', `tekio-api (process ${processMs} ms, module ${Date.now() - loadedAt} ms)`)
+    return fetch(input, { ...init, headers })
+  }
 }
 
 /** The build a row is tagged with, as the web app tags it (src/lib/env.ts):
