@@ -17,6 +17,7 @@ import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
 import { Icon } from '../../ui/Icon'
+import { Modal } from '../../ui/Modal'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
 import { ChartFrame } from '../../ui/ChartFrame'
 import type { PlannedExercise, LiftSet } from '../../../types'
@@ -308,7 +309,7 @@ export function WeightsTab() {
     })
     setDraft(x => ({ ...x, lifts: x.lifts.map(y => (y.id === lift.id ? { ...y, saved } : y)) }))
     void enqueue(() => syncLift(lift.id))
-    // The last set ticked: the lift is done, so the form offers to finish it.
+    // The last set ticked: the lift is done, so a dialog offers to finish it.
     // In a superset, only once every lift of it is done, and then all of them.
     const done = on && groupOf(lift).every(y => allTicked(y, y.id === lift.id ? saved : savedOf(y)))
     setAskDone(done ? lift.id : null)
@@ -641,17 +642,22 @@ export function WeightsTab() {
             </div>
           )}
 
-          {doneAsked && askedRows.length === 0 ? (
-            <div className="flex flex-col gap-2 px-2.5 py-2.5 bg-hairline rounded-[3px]">
-              <p className="text-[12px] text-ink leading-snug">
-                Every set of {doneGroup.length > 1 ? `the ${groupName(doneGroup.length).toLowerCase()}` : ex.trim()} is ticked. Finish it?
-              </p>
+          <Modal
+            open={doneAsked && askedRows.length === 0}
+            onClose={() => setAskDone(null)}
+            title={`Finish ${doneGroup.length > 1 ? `the ${groupName(doneGroup.length).toLowerCase()}` : ex.trim()}?`}
+            footer={(
               <div className="flex gap-2">
                 <Btn variant="secondary" onClick={() => setAskDone(null)} className="flex-1">Not yet</Btn>
                 <Btn onClick={() => { setAskDone(null); void addEntry(doneGroup) }} className="flex-1">Finish</Btn>
               </div>
-            </div>
-          ) : askedRows.length > 0 ? (
+            )}
+          >
+            <p className="text-[13px] text-ink leading-snug">
+              Every set of {doneGroup.length > 1 ? doneGroup.map(l => l.ex.trim()).join(' and ') : ex.trim()} is ticked.
+            </p>
+          </Modal>
+          {askedRows.length > 0 ? (
             <div className="flex flex-col gap-2 px-2.5 py-2.5 bg-hairline rounded-[3px]">
               <p className="text-[12px] text-ink leading-snug">
                 {askedRows.length === 1 ? '1 set isn’t' : `${askedRows.length} sets aren’t`} ticked:{' '}
