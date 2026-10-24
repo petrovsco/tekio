@@ -401,37 +401,56 @@ export function WeightsTab() {
   }
   const ticked = savedOf(lift).filter(Boolean).length
 
-  const liftFromPlan = (p: PlannedExercise): DraftLift => ({
+  const liftFromPlan = (p: PlannedExercise, inGroup = false): DraftLift => ({
     id: crypto.randomUUID(),
     ex: p.exercise,
     sets: p.targets.length ? toSetStr(p.targets) : [{ weight: '', reps: '' }],
     revealed: p.targets.length || 1,
     planId: p.id,
-    ...(p.supersetId ? { supersetId: p.supersetId } : {}),
+    ...(inGroup && p.supersetId ? { supersetId: p.supersetId } : {}),
     ...(p.targets.some(isTimedSet) ? { timed: true } : {}),
   })
 
-  /** Log on a plan: a lift already on the form is shown as typed; otherwise the
-   *  plan, with the rest of its superset, joins the form. An untouched form is
-   *  replaced; one with typing keeps it, beside the new lifts. */
+  /** Log on a plan: a lift already on the form is shown as typed; otherwise
+   *  that one plan joins the form on its own, whatever superset it was planned
+   *  in, and leaves the Planned card while it is there. An untouched form is
+   *  replaced; one with typing keeps it, beside the new lift. */
   const logFromPlan = (p: PlannedExercise) => {
     setSelEx(p.exercise)
     setDraft(x => {
       const at = x.lifts.findIndex(l => l.planId === p.id)
       if (at >= 0) return { ...x, active: at }
-      const group = p.supersetId
-        ? plans.filter(q => q.supersetId === p.supersetId && !q.loggedAs && !x.lifts.some(l => l.planId === q.id))
-        : [p]
       const kept = x.lifts.filter(liftTouched)
-      const added = group.map(liftFromPlan)
+      return { date: kept.length ? x.date : today(), lifts: [...kept, liftFromPlan(p)], active: kept.length }
+    })
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  /** Log superset: every open plan of the group joins the form as one superset
+   *  (RFC 0106), and one of them already there, with nothing logged yet, joins
+   *  it too. The form shows the group's first lift. */
+  const logGroup = (shown: PlannedExercise[]) => {
+    const first = shown[0]
+    const supersetId = first?.supersetId
+    if (!supersetId) return
+    const group = plans.filter(q => q.supersetId === supersetId && q.date === first.date && !q.loggedAs)
+    setSelEx(first.exercise)
+    setDraft(x => {
+      const ids = new Set(group.map(q => q.id))
+      const kept = x.lifts.filter(liftTouched)
+        .map(l => (l.planId && ids.has(l.planId) && !l.entryId ? { ...l, supersetId } : l))
+      const added = group.filter(q => !kept.some(l => l.planId === q.id)).map(q => liftFromPlan(q, true))
+      const lifts = [...kept, ...added]
       return {
         date: kept.length ? x.date : today(),
-        lifts: [...kept, ...added],
-        active: kept.length + Math.max(0, group.findIndex(q => q.id === p.id)),
+        lifts,
+        active: Math.max(0, lifts.findIndex(l => l.planId === first.id)),
       }
     })
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
+
+  const onForm = useMemo(() => new Set(lifts.flatMap(l => (l.planId ? [l.planId] : []))), [lifts])
 
   const chartEx = selEx || exercises[0] || ''
   // A hold's progress is how long it lasted (RFC 0107); it has no volume load.
@@ -456,7 +475,7 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PlanCard onLog={logFromPlan} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
+      <PlanCard onForm={onForm} onLog={logFromPlan} onLogGroup={logGroup} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
       {planSheet && (
         <PlanSheet plan={planSheet.plan} suggestions={suggestions} aliases={aliases} timedOf={timedOf} onClose={() => setPlanSheet(null)} />
       )}
