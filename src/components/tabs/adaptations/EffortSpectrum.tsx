@@ -1,5 +1,6 @@
 import type { WholeBodyQuality, TargetUnit } from '@tekio/core'
-import { RAMP, NO_DATA, rampStep } from '../home/GapMap'
+import { rampStep } from '@tekio/core'
+import { RAMP, NO_DATA } from '../home/GapMap'
 import { QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL } from './labels'
 import { fmtAgo } from '../../../lib/utils'
 

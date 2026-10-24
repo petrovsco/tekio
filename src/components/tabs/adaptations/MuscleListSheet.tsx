@@ -2,7 +2,8 @@ import {
   rankMuscleGaps, type MuscleQuality, type MuscleState, MUSCLE_WINDOW_DAYS, type TargetShape,
 } from '@tekio/core'
 import { BottomSheet, SheetHeader } from '../home/BottomSheet'
-import { RAMP, rampStep } from '../home/GapMap'
+import { rampStep } from '@tekio/core'
+import { RAMP } from '../home/GapMap'
 import { QUALITY_SHORT, UNIT_LABEL } from './labels'
 import { fmtAgo, fmtSets } from '../../../lib/utils'
 

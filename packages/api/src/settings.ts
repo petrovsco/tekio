@@ -19,7 +19,7 @@ const ProfilePatch = z.object({
 }).openapi('ProfilePatch')
 
 export const profileRoute = createRoute({
-  method: 'patch', path: '/profile', security,
+  method: 'patch', path: '/profile', security, operationId: 'updateProfile',
   summary: 'Change any of the profile’s settings; the ones not sent stay as they are.',
   request: { body: { required: true, content: { 'application/json': { schema: ProfilePatch } } } },
   responses: { 204: { description: 'Saved.' }, ...failures },
@@ -30,14 +30,14 @@ export const Section = z.object({
 }).openapi('Section')
 
 export const sectionsRoute = createRoute({
-  method: 'put', path: '/sections', security,
+  method: 'put', path: '/sections', security, operationId: 'saveSections',
   summary: 'Save the menu’s sections in their new order.',
   request: { body: { required: true, content: { 'application/json': { schema: z.array(Section).min(1) } } } },
   responses: { 204: { description: 'Saved.' }, ...failures },
 })
 
 export const sectionShownRoute = createRoute({
-  method: 'patch', path: '/sections/{key}', security,
+  method: 'patch', path: '/sections/{key}', security, operationId: 'showSection',
   summary: 'Show a section in the menu, or hide it.',
   request: {
     params: z.object({ key: z.string().min(1) }),
@@ -54,19 +54,19 @@ const SyncRun = z.object({
 }).openapi('SyncRun')
 
 export const lastSyncRoute = createRoute({
-  method: 'get', path: '/sync/garmin', security,
+  method: 'get', path: '/sync/garmin', security, operationId: 'getLastGarminSync',
   summary: 'The newest Garmin sync that brought data in; null when there has been none.',
   responses: { 200: json('The run, or null.', z.union([SyncRun, z.null()])), ...failures },
 })
 
 export const requestSyncRoute = createRoute({
-  method: 'post', path: '/sync/garmin', security,
+  method: 'post', path: '/sync/garmin', security, operationId: 'requestGarminSync',
   summary: 'Ask for a Garmin sync now. A run already open is returned rather than a second one started.',
   responses: { 200: json('The run asked for.', SyncRun), ...failures },
 })
 
 export const syncRunRoute = createRoute({
-  method: 'get', path: '/sync/runs/{id}', security,
+  method: 'get', path: '/sync/runs/{id}', security, operationId: 'getSyncRun',
   summary: 'One of the caller’s sync runs, to follow it to its end.',
   request: { params: z.object({ id: z.coerce.number().int().positive() }) },
   responses: { 200: json('The run.', SyncRun), ...failures, 404: json('No such run of yours.', ErrorBody) },
@@ -83,7 +83,7 @@ const ErrorPayload = z.object({
 })
 
 export const errorReportRoute = createRoute({
-  method: 'post', path: '/error-reports',
+  method: 'post', path: '/error-reports', operationId: 'sendErrorReport',
   summary: 'Report an error the app did not expect. Needs no sign-in: it can happen before one.',
   request: {
     body: { required: true, content: { 'application/json': { schema: z.object({ signature: z.string().min(1), payload: ErrorPayload }).openapi('ErrorReport') } } },

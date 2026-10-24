@@ -27,7 +27,7 @@ const IdParam = z.object({ id: z.string().min(1).openapi({ description: 'The log
 const notFound = { 404: json('No such lift of yours.', ErrorBody) }
 
 export const logWeightRoute = createRoute({
-  method: 'post', path: '/weights', security: [{ bearer: [] }],
+  method: 'post', path: '/weights', security: [{ bearer: [] }], operationId: 'logWeights',
   summary: 'Log a lift: one exercise and its sets on a day.',
   request: {
     body: {
@@ -55,7 +55,7 @@ export const logWeightRoute = createRoute({
 })
 
 export const editWeightRoute = createRoute({
-  method: 'patch', path: '/weights/{id}', security: [{ bearer: [] }],
+  method: 'patch', path: '/weights/{id}', security: [{ bearer: [] }], operationId: 'editWeights',
   summary: "Replace a logged lift's sets, and move it to another day if `date` is given.",
   request: {
     params: IdParam,
@@ -68,7 +68,7 @@ export const editWeightRoute = createRoute({
 })
 
 export const deleteWeightRoute = createRoute({
-  method: 'delete', path: '/weights/{id}', security: [{ bearer: [] }],
+  method: 'delete', path: '/weights/{id}', security: [{ bearer: [] }], operationId: 'deleteWeights',
   summary: 'Take a logged lift out, with its sets.',
   request: { params: IdParam },
   responses: { 204: { description: 'Deleted.' }, ...failures, ...notFound },

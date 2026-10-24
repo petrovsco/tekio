@@ -3,12 +3,9 @@ import type { ReadinessMethod } from '@tekio/core'
 // The words for each readiness method (RFC 0092), shared by Profile, the
 // readiness sheet and Home so a method is called the same thing everywhere.
 
-/** The method's name, as a label. */
-export const METHOD_LABEL: Record<ReadinessMethod, string> = {
-  overnight_hrv: 'Overnight HRV',
-  morning_hrv: 'Morning HRV',
-  check_in: 'Check-in',
-}
+/** The method's name, as a label: in @tekio/core, because Home's card prints
+ *  it on every client. */
+export { METHOD_LABEL } from '@tekio/core'
 
 /** The method's name inside a sentence. */
 export const METHOD_NAME: Record<ReadinessMethod, string> = {

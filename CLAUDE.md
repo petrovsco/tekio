@@ -195,7 +195,10 @@ The product's reads live in an npm workspace package, `@tekio/core`
 (`adaptations.ts`), the fused Home and readiness read (`fusedRead.ts`), set
 validation (`sets.ts`), observed HRmax (`hrMax.ts`), the grounded constants they
 stand on (`constants/`), and the domain types they take (`types.ts`, re-exported
-by [src/types/index.ts](src/types/index.ts)). Nothing in it imports React, the
+by [src/types/index.ts](src/types/index.ts)). It also holds what every client
+prints: the product's words (`words.ts`), everything Home prints of its read
+(`homeView.ts`), and the body map's geometry as JSON (`bodyMap.json`), so the
+phone apps of `tekio.rfcs/rfcs/0096-mobile-apps.md` say and draw what the web does. Nothing in it imports React, the
 database or a browser global; its own `tsconfig.json` has no DOM, so the build
 fails if one creeps in. The web app imports it from `@tekio/core`; the API of
 `tekio.rfcs/rfcs/done/0094-one-api-shared-core.md` will serve the same reads to the
@@ -209,7 +212,8 @@ Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 `tekio.rfcs/rfcs/done/0094-one-api-shared-core.md`: Hono with `@hono/zod-openapi`, so
 `/api/openapi.json` is generated from the route definitions. It serves the three reads,
 `GET /api/read/home`, `/api/read/adaptations` and `/api/read/readiness`, each taking
-`date`, the person's own day (a server cannot know it); `GET /api/start`, every row the
+`date`, the person's own day (a server cannot know it); `GET /api/view/home`, what Home
+prints of its read, which the phone apps draw; `GET /api/start`, every row the
 web app opens with in one answer; and the capture routes:
 `POST /api/weights` and `PATCH`/`DELETE /api/weights/{id}`, for each other log
 (`cardio`, `sport`, `sleep`, `sauna`, `cold`, `bodyweight`, `donations`, `mobility`)
@@ -218,7 +222,11 @@ web app opens with in one answer; and the capture routes:
 [packages/api/src/capture.ts](packages/api/src/capture.ts); and the plans,
 `/api/plans/lifts` and `/api/plans/sessions` in the same three shapes, with
 `PATCH /api/plans/lifts` to group or move lifts and `PUT .../{id}/logged` to point a
-plan at the entry it became, and `DELETE /api/plans/missed?before=` to clear plans left unlogged ([packages/api/src/plans.ts](packages/api/src/plans.ts)); and the settings and the calls beside the logs, `PATCH /api/profile`, `PUT /api/sections`, `PATCH /api/sections/{key}`, `GET`/`POST /api/sync/garmin`, `GET /api/sync/runs/{id}` and `POST /api/error-reports`, which alone needs no token ([packages/api/src/settings.ts](packages/api/src/settings.ts)). A write waits for Auth to
+plan at the entry it became, and `DELETE /api/plans/missed?before=` to clear plans left unlogged ([packages/api/src/plans.ts](packages/api/src/plans.ts)); and the settings and the calls beside the logs, `PATCH /api/profile`, `PUT /api/sections`, `PATCH /api/sections/{key}`, `GET`/`POST /api/sync/garmin`, `GET /api/sync/runs/{id}` and `POST /api/error-reports`, which needs no token ([packages/api/src/settings.ts](packages/api/src/settings.ts)); and `POST /api/sign-in/link`,
+`/session` and `/refresh`, which need none either: the phone apps' email-link sign-in in
+the PKCE flow, through the API so no app build carries the project's key
+([packages/api/src/signIn.ts](packages/api/src/signIn.ts)). Every operation has an
+`operationId`, which a generated client calls it by. A write waits for Auth to
 accept the token, an edit or delete first checks the entry is the caller's own, and an
 entry refused for what it holds (`KnownError` from `@tekio/core`) comes back as a 400
 with its reason. A call carries the Supabase
@@ -241,6 +249,18 @@ core type it describes, so the build fails when the two disagree. `@tekio/client
 `openapi-fetch` over types generated from the description. `npm run api:client` writes
 `packages/client/openapi.json` and `src/schema.ts`, both committed; a test fails when they
 no longer match the routes, so a route change is committed with the regenerated pair.
+
+### The Android app (`android/`)
+
+Kotlin and Jetpack Compose, one Gradle build (`tekio.rfcs/rfcs/0096-mobile-apps.md`).
+`:api` is plain Kotlin on the JVM: the client generated at build time from
+`packages/client/openapi.json`, the email-link sign-in in the PKCE flow through
+`/api/sign-in/*` (no build carries the Supabase key), and `bodyMap.json` copied in
+from core. `:app` draws what `GET /api/view/home` returns and decides nothing of
+its own. `./gradlew :api:test` runs anywhere; `:app` needs the Android SDK and is
+left out of the build without one, so in a cloud session it compiles only in
+[.github/workflows/android.yml](.github/workflows/android.yml), which also uploads
+the test APK (`fyi.tekio.app.test`, pointed at staging) to sideload.
 
 ### Data layer (`src/lib/db/`)
 
