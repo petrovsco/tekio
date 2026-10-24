@@ -4,7 +4,8 @@
 // as written, and Node's ES-module loader cannot follow the workspace
 // packages' extensionless imports of TypeScript source. One bundled file has
 // no imports left to follow. `npm run build` runs this after the app's build,
-// before Vercel packs the function that imports it.
+// before Vercel packs the function that imports it. It is minified because a
+// cold start parses the whole file before the first request is answered.
 import { build } from 'esbuild'
 
 await build({
@@ -14,6 +15,7 @@ await build({
   platform: 'node',
   format: 'esm',
   target: 'node20',
+  minify: true,
   legalComments: 'none',
   logLevel: 'warning',
 })
