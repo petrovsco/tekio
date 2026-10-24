@@ -6,13 +6,16 @@ import { fmtSet } from '@tekio/core'
 /**
  * The day's planned exercises (RFC 0098), above the log form. A plan is a
  * prefill, never a log: "Log" hands its exercise and targets to the form, and
- * only saving the form makes it work. Each Log hands over that one plan, even
- * one planned in a superset: the form's switcher is where lifts are paired.
+ * only saving the form makes it work. A planned superset is drawn as one
+ * block: its own button logs the whole group as a superset, and Log on one of
+ * its rows takes that lift alone, overriding the plan.
  */
-export function PlanCard({ onForm, onLog, onEdit, onAdd }: {
+export function PlanCard({ onForm, onLog, onLogGroup, onEdit, onAdd }: {
   /** The plans already on the log form: they leave the card while there. */
   onForm: ReadonlySet<string>
   onLog: (plan: PlannedExercise) => void
+  /** Log superset: the group's plans as the card shows them. */
+  onLogGroup: (plans: PlannedExercise[]) => void
   onEdit: (plan: PlannedExercise) => void
   /** Opens the plan sheet, for a new plan. */
   onAdd: () => void
@@ -29,7 +32,9 @@ export function PlanCard({ onForm, onLog, onEdit, onAdd }: {
       foldKey="tekio.planCard.folded"
       title={p => p.exercise}
       details={p => <PlanChips items={p.targets.map(fmtSet)} />}
+      groupOf={p => p.supersetId}
       onLog={onLog}
+      onLogGroup={onLogGroup}
       onEdit={onEdit}
       onRemove={p => withToast(() => removePlan(p.id), 'Plan removed')}
       onAdd={onAdd}

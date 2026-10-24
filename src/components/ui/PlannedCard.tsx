@@ -6,7 +6,8 @@ import { Card } from './Card'
 import { FIELD_LABEL } from './Input'
 import { DelBtn, ACT_CHIP } from './Button'
 import { Icon } from './Icon'
-import { MicroLabel, MICRO_LABEL } from './Badges'
+import { MicroLabel, MICRO_LABEL, SSBadge } from './Badges'
+import { groupRuns, groupName } from '../../lib/supersets'
 
 
 /** What every plan has, whatever it plans: a lift (RFC 0098) or a cardio,
@@ -34,7 +35,7 @@ const writeFolded = (key: string, v: boolean) => {
  * then deleted. Each tab supplies its plans, how one reads, and when one counts
  * as logged.
  */
-export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, onLog, onEdit, onRemove, onAdd }: {
+export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, groupOf, onLog, onLogGroup, onEdit, onRemove, onAdd }: {
   plans: P[]
   /** A logged plan has become work: it leaves the card, and the tab's history
    *  shows it like any other entry. */
@@ -48,7 +49,13 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
   title: (plan: P) => string
   /** Its targets, under the name. */
   details: (plan: P) => ReactNode
+  /** The superset or circuit a plan belongs to (RFC 0106): plans sharing one
+   *  are drawn as one block. */
+  groupOf?: (plan: P) => string | undefined
+  /** Log on a row hands that plan alone to the form, even inside a block. */
   onLog: (plan: P) => void
+  /** The block's own button hands the whole group to the form. */
+  onLogGroup?: (plans: P[]) => void
   /** Opens the plan sheet on this plan; on a missed one, that is a reschedule. */
   onEdit: (plan: P) => void
   onRemove: (plan: P) => void
@@ -105,8 +112,25 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
     </div>
   )
 
+  // A group is drawn where its first plan stands, its plans as rows inside.
+  // Today's block can be logged whole; Log on one row overrides the plan.
   const rows = (ps: P[], when?: (p: P) => string, isMissed = false) =>
-    ps.map(p => row(p, when?.(p), isMissed))
+    groupRuns(ps, p => groupOf?.(p)).map(run => run.length === 1
+      ? row(run[0], when?.(run[0]), isMissed)
+      : (
+        <div key={run[0].id} className="my-1.5 border border-planned rounded-[3px] px-2.5 pt-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5">
+              <SSBadge />
+              <span className={MICRO_LABEL}>{groupName(run.length)}</span>
+            </span>
+            {!when && onLogGroup && (
+              <button className={ACT_CHIP} onClick={() => onLogGroup(run)}>Log {groupName(run.length).toLowerCase()}</button>
+            )}
+          </div>
+          {run.map(p => row(p, when?.(p), isMissed))}
+        </div>
+      ))
 
   return (
     <Card className="!bg-planned-tint !border-planned">
