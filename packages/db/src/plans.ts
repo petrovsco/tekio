@@ -35,7 +35,10 @@ function mapRow(r: PlanRow): PlannedExercise {
 
 /** Newest date first; within a day, in the order they were planned. */
 export async function loadPlans(db: Db): Promise<PlannedExercise[]> {
-  const rows = (await userRows(db, 'planned_exercises', COLS, 'plan_date')) as PlanRow[]
+  return plansFromRows((await userRows(db, 'planned_exercises', COLS, 'plan_date')) as PlanRow[])
+}
+
+export function plansFromRows(rows: PlanRow[]): PlannedExercise[] {
   return [...rows]
     .sort((a, b) => b.plan_date.localeCompare(a.plan_date) || a.sort_order - b.sort_order)
     .map(mapRow)

@@ -2,7 +2,11 @@ import type { BodyweightEntry } from '@tekio/core'
 import { userRows, withOrigin, deleteRow, type Db, type WriteDb } from './db'
 
 export async function loadBodyweight(db: Db): Promise<BodyweightEntry[]> {
-  const rows = await userRows(db, 'bodyweight_logs', 'id, log_date, weight, notes', 'log_date')
+  return bodyweightFromRows(await userRows(db, 'bodyweight_logs', 'id, log_date, weight, notes', 'log_date'))
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function bodyweightFromRows(rows: any[]): BodyweightEntry[] {
   return rows.map(r => ({
     id: r.id,
     date: r.log_date,

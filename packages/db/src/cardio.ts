@@ -35,9 +35,11 @@ function toCardioEntry(r: any): CardioEntry {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export async function loadCardio(db: Db): Promise<CardioEntry[]> {
-  const rows = await userRows(db, 'cardio_sessions', CARDIO_COLS, 'session_date')
-  return rows.map(toCardioEntry)
+  return cardioFromRows(await userRows(db, 'cardio_sessions', CARDIO_COLS, 'session_date'))
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const cardioFromRows = (rows: any[]): CardioEntry[] => rows.map(toCardioEntry)
 
 /** The columns a save and an update both write — the Garmin-only intensity
  *  columns are not among them, because a typed session never sets them.

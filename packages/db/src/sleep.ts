@@ -34,9 +34,10 @@ function mapSleep(r: SleepRow): SleepEntry {
 }
 
 export async function loadSleep(db: Db): Promise<SleepEntry[]> {
-  const rows = await userRows(db, 'sleep_logs', SLEEP_COLS, 'log_date')
-  return rows.map(mapSleep)
+  return sleepFromRows(await userRows(db, 'sleep_logs', SLEEP_COLS, 'log_date'))
 }
+
+export const sleepFromRows = (rows: SleepRow[]): SleepEntry[] => rows.map(mapSleep)
 
 /** The columns a save and an update both write. Deliberately not `sleep_score`,
  *  `hrv` or `resting_hr`: those are Garmin's and a typed night must not clear

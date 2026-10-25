@@ -15,8 +15,13 @@ export async function loadAdaptationTargets(db: Db): Promise<AdaptationTargetMap
     .from('adaptation_targets')
     .select('adaptation, weekly_muscle_target, weekly_session_target, weekly_minutes_target')
   if (error) throw error
+  return adaptationTargetsFromRows(data ?? [])
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function adaptationTargetsFromRows(rows: any[]): AdaptationTargetMap {
   const out: AdaptationTargetMap = {}
-  for (const r of data ?? []) {
+  for (const r of rows) {
     out[r.adaptation as Adaptation] = {
       weeklyMuscleTarget: Number(r.weekly_muscle_target),
       weeklySessionTarget: Number(r.weekly_session_target),

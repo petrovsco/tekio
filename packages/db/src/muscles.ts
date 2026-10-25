@@ -7,7 +7,12 @@ export async function loadMuscleGroups(db: Db): Promise<MuscleGroup[]> {
     .select('id, name, body_region, parent_id')
     .order('name')
   if (error) throw error
-  return (data ?? []).map(g => ({
+  return muscleGroupsFromRows(data ?? [])
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function muscleGroupsFromRows(rows: any[]): MuscleGroup[] {
+  return rows.map(g => ({
     id: g.id,
     name: g.name,
     bodyRegion: g.body_region as BodyRegion,
@@ -22,7 +27,12 @@ export async function loadExercises(db: Db): Promise<{ id: string; name: string;
     .select('id, name, default_adaptation')
     .order('name')
   if (error) throw error
-  return (data ?? []).map(e => ({
+  return exercisesFromRows(data ?? [])
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function exercisesFromRows(rows: any[]): { id: string; name: string; adaptation: Adaptation | null }[] {
+  return rows.map(e => ({
     id: e.id,
     name: e.name,
     adaptation: (e.default_adaptation ?? null) as Adaptation | null,
@@ -35,8 +45,13 @@ export async function loadExerciseMuscleLinks(db: Db): Promise<ExerciseMuscleLin
     .from('exercise_muscle_groups')
     .select('level, contribution, exercises(name), muscle_groups(name, body_region)')
   if (error) throw error
+  return exerciseMuscleLinksFromRows(data ?? [])
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function exerciseMuscleLinksFromRows(rows: any[]): ExerciseMuscleLink[] {
   const links: ExerciseMuscleLink[] = []
-  for (const row of data ?? []) {
+  for (const row of rows) {
     const exercise = (row.exercises as unknown as { name: string } | null)?.name
     const mg = row.muscle_groups as unknown as { name: string; body_region: BodyRegion } | null
     if (!exercise || !mg) continue
