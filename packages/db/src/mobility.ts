@@ -9,7 +9,13 @@ async function loadExerciseMuscleMap(db: Db): Promise<Map<string, string[]>> {
     .from('exercise_muscle_groups')
     .select('exercise_id, muscle_groups(name)')
   if (error) throw error
-  const named = (data ?? [])
+  return exerciseMuscleMap(data ?? [])
+}
+
+/** Each exercise's muscle names, from exercise_muscle_groups rows. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function exerciseMuscleMap(rows: any[]): Map<string, string[]> {
+  const named = rows
     .map(row => ({
       exerciseId: row.exercise_id,
       name: (row.muscle_groups as unknown as { name: string } | null)?.name,
@@ -28,6 +34,11 @@ export async function loadMobility(db: Db): Promise<MobilityEntry[]> {
     ),
     loadExerciseMuscleMap(db),
   ])
+  return mobilityFromRows(rows, muscleMap)
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mobilityFromRows(rows: any[], muscleMap: Map<string, string[]>): MobilityEntry[] {
   return rows.map(r => {
     const exercises = (r.mobility_exercises ?? []) as { id: string; exercise_name: string; duration_minutes: number | null; notes: string | null; exercise_id: string | null }[]
     return {

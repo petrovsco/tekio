@@ -82,7 +82,10 @@ function toColumns(p: SessionPlanPatch) {
 
 /** Newest date first; within a day, in the order they were planned. */
 export async function loadSessionPlans(db: Db): Promise<PlannedSession[]> {
-  const rows = (await userRows(db, 'planned_sessions', COLS, 'plan_date')) as SessionPlanRow[]
+  return sessionPlansFromRows((await userRows(db, 'planned_sessions', COLS, 'plan_date')) as SessionPlanRow[])
+}
+
+export function sessionPlansFromRows(rows: SessionPlanRow[]): PlannedSession[] {
   return [...rows]
     .sort((a, b) => b.plan_date.localeCompare(a.plan_date) || a.sort_order - b.sort_order)
     .map(mapRow)

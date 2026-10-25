@@ -16,7 +16,12 @@ export async function loadExerciseAliases(db: Db): Promise<ExerciseAlias[]> {
     .select('alias, canonical_name, user_id')
     .or(`user_id.eq.${db.userId},user_id.is.null`)
   if (error) throw error
-  return (data ?? [])
+  return aliasesFromRows(data ?? [])
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function aliasesFromRows(rows: any[]): ExerciseAlias[] {
+  return rows
     .map(r => ({ alias: r.alias, canonicalName: r.canonical_name, isOwn: r.user_id !== null }))
     .sort((a, b) => Number(b.isOwn) - Number(a.isOwn))
 }
