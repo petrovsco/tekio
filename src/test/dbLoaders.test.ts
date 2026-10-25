@@ -13,7 +13,7 @@ function fakeDb(userId: string, rows: unknown[]): { db: Db; calls: string[] } {
     select: (c: string) => { calls.push(`select ${c.split(',')[0]}`); return query },
     eq: (col: string, v: string) => { calls.push(`eq ${col}=${v}`); return query },
     order: (col: string) => { calls.push(`order ${col}`); return query },
-    single: () => Promise.resolve({ data: rows[0], error: null }),
+    maybeSingle: () => Promise.resolve({ data: rows[0] ?? null, error: null }),
     then: (ok: (r: unknown) => unknown) => Promise.resolve({ data: rows, error: null }).then(ok),
   }
   const client = { from: (t: string) => { calls.push(`from ${t}`); return query } } as unknown as PostgrestClient

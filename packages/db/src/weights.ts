@@ -12,7 +12,13 @@ export async function loadWeights(db: Db): Promise<WeightEntry[]> {
     'session_date, session_exercises(id, sort_order, superset_group_id, exercises(name), session_sets(set_number, weight, reps, duration_s))',
     'session_date',
   )
+  return weightsFromRows(sessions)
+}
 
+/** The lifts from training sessions as the select above returns them, the
+ *  start-up function's rows included (supabase/migrations, start_rows). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function weightsFromRows(sessions: any[]): WeightEntry[] {
   const entries: WeightEntry[] = []
   for (const session of sessions) {
     const exercises = (session.session_exercises ?? []) as unknown as {
