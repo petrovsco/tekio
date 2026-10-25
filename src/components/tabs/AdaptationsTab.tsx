@@ -1,7 +1,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../store/app'
 import {
-  today, adaptationsRead, type MuscleQuality, type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
+  today, adaptationsRead, coverageLine, type MuscleQuality, type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
 } from '@tekio/core'
 import { whileReloading } from '../../lib/staleChunk'
 import { useReadRows } from '../../hooks/useReadRows'
@@ -10,7 +10,7 @@ import { Btn } from '../ui/Button'
 import { Icon } from '../ui/Icon'
 import { GapMap } from './home/GapMap'
 import { EffortSpectrum, type SpectrumBand } from './adaptations/EffortSpectrum'
-import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL, coverageLine } from './adaptations/labels'
+import { MAP_QUALITIES, QUALITY_SHORT, SPECTRUM_QUALITIES, UNIT_LABEL } from './adaptations/labels'
 
 // The Adaptations drill-down (roadmap 031): a second Home. One body map with a
 // four-way quality toggle for the muscle-linked four, one effort spectrum for

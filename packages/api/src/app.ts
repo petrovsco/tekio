@@ -3,6 +3,7 @@
 // OpenAPI description at /api/openapi.json comes from the same definitions the
 // requests are checked against.
 import { OpenAPIHono } from '@hono/zod-openapi'
+import { Hono } from 'hono'
 import { PostgrestClient } from '@supabase/postgrest-js'
 import {
   KnownError, homeRead, adaptationsRead, readinessRead, type ReadRows, type ExposureBout, type MobilityEntry,
@@ -11,9 +12,11 @@ import * as rows from '@tekio/db'
 import {
   loadReadRows, saveWeightEntry, updateWeightEntry, deleteWeightEntry, loadOwnWeightSets, ownsRow, ownsRows, type WriteDb,
 } from '@tekio/db'
-import { bearer, tokenUserId, tokenAccepted } from './auth'
+import { bearer, tokenUserId, tokenClientId, tokenAccepted } from './auth'
 import { homeRoute, adaptationsRoute, readinessRoute } from './reads'
 import { startRoute } from './start'
+import { historyRoute } from './history'
+import { mountMcp } from './mcp/server'
 import {
   profileRoute, sectionsRoute, sectionShownRoute, lastSyncRoute, requestSyncRoute, syncRunRoute, errorReportRoute,
 } from './settings'
@@ -58,7 +61,10 @@ export function createApi(config: ApiConfig) {
       fetch: fetchFn,
     })
     return {
-      db: { client, userId, origin: config.origin, catalogue: () => import('@tekio/core/catalogue') },
+      db: {
+        client, userId, origin: config.origin, byAgent: tokenClientId(token) !== null,
+        catalogue: () => import('@tekio/core/catalogue'),
+      },
       accepted: tokenAccepted(config.supabaseUrl, config.anonKey, token, fetchFn),
     }
   }
@@ -135,6 +141,24 @@ export function createApi(config: ApiConfig) {
     }
     const [loaded, settings] = await Promise.all([start, rows.loadStartSettings(who.db)])
     return c.json({ ...loaded, ...settings }, 200)
+  })
+
+  // The days between two dates, for an assistant reading what was done.
+  app.openapi(historyRoute, async c => {
+    const { from, to } = c.req.valid('query')
+    const inDays = <T>(xs: T[], day: (x: T) => string) => xs.filter(x => day(x) >= from && day(x) <= to)
+    const history = await loadedFor(c.req.header('authorization'), async db => {
+      const [weights, cardio, sports, mobility, plans, sessionPlans] = await Promise.all([
+        rows.loadWeights(db), rows.loadCardio(db), rows.loadSports(db), rows.loadMobility(db),
+        rows.loadPlans(db), rows.loadSessionPlans(db),
+      ])
+      const byDate = (x: { date: string }) => x.date
+      return {
+        weights: inDays(weights, byDate), cardio: inDays(cardio, byDate), sports: inDays(sports, byDate),
+        mobility: inDays(mobility, byDate), plans: inDays(plans, byDate), sessionPlans: inDays(sessionPlans, byDate),
+      }
+    })
+    return history ? c.json(history, 200) : c.json(refused, 401)
   })
 
   app.openapi(logWeightRoute, async c => {
@@ -245,16 +269,18 @@ export function createApi(config: ApiConfig) {
     return c.json(await rows.saveCheckIn(db, c.req.valid('param').date, c.req.valid('json')), 200)
   })
 
-  // Plans: written as the app writes them, with who planned them.
+  // Plans: written as the app writes them, with who planned them. A token
+  // issued to an assistant plans as the agent whatever the body says.
+  const planner = (db: WriteDb, said: 'user' | 'agent') => (db.byAgent ? 'agent' : said)
   type LiftPlan = Parameters<typeof rows.savePlan>[1] & { plannedBy: 'user' | 'agent'; supersetId?: string | null }
   capture<LiftPlan>(planLiftRoutes, 'planned_exercises', {
-    save: (db, { plannedBy, supersetId, ...plan }) => rows.savePlan(db, { ...plan, supersetId: supersetId ?? undefined }, plannedBy),
+    save: (db, { plannedBy, supersetId, ...plan }) => rows.savePlan(db, { ...plan, supersetId: supersetId ?? undefined }, planner(db, plannedBy)),
     replace: (db, id, { plannedBy: _, ...plan }) => rows.updatePlan(db, id, plan),
     remove: rows.deletePlan,
   })
   type SessionPlan = rows.SessionPlanPatch & { plannedBy: 'user' | 'agent' }
   capture<SessionPlan>(planSessionRoutes, 'planned_sessions', {
-    save: (db, { plannedBy, ...plan }) => rows.saveSessionPlan(db, plan, plannedBy),
+    save: (db, { plannedBy, ...plan }) => rows.saveSessionPlan(db, plan, planner(db, plannedBy)),
     replace: (db, id, { plannedBy: _, ...plan }) => rows.updateSessionPlan(db, id, plan),
     remove: rows.deleteSessionPlan,
   })
@@ -357,5 +383,13 @@ export function createApi(config: ApiConfig) {
     : c.json({ error: 'Something went wrong.' }, 500))
   app.notFound(c => c.json({ error: 'No such route.' }, 404))
 
-  return app
+  // The assistant connector (RFC 0099): an MCP server at /api/mcp whose tools
+  // are this API's own routes, and the OAuth metadata that tells an assistant
+  // where to sign in. That metadata has to sit at the site's root, outside
+  // /api, so the API is mounted on a root app beside it.
+  const root = new Hono()
+  mountMcp(root, app, { supabaseUrl: config.supabaseUrl, writerFor })
+  root.route('/', app)
+  root.notFound(c => c.json({ error: 'No such route.' }, 404))
+  return root
 }

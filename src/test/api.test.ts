@@ -48,8 +48,11 @@ describe('the API reads', () => {
     const body = await res.json()
     expect(body.date).toBe(DATE)
     expect(Object.keys(body)).toEqual(
-      ['date', 'muscles', 'gaps', 'qualities', 'coverage', 'readiness', 'donation', 'verdict'],
+      ['date', 'muscles', 'gaps', 'qualities', 'coverage', 'readiness', 'donation', 'verdict', 'words'],
     )
+    // No rows: Home's own words for an empty account (RFC 0099).
+    expect(body.words.verdict.text).toBe('Nothing logged yet.')
+    expect(body.words.missing).toBe('All seven qualities — no data yet.')
     const rest = calls.filter(c => c.url.includes('/rest/v1/'))
     expect(rest.length).toBeGreaterThan(0)
     expect(rest.every(c => c.auth === `Bearer ${LIVE}`)).toBe(true)
@@ -121,7 +124,7 @@ describe('the API reads', () => {
     const { api } = fakeSupabase(LIVE)
     const doc = await (await get(api, '/api/openapi.json')).json()
     expect(Object.keys(doc.paths)).toEqual([
-      '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/start', '/api/weights', '/api/weights/{id}',
+      '/api/read/home', '/api/read/adaptations', '/api/read/readiness', '/api/start', '/api/history', '/api/weights', '/api/weights/{id}',
       ...['cardio', 'sleep', 'bodyweight', 'donations', 'sauna', 'cold', 'sport', 'mobility'].flatMap(p => [`/api/${p}`, `/api/${p}/{id}`]),
       '/api/readiness/{date}/morning-hrv', '/api/readiness/{date}/check-in',
       '/api/plans/lifts', '/api/plans/lifts/{id}', '/api/plans/sessions', '/api/plans/sessions/{id}',

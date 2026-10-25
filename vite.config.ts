@@ -12,7 +12,7 @@ function devApi(): Plugin {
     configureServer(server) {
       const env = loadEnv(server.config.mode, process.cwd(), 'VITE_')
       server.middlewares.use(async (req, res, next) => {
-        if (!req.url?.startsWith('/api/')) return next()
+        if (!req.url?.startsWith('/api/') && !req.url?.startsWith('/.well-known/oauth-protected-resource')) return next()
         try {
           const { createApi } = await server.ssrLoadModule('/packages/api/src/app.ts')
           const api = createApi({ supabaseUrl: env.VITE_SUPABASE_URL, anonKey: env.VITE_SUPABASE_ANON_KEY, origin: 'dev' })

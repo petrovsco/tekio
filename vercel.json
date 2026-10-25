@@ -2,6 +2,7 @@
   "regions": ["dub1"],
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/.well-known/oauth-protected-resource(.*)", "destination": "/api" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

@@ -1,5 +1,5 @@
 import type { SportEntry, QualityRating, MatchResult } from '@tekio/core'
-import { userRows, withOrigin, deleteRow, type Db, type WriteDb } from './db'
+import { userRows, withOrigin, withWriter, deleteRow, type Db, type WriteDb } from './db'
 
 // One literal on purpose: PostgREST parses the select string at the type level,
 // and a concatenation is just `string`, which costs the returned rows their
@@ -107,7 +107,7 @@ export async function saveSportEntry(
   const sportTypeId = await getOrCreateSportType(db, entry.sport, newSportFlags)
   const { data, error } = await db.client
     .from('sport_sessions')
-    .insert(withOrigin(db, { user_id: db.userId, ...toRow(entry, sportTypeId) }))
+    .insert(withWriter(db, withOrigin(db, { user_id: db.userId, ...toRow(entry, sportTypeId) })))
     .select(SPORT_COLS)
     .single()
   if (error) throw error

@@ -7,9 +7,8 @@ import {
   adaptationCoverage, splitCoverage, coverageState, buildMuscleStatusTree, muscleStimulus,
   weightSetsIn, MUSCLE_QUALITIES, GAP_CUTOFF, type AdaptationSummary, targetShape,
   muscleQualityStates, muscleWindow, rankMuscleGaps, ADAPTATIONS, ADAPTATION_MAP,
-  MUSCLE_WINDOW_DAYS,
+  MUSCLE_WINDOW_DAYS, coverageLine, coverageParts,
 } from '@tekio/core'
-import { coverageLine, coverageParts } from '../components/tabs/adaptations/labels'
 import type { Adaptation, CardioEntry, CardioFormat, ExerciseMuscleLink, MuscleGroup, SportEntry, WeightEntry } from '../types'
 
 // ── rx blocks (grounded values, roadmap 039 S5–S8) ──────────────────────────
