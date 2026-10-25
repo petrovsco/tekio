@@ -1,18 +1,13 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
-  homeRead, checkInTotal, type MuscleState, type SystemicReadiness, type DonationStatus,
-  type FusedVerdict, type ReadinessBand, type Gauge, today, daysBetween, lastNightDate,
-  RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS, coverageState,
+  homeRead, homeView, today, lastNightDate, MUSCLE_WINDOW_DAYS, muscleShort, joinNames, type QualityTile,
 } from '@tekio/core'
 import { useReadRows } from '../../../hooks/useReadRows'
-import { fmtSets, fmtAgo } from '../../../lib/utils'
-import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
+import { GapMap, RAMP } from './GapMap'
 import { whileReloading } from '../../../lib/staleChunk'
-import { coverageLine, coverageParts } from '../adaptations/labels'
 import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
-import { METHOD_LABEL } from '../../../constants/readiness'
 import { SyncLine } from './SyncLine'
 import { ReadinessGauge } from './ReadinessGauge'
 import type { FoldKind } from './FoldSheet'
@@ -30,78 +25,7 @@ const QualitySheet = lazy(() => import('./QualitySheet').then(whileReloading))
 
 type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true } | { quality: WholeBodyQuality }
 
-const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
-
-const joinNames = (names: string[]): string =>
-  names.length <= 1 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
-
 const shortLower = (name: string): string => muscleShort(name).toLowerCase()
-
-/** The readiness card's band, beside its number (0085). */
-const BAND_LABEL: Record<ReadinessBand, string> = { low: 'LOW', moderate: 'MODERATE', ok: 'OK' }
-
-/** What a moderate band changes: the effort, not the gaps. Partially supported:
- * in both trialled three-tier rules the middle tier was the planned session,
- * lighter, never rest — reps and load cut (DeBlauw 2021), or volume cut and the
- * intervals dropped (Nuuttila 2022). No percentage: each trial's 25% was its
- * chosen step, not a tested dose.
- * See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding */
-const STEADY_NOTE = 'Lighter today: no intervals or max efforts.'
-
-/** The gated instruction plus the top gap as its reason — all editorial text
- *  for the verdict block lives here, the numbers come from the fused read. */
-function verdictCopy(args: {
-  zeroData: boolean
-  verdict: FusedVerdict
-  sys: SystemicReadiness
-  don: DonationStatus
-  gaps: MuscleState[]
-  recoveringShorts: string[]
-  minDaysSince: number | null
-}): { text: string; sub: string } {
-  const { zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince } = args
-
-  if (zeroData) {
-    return {
-      text: 'Nothing logged yet.',
-      sub: 'One session and this screen starts answering. Nothing here is guessed.',
-    }
-  }
-
-  if (verdict.mode === 'hold') {
-    const text = 'Hold. Walk or mobility only.'
-    if (verdict.cause === 'donation') {
-      const when = fmtAgo(don.daysSince)
-      return { text, sub: `Full blood donation ${when} — the 48 h acute window gates the day.` }
-    }
-    const sub = sys.method === 'check_in'
-      ? "Today's check-in sits well under your usual."
-      : `${sys.method === 'morning_hrv' ? 'Morning HRV' : 'HRV'} this week sits well under your own normal.`
-    return { text, sub }
-  }
-
-  const names = gaps.slice(0, 2).map(m => shortLower(m.name))
-  const list = joinNames(names)
-  const lead = verdict.mode === 'steady' ? 'Steady' : 'Push'
-  const text = list
-    ? `${lead}. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
-    : `${lead}. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
-  const facts = gaps.slice(0, 2).map(m =>
-    m.daysSince === null
-      ? `${cap(shortLower(m.name))}: never trained.`
-      : `${cap(shortLower(m.name))}: ${fmtSets(m.sets)} sets in ${MUSCLE_WINDOW_DAYS} days.`)
-  if (recoveringShorts.length > 0) {
-    const who = recoveringShorts.length > 3 ? `${recoveringShorts.length} muscles` : joinNames(recoveringShorts)
-    facts.push(`${cap(who)} still recovering (${RECOVER_DAYS} days).`)
-  } else if (minDaysSince !== null) {
-    facts.push(`Nothing is sore — last stimulus ${fmtAgo(minDaysSince)}.`)
-  }
-  if (don.aerobicSuppressed && !don.acuteHold) {
-    facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
-  }
-  if (verdict.mode === 'steady') facts.unshift(STEADY_NOTE)
-  return { text, sub: facts.join(' ') }
-}
 
 /** Bar tones on the readiness card; the gated inversion remaps them. */
 const TONE = {
@@ -111,26 +35,14 @@ const TONE = {
   off: { normal: '#d6d6d4', gated: '#a8a8a8' },
 } as const
 
-interface GateCol {
-  label: string
-  value: string
-  /** An amount out of 100, drawn as a fill: the sleep score. */
-  pct?: number
-  /** A reading against the person's own normal, drawn as a dot on its range
-   *  (ReadinessGauge); null keeps the empty track until there is one. */
-  gauge?: Gauge | null
-  tone: keyof typeof TONE
-  /** A typed reading still to give today: the value reads as a prompt. */
-  ask?: boolean
-  /** One line under the bar: the normal it is read against, or how far that
-   *  normal still has to build. */
-  note?: string
+/** A whole-body square's ink, from the state the view names. */
+const TILE_FILL = (step: QualityTile['step']) => (step === null ? '#ffffff' : RAMP[step])
+const TILE_EDGE: Record<QualityTile['edge'], string> = {
+  blank: '#e2e2e0', accent: '#c2410c', ramp: '#c9c9c7', ink: '#1f1f1f',
 }
 
 export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => void }) {
   const weights = useAppStore(s => s.weights)
-  const cardio = useAppStore(s => s.cardio)
-  const sports = useAppStore(s => s.sports)
   const bodyweight = useAppStore(s => s.bodyweight)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const muscleGroups = useAppStore(s => s.muscleGroups)
@@ -146,12 +58,15 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
     import('./QualitySheet')
   }
 
-  // The fused Home read, one call shared with the API (RFC 0094 step 2b).
+  // The fused Home read, one call shared with the API (RFC 0094 step 2b), and
+  // what Home prints of it, the same view the phone apps draw (RFC 0096).
   const rows = useReadRows()
   const date = today()
   const home = useMemo(() => homeRead(rows, date), [rows, date])
-  const { muscles: states, gaps, qualities, readiness: sys, donation: don, coverage, verdict } = home
-  const missing = coverageParts(coverage)
+  const lastNight = lastNightDate()
+  const view = useMemo(() => homeView(home, rows, lastNight, bodyweight[0] ?? null), [home, rows, lastNight, bodyweight])
+  const { muscles: states, gaps, readiness: sys, coverage } = home
+  const { readiness: card, qualities: missing } = view
 
   // RFC 0098's layer: today's open plan as an outline and one line. The fill,
   // the callouts, the verdict and the line above stay logged work only.
@@ -178,121 +93,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       : `Today's plan reaches no gap. ${after}`
   }, [preview, gaps])
 
-  const gated = verdict.mode === 'hold'
-  const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
-
-
-  const recoveringShorts = states.filter(s => s.leaf && s.recovering).map(s => shortLower(s.name))
-  const minDaysSince = states.reduce<number | null>(
-    (min, s) => (s.daysSince !== null && (min === null || s.daysSince < min) ? s.daysSince : min),
-    null,
-  )
-
-  const { text: verdictText, sub: verdictSub } = verdictCopy({
-    zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince,
-  })
-
-  // The card's two columns follow the method the verdict reads from (0092).
-  // A typed method still waiting for today's answer asks for it, in the
-  // accent: action lives there (design-system §1).
-  // The score keeps one day of grace for a late sync, so say when it is the
-  // night before's: a sync that ran before Garmin had last night is not news.
-  // "Last night" turns over at 04:00, not midnight, for whoever is still up.
-  const lastNight = lastNightDate()
-  const sleepCol: GateCol = sys.sleepScore != null
-    ? { label: 'SLEEP', value: String(sys.sleepScore), pct: sys.sleepScore, tone: 'ink', note: (sys.sleepScoreDate ?? '') < lastNight ? 'last night not in yet' : undefined }
-    : { label: 'SLEEP', value: '—', pct: 0, tone: 'off' }
-  // Today's typed answer for the method being read, shown even before the
-  // baseline can turn it into a band.
-  const typedToday = rows.readinessInputs.find(e => e.date === date)
-  const colMethod = sys.method ?? sys.chosen
-  // The reading prints what the verdict reads, placed on the person's own
-  // normal: the 7-night mean for HRV (one night is too noisy to act on), the
-  // day's total for the check-in. Each method against its own normal (0092).
-  const building = sys.progress && sys.progress.have > 0 && sys.progress.have < sys.progress.need
-    ? `building your ${colMethod === 'check_in' ? 'usual' : 'normal'} · ${sys.progress.have} of ${sys.progress.need}`
-    : undefined
-  const readingCol: GateCol =
-    sys.awaitingInput
-      ? { label: sys.chosen === 'check_in' ? 'CHECK-IN' : 'MORNING HRV', value: sys.chosen === 'check_in' ? 'Answer ›' : 'Type it ›', gauge: null, tone: 'off', ask: true }
-      : sys.method && sys.gauge && sys.recent != null && sys.normal
-        ? sys.method === 'check_in'
-          ? { label: 'CHECK-IN', value: `${sys.recent} of 25`, gauge: sys.gauge, tone: 'ink', note: `your usual ${sys.normal.low}–${sys.normal.high}` }
-          : {
-              label: sys.method === 'morning_hrv' ? 'MORNING HRV · 7 DAYS' : 'HRV · 7 NIGHTS',
-              value: `${sys.recent} ms`, gauge: sys.gauge, tone: 'ink',
-              note: `your normal ${sys.normal.low}–${sys.normal.high} ms`,
-            }
-        : colMethod === 'check_in'
-          ? { label: 'CHECK-IN', value: typedToday?.checkIn ? `${checkInTotal(typedToday.checkIn)} of 25` : '—', gauge: null, tone: 'off', note: building }
-          : colMethod === 'morning_hrv'
-            ? { label: 'MORNING HRV', value: typedToday?.morningHrv != null ? `${typedToday.morningHrv} ms` : '—', gauge: null, tone: 'off', note: building }
-            : sys.hrv != null
-              ? { label: sys.hrvDate != null && sys.hrvDate >= lastNight ? 'HRV · LAST NIGHT' : 'HRV · NIGHT BEFORE', value: `${sys.hrv} ms`, gauge: null, tone: 'off', note: building }
-              : { label: 'HRV', value: '—', gauge: null, tone: 'off' }
-  const gateCols: GateCol[] = colMethod === 'overnight_hrv' || colMethod === null
-    ? [sleepCol, readingCol]
-    : [readingCol, sleepCol]
-  // One note line inside the card, only on the days a note fires; it never
-  // moves the band (0092).
-  const noteLine = [
-    sys.notes.restingHrAbove !== null ? `Resting HR +${sys.notes.restingHrAbove} bpm` : null,
-    sys.notes.shortNight !== null ? `short night, ${sys.notes.shortNight.toFixed(1)} h` : null,
-  ].filter(Boolean).join(' · ')
-
-  const banner = gated
-    ? verdict.cause === 'donation'
-      ? `Full blood donation ${fmtAgo(don.daysSince)} — the 48 h acute window holds today. The gaps below stay open.`
-      : `${sys.method === 'check_in' ? "Today's check-in is well under your usual" : sys.method === 'morning_hrv' ? 'Morning HRV is well under your own normal this week' : 'HRV is well under your own normal this week'}. The gaps below stay open — today just isn't the day to close them.`
-    : null
-
-  // The two folds as T2 stat tiles (unit 3): bodyweight and blood donation,
-  // never a destination (P3). Blood sits here rather than on the readiness
-  // card: it is logged a few times a year, sleep and HRV every day. Tap reveals the capture sheet; the T1 read never reflows.
-  const latestBw = bodyweight[0] ?? null
-  const bwDays = latestBw ? daysBetween(latestBw.date, today()) : null
-  const foldTiles: { kind: FoldKind; label: string; value: string; note: string; accent?: boolean }[] = [
-    latestBw
-      ? { kind: 'weight', label: 'WEIGHT', value: `${latestBw.weight.toFixed(1)} kg`, note: bwDays === 0 ? 'today' : bwDays === 1 ? 'yesterday' : `${bwDays} d ago` }
-      : { kind: 'weight', label: 'WEIGHT', value: '—', note: 'tap to log' },
-    don.acuteHold
-      ? { kind: 'blood', label: 'BLOOD', value: don.daysSince === 0 ? 'today' : `${don.daysSince} d`, note: '48 h hold', accent: true }
-      : don.aerobicSuppressed
-        ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: 'aerobic tail', accent: true }
-        : don.daysSince !== null
-          ? { kind: 'blood', label: 'BLOOD', value: `${don.daysSince} d`, note: don.eligibleInDays > 0 ? `eligible in ${don.eligibleInDays} d` : 'eligible' }
-          : { kind: 'blood', label: 'BLOOD', value: '—', note: 'tap to log' },
-  ]
-
-  // The square reads coverage, the note reads recency (roadmap 063). Both were
-  // once thresholds: the square used QUALITY_STALENESS_DAYS (14/28/14) while
-  // the line above it used the 14-day coverage window, so the same quality
-  // could be a filled chip under "Untouched: anaerobic". The fill now comes
-  // from the same `coverage` call the line makes — sessions ÷ the window's
-  // target, on the map's ramp — so the two cannot disagree. `N d ago` stays
-  // because it is the fact the line cannot state.
-  const qualityTiles = ([
-    { key: 'vo2max', name: 'VO₂MAX' },
-    { key: 'anaerobic_capacity', name: 'ANAEROBIC' },
-    { key: 'endurance', name: 'ENDURANCE' },
-  ] as const).map(meta => {
-    const q = qualities.find(s => s.key === meta.key)
-    if (zeroData || !q) return { ...meta, note: '—', fill: '#ffffff', edge: '#e2e2e0' }
-    const c = coverage[meta.key]
-    const note = fmtAgo(q.daysSince)
-    // Same polarity as the map: untouched is white with the accent edge, and
-    // work accumulates ink. The word comes from `coverageState`, the same call
-    // the line makes, so the ink band means exactly what the line means by "on
-    // target" — a muscle reaches that at GAP_CUTOFF, a cardio quality only at
-    // its whole session target, and reading the raw ramp here would ink a
-    // square at 0.75 under a line still calling that quality short.
-    const state = coverageState(c)
-    if (state === 'untouched') return { ...meta, note, fill: '#ffffff', edge: '#c2410c' }
-    const step = state === 'on_target'
-      ? 3
-      : Math.min(rampStep(c.target > 0 ? c.volume / c.target : 1), 2)
-    return { ...meta, note, fill: RAMP[step], edge: step === 3 ? '#1f1f1f' : '#c9c9c7' }
-  })
+  const gated = card.gated
 
   return (
     <div className="text-ink" onPointerDown={prefetch}>
@@ -306,12 +107,12 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
       <div className="flex items-center gap-2 mb-1.5">
         <span className="text-[9px] font-bold tracking-[0.16em] text-ink-3">TODAY</span>
         <span className="grow" />
-        <span className="text-[11px] text-ink-2">{sys.readiness === null ? 'no readiness data' : 'readiness'}</span>
+        <span className="text-[11px] text-ink-2">{view.readinessLabel}</span>
       </div>
       <h2 className="font-serif text-[28px] leading-[1.12] font-bold tracking-[-0.01em] text-signal text-pretty">
-        {verdictText}
+        {view.verdict.text}
       </h2>
-      <p className="text-xs leading-[1.4] text-ink-2 mt-1.5 text-pretty">{verdictSub}</p>
+      <p className="text-xs leading-[1.4] text-ink-2 mt-1.5 text-pretty">{view.verdict.sub}</p>
 
       {/* Systemic gate — inverts to ink when the day is held; the gate changes
           the instruction, never the facts */}
@@ -323,13 +124,13 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
         <div className={`flex items-center gap-1.5 px-2.5 pt-[7px] pb-[5px] border-b ${gated ? 'border-invert-line' : 'border-line'}`}>
           <Icon name="heart" size={13} />
           <span className="text-[10px] font-bold tracking-[0.1em]">SYSTEMIC READINESS</span>
-          {sys.method && sys.method !== 'overnight_hrv' && (
+          {card.method && (
             <span className={`text-[9px] font-bold tracking-[0.1em] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>
-              · {METHOD_LABEL[sys.method].toUpperCase()}
+              · {card.method}
             </span>
           )}
           <span className="grow" />
-          <span className="text-[13px] font-bold tracking-[0.06em]">{sys.band ? BAND_LABEL[sys.band] : '—'}</span>
+          <span className="text-[13px] font-bold tracking-[0.06em]">{card.band}</span>
           {/* sauna / cold / manual sleep live behind this tap — the card that
               raises "can I push?" is where the input belongs (P1) */}
           <span
@@ -340,13 +141,13 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           </span>
         </div>
         <div className="flex px-2.5 pt-[7px] pb-2">
-          {gateCols.map(col => (
+          {card.columns.map(col => (
             <div key={col.label} className="grow basis-0 pr-2">
               <div className={`text-[9px] tracking-[0.05em] mb-[3px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{col.label}</div>
               <div className={`text-xs font-semibold ${col.ask && !gated ? 'text-signal' : ''}`}>{col.value}</div>
               <div className="mt-1">
-                {col.gauge !== undefined ? (
-                  <ReadinessGauge gauge={col.gauge} inverted={gated} />
+                {col.bar === 'gauge' ? (
+                  <ReadinessGauge gauge={col.gauge ?? null} inverted={gated} />
                 ) : (
                   <div className={`h-[3px] rounded-sm ${gated ? 'bg-invert-line' : 'bg-line'}`}>
                     <div
@@ -362,21 +163,17 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             </div>
           ))}
         </div>
-        {noteLine && (
-          <div className={`px-2.5 pb-[7px] -mt-0.5 text-[10px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{noteLine}. A note; the verdict is unchanged.</div>
+        {card.note && (
+          <div className={`px-2.5 pb-[7px] -mt-0.5 text-[10px] ${gated ? 'text-ink-4' : 'text-ink-3'}`}>{card.note}</div>
         )}
       </button>
-      {sys.method === 'check_in' && (
-        <p className="text-[10px] leading-[1.35] text-ink-3 mt-1">
-          Less certain than HRV. A 1-minute morning HRV reading would read your body directly.
-        </p>
-      )}
+      {card.hint && <p className="text-[10px] leading-[1.35] text-ink-3 mt-1">{card.hint}</p>}
 
       {/* Gate banner — held days only */}
-      {banner && (
+      {view.banner && (
         <div className="mt-2 px-2.5 py-[7px] bg-ink text-white rounded-[3px] flex items-center gap-[7px]">
           <Icon name="pause" size={13} className="shrink-0" />
-          <span className="text-[11px] leading-[1.3] text-pretty">{banner}</span>
+          <span className="text-[11px] leading-[1.3] text-pretty">{view.banner}</span>
         </div>
       )}
 
@@ -388,7 +185,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <span className="text-[9px] font-bold tracking-[0.14em] text-ink-3">WHAT IS MISSING</span>
           <span className="text-[9px] text-ink-4">— ranked on the body · worst first</span>
         </div>
-        <GapMap states={states} gaps={gaps} zeroData={zeroData} onPick={m => setSheet({ muscle: m })} planned={preview?.reached} />
+        <GapMap states={states} callouts={view.map.callouts} zeroData={view.zeroData} onPick={m => setSheet({ muscle: m })} planned={preview?.reached} />
         {planLine && <p className="text-[11px] leading-[1.35] text-ink-2 mt-1 text-pretty">{planLine}</p>}
         {/* the seven qualities by name — the sentence the Adaptations header
             prints, from one helper (062). Power is one name in it, not a line
@@ -400,9 +197,9 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             an untouched whole-body tile below; the short names follow in ink-2.
             Both labels are the same ink semibold — only the names carry state */}
         <p className="text-xs leading-[1.4] mt-1 text-pretty">
-          {zeroData ? (
-            <span className="text-ink-2">All seven qualities — no data yet.</span>
-          ) : missing.untouched || missing.short ? (
+          {missing.line ? (
+            <span className={view.zeroData ? 'text-ink-2' : undefined}>{missing.line}</span>
+          ) : (
             <>
               {missing.untouched && (
                 <span className="font-semibold">
@@ -416,8 +213,6 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
                 </span>
               )}
             </>
-          ) : (
-            coverageLine(coverage, MUSCLE_WINDOW_DAYS)
           )}
         </p>
         {/* The door (064). 062 kept both screens on the split "Home answers,
@@ -443,7 +238,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
           <span className="text-[9px] text-ink-4">— all cardio · fill = {MUSCLE_WINDOW_DAYS} d coverage</span>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
-          {qualityTiles.map(q => (
+          {view.wholeBody.map(q => (
             <button
               key={q.key}
               onClick={() => setSheet({ quality: q.key })}
@@ -452,7 +247,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
             >
               <div className="flex items-center gap-1">
                 <svg width="8" height="8" aria-hidden>
-                  <rect x="0.5" y="0.5" width="7" height="7" rx="1" fill={q.fill} stroke={q.edge} />
+                  <rect x="0.5" y="0.5" width="7" height="7" rx="1" fill={TILE_FILL(q.step)} stroke={TILE_EDGE[q.edge]} />
                 </svg>
                 <span className="text-[9px] font-bold tracking-[0.02em]">{q.name}</span>
               </div>
@@ -464,7 +259,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
 
       {/* The two folds as tappable stats (T2): weight and blood */}
       <div className="mt-2 flex gap-1.5">
-        {foldTiles.map(t => (
+        {view.folds.map(t => (
           <button
             key={t.kind}
             onClick={() => setSheet({ fold: t.kind })}

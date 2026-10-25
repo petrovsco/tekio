@@ -1,6 +1,5 @@
 import { useId, type MouseEvent } from 'react'
-import { GAP_CUTOFF, type MuscleState } from '@tekio/core'
-import { fmtSets } from '../../../lib/utils'
+import { BODY_MAP, zoneFills, type MapCallout, type MuscleState } from '@tekio/core'
 import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './BodyMap'
 
 // The T1 "what is missing" read (design-system §§1, 4): the anatomical figure
@@ -10,83 +9,18 @@ import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './B
 
 /** Stimulus ramp by share of the window target — ink accumulates like work.
  *  Shared with the Adaptations drill-down's effort spectrum (roadmap 031) so a
- *  session band and a muscle fill are read on one scale. */
+ *  session band and a muscle fill are read on one scale. The step for a share
+ *  is `rampStep` in @tekio/core. */
 export const RAMP = ['#ececea', '#c9c9c7', '#8f8f8f', '#1f1f1f'] as const
 /** Everything sits here on a day with no data at all. */
 export const NO_DATA = '#eeeeec'
 
-/** Ramp band by share of the window target. The top band starts at GAP_CUTOFF
- *  (packages/core/src/adaptations.ts) — the same line the callouts stop at and the
- *  "on target" counter reads (roadmap 045). */
-export function rampStep(fraction: number): number {
-  if (fraction < 0.10) return 0
-  if (fraction < 0.35) return 1
-  if (fraction < GAP_CUTOFF) return 2
-  return 3
-}
-
-/** Editorial short labels for map callouts and the verdict sentence. */
-const MUSCLE_SHORT: Record<string, string> = {
-  'Rectus Abdominis': 'CORE',
-  'Obliques': 'OBLIQUES',
-  'Hip Flexors': 'HIP FLEX',
-  'Quadriceps': 'QUADS',
-  'Hamstrings': 'HAMS',
-  'Glutes': 'GLUTES',
-  'Calves': 'CALVES',
-  'Adductors': 'ADDUCTORS',
-  'Erectors': 'ERECTORS',
-  'Chest': 'CHEST',
-  'Biceps': 'BICEPS',
-  'Triceps': 'TRICEPS',
-  'Forearms': 'FOREARMS',
-  'Lats': 'LATS',
-  'Rhomboids': 'RHOMBOIDS',
-  'Upper Back / Traps': 'TRAPS',
-  'Anterior Deltoid': 'ANT DELT',
-  'Lateral Deltoid': 'LAT DELT',
-  'Posterior Deltoid': 'POST DELT',
-  'Rotator Cuff': 'ROTATOR',
-}
-
-export function muscleShort(name: string): string {
-  return MUSCLE_SHORT[name] ?? name.toUpperCase()
-}
-
-/** Callout anchor per muscle, in the figure's own 120×240 space. Back-figure
- *  muscles are pre-mirrored onto the viewer-right copy so their leader lines
- *  run to the right margin; front ones run left. Dual-figure muscles pick one
- *  canonical figure. */
-const ANCHORS: Record<string, { fig: 'front' | 'back'; x: number; y: number }> = {
-  'Chest': { fig: 'front', x: 48, y: 56 },
-  'Anterior Deltoid': { fig: 'front', x: 40, y: 50 },
-  'Lateral Deltoid': { fig: 'front', x: 32, y: 52 },
-  'Biceps': { fig: 'front', x: 34, y: 71 },
-  'Forearms': { fig: 'front', x: 28, y: 96 },
-  'Obliques': { fig: 'front', x: 49, y: 85 },
-  'Rectus Abdominis': { fig: 'front', x: 60, y: 88 },
-  'Hip Flexors': { fig: 'front', x: 51, y: 113 },
-  'Quadriceps': { fig: 'front', x: 49, y: 140 },
-  'Adductors': { fig: 'front', x: 57, y: 134 },
-  'Upper Back / Traps': { fig: 'back', x: 70, y: 45 },
-  'Rotator Cuff': { fig: 'back', x: 73, y: 58 },
-  'Posterior Deltoid': { fig: 'back', x: 82, y: 51 },
-  'Rhomboids': { fig: 'back', x: 66, y: 61 },
-  'Lats': { fig: 'back', x: 72, y: 75 },
-  'Triceps': { fig: 'back', x: 86, y: 71 },
-  'Erectors': { fig: 'back', x: 63, y: 88 },
-  'Glutes': { fig: 'back', x: 69, y: 117 },
-  'Hamstrings': { fig: 'back', x: 71, y: 148 },
-  'Calves': { fig: 'back', x: 71, y: 188 },
-}
-
-/** Figure transforms inside the 336×224 map: g = t + v × 0.85. The figures sit
- *  right of centre so a numbered label ("4 · ADDUCTORS") fits the left margin. */
-const FIG = {
-  front: { x: 66, y: 12 },
-  back: { x: 164, y: 12 },
-} as const
-const FIG_SCALE = 0.85
+/** Callout anchors and figure placement inside the 336×224 map: g = t + v ×
+ *  scale. The figures sit right of centre so a numbered label
+ *  ("4 · ADDUCTORS") fits the left margin. */
+const ANCHORS = BODY_MAP.anchors
+const FIG = BODY_MAP.figures
+const FIG_SCALE = BODY_MAP.figures.scale
 
 interface PlacedCallout {
   key: string
@@ -99,27 +33,21 @@ interface PlacedCallout {
   major: boolean
 }
 
-/** Ranked gaps → positioned callouts: top 4 numbered, a 5th shown lighter and
- *  unnumbered when it is still clearly under-trained. Labels on the same side
- *  are nudged apart; the leader line follows. */
-function placeCallouts(gaps: MuscleState[], unit: string): PlacedCallout[] {
-  const anchored = gaps.filter(m => ANCHORS[m.name])
-  const picked = anchored.slice(0, 4).map((m, i) => ({ m, rank: i + 1 as number | null }))
-  const fifth = anchored[4]
-  if (fifth && fifth.fillFraction < 0.35) picked.push({ m: fifth, rank: null })
-
-  const placed = picked.map(({ m, rank }) => {
-    const a = ANCHORS[m.name]
+/** The ranked callouts (`mapCallouts`, @tekio/core) → positions on the map.
+ *  Labels on the same side are nudged apart; the leader line follows. */
+function placeCallouts(callouts: MapCallout[]): PlacedCallout[] {
+  const placed = callouts.filter(c => ANCHORS[c.muscle]).map(c => {
+    const a = ANCHORS[c.muscle]
     const f = FIG[a.fig]
     return {
-      key: m.name,
+      key: c.muscle,
       dotX: +(f.x + a.x * FIG_SCALE).toFixed(1),
       dotY: +(f.y + a.y * FIG_SCALE).toFixed(1),
       labelY: 0,
       side: (a.fig === 'front' ? 'L' : 'R') as 'L' | 'R',
-      text: rank === null ? muscleShort(m.name) : `${rank} · ${muscleShort(m.name)}`,
-      sub: m.daysSince === null ? 'never trained' : `${fmtSets(m.sets)} ${unit} / ${m.daysSince} d`,
-      major: rank !== null,
+      text: c.label,
+      sub: c.sub,
+      major: c.rank !== null,
     }
   })
   // Label + sub need ~24px together; nudge same-side labels apart and let the
@@ -136,14 +64,11 @@ function placeCallouts(gaps: MuscleState[], unit: string): PlacedCallout[] {
 
 interface GapMapProps {
   states: MuscleState[]
-  /** Ranked, already filtered to genuine gaps — worst first. */
-  gaps: MuscleState[]
+  /** The ranked gaps to point at, worst first (`mapCallouts`). */
+  callouts: MapCallout[]
   zeroData: boolean
   /** Opens the muscle drill-in (T2) — a tap on a zone or a callout label. */
   onPick?: (muscle: string) => void
-  /** What `sets` on the states counts, as the callouts print it — "sets" on
-   *  Home, the quality's unit on the drill-down (power reads sessions, 0012). */
-  unit?: string
   /** Muscles today's open plan would reach (RFC 0098): outlined, never filled.
    *  The fill stays logged work only. */
   planned?: Set<string>
@@ -154,25 +79,18 @@ interface GapMapProps {
  *  (design-system §1). Keep in step with `--color-planned` in index.css. */
 const PLANNED_EDGE = { stroke: '#d4a017', dash: '2 1.2', width: 1.4 } as const
 
-export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets', planned }: GapMapProps) {
+export function GapMap({ states, callouts, zeroData, onPick, planned }: GapMapProps) {
   const uid = useId()
   const hatchId = `${uid}h`
 
-  const byName = new Map(states.map(s => [s.name.toLowerCase(), s]))
-  // A zone follows its own muscle; with no sets of its own it falls back to a
-  // directly-trained top-level parent (exercise mapped to the parent, no child
-  // breakdown), same rule as the adaptations map.
+  // Each zone's step and hatch, from the same call the phone apps draw from.
+  const fills = new Map(zoneFills(states, zeroData).map(f => [f.muscle, f]))
   const resolve = (zone: Zone): { fill: string; recovering: boolean; pick: string } => {
-    const own = byName.get(zone.muscle.toLowerCase())
-    const parent = byName.get(zone.parent.toLowerCase())
-    const eff = own && own.sets > 0 ? own : parent && parent.sets > 0 ? parent : own
-    const pick = eff?.name ?? zone.muscle
-    if (zeroData) return { fill: NO_DATA, recovering: false, pick }
-    if (!eff) return { fill: RAMP[0], recovering: false, pick }
-    return { fill: RAMP[rampStep(eff.fillFraction)], recovering: eff.recovering, pick }
+    const f = fills.get(zone.muscle)!
+    return { fill: f.step === null ? NO_DATA : RAMP[f.step], recovering: f.recovering, pick: f.pick }
   }
 
-  const callouts = zeroData ? [] : placeCallouts(gaps, unit)
+  const placed = zeroData ? [] : placeCallouts(callouts)
 
   // Most zones are 3–16 px wide on a phone, and a fingertip lands 6–8 px from
   // where it aims, so a tap on a bare zone missed half the time (RFC 0100). One
@@ -198,7 +116,7 @@ export function GapMap({ states, gaps, zeroData, onPick, unit = 'sets', planned 
         <text x="215" y="8" textAnchor="middle" fontSize="7" letterSpacing="1" fill="#8a8a8a">BACK</text>
         <Figure zones={FRONT_ZONES} abs fig="front" resolve={resolve} clipId={`${uid}f`} hatchId={hatchId} planned={planned} />
         <Figure zones={BACK_ZONES} fig="back" resolve={resolve} clipId={`${uid}b`} hatchId={hatchId} planned={planned} />
-        {callouts.map(c => {
+        {placed.map(c => {
           const lineX = c.side === 'L' ? 83 : 251
           const textX = c.side === 'L' ? 80 : 254
           const anchor = c.side === 'L' ? 'end' : 'start'
@@ -261,7 +179,7 @@ function Figure({
   const t = FIG[fig]
   return (
     <g transform={`translate(${t.x},${t.y}) scale(${FIG_SCALE})`}>
-      <circle cx="60" cy="13.5" r="10" fill="#ffffff" stroke="#c9c9c7" strokeWidth="1" />
+      <circle cx={BODY_MAP.head.cx} cy={BODY_MAP.head.cy} r={BODY_MAP.head.r} fill="#ffffff" stroke="#c9c9c7" strokeWidth="1" />
       <path d={HALF} fill="#ffffff" stroke="#c9c9c7" strokeWidth="1" />
       <path d={HALF} fill="#ffffff" stroke="#c9c9c7" strokeWidth="1" transform={MIRROR} />
       <clipPath id={clipId}>

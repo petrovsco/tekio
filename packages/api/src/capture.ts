@@ -104,10 +104,12 @@ export const IdParam = z.object({ id: z.string().min(1) })
 export type CaptureRoutes = ReturnType<typeof routes<z.ZodObject, z.ZodType>>
 
 /** Log one, replace one, take one out. `done` is how the summaries speak of
- *  one already there: a logged session, a planned lift. */
+ *  one already there: a logged session, a planned lift. `name` names the
+ *  operations a generated client calls: logCardio, replaceCardio, deleteCardio. */
 export function routes<B extends z.ZodObject, E extends z.ZodType>(
-  path: string, noun: string, body: B, entry: E, { verb = 'Log', done = 'logged' } = {},
+  path: string, noun: string, body: B, entry: E, { name, verb = 'Log', done = 'logged' }: { name: string; verb?: string; done?: string },
 ) {
+  const kept = done === 'planned' ? `Planned${name}` : name
   const security = [{ bearer: [] }]
   const content = { 'application/json': { schema: body } }
   const what = `${done} ${noun}`
@@ -115,31 +117,31 @@ export function routes<B extends z.ZodObject, E extends z.ZodType>(
   return {
     what,
     log: createRoute({
-      method: 'post', path, security, summary: `${verb} a ${noun}.`,
+      method: 'post', path, security, operationId: `${verb.toLowerCase()}${name}`, summary: `${verb} a ${noun}.`,
       request: { body: { required: true, content } },
       responses: { 201: json(`The ${noun} as ${done}.`, entry), ...failures },
     }),
     replace: createRoute({
-      method: 'put', path: `${path}/{id}`, security, summary: `Replace a ${what} with the one sent.`,
+      method: 'put', path: `${path}/{id}`, security, operationId: `replace${kept}`, summary: `Replace a ${what} with the one sent.`,
       request: { params: IdParam, body: { required: true, content } },
       responses: { 204: { description: 'Saved.' }, ...failures, ...notFound },
     }),
     remove: createRoute({
-      method: 'delete', path: `${path}/{id}`, security, summary: `Take a ${what} out.`,
+      method: 'delete', path: `${path}/{id}`, security, operationId: `delete${kept}`, summary: `Take a ${what} out.`,
       request: { params: IdParam },
       responses: { 204: { description: 'Deleted.' }, ...failures, ...notFound },
     }),
   }
 }
 
-export const cardioRoutes = routes('/cardio', 'cardio session', CardioBody, CardioEntry)
-export const sportRoutes = routes('/sport', 'sport session', SportBody, SportEntry)
-export const sleepRoutes = routes('/sleep', 'night', SleepBody, SleepEntry)
-export const saunaRoutes = routes('/sauna', 'sauna bout', BoutBody, BoutEntry)
-export const coldRoutes = routes('/cold', 'cold bout', BoutBody, BoutEntry)
-export const bodyweightRoutes = routes('/bodyweight', 'weigh-in', BodyweightBody, BodyweightEntry)
-export const donationRoutes = routes('/donations', 'donation', DonationBody, DonationEntry)
-export const mobilityRoutes = routes('/mobility', 'mobility session', MobilityBody, MobilityEntry)
+export const cardioRoutes = routes('/cardio', 'cardio session', CardioBody, CardioEntry, { name: 'Cardio' })
+export const sportRoutes = routes('/sport', 'sport session', SportBody, SportEntry, { name: 'Sport' })
+export const sleepRoutes = routes('/sleep', 'night', SleepBody, SleepEntry, { name: 'Sleep' })
+export const saunaRoutes = routes('/sauna', 'sauna bout', BoutBody, BoutEntry, { name: 'Sauna' })
+export const coldRoutes = routes('/cold', 'cold bout', BoutBody, BoutEntry, { name: 'Cold' })
+export const bodyweightRoutes = routes('/bodyweight', 'weigh-in', BodyweightBody, BodyweightEntry, { name: 'Bodyweight' })
+export const donationRoutes = routes('/donations', 'donation', DonationBody, DonationEntry, { name: 'Donation' })
+export const mobilityRoutes = routes('/mobility', 'mobility session', MobilityBody, MobilityEntry, { name: 'Mobility' })
 
 // ── The morning's readiness inputs (RFC 0092): one row a day ────────────────
 
@@ -153,7 +155,7 @@ const DayParam = z.object({ date: DateQuery })
 const saved = { 200: json("The day's inputs as saved.", ReadinessInput), ...failures }
 
 export const morningHrvRoute = createRoute({
-  method: 'put', path: '/readiness/{date}/morning-hrv', security: [{ bearer: [] }],
+  method: 'put', path: '/readiness/{date}/morning-hrv', security: [{ bearer: [] }], operationId: 'putMorningHrv',
   summary: "Type the morning's HRV; a second one that day replaces it. The day's check-in is kept.",
   request: {
     params: DayParam,
@@ -163,7 +165,7 @@ export const morningHrvRoute = createRoute({
 })
 
 export const checkInRoute = createRoute({
-  method: 'put', path: '/readiness/{date}/check-in', security: [{ bearer: [] }],
+  method: 'put', path: '/readiness/{date}/check-in', security: [{ bearer: [] }], operationId: 'putCheckIn',
   summary: "Answer the day's check-in; a second one that day replaces it. The morning HRV is kept.",
   request: { params: DayParam, body: { required: true, content: { 'application/json': { schema: CheckIn } } } },
   responses: saved,
