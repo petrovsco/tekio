@@ -22,8 +22,8 @@ import { loadReadinessInputs } from './readiness'
 import { loadPlans } from './plans'
 import { loadSessionPlans } from './sessionPlans'
 import { exerciseAdaptationMap } from './readRows'
-import { ensureProfile, loadProfile, type UserProfile } from './profile'
-import { seedSections, loadSections, type SectionConfig } from './sections'
+import { ensureProfile, findProfile, loadProfile, type UserProfile } from './profile'
+import { seedSections, sectionsMissing, loadSections, type SectionConfig } from './sections'
 
 export interface StartRows {
   weights: WeightEntry[]
@@ -51,12 +51,15 @@ export interface StartSettings {
   sections: SectionConfig[]
 }
 
-/** The profile and the sections, each row written first if it is missing, so
- *  this is a write: the API runs it only once Auth has accepted the token. */
+/** The profile and the sections. A first sign-in has neither, so they are
+ *  written then and read again; every later opening only reads them. It can
+ *  write, so the API runs it only once Auth has accepted the token. */
 export async function loadStartSettings(db: Db): Promise<StartSettings> {
-  await Promise.all([ensureProfile(db), seedSections(db)])
-  const [profile, sections] = await Promise.all([loadProfile(db), loadSections(db)])
-  return { profile, sections }
+  const [found, sections] = await Promise.all([findProfile(db), loadSections(db)])
+  if (found && !sectionsMissing(sections)) return { profile: found, sections }
+  await Promise.all([found ? null : ensureProfile(db), sectionsMissing(sections) ? seedSections(db) : null])
+  const [profile, seeded] = await Promise.all([loadProfile(db), loadSections(db)])
+  return { profile, sections: seeded }
 }
 
 export async function loadStartRows(db: Db): Promise<StartRows> {

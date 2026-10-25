@@ -26,13 +26,15 @@ export async function ensureProfile(db: Db): Promise<void> {
   if (error) throw error
 }
 
-export async function loadProfile(db: Db): Promise<UserProfile> {
+/** The profile row, or null before a first sign-in has written one. */
+export async function findProfile(db: Db): Promise<UserProfile | null> {
   const { data, error } = await db.client
     .from('user_profiles')
     .select('week_start_day, hr_max_override, hr_max_source, birth_date, readiness_method')
     .eq('id', db.userId)
-    .single()
+    .maybeSingle()
   if (error) throw error
+  if (!data) return null
   const hrMax = data.hr_max_override == null ? null : Number(data.hr_max_override)
   const source = data.hr_max_source === 'typed' || data.hr_max_source === 'tracker' ? data.hr_max_source : null
   return {
@@ -45,6 +47,12 @@ export async function loadProfile(db: Db): Promise<UserProfile> {
       ? data.readiness_method as ReadinessMethod
       : null,
   }
+}
+
+export async function loadProfile(db: Db): Promise<UserProfile> {
+  const profile = await findProfile(db)
+  if (!profile) throw new Error('No profile row.')
+  return profile
 }
 
 /** The settings a person changes, any of them at once. An HRmax travels with

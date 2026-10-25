@@ -1,5 +1,5 @@
 // The menu's sections and their order (user_section_config): seeded with the
-// defaults when the app opens, and the changes a person makes in Settings.
+// defaults when the app opens and finds one missing, and the changes a person makes in Settings.
 import type { Db } from './db'
 
 export interface SectionConfig {
@@ -32,6 +32,10 @@ const sectionRows = (db: Db, configs: SectionConfig[]) => configs.map(c => ({
   show_in_menu: c.showInMenu,
   sort_order:   c.sortOrder,
 }))
+
+/** Whether a default section has no row yet, so the defaults need seeding. */
+export const sectionsMissing = (sections: SectionConfig[]) =>
+  DEFAULTS.some(d => !sections.some(s => s.sectionKey === d.sectionKey))
 
 /** The defaults, written only where a row is missing. */
 export async function seedSections(db: Db): Promise<void> {
