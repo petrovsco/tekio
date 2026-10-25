@@ -13,8 +13,9 @@ const LIVE = jwt({ sub: 'login-1', exp: Date.now() / 1000 + 3600, app_metadata: 
 const DATE = '2026-10-20'
 
 /** A Supabase that accepts `accepted` and answers every table with no rows,
- *  but a profile. Records each request's address and bearer token. */
-function fakeSupabase(accepted: string | null) {
+ *  but a profile, and the menu's sections when `sections` holds them. Records
+ *  each request's address and bearer token. */
+function fakeSupabase(accepted: string | null, sections: string[] = []) {
   const calls: { url: string; auth: string | null; method: string }[] = []
   const fakeFetch: typeof fetch = async (input, init) => {
     const url = String(input)
@@ -27,6 +28,9 @@ function fakeSupabase(accepted: string | null) {
     }
     if (url.includes('/user_profiles')) {
       return json({ week_start_day: 'monday', hr_max_override: null, hr_max_source: null, birth_date: null, readiness_method: null })
+    }
+    if (url.includes('/user_section_config')) {
+      return json(sections.map((key, i) => ({ section_key: key, show_in_menu: true, sort_order: i })))
     }
     return json([])
   }
@@ -76,10 +80,18 @@ describe('the API reads', () => {
     ])
     const rest = calls.filter(c => c.url.includes('/rest/v1/'))
     expect(rest.every(c => c.auth === `Bearer ${LIVE}`)).toBe(true)
-    // A first sign-in gets its profile row and the default sections.
-    expect(calls.filter(c => c.method === 'POST').map(c => c.url.split('/rest/v1/')[1].split('?')[0]).sort())
-      .toEqual(['user_profiles', 'user_section_config'])
+    // A profile with no sections yet gets the default sections, and nothing else.
+    expect(calls.filter(c => c.method === 'POST').map(c => c.url.split('/rest/v1/')[1].split('?')[0]))
+      .toEqual(['user_section_config'])
     expect((await get(fakeSupabase(null).api, '/api/start', LIVE)).status).toBe(401)
+  })
+
+  it('writes nothing on an opening that finds the profile and the sections', async () => {
+    const { api, calls } = fakeSupabase(LIVE, ['Weights', 'Cardio', 'Mobility'])
+    const res = await get(api, '/api/start', LIVE)
+    expect(res.status).toBe(200)
+    expect((await res.json()).sections).toHaveLength(3)
+    expect(calls.filter(c => c.method === 'POST')).toEqual([])
   })
 
   it('writes no profile or sections for a token Auth refuses', async () => {

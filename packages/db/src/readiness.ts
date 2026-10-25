@@ -32,9 +32,10 @@ function mapReadinessRow(r: ReadinessRow): ReadinessInput {
 }
 
 export async function loadReadinessInputs(db: Db): Promise<ReadinessInput[]> {
-  const rows = await userRows(db, 'readiness_inputs', READINESS_COLS, 'log_date')
-  return rows.map(mapReadinessRow)
+  return readinessFromRows(await userRows(db, 'readiness_inputs', READINESS_COLS, 'log_date'))
 }
+
+export const readinessFromRows = (rows: ReadinessRow[]): ReadinessInput[] => rows.map(mapReadinessRow)
 
 async function upsertDay(db: WriteDb, date: string, cols: Record<string, number>): Promise<ReadinessInput> {
   const { data, error } = await db.client

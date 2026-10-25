@@ -25,9 +25,10 @@ const toRow = (entry: Omit<ExposureBout, 'id'>) => ({
 })
 
 export async function loadExposure(db: Db, table: ExposureTable): Promise<ExposureBout[]> {
-  const rows = await userRows(db, table, COLS, 'session_date')
-  return rows.map(mapBout)
+  return exposureFromRows(await userRows(db, table, COLS, 'session_date'))
 }
+
+export const exposureFromRows = (rows: Parameters<typeof mapBout>[0][]): ExposureBout[] => rows.map(mapBout)
 
 export async function saveExposure(db: WriteDb, table: ExposureTable, entry: Omit<ExposureBout, 'id'>): Promise<ExposureBout> {
   const { data, error } = await db.client

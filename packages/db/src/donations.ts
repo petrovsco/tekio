@@ -17,9 +17,11 @@ function toDonationEntry(r: any): DonationEntry {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export async function loadDonations(db: Db): Promise<DonationEntry[]> {
-  const rows = await userRows(db, 'blood_donations', DONATION_COLS, 'donation_date')
-  return rows.map(toDonationEntry)
+  return donationsFromRows(await userRows(db, 'blood_donations', DONATION_COLS, 'donation_date'))
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const donationsFromRows = (rows: any[]): DonationEntry[] => rows.map(toDonationEntry)
 
 /** The columns a save and an update both write. `entry.type` is a closed union,
  *  so the map covers it and no fallback is reachable on the way in. */

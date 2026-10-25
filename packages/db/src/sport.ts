@@ -34,9 +34,11 @@ function toSportEntry(r: any): SportEntry {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export async function loadSports(db: Db): Promise<SportEntry[]> {
-  const rows = await userRows(db, 'sport_sessions', SPORT_COLS, 'session_date')
-  return rows.map(toSportEntry)
+  return sportsFromRows(await userRows(db, 'sport_sessions', SPORT_COLS, 'session_date'))
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const sportsFromRows = (rows: any[]): SportEntry[] => rows.map(toSportEntry)
 
 /** A sport session as a client sends it. */
 export type SportEntryInput = Omit<SportEntry, 'id'>
@@ -90,9 +92,12 @@ async function getOrCreateSportType(db: WriteDb, name: string, newSportFlags?: N
 }
 
 export async function loadSportTypes(db: Db): Promise<Array<NewSportFlags & { name: string }>> {
-  const rows = await userRows(db, 'sport_types', 'name, has_competitor, has_teammate')
-  return rows.map(r => ({ name: r.name, hasCompetitor: r.has_competitor, hasTeammate: r.has_teammate }))
+  return sportTypesFromRows(await userRows(db, 'sport_types', 'name, has_competitor, has_teammate'))
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const sportTypesFromRows = (rows: any[]): Array<NewSportFlags & { name: string }> =>
+  rows.map(r => ({ name: r.name, hasCompetitor: r.has_competitor, hasTeammate: r.has_teammate }))
 
 export async function saveSportEntry(
   db: WriteDb,
