@@ -6,6 +6,7 @@ import { Inp, SelEl, FIELD_LABEL } from '../../ui/Input'
 import { Btn } from '../../ui/Button'
 import { SmartInput } from '../../ui/SmartInput'
 import { SetsGrid } from '../../ui/SetsGrid'
+import { arrayMove } from '@dnd-kit/sortable'
 import { Chip } from '../../ui/Chip'
 import type { ExerciseAlias, PlannedExercise } from '../../../types'
 
@@ -129,6 +130,7 @@ export function PlanSheet({ plan, suggestions, aliases, timedOf, onClose }: {
             revealed={revealed}
             onUpdate={(i, f, v) => setSets(p => p.map((s, idx) => (idx === i ? { ...s, [f]: v } : s)))}
             onRemove={i => { setSets(p => p.filter((_, idx) => idx !== i)); setRevealed(r => Math.max(1, r - 1)) }}
+            onMove={(from, to) => setSets(p => arrayMove(p, from, to))}
             onRevealNext={revealNext}
             timed={timed}
           />
