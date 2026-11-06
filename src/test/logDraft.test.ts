@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { readDraft, writeDraft, emptyLift } from '../lib/logDraft'
+import { readDraft, writeDraft, emptyLift, addLift } from '../lib/logDraft'
 
 // RFC 0106: the Weights log form is kept on the device until it is saved.
 
@@ -35,5 +35,19 @@ describe('log draft', () => {
     const d = readDraft('2026-10-13')
     expect(d.lifts[0].saved).toBeUndefined()
     expect(d.lifts[1].saved).toEqual([true])
+  })
+
+  it('adds an exercise outside the plan beside the lifts on the form', () => {
+    const planned = { ...emptyLift(), ex: 'Back Squat', planId: 'p1', sets: [{ weight: '80', reps: '5' }] }
+    const d = addLift({ date: '2026-11-06', lifts: [planned], active: 0 })
+    expect(d.lifts).toHaveLength(2)
+    expect(d.lifts[0]).toBe(planned)
+    expect(d.lifts[1].ex).toBe('')
+    expect(d.lifts[1].planId).toBeUndefined()
+    expect(d.active).toBe(1)
+    // A second tap shows the empty one again rather than adding another.
+    const again = addLift({ ...d, active: 0 })
+    expect(again.lifts).toHaveLength(2)
+    expect(again.active).toBe(1)
   })
 })
