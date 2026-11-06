@@ -20,6 +20,9 @@ export interface WriteDb extends Db {
    *  the build that wrote it (tekio.rfcs/rfcs/done/0037-row-origin-tagging.md).
    *  It marks, it never condemns: nothing deletes rows by it. */
   readonly origin: string | null
+  /** True when the token was issued to an assistant (an OAuth client) rather
+   *  than to the person's own sign-in (RFC 0099): its writes say so. */
+  readonly byAgent?: boolean
   catalogue(): Promise<Catalogue>
 }
 
@@ -28,6 +31,13 @@ export interface WriteDb extends Db {
  *  roots need it: children go with the row that owns them. */
 export function withOrigin<T extends object>(db: WriteDb, row: T): T {
   return db.origin ? { ...row, origin: db.origin } : row
+}
+
+/** Mark a logged entry an assistant wrote (RFC 0099). A person's own write
+ *  goes out untouched and reads 'user' from the column's default. Only the
+ *  logs an assistant may write carry the column. */
+export function withWriter<T extends object>(db: WriteDb, row: T): T {
+  return db.byAgent ? { ...row, written_by: 'agent' } : row
 }
 
 /**

@@ -15,5 +15,7 @@ describe('the Vercel function', () => {
     const doc = await (await api.request('/api/openapi.json')).json()
     const used = new Set(Object.values(doc.paths as Record<string, object>).flatMap(p => Object.keys(p).map(m => m.toUpperCase())))
     expect([...used].filter(m => !exported.has(m))).toEqual([])
+    // The assistant connector's preflight (RFC 0099), outside the description.
+    expect(exported.has('OPTIONS')).toBe(true)
   })
 })

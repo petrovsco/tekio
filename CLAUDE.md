@@ -210,7 +210,8 @@ Vite, Vitest and `tsc -b` read it as they read `src/`. Its tests still run from
 `/api/openapi.json` is generated from the route definitions. It serves the three reads,
 `GET /api/read/home`, `/api/read/adaptations` and `/api/read/readiness`, each taking
 `date`, the person's own day (a server cannot know it); `GET /api/start`, every row the
-web app opens with in one answer; and the capture routes:
+web app opens with in one answer; `GET /api/history?from=&to=`, the training logged and
+planned between two days; and the capture routes:
 `POST /api/weights` and `PATCH`/`DELETE /api/weights/{id}`, for each other log
 (`cardio`, `sport`, `sleep`, `sauna`, `cold`, `bodyweight`, `donations`, `mobility`)
 `POST /api/<log>` and `PUT`/`DELETE /api/<log>/{id}`, and the morning's
@@ -233,6 +234,19 @@ imports; the bundle is build output and is not committed.
 The function runs in Dublin (`"regions": ["dub1"]` in `vercel.json`), beside the
 Supabase project in eu-west-1: every read is several round trips to the database, so
 the function sits next to it rather than next to the default US region.
+
+**The assistant connector** (`tekio.rfcs/rfcs/0099-agent-access.md`) is a remote MCP
+server at `/api/mcp` ([packages/api/src/mcp/](packages/api/src/mcp/server.ts)), stateless,
+whose tools are this API's routes: each tool's input is generated from the route's OpenAPI
+description and its call goes through the route in-process with the assistant's token
+([tools.ts](packages/api/src/mcp/tools.ts) holds only names, descriptions and fields an
+assistant never sends). Assistants sign in through Supabase Auth's OAuth 2.1 server: a call
+without a token gets a 401 naming `/.well-known/oauth-protected-resource/api/mcp`, which
+names Supabase as the authorization server, and the person answers on the app's
+`/oauth/consent` ([Consent.tsx](src/components/layout/Consent.tsx)). A token issued to an
+assistant carries `client_id`; from it the API marks plans `planned_by = 'agent'` and logs
+`written_by = 'agent'`, and each tool call that writes leaves one `agent_changes` row that
+`undo_last_agent_change` replays through the delete routes.
 
 The reads' answers are described field by field in
 [packages/api/src/readShapes.ts](packages/api/src/readShapes.ts), each schema typed as the

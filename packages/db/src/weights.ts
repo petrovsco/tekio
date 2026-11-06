@@ -1,6 +1,6 @@
 import { KnownError, liftSetProblem, type WeightEntry, type LiftSet } from '@tekio/core'
 import type { PatternKey } from '@tekio/core/catalogue'
-import { userRows, withOrigin, type Db, type WriteDb } from './db'
+import { userRows, withOrigin, withWriter, type Db, type WriteDb } from './db'
 // One resolver for every write path (roadmap 044) — a second copy here is how
 // the alias fix would silently miss half the ways a set gets logged.
 import { getOrCreateExerciseRow } from './exercises'
@@ -124,13 +124,13 @@ export async function saveWeightEntry(
 
   const { data: se, error: seErr } = await db.client
     .from('session_exercises')
-    .insert({
+    .insert(withWriter(db, {
       session_id: session.id,
       exercise_id: exercise.id,
       // Appended after the exercises already in this session.
       sort_order: session.exercises,
       superset_group_id: entry.supersetId ?? null,
-    })
+    }))
     .select('id')
     .single()
   if (seErr) throw seErr

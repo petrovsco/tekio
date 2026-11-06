@@ -1,6 +1,6 @@
 import type { CardioEntry } from '@tekio/core'
 import { CARDIO_TYPE_MAP, CARDIO_TYPE_REVERSE } from './columns'
-import { userRows, withOrigin, deleteRow, type Db, type WriteDb } from './db'
+import { userRows, withOrigin, withWriter, deleteRow, type Db, type WriteDb } from './db'
 
 // One literal on purpose: PostgREST parses the select string at the type level,
 // and a concatenation is just `string`, which costs the returned rows their
@@ -58,7 +58,7 @@ const toRow = (entry: Omit<CardioEntry, 'id'>) => ({
 export async function saveCardioEntry(db: WriteDb, entry: Omit<CardioEntry, 'id'>): Promise<CardioEntry> {
   const { data, error } = await db.client
     .from('cardio_sessions')
-    .insert(withOrigin(db, { user_id: db.userId, ...toRow(entry) }))
+    .insert(withWriter(db, withOrigin(db, { user_id: db.userId, ...toRow(entry) })))
     .select(CARDIO_COLS)
     .single()
   if (error) throw error

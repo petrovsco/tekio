@@ -9,7 +9,7 @@
 // The database checks it again on every query, so nothing is read on a claim
 // alone even in that window.
 
-interface Claims { sub?: unknown; exp?: unknown; app_metadata?: { user_id?: unknown } }
+interface Claims { sub?: unknown; exp?: unknown; client_id?: unknown; app_metadata?: { user_id?: unknown } }
 
 /** The bearer token on a request, or null. */
 export function bearer(header: string | undefined): string | null {
@@ -21,14 +21,30 @@ export function bearer(header: string | undefined): string | null {
  *  a well-formed, unexpired Supabase access token. */
 export function tokenUserId(token: string, now = Date.now()): string | null {
   try {
-    const part = token.split('.')[1]
-    const c = JSON.parse(Buffer.from(part, 'base64url').toString('utf8')) as Claims
+    const c = claims(token)
     if (typeof c.sub !== 'string' || typeof c.exp !== 'number' || c.exp * 1000 <= now) return null
     const adopted = c.app_metadata?.user_id
     return typeof adopted === 'string' && adopted ? adopted : c.sub
   } catch {
     return null
   }
+}
+
+/** The OAuth client a token was issued to (RFC 0099), or null for a
+ *  person's own sign-in. Supabase's OAuth server puts `client_id` in the
+ *  tokens it issues to an assistant; a sign-in link's tokens carry none. It
+ *  cannot be forged: Auth checks the signature before anything is written. */
+export function tokenClientId(token: string): string | null {
+  try {
+    const id = claims(token).client_id
+    return typeof id === 'string' && id ? id : null
+  } catch {
+    return null
+  }
+}
+
+function claims(token: string): Claims {
+  return JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8')) as Claims
 }
 
 /** Whether Supabase Auth accepts the token as a live session. */

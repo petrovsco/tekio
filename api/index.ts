@@ -7,7 +7,8 @@
 // `@tekio/api` itself, which Node cannot load as TypeScript source.
 //
 // Vercel answers 405 for any method not exported here, before Hono sees it, so
-// every method a route uses is exported (src/test/apiFunction.test.ts checks).
+// every method a route uses is exported (src/test/apiFunction.test.ts checks),
+// and OPTIONS, which a browser-based assistant asks /api/mcp first.
 import { vercelHandler } from './_bundle.mjs'
 
 const handler = vercelHandler()
@@ -16,3 +17,4 @@ export const POST = handler
 export const PUT = handler
 export const PATCH = handler
 export const DELETE = handler
+export const OPTIONS = handler

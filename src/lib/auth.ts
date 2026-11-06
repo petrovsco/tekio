@@ -38,9 +38,10 @@ export async function restore(): Promise<{ signedIn: boolean; linkError?: string
   const linkError = params.get('error_description') ?? undefined
   const { data } = await client.getSession()
   // The link's tokens, or its error, have been read; neither belongs in the
-  // address bar, or in a bookmark made from it.
+  // address bar, or in a bookmark made from it. An assistant's sign-in keeps
+  // the request it is answering (RFC 0099).
   if (params.has('access_token') || linkError) {
-    history.replaceState(null, '', location.pathname)
+    history.replaceState(null, '', location.pathname + consentQuery())
   }
   const session: Session | null = data.session
   if (!session) return { signedIn: false, linkError }
@@ -54,9 +55,34 @@ export async function restore(): Promise<{ signedIn: boolean; linkError?: string
 export async function sendSignInLink(email: string): Promise<void> {
   const { error } = await client.signInWithOtp({
     email,
-    options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true },
+    options: { emailRedirectTo: location.origin + location.pathname + consentQuery(), shouldCreateUser: true },
   })
   if (error) throw error
+}
+
+/** The assistant's request a sign-in on the consent page must come back to
+ *  (RFC 0099), as a query string; empty anywhere else. */
+function consentQuery(): string {
+  const id = new URLSearchParams(location.search).get('authorization_id')
+  return id ? `?authorization_id=${encodeURIComponent(id)}` : ''
+}
+
+/** What an assistant asking to connect is (RFC 0099): its name and where it
+ *  sends the person back to, or a redirect when they already said yes. */
+export async function authorizationRequest(id: string) {
+  const { data, error } = await client.oauth.getAuthorizationDetails(id)
+  if (error) throw error
+  return data
+}
+
+/** The person's answer to an assistant's request: where to go next, which is
+ *  back to the assistant either way. */
+export async function answerAuthorization(id: string, allow: boolean): Promise<string> {
+  const { data, error } = allow
+    ? await client.oauth.approveAuthorization(id, { skipBrowserRedirect: true })
+    : await client.oauth.denyAuthorization(id, { skipBrowserRedirect: true })
+  if (error) throw error
+  return data.redirect_url
 }
 
 /** Ends the session on this device only. */

@@ -72,6 +72,9 @@
           },
           "verdict": {
             "$ref": "#/components/schemas/Verdict"
+          },
+          "words": {
+            "$ref": "#/components/schemas/HomeWords"
           }
         },
         "required": [
@@ -82,7 +85,8 @@
           "coverage",
           "readiness",
           "donation",
-          "verdict"
+          "verdict",
+          "words"
         ]
       },
       "MuscleState": {
@@ -536,6 +540,36 @@
           "mode",
           "cause"
         ]
+      },
+      "HomeWords": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "sub": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "text",
+              "sub"
+            ],
+            "description": "Home's verdict block: the instruction, and the facts behind it."
+          },
+          "missing": {
+            "type": "string",
+            "description": "The seven qualities in one sentence: which are untouched, which short."
+          }
+        },
+        "required": [
+          "verdict",
+          "missing"
+        ],
+        "description": "The read as Home words it. Print these rather than rewording the numbers."
       },
       "Error": {
         "type": "object",
@@ -1850,6 +1884,58 @@
           "sortOrder"
         ]
       },
+      "History": {
+        "type": "object",
+        "properties": {
+          "weights": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeightEntry"
+            },
+            "description": "Logged lifts, one entry per exercise a day."
+          },
+          "cardio": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CardioEntry"
+            }
+          },
+          "sports": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SportEntry"
+            }
+          },
+          "mobility": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MobilityEntry"
+            }
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlannedExercise"
+            },
+            "description": "Planned lifts: targets, not results. They count for nothing until logged."
+          },
+          "sessionPlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlannedSession"
+            },
+            "description": "Planned cardio, sport and mobility sessions."
+          }
+        },
+        "required": [
+          "weights",
+          "cardio",
+          "sports",
+          "mobility",
+          "plans",
+          "sessionPlans"
+        ]
+      },
       "ProfilePatch": {
         "type": "object",
         "properties": {
@@ -2213,6 +2299,74 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StartRows"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A parameter is missing or malformed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No valid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/history": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The training logged and planned from `from` to `to`, both days included.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "description": "The person's own calendar day, YYYY-MM-DD.",
+              "example": "2026-10-20"
+            },
+            "required": true,
+            "description": "The person's own calendar day, YYYY-MM-DD.",
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "What was logged and planned in those days.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/History"
                 }
               }
             }

@@ -1,5 +1,5 @@
 import { useId, type MouseEvent } from 'react'
-import { GAP_CUTOFF, type MuscleState } from '@tekio/core'
+import { GAP_CUTOFF, muscleShort, type MuscleState } from '@tekio/core'
 import { fmtSets } from '../../../lib/utils'
 import { HALF, MIRROR, ABS_LINES, FRONT_ZONES, BACK_ZONES, type Zone } from './BodyMap'
 
@@ -23,34 +23,6 @@ export function rampStep(fraction: number): number {
   if (fraction < 0.35) return 1
   if (fraction < GAP_CUTOFF) return 2
   return 3
-}
-
-/** Editorial short labels for map callouts and the verdict sentence. */
-const MUSCLE_SHORT: Record<string, string> = {
-  'Rectus Abdominis': 'CORE',
-  'Obliques': 'OBLIQUES',
-  'Hip Flexors': 'HIP FLEX',
-  'Quadriceps': 'QUADS',
-  'Hamstrings': 'HAMS',
-  'Glutes': 'GLUTES',
-  'Calves': 'CALVES',
-  'Adductors': 'ADDUCTORS',
-  'Erectors': 'ERECTORS',
-  'Chest': 'CHEST',
-  'Biceps': 'BICEPS',
-  'Triceps': 'TRICEPS',
-  'Forearms': 'FOREARMS',
-  'Lats': 'LATS',
-  'Rhomboids': 'RHOMBOIDS',
-  'Upper Back / Traps': 'TRAPS',
-  'Anterior Deltoid': 'ANT DELT',
-  'Lateral Deltoid': 'LAT DELT',
-  'Posterior Deltoid': 'POST DELT',
-  'Rotator Cuff': 'ROTATOR',
-}
-
-export function muscleShort(name: string): string {
-  return MUSCLE_SHORT[name] ?? name.toUpperCase()
 }
 
 /** Callout anchor per muscle, in the figure's own 120×240 space. Back-figure

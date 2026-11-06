@@ -7,13 +7,9 @@ export function uniqSorted(xs: string[]): string[] {
   return [...new Set(xs)].sort()
 }
 
-/** A set count: whole numbers plain, halves to one decimal. A muscle's share of
- *  a set is fractional (level 2 links weigh 0.5), so "1.5 sets" is a real read. */
-export const fmtSets = (n: number): string => (Number.isInteger(n) ? String(n) : n.toFixed(1))
-
-/** How long ago, for a recency note. `null` means it has never happened. */
-export const fmtAgo = (daysSince: number | null): string =>
-  daysSince === null ? 'never' : daysSince === 0 ? 'today' : `${daysSince} d ago`
+// The set count and the recency note live with Home's words in the core
+// (RFC 0099), which the API sends to assistants too.
+export { fmtSets, fmtAgo } from '@tekio/core'
 
 // ─── Dates on screen ─────────────────────────────────────────────────────────
 // Dates are stored as YYYY-MM-DD and printed only through `fmtDate`, in one

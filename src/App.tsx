@@ -20,6 +20,14 @@ const ProfileTab = lazy(() => import('./components/tabs/ProfileTab').then(whileR
 const SettingsTab = lazy(() => import('./components/tabs/SettingsTab').then(whileReloading).then(m => ({ default: m.SettingsTab })))
 // Only a signed-out start ever draws it (RFC 0003).
 const SignIn = lazy(() => import('./components/layout/SignIn').then(whileReloading).then(m => ({ default: m.SignIn })))
+// Only an assistant asking to connect sends anyone to it (RFC 0099).
+const Consent = lazy(() => import('./components/layout/Consent').then(whileReloading).then(m => ({ default: m.Consent })))
+
+/** The one address that is not the app: where Supabase's OAuth server sends
+ *  the person to answer an assistant (RFC 0099). */
+const consent = location.pathname === '/oauth/consent'
+  ? { id: new URLSearchParams(location.search).get('authorization_id') }
+  : null
 
 // Body Weight and Donations folded onto Home 2026-08-31 (doctrine §5,
 // roadmap 014): capture and correction moved into the T2 sheets, the
@@ -66,13 +74,22 @@ export default function App() {
   useEffect(() => {
     startSession().then(s => {
       setSession(s)
-      if (s.signedIn) bootstrap()
+      if (s.signedIn && !consent) bootstrap()
     })
     // Signed out here or in another tab: start again from a clean page, so no
     // one's rows stay in memory behind the sign-in screen.
     return onSignedOut(() => window.location.reload())
   }, [])
   useEffect(() => { if (!loading) dismissSplash() }, [loading])
+
+  if (consent && session?.signedIn) {
+    return (
+      <Suspense fallback={null}>
+        <SignedOutSplash />
+        <Consent id={consent.id} />
+      </Suspense>
+    )
+  }
 
   if (session && !session.signedIn) {
     return (
@@ -108,8 +125,8 @@ export default function App() {
   )
 }
 
-/** The splash waits for bootstrap; a signed-out start has none, so it goes
- *  the moment the sign-in screen is drawn. */
+/** The splash waits for bootstrap; a signed-out start and the consent page
+ *  (RFC 0099) have none, so it goes the moment their screen is drawn. */
 function SignedOutSplash() {
   useEffect(() => { dismissSplash() }, [])
   return null

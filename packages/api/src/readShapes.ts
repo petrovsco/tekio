@@ -118,6 +118,11 @@ export const HomeBody: z.ZodType<HomeRead> = z.object({
   readiness: SystemicReadinessShape,
   donation: DonationStatusShape,
   verdict: VerdictShape,
+  words: z.object({
+    verdict: z.object({ text: z.string(), sub: z.string() })
+      .openapi({ description: "Home's verdict block: the instruction, and the facts behind it." }),
+    missing: z.string().openapi({ description: 'The seven qualities in one sentence: which are untouched, which short.' }),
+  }).openapi('HomeWords', { description: 'The read as Home words it. Print these rather than rewording the numbers.' }),
 }).openapi('HomeRead')
 
 export const AdaptationsBody: z.ZodType<AdaptationsRead> = z.object({

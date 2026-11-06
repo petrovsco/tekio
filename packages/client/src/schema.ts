@@ -228,6 +228,65 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The training logged and planned from `from` to `to`, both days included. */
+        get: {
+            parameters: {
+                query: {
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    from: string;
+                    /** @description The person's own calendar day, YYYY-MM-DD. */
+                    to: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description What was logged and planned in those days. */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["History"];
+                    };
+                };
+                /** @description A parameter is missing or malformed. */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description No valid access token. */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/weights": {
         parameters: {
             query?: never;
@@ -3248,6 +3307,7 @@ export interface components {
             readiness: components["schemas"]["SystemicReadiness"];
             donation: components["schemas"]["DonationStatus"];
             verdict: components["schemas"]["Verdict"];
+            words: components["schemas"]["HomeWords"];
         };
         MuscleState: {
             id: string;
@@ -3358,6 +3418,16 @@ export interface components {
             mode: "push" | "steady" | "hold";
             /** @enum {string|null} */
             cause: "readiness" | "donation" | null;
+        };
+        /** @description The read as Home words it. Print these rather than rewording the numbers. */
+        HomeWords: {
+            /** @description Home's verdict block: the instruction, and the facts behind it. */
+            verdict: {
+                text: string;
+                sub: string;
+            };
+            /** @description The seven qualities in one sentence: which are untouched, which short. */
+            missing: string;
         };
         Error: {
             error: string;
@@ -3710,6 +3780,17 @@ export interface components {
             sectionKey: string;
             showInMenu: boolean;
             sortOrder: number;
+        };
+        History: {
+            /** @description Logged lifts, one entry per exercise a day. */
+            weights: components["schemas"]["WeightEntry"][];
+            cardio: components["schemas"]["CardioEntry"][];
+            sports: components["schemas"]["SportEntry"][];
+            mobility: components["schemas"]["MobilityEntry"][];
+            /** @description Planned lifts: targets, not results. They count for nothing until logged. */
+            plans: components["schemas"]["PlannedExercise"][];
+            /** @description Planned cardio, sport and mobility sessions. */
+            sessionPlans: components["schemas"]["PlannedSession"][];
         };
         ProfilePatch: {
             /** @enum {string} */

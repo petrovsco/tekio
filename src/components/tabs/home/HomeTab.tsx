@@ -1,15 +1,13 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { useAppStore } from '../../../store/app'
 import {
-  homeRead, checkInTotal, type MuscleState, type SystemicReadiness, type DonationStatus,
-  type FusedVerdict, type ReadinessBand, type Gauge, today, daysBetween, lastNightDate,
-  RECOVER_DAYS, DONATION_SUPPRESSION, MUSCLE_WINDOW_DAYS, coverageState,
+  homeRead, checkInTotal, type ReadinessBand, type Gauge, today, daysBetween, lastNightDate,
+  MUSCLE_WINDOW_DAYS, coverageState, coverageLine, coverageParts, joinNames, shortLower,
 } from '@tekio/core'
 import { useReadRows } from '../../../hooks/useReadRows'
-import { fmtSets, fmtAgo } from '../../../lib/utils'
-import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
+import { fmtAgo } from '../../../lib/utils'
+import { GapMap, RAMP, rampStep } from './GapMap'
 import { whileReloading } from '../../../lib/staleChunk'
-import { coverageLine, coverageParts } from '../adaptations/labels'
 import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
 import { METHOD_LABEL } from '../../../constants/readiness'
@@ -30,78 +28,8 @@ const QualitySheet = lazy(() => import('./QualitySheet').then(whileReloading))
 
 type OpenSheet = { fold: FoldKind } | { muscle: string } | { recovery: true } | { quality: WholeBodyQuality }
 
-const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
-
-const joinNames = (names: string[]): string =>
-  names.length <= 1 ? names[0] ?? '' : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
-
-const shortLower = (name: string): string => muscleShort(name).toLowerCase()
-
 /** The readiness card's band, beside its number (0085). */
 const BAND_LABEL: Record<ReadinessBand, string> = { low: 'LOW', moderate: 'MODERATE', ok: 'OK' }
-
-/** What a moderate band changes: the effort, not the gaps. Partially supported:
- * in both trialled three-tier rules the middle tier was the planned session,
- * lighter, never rest — reps and load cut (DeBlauw 2021), or volume cut and the
- * intervals dropped (Nuuttila 2022). No percentage: each trial's 25% was its
- * chosen step, not a tested dose.
- * See tekio.rfcs/rfcs/done/0085-push-gate-own-baseline.md#grounding */
-const STEADY_NOTE = 'Lighter today: no intervals or max efforts.'
-
-/** The gated instruction plus the top gap as its reason — all editorial text
- *  for the verdict block lives here, the numbers come from the fused read. */
-function verdictCopy(args: {
-  zeroData: boolean
-  verdict: FusedVerdict
-  sys: SystemicReadiness
-  don: DonationStatus
-  gaps: MuscleState[]
-  recoveringShorts: string[]
-  minDaysSince: number | null
-}): { text: string; sub: string } {
-  const { zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince } = args
-
-  if (zeroData) {
-    return {
-      text: 'Nothing logged yet.',
-      sub: 'One session and this screen starts answering. Nothing here is guessed.',
-    }
-  }
-
-  if (verdict.mode === 'hold') {
-    const text = 'Hold. Walk or mobility only.'
-    if (verdict.cause === 'donation') {
-      const when = fmtAgo(don.daysSince)
-      return { text, sub: `Full blood donation ${when} — the 48 h acute window gates the day.` }
-    }
-    const sub = sys.method === 'check_in'
-      ? "Today's check-in sits well under your usual."
-      : `${sys.method === 'morning_hrv' ? 'Morning HRV' : 'HRV'} this week sits well under your own normal.`
-    return { text, sub }
-  }
-
-  const names = gaps.slice(0, 2).map(m => shortLower(m.name))
-  const list = joinNames(names)
-  const lead = verdict.mode === 'steady' ? 'Steady' : 'Push'
-  const text = list
-    ? `${lead}. ${cap(list)} ${names.length > 1 ? 'are' : 'is'} the gap.`
-    : `${lead}. No gap in the last ${MUSCLE_WINDOW_DAYS} days.`
-  const facts = gaps.slice(0, 2).map(m =>
-    m.daysSince === null
-      ? `${cap(shortLower(m.name))}: never trained.`
-      : `${cap(shortLower(m.name))}: ${fmtSets(m.sets)} sets in ${MUSCLE_WINDOW_DAYS} days.`)
-  if (recoveringShorts.length > 0) {
-    const who = recoveringShorts.length > 3 ? `${recoveringShorts.length} muscles` : joinNames(recoveringShorts)
-    facts.push(`${cap(who)} still recovering (${RECOVER_DAYS} days).`)
-  } else if (minDaysSince !== null) {
-    facts.push(`Nothing is sore — last stimulus ${fmtAgo(minDaysSince)}.`)
-  }
-  if (don.aerobicSuppressed && !don.acuteHold) {
-    facts.push(`Blood: full donation ${fmtAgo(don.daysSince)} — aerobic work is suppressed (~${DONATION_SUPPRESSION.aerobicTailDays} d).`)
-  }
-  if (verdict.mode === 'steady') facts.unshift(STEADY_NOTE)
-  return { text, sub: facts.join(' ') }
-}
 
 /** Bar tones on the readiness card; the gated inversion remaps them. */
 const TONE = {
@@ -182,15 +110,7 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const zeroData = weights.length === 0 && cardio.length === 0 && sports.length === 0
 
 
-  const recoveringShorts = states.filter(s => s.leaf && s.recovering).map(s => shortLower(s.name))
-  const minDaysSince = states.reduce<number | null>(
-    (min, s) => (s.daysSince !== null && (min === null || s.daysSince < min) ? s.daysSince : min),
-    null,
-  )
-
-  const { text: verdictText, sub: verdictSub } = verdictCopy({
-    zeroData, verdict, sys, don, gaps, recoveringShorts, minDaysSince,
-  })
+  const { text: verdictText, sub: verdictSub } = home.words.verdict
 
   // The card's two columns follow the method the verdict reads from (0092).
   // A typed method still waiting for today's answer asks for it, in the

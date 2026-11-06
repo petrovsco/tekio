@@ -89,9 +89,11 @@ const loginPage = (error = false) => `<!DOCTYPE html>
 </html>`
 
 // Everything but the API (RFC 0094 step 2c): the bearer token is that route's
-// door, checked on every call, and a phone app has no cookie to show here.
+// door, checked on every call, and a phone app has no cookie to show here. The
+// OAuth metadata an assistant reads before it signs in (RFC 0099) is the API's
+// too, served at the root because that is where assistants look for it.
 export const config = {
-  matcher: ['/((?!api/).*)'],
+  matcher: ['/((?!api/|\\.well-known/oauth-protected-resource).*)'],
 }
 
 export default async function middleware(request: Request): Promise<Response> {
