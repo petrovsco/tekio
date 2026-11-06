@@ -28,7 +28,7 @@ import { PlanCard } from './PlanCard'
 import { PlanSheet } from './PlanSheet'
 import { FromPlanStrip } from '../../ui/PlannedCard'
 import { groupRuns, groupName } from '../../../lib/supersets'
-import { readDraft, writeDraft, emptyLift, liftTouched, type DraftLift, type LogDraft } from '../../../lib/logDraft'
+import { readDraft, writeDraft, emptyLift, liftTouched, addLift, type DraftLift, type LogDraft } from '../../../lib/logDraft'
 
 const sameSet = (a: LiftSet, b: LiftSet) => a.weight === b.weight && a.reps === b.reps && a.seconds === b.seconds
 
@@ -513,9 +513,11 @@ export function WeightsTab() {
 
       <div ref={formRef} className="scroll-mt-24"><Card>
           <SecTitle>Log Exercise</SecTitle>
-          {lifts.length > 1 && (
+          {/* The switcher shows once a lift is on the form, so another one,
+              in the plan or not, can join it. */}
+          {(lifts.length > 1 || liftTouched(lift)) && (
             <div className="flex flex-col gap-1.5 mb-2.5">
-              {lifts.every(l => l.supersetId && l.supersetId === lifts[0].supersetId) && (
+              {together && (
                 <div className="flex items-center gap-1.5">
                   <SSBadge />
                   <span className={MICRO_LABEL}>{groupName(lifts.length)}</span>
@@ -528,11 +530,18 @@ export function WeightsTab() {
                     {l.ex.trim() || 'New exercise'}
                   </Chip>
                 ))}
+                {/* Dashed: a slot for a lift, not one already on the form. */}
+                <button
+                  className="px-2 py-[3px] text-[10px] font-semibold rounded-[3px] border border-dashed border-ink-3 bg-white text-ink-2 hover:border-ink hover:text-ink cursor-pointer transition-colors"
+                  onClick={() => { setDraft(addLift); formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }) }}
+                >
+                  + Exercise
+                </button>
               </div>
               {/* An unplanned lift with nothing in the log yet: dropping it
                   only loses what was typed. A planned one goes back to plan
                   from its strip; a logged one is finished. */}
-              {!fromPlan && !ticked && !entryOf(lift) && (
+              {lifts.length > 1 && !fromPlan && !ticked && !entryOf(lift) && (
                 <button
                   className="self-start text-[11px] text-ink-3 hover:text-ink cursor-pointer"
                   onClick={() => dropLift(lift.id)}

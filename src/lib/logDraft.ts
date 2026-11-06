@@ -40,6 +40,16 @@ export const emptyLift = (): DraftLift => ({ id: crypto.randomUUID(), ex: '', se
 export const liftTouched = (l: DraftLift): boolean =>
   l.ex.trim() !== '' || l.sets.some(s => s.weight !== '' || s.reps !== '')
 
+/** "+ Exercise" on the switcher: an empty lift, outside any plan, joins the
+ *  form and shows. One already waiting empty is shown instead of a second, and
+ *  an untouched lift is dropped, as Log on a plan drops it. */
+export function addLift(d: LogDraft): LogDraft {
+  const empty = d.lifts.findIndex(l => !liftTouched(l) && !l.planId)
+  if (empty >= 0 && d.lifts.length > 1) return { ...d, active: empty }
+  const kept = d.lifts.filter(liftTouched)
+  return { ...d, lifts: [...kept, emptyLift()], active: kept.length }
+}
+
 export function readDraft(fallbackDate: string): LogDraft {
   try {
     const raw = localStorage.getItem(KEY)
