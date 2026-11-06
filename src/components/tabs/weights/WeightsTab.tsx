@@ -16,6 +16,7 @@ import { SSBadge, MicroLabel, MICRO_LABEL } from '../../ui/Badges'
 import { SmartInput } from '../../ui/SmartInput'
 import { HistoryList } from '../../ui/HistoryList'
 import { SetsGrid } from '../../ui/SetsGrid'
+import { arrayMove } from '@dnd-kit/sortable'
 import { Icon } from '../../ui/Icon'
 import { Modal } from '../../ui/Modal'
 import { CHART, CHART_LINE, CHART_AXIS, CHART_TOOLTIP, hoverDot } from '../../ui/chart'
@@ -285,6 +286,20 @@ export function WeightsTab() {
     wanted.current.delete(id)
     const back = loggedOf(want.lift).saved
     setDraft(x => ({ ...x, lifts: x.lifts.map(y => (y.id === id ? { ...y, saved: back } : y)) }))
+  }
+
+  /** Drag (RFC 0112): a set moves to another place on the form, its tick with
+   *  it. Only an unticked set is picked up, so the ticked ones keep their order
+   *  and the log needs no write. */
+  const moveSet = (from: number, to: number) => {
+    const id = lift.id
+    const n = lift.sets.length
+    const move = <T,>(a: T[], fill: T) => arrayMove(Array.from({ length: n }, (_, i) => a[i] ?? fill), from, to)
+    const was = logged.current.get(id)
+    if (was) setLogged(id, { ...was, saved: move(was.saved, false) })
+    const want = wanted.current.get(id)
+    if (want) wanted.current.set(id, { ...want, lift: { ...want.lift, sets: move(want.lift.sets, { weight: '', reps: '' }), saved: move(want.lift.saved ?? [], false) } })
+    patchLift(l => ({ ...l, sets: move(l.sets, { weight: '', reps: '' }), ...(l.saved ? { saved: move(l.saved, false) } : {}) }))
   }
 
   /** Tick: this one set goes into the log, or comes back out of it. The tick
@@ -588,6 +603,7 @@ export function WeightsTab() {
               onToggle={toggleSet}
               pending={pendingOf(lift)}
               timed={timed}
+              onMove={moveSet}
             />
           </div>
 
