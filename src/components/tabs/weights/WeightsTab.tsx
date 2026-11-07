@@ -341,6 +341,9 @@ export function WeightsTab() {
   const doneGroup = groupOf(lift)
   const doneAsked = doneGroup.some(y => y.id === askDone) && doneGroup.every(y => allTicked(y)) && !busy
 
+  // The lift whose × was tapped, waiting on the answer.
+  const [askDrop, setAskDrop] = useState<string | null>(null)
+
   /** Takes a lift off the form; the next one along shows. */
   const dropLift = (id: string) => setDraft(x => {
     const rest = x.lifts.filter(y => y.id !== id)
@@ -431,6 +434,10 @@ export function WeightsTab() {
     }
   }
   const ticked = savedOf(lift).filter(Boolean).length
+  /** An unplanned lift with nothing in the log yet: dropping it only loses
+   *  what was typed. A planned one goes back to plan from its strip; a
+   *  logged one is finished. */
+  const droppable = lifts.length > 1 && !fromPlan && !ticked && !entryOf(lift)
 
   const liftFromPlan = (p: PlannedExercise, inGroup = false): DraftLift => ({
     id: crypto.randomUUID(),
@@ -524,12 +531,28 @@ export function WeightsTab() {
                 </div>
               )}
               <div className="flex flex-wrap gap-1">
-                {lifts.map((l, i) => (
-                  <Chip key={l.id} small active={i === active} className="inline-flex items-center gap-0.5" onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
-                    {savedOf(l).some(Boolean) && <Icon name="check" size={10} />}
-                    {l.ex.trim() || 'New exercise'}
-                  </Chip>
-                ))}
+                {lifts.map((l, i) => {
+                  const chip = (
+                    <Chip key={l.id} small active={i === active} className={`inline-flex items-center gap-0.5 ${i === active && droppable ? 'rounded-r-none border-r-0' : ''}`} onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
+                      {savedOf(l).some(Boolean) && <Icon name="check" size={10} />}
+                      {l.ex.trim() || 'New exercise'}
+                    </Chip>
+                  )
+                  if (i !== active || !droppable) return chip
+                  // The × sits on the chip it removes, and asks first.
+                  return (
+                    <span key={l.id} className="inline-flex">
+                      {chip}
+                      <button
+                        aria-label={`Remove ${l.ex.trim() || 'this exercise'}`}
+                        className="pl-1.5 pr-2 inline-flex items-center rounded-r-[3px] border border-l-0 border-ink bg-ink text-white cursor-pointer before:content-[''] before:h-3 before:border-l before:border-white/40 before:mr-1.5"
+                        onClick={() => setAskDrop(l.id)}
+                      >
+                        <Icon name="close" size={11} />
+                      </button>
+                    </span>
+                  )
+                })}
                 {/* Dashed: a slot for a lift, not one already on the form. */}
                 <button
                   className="px-2 py-[3px] text-[10px] font-semibold rounded-[3px] border border-dashed border-ink-3 bg-white text-ink-2 hover:border-ink hover:text-ink cursor-pointer transition-colors"
@@ -538,17 +561,6 @@ export function WeightsTab() {
                   + Exercise
                 </button>
               </div>
-              {/* An unplanned lift with nothing in the log yet: dropping it
-                  only loses what was typed. A planned one goes back to plan
-                  from its strip; a logged one is finished. */}
-              {lifts.length > 1 && !fromPlan && !ticked && !entryOf(lift) && (
-                <button
-                  className="self-start text-[11px] text-ink-3 hover:text-ink cursor-pointer"
-                  onClick={() => dropLift(lift.id)}
-                >
-                  Remove {ex.trim() || 'this exercise'}
-                </button>
-              )}
             </div>
           )}
           {fromPlan && (
@@ -667,6 +679,21 @@ export function WeightsTab() {
             </div>
           )}
 
+          <Modal
+            open={askDrop === lift.id && droppable}
+            onClose={() => setAskDrop(null)}
+            title={`Remove ${ex.trim() || 'this exercise'}?`}
+            footer={(
+              <div className="flex gap-2">
+                <Btn variant="secondary" onClick={() => setAskDrop(null)} className="flex-1">Cancel</Btn>
+                <Btn variant="danger" onClick={() => { setAskDrop(null); dropLift(lift.id) }} className="flex-1">Remove</Btn>
+              </div>
+            )}
+          >
+            <p className="text-[13px] text-ink leading-snug">
+              It comes off the form, with what you typed for it. Nothing in your log changes.
+            </p>
+          </Modal>
           <Modal
             open={doneAsked && askedRows.length === 0}
             onClose={() => setAskDone(null)}
