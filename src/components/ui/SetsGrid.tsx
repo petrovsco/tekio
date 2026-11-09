@@ -1,7 +1,7 @@
 import { DndContext, PointerSensor, TouchSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from '@dnd-kit/core'
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import type { CSSProperties, ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { MICRO_LABEL } from './Badges'
 import { DelBtn } from './Button'
 import { Icon } from './Icon'
@@ -27,6 +27,9 @@ interface SetsGridProps {
   onMove?: (from: number, to: number) => void
 }
 
+/** Row ids for dnd-kit, unique across every grid on the page. */
+let nextSetId = 0
+
 /**
  * Reusable sets grid (weight × reps rows, or added load × seconds for a hold)
  * used in WeightsTab, the plan sheet and EditModal.
@@ -42,10 +45,26 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
   )
-  const ids = visible.map((_, i) => `set-${i}`)
+  // Each row keeps its id when it moves. An id per position made the dropped
+  // row's id land back on the slot it left, so dnd-kit drew it sliding home
+  // before the moved values showed. The ids travel with the rows instead.
+  const [kept, setIds] = useState<string[]>([])
+  if (kept.length !== visible.length) {
+    const grown = kept.slice(0, visible.length)
+    while (grown.length < visible.length) grown.push(`set-${nextSetId++}`)
+    setIds(grown)
+  }
+  const ids = visible.map((_, i) => kept[i] ?? `row-${i}`)
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (!onMove || !over || active.id === over.id) return
-    onMove(ids.indexOf(active.id as string), ids.indexOf(over.id as string))
+    const from = ids.indexOf(active.id as string)
+    const to = ids.indexOf(over.id as string)
+    setIds(arrayMove(ids, from, to))
+    onMove(from, to)
+  }
+  const remove = (i: number) => {
+    setIds(ids.filter((_, j) => j !== i))
+    onRemove(i)
   }
 
   return (
@@ -63,7 +82,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
             const unfilled = !rowFilled(s, timed)
             const saving = !!pending?.[i]
             return (
-              <SetRow key={i} id={ids[i]} cols={cols} n={i + 1} grip={movable && !done}>
+              <SetRow key={ids[i]} id={ids[i]} cols={cols} n={i + 1} grip={movable && !done}>
                 <input
                   value={s.weight}
                   onChange={e => onUpdate(i, 'weight', e.target.value)}
@@ -106,7 +125,7 @@ export function SetsGrid({ sets, revealed, onUpdate, onRemove, onRevealNext, sav
                   </button>
                 )}
                 <div>
-                  {visible.length > 1 && !done && <DelBtn noConfirm onClick={() => onRemove(i)} />}
+                  {visible.length > 1 && !done && <DelBtn noConfirm onClick={() => remove(i)} />}
                 </div>
               </SetRow>
             )
