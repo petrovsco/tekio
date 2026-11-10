@@ -8,7 +8,7 @@ import {
 import { useReadRows } from '../../../hooks/useReadRows'
 import { fmtSets, fmtAgo } from '../../../lib/utils'
 import { GapMap, muscleShort, RAMP, rampStep } from './GapMap'
-import { whileReloading } from '../../../lib/staleChunk'
+import { prefetchChunks, whileReloading } from '../../../lib/staleChunk'
 import { coverageLine, coverageParts } from '../adaptations/labels'
 import type { planPreview as PlanPreviewFn } from '../../../lib/planPreview'
 import { Icon } from '../../ui/Icon'
@@ -140,10 +140,12 @@ export function HomeTab({ setTab }: { setTab: (t: string, muscle?: string) => vo
   const prefetch = () => {
     if (prefetched.current) return
     prefetched.current = true
-    import('./FoldSheet')
-    import('./MuscleSheet')
-    import('./RecoverySheet')
-    import('./QualitySheet')
+    prefetchChunks(
+      () => import('./FoldSheet'),
+      () => import('./MuscleSheet'),
+      () => import('./RecoverySheet'),
+      () => import('./QualitySheet'),
+    )
   }
 
   // The fused Home read, one call shared with the API (RFC 0094 step 2b).

@@ -47,3 +47,12 @@ export function reloadOnStaleChunk() {
 export function whileReloading<T>(mod: T | undefined): Promise<T> {
   return mod === undefined ? new Promise<T>(() => {}) : Promise.resolve(mod)
 }
+
+/** Warm the lazy chunks a tap is likely to want next. Best effort: a failure
+ *  here costs nothing, because opening the sheet asks for the chunk again
+ *  through React.lazy, whose failure reaches the error boundary and is
+ *  reported there. Left unhandled, each failed prefetch on a flaky connection
+ *  became an error report of its own (error reports #61–#63). */
+export function prefetchChunks(...loads: Array<() => Promise<unknown>>) {
+  for (const load of loads) load().catch(() => {})
+}

@@ -3,7 +3,7 @@ import { useAppStore } from '../../store/app'
 import {
   today, adaptationsRead, type MuscleQuality, type WholeBodyQuality, ADAPTATIONS, MUSCLE_WINDOW_DAYS,
 } from '@tekio/core'
-import { whileReloading } from '../../lib/staleChunk'
+import { prefetchChunks, whileReloading } from '../../lib/staleChunk'
 import { useReadRows } from '../../hooks/useReadRows'
 import type { Adaptation } from '../../types'
 import { Btn } from '../ui/Button'
@@ -48,9 +48,11 @@ export function AdaptationsTab({ setTab, initialMuscle }: AdaptationsTabProps) {
   const prefetch = () => {
     if (prefetched.current) return
     prefetched.current = true
-    import('./adaptations/RxSheet')
-    import('./adaptations/MuscleListSheet')
-    import('./home/MuscleSheet')
+    prefetchChunks(
+      () => import('./adaptations/RxSheet'),
+      () => import('./adaptations/MuscleListSheet'),
+      () => import('./home/MuscleSheet'),
+    )
   }
 
   // One call shared with the API (RFC 0094 step 2b): the coverage behind the

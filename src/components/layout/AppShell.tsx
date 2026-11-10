@@ -6,7 +6,7 @@ import { Drawer } from './Drawer'
 import { BottomNav } from './BottomNav'
 import { EnvBanner } from './EnvBanner'
 import { IS_PRODUCTION } from '../../lib/env'
-import { whileReloading } from '../../lib/staleChunk'
+import { prefetchChunks, whileReloading } from '../../lib/staleChunk'
 
 // T2 — on intent (roadmap 018 unit 5). The edit form is reached from every
 // surface but only ever after a tap, so it is a lazy chunk prefetched on the
@@ -67,7 +67,7 @@ export function AppShell({ tab, setTab, children }: AppShellProps) {
       onPointerDown={() => {
         if (prefetched.current) return
         prefetched.current = true
-        void import('../ui/EditModal')
+        prefetchChunks(() => import('../ui/EditModal'))
       }}
     >
       <EnvBanner />
