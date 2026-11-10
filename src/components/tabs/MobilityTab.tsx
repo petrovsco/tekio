@@ -49,7 +49,7 @@ export function MobilityTab() {
   // The plan the form was filled from (RFC 0104): saving the form logs the
   // session and ticks the plan.
   const [fromPlan, setFromPlan] = useState<PlannedSession | null>(null)
-  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedSession } | null>(null)
+  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedSession; date?: string } | null>(null)
   const formRef = useRef<HTMLDivElement>(null)
 
   const allExNames = uniqSorted(mobility.flatMap(m => m.exercises.map(e => e.name)))
@@ -143,10 +143,10 @@ export function MobilityTab() {
         kinds={KINDS}
         onLog={logFromPlan}
         onEdit={p => setPlanSheet({ plan: p })}
-        onAdd={() => setPlanSheet({})}
+        onAdd={date => setPlanSheet({ date })}
       />
       {planSheet && (
-        <SessionPlanSheet plan={planSheet.plan} kinds={KINDS} onClose={() => setPlanSheet(null)} />
+        <SessionPlanSheet plan={planSheet.plan} kinds={KINDS} initialDate={planSheet.date} onClose={() => setPlanSheet(null)} />
       )}
 
       <div ref={formRef} className="scroll-mt-24"><Card>

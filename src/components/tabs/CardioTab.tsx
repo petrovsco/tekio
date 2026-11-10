@@ -43,7 +43,7 @@ export function CardioTab() {
   // The plan the form was filled from (RFC 0104): saving the form logs the
   // work and ticks the plan.
   const [fromPlan, setFromPlan] = useState<PlannedSession | null>(null)
-  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedSession } | null>(null)
+  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedSession; date?: string; kind?: PlannedKind } | null>(null)
   // Bumped when a plan is picked: the form remounts with the plan's targets.
   // Saving or unlinking leaves the form as it stands.
   const [formKey, setFormKey] = useState(0)
@@ -75,13 +75,14 @@ export function CardioTab() {
         kinds={KINDS}
         onLog={logFromPlan}
         onEdit={p => setPlanSheet({ plan: p })}
-        onAdd={() => setPlanSheet({})}
+        onAdd={(date, kind) => setPlanSheet({ date, kind })}
       />
       {planSheet && (
         <SessionPlanSheet
           plan={planSheet.plan}
           kinds={KINDS}
-          defaultKind={mode}
+          defaultKind={planSheet.kind ?? mode}
+          initialDate={planSheet.date}
           onClose={() => setPlanSheet(null)}
         />
       )}

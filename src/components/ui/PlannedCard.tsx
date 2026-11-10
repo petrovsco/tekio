@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
 import { today, daysBetween } from '@tekio/core'
 import { fmtDate } from '../../lib/utils'
 import { MISSED_PLAN_KEPT_DAYS } from '../../constants/app'
@@ -8,6 +8,12 @@ import { DelBtn, ACT_CHIP } from './Button'
 import { Icon } from './Icon'
 import { MicroLabel, MICRO_LABEL, SSBadge } from './Badges'
 import { groupRuns, groupName } from '../../lib/supersets'
+import { whileReloading } from '../../lib/staleChunk'
+import type { WeekAdd } from './WeekSheet'
+
+// The week (RFC 0114) opens on intent, so its chunk and the plan preview it
+// reads stay off the tab until the door is tapped (P1).
+const WeekSheet = lazy(() => import('./WeekSheet').then(whileReloading))
 
 
 /** What every plan has, whatever it plans: a lift (RFC 0098) or a cardio,
@@ -35,7 +41,7 @@ const writeFolded = (key: string, v: boolean) => {
  * then deleted. Each tab supplies its plans, how one reads, and when one counts
  * as logged.
  */
-export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, groupOf, onLog, onLogGroup, onEdit, onRemove, onAdd }: {
+export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, groupOf, onLog, onLogGroup, onEdit, onRemove, onAdd, weekAdds }: {
   plans: P[]
   /** A logged plan has become work: it leaves the card, and the tab's history
    *  shows it like any other entry. */
@@ -61,6 +67,8 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
   onRemove: (plan: P) => void
   /** Opens the plan sheet, for a new plan. */
   onAdd: () => void
+  /** What the week's days can add from this tab (RFC 0114). */
+  weekAdds: WeekAdd[]
 }) {
   const { todays, doneToday, formToday, later, missed } = useMemo(() => {
     const t = today()
@@ -77,6 +85,8 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
 
   const [folded, setFolded] = useState(() => readFolded(foldKey))
   const toggle = () => setFolded(f => { writeFolded(foldKey, !f); return !f })
+  const [week, setWeek] = useState(false)
+  const adds = weekAdds.map(a => ({ ...a, onAdd: (d: string) => { setWeek(false); a.onAdd(d) } }))
   const summary = todays.length > 0
     ? `${todays.length} today`
     : later.length > 0 ? `${later.length} later`
@@ -134,17 +144,27 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
 
   return (
     <Card className="!bg-planned-tint !border-planned">
-      <button
-        onClick={toggle}
-        aria-expanded={!folded}
-        className={`w-full flex items-center justify-between cursor-pointer ${folded ? '' : 'mb-2'}`}
-      >
-        <span className={FIELD_LABEL}>Planned</span>
-        <span className="flex items-center gap-1 text-[11px] text-ink-2">
-          {folded && summary}
+      <div className={`flex items-center gap-3 ${folded ? '' : 'mb-2'}`}>
+        <button
+          onClick={toggle}
+          aria-expanded={!folded}
+          className="flex-1 min-w-0 flex items-center justify-between cursor-pointer"
+        >
+          <span className={FIELD_LABEL}>Planned</span>
+          <span className="text-[11px] text-ink-2">{folded && summary}</span>
+        </button>
+        <button onClick={() => setWeek(true)} className="flex items-center gap-1 text-[11px] font-semibold text-ink cursor-pointer">
+          <Icon name="list" size={13} /> Week
+        </button>
+        <button onClick={toggle} aria-label={folded ? 'Open the plan' : 'Fold the plan'} className="text-ink-2 cursor-pointer">
           <Icon name={folded ? 'chevronDown' : 'chevronUp'} size={14} />
-        </span>
-      </button>
+        </button>
+      </div>
+      {week && (
+        <Suspense fallback={null}>
+          <WeekSheet adds={adds} onClose={() => setWeek(false)} />
+        </Suspense>
+      )}
       {!folded && <>
       <span className={MICRO_LABEL}>Today</span>
       {todays.length > 0

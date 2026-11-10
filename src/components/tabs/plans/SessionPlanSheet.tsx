@@ -28,13 +28,15 @@ const minutes = (raw: string): number | undefined => {
  * its tab so the log form underneath stays a log form. Saving logs nothing.
  * The day is today or later, as on Weights.
  */
-export function SessionPlanSheet({ plan, kinds, defaultKind = kinds[0], onClose }: {
+export function SessionPlanSheet({ plan, kinds, defaultKind = kinds[0], initialDate, onClose }: {
   /** The plan to edit; absent writes a new one. */
   plan?: PlannedSession
   /** What this tab plans. */
   kinds: PlannedKind[]
   /** The kind a new plan starts as. */
   defaultKind?: PlannedKind
+  /** The day a new plan starts on, when it is added from the week (RFC 0114). */
+  initialDate?: string
   onClose: () => void
 }) {
   const addSessionPlan = useAppStore(s => s.addSessionPlan)
@@ -47,7 +49,7 @@ export function SessionPlanSheet({ plan, kinds, defaultKind = kinds[0], onClose 
   // A missed plan opens on today: editing it is a reschedule, and a plan's day
   // is today or later.
   const missed = !!plan && plan.date < today()
-  const [date, setDate] = useState(plan && !missed ? plan.date : today())
+  const [date, setDate] = useState(plan && !missed ? plan.date : initialDate && initialDate >= today() ? initialDate : today())
   const [cardioType, setCardioType] = useState(plan?.kind === 'cardio' ? plan.name : CARDIO_TYPES[0])
   const [sport, setSport] = useState(plan?.kind === 'sport' ? plan.name : '')
   const [duration, setDuration] = useState(plan?.duration ? String(plan.duration) : '')
