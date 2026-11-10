@@ -2,9 +2,10 @@ import { useCallback } from 'react'
 import { useAppStore } from '../../../store/app'
 import { PlannedCard, PlanChips } from '../../ui/PlannedCard'
 import { planTitle, planChips } from './planText'
+import { sessionPlanLogged } from '../../../lib/week'
 import type { PlannedKind, PlannedSession } from '../../../types'
 
-const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
+const KIND_LABEL: Record<PlannedKind, string> = { cardio: 'Cardio', sport: 'Sport', mobility: 'Mobility' }
 
 /**
  * Planned sessions (RFC 0104) on Cardio or Mobility: the Weights card's frame,
@@ -16,7 +17,8 @@ export function SessionPlanCard({ kinds, onLog, onEdit, onAdd }: {
   kinds: PlannedKind[]
   onLog: (plan: PlannedSession) => void
   onEdit: (plan: PlannedSession) => void
-  onAdd: () => void
+  /** Opens the plan sheet, for a new plan; from the week, on that day and kind. */
+  onAdd: (date?: string, kind?: PlannedKind) => void
 }) {
   const all = useAppStore(s => s.sessionPlans)
   const cardio = useAppStore(s => s.cardio)
@@ -27,17 +29,10 @@ export function SessionPlanCard({ kinds, onLog, onEdit, onAdd }: {
 
   const plans = all.filter(p => kinds.includes(p.kind))
 
-  // A link to an entry since deleted is no link: the database nulls it, and
-  // the plan is a plan again here as there.
-  const isLogged = useCallback((p: PlannedSession): boolean => {
-    if (p.kind === 'cardio') {
-      return cardio.some(e => e.id === p.loggedAs || (e.date === p.date && same(e.type, p.name)))
-    }
-    if (p.kind === 'sport') {
-      return sports.some(e => e.id === p.loggedAs || (e.date === p.date && same(e.sport, p.name)))
-    }
-    return !!p.loggedAs && mobility.some(e => e.id === p.loggedAs)
-  }, [cardio, sports, mobility])
+  const isLogged = useCallback(
+    (p: PlannedSession) => sessionPlanLogged(p, { cardio, sports, mobility }),
+    [cardio, sports, mobility],
+  )
 
   return (
     <PlannedCard
@@ -52,7 +47,8 @@ export function SessionPlanCard({ kinds, onLog, onEdit, onAdd }: {
       onLog={onLog}
       onEdit={onEdit}
       onRemove={p => withToast(() => removeSessionPlan(p.id), 'Plan removed')}
-      onAdd={onAdd}
+      onAdd={() => onAdd()}
+      weekAdds={kinds.map(k => ({ label: KIND_LABEL[k], onAdd: (d: string) => onAdd(d, k) }))}
     />
   )
 }

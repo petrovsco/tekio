@@ -16,13 +16,15 @@ import type { ExerciseAlias, PlannedExercise } from '../../../types'
  * until it is logged. The day is today or later — work on a past day either
  * happened, and is logged, or it did not.
  */
-export function PlanSheet({ plan, suggestions, aliases, timedOf, onClose }: {
+export function PlanSheet({ plan, suggestions, aliases, timedOf, initialDate, onClose }: {
   /** The plan to edit; absent writes a new one. */
   plan?: PlannedExercise
   suggestions: string[]
   aliases: ExerciseAlias[]
   /** Whether a name is a hold (RFC 0107); `null` for a name nothing knows. */
   timedOf: (name: string) => boolean | null
+  /** The day a new plan starts on, when it is added from the week (RFC 0114). */
+  initialDate?: string
   onClose: () => void
 }) {
   const addPlan = useAppStore(s => s.addPlan)
@@ -34,7 +36,7 @@ export function PlanSheet({ plan, suggestions, aliases, timedOf, onClose }: {
   // A missed plan opens on today: editing it is a reschedule, and a plan's day
   // is today or later.
   const missed = !!plan && plan.date < today()
-  const [date, setDate] = useState(plan && !missed ? plan.date : today())
+  const [date, setDate] = useState(plan && !missed ? plan.date : initialDate && initialDate >= today() ? initialDate : today())
   const [sets, setSets] = useState<SetStr[]>(plan?.targets.length ? toSetStr(plan.targets) : [{ weight: '', reps: '' }])
   const [revealed, setRevealed] = useState(plan?.targets.length || 1)
   // A known name decides; a new one is asked, as on the log form (RFC 0107).

@@ -77,7 +77,7 @@ export function WeightsTab() {
   // and ticks the plan; the numbers may differ from its targets.
   const fromPlan = plans.find(p => p.id === lift.planId && (!p.loggedAs || p.loggedAs === lift.entryId)) ?? null
   // The plan sheet (RFC 0098): `plan` absent writes a new plan.
-  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedExercise } | null>(null)
+  const [planSheet, setPlanSheet] = useState<{ plan?: PlannedExercise; date?: string } | null>(null)
 
   // This component holds the log form's state as well as the history read, so
   // every keystroke re-renders it. Everything derived from `weights` is memoised
@@ -513,9 +513,9 @@ export function WeightsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PlanCard onForm={onForm} onLog={logFromPlan} onLogGroup={logGroup} onEdit={p => setPlanSheet({ plan: p })} onAdd={() => setPlanSheet({})} />
+      <PlanCard onForm={onForm} onLog={logFromPlan} onLogGroup={logGroup} onEdit={p => setPlanSheet({ plan: p })} onAdd={date => setPlanSheet({ date })} />
       {planSheet && (
-        <PlanSheet plan={planSheet.plan} suggestions={suggestions} aliases={aliases} timedOf={timedOf} onClose={() => setPlanSheet(null)} />
+        <PlanSheet plan={planSheet.plan} initialDate={planSheet.date} suggestions={suggestions} aliases={aliases} timedOf={timedOf} onClose={() => setPlanSheet(null)} />
       )}
 
       <div ref={formRef} className="scroll-mt-24"><Card>

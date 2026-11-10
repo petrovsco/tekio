@@ -68,6 +68,13 @@ export const startOfWeek = (s: string, weekStart: WeekStartDay = 'monday'): stri
   return d.toISOString().slice(0, 10)
 }
 
+/** YYYY-MM-DD `n` days after `s` (negative = before), in UTC like the rest. */
+export const addDays = (s: string, n: number): string => {
+  const d = new Date(`${s}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
+}
+
 /** Groups a date into its containing week, keyed by that week's start date. */
 export const weekKey = (s: string, weekStart: WeekStartDay = 'monday'): string =>
   startOfWeek(s, weekStart)

@@ -17,8 +17,8 @@ export function PlanCard({ onForm, onLog, onLogGroup, onEdit, onAdd }: {
   /** Log superset: the group's plans as the card shows them. */
   onLogGroup: (plans: PlannedExercise[]) => void
   onEdit: (plan: PlannedExercise) => void
-  /** Opens the plan sheet, for a new plan. */
-  onAdd: () => void
+  /** Opens the plan sheet, for a new plan; from the week, on that day. */
+  onAdd: (date?: string) => void
 }) {
   const plans = useAppStore(s => s.plans)
   const removePlan = useAppStore(s => s.removePlan)
@@ -37,7 +37,8 @@ export function PlanCard({ onForm, onLog, onLogGroup, onEdit, onAdd }: {
       onLogGroup={onLogGroup}
       onEdit={onEdit}
       onRemove={p => withToast(() => removePlan(p.id), 'Plan removed')}
-      onAdd={onAdd}
+      onAdd={() => onAdd()}
+      weekAdds={[{ label: 'Lift', onAdd }]}
     />
   )
 }
