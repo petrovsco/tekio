@@ -69,3 +69,20 @@ describe('whileReloading', () => {
     expect(await settled(load)).toBe(false)
   })
 })
+
+// Error reports #61–#63: Home warms its sheets on the first touch. On a
+// flaky connection those loads fail, and with nothing handling them each one
+// reached the uncaught-error handler as a report of its own.
+describe('prefetchChunks', () => {
+  it('handles every failed prefetch, so none reaches the uncaught-error handler', async () => {
+    const { prefetchChunks } = await import('../lib/staleChunk')
+    const failures = [0, 1].map(() => {
+      const p = Promise.reject(new TypeError('error loading dynamically imported module'))
+      return { p, caught: vi.spyOn(p, 'catch') }
+    })
+    prefetchChunks(...failures.map(f => () => f.p))
+    expect(failures.every(f => f.caught.mock.calls.length === 1)).toBe(true)
+    // the spy still calls through, so the rejections are handled for real
+    await Promise.all(failures.map(f => f.p.catch(() => {})))
+  })
+})
