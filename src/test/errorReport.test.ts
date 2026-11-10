@@ -43,7 +43,8 @@ describe('the payload', () => {
 
   it('names a thrown non-error by its type, never its value', () => {
     const { payload } = buildReport('82 kg', 'promise')
-    expect(JSON.stringify(payload)).not.toContain('82')
+    // The version and the clock may hold the digits by chance (2.2.82 did).
+    expect(JSON.stringify({ ...payload, version: '', at: '' })).not.toContain('82')
     expect(payload.message).toBe('thrown string')
   })
 
