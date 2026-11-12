@@ -115,7 +115,7 @@ export async function markPlanLogged(db: Db, id: string, sessionExerciseId: stri
 export const deletePlan = (db: Db, id: string): Promise<void> => deleteRow(db, 'planned_exercises', id)
 
 /** Deletes the plans dated before `day` that were never logged: missed, and
- *  kept on the card a week to be rescheduled or removed (RFC 0104). */
+ *  kept on the card until the week ends, to be rescheduled or removed (RFC 0104). */
 export async function pruneMissedPlans(db: Db, day: string): Promise<void> {
   const { error } = await db.client
     .from('planned_exercises')

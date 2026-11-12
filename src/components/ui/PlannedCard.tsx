@@ -1,7 +1,6 @@
 import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
-import { today, daysBetween } from '@tekio/core'
+import { today } from '@tekio/core'
 import { fmtDate } from '../../lib/utils'
-import { MISSED_PLAN_KEPT_DAYS } from '../../constants/app'
 import { Card } from './Card'
 import { FIELD_LABEL } from './Input'
 import { DelBtn, ACT_CHIP } from './Button'
@@ -45,7 +44,7 @@ const writeFolded = (key: string, v: boolean) => {
  * The yellow Planned card a capture tab carries above its log form. A plan is
  * a prefill, never a log: "Log" hands it to the form, and only saving the form
  * makes it work. The week strip picks the day the card lists (RFC 0114); a
- * missed plan's day stays a chip below it for MISSED_PLAN_KEPT_DAYS, to move
+ * missed plan's day stays a chip below it until the week ends, to move
  * the plan to another day or remove it, and is then deleted. Each tab supplies its plans, how one reads, and when one counts
  * as logged.
  */
@@ -103,11 +102,11 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
       doneToday: plans.some(p => p.date === t && isLogged(p)),
       formToday: plans.some(p => p.date === t && !isLogged(p) && onForm?.(p)),
       later: open.filter(p => p.date > t).sort(byDay),
-      missed: open.filter(p => p.date < t && daysBetween(p.date, t) <= MISSED_PLAN_KEPT_DAYS).sort(byDay),
+      missed: open.filter(p => p.date < t && p.date >= thisWeek).sort(byDay),
       dayOpen: open.filter(p => p.date === day),
       dayLogged: plans.some(p => p.date === day && isLogged(p)),
     }
-  }, [plans, isLogged, onForm, day, t])
+  }, [plans, isLogged, onForm, day, t, thisWeek])
   // A missed day off the picked one, as a chip that picks it.
   const missedDays = [...new Set(missed.map(p => p.date))].filter(d => d !== day)
   const pick = (d: string) => { setWeekStart(startOfWeek(d, weekStartDay)); setDay(d) }

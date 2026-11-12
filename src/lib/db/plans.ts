@@ -19,6 +19,6 @@ export const deletePlan = (id: string): Promise<void> =>
   done(api.DELETE('/api/plans/lifts/{id}', { params: { path: { id } } }))
 
 /** Deletes the plans of both kinds dated before `day` that were never logged:
- *  missed, and kept on the card a week to be rescheduled or removed (RFC 0104). */
+ *  missed, and kept on the card until the week ends, to be rescheduled or removed (RFC 0104). */
 export const pruneMissedPlans = (day: string): Promise<void> =>
   done(api.DELETE('/api/plans/missed', { params: { query: { before: day } } }))
