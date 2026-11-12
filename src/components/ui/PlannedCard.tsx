@@ -44,9 +44,9 @@ const writeFolded = (key: string, v: boolean) => {
 /**
  * The yellow Planned card a capture tab carries above its log form. A plan is
  * a prefill, never a log: "Log" hands it to the form, and only saving the form
- * makes it work. Later days are listed so a plan made ahead can be checked;
- * a missed plan stays a week, to be moved to another day or removed, and is
- * then deleted. Each tab supplies its plans, how one reads, and when one counts
+ * makes it work. The week strip picks the day the card lists (RFC 0114); a
+ * missed plan's day stays a chip below it for MISSED_PLAN_KEPT_DAYS, to move
+ * the plan to another day or remove it, and is then deleted. Each tab supplies its plans, how one reads, and when one counts
  * as logged.
  */
 export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, groupOf, onLog, onLogGroup, onEdit, onRemove, onAdd, weekAdds, kinds }: {
@@ -108,6 +108,9 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
       dayLogged: plans.some(p => p.date === day && isLogged(p)),
     }
   }, [plans, isLogged, onForm, day, t])
+  // A missed day off the picked one, as a chip that picks it.
+  const missedDays = [...new Set(missed.map(p => p.date))].filter(d => d !== day)
+  const pick = (d: string) => { setWeekStart(startOfWeek(d, weekStartDay)); setDay(d) }
   const elsewhere = items.filter(i => i.date === day && !kinds.includes(i.kind) && !i.logged)
 
   const [folded, setFolded] = useState(() => readFolded(foldKey))
@@ -210,10 +213,14 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
           ))}
         </p>
       )}
-      {missed.filter(p => p.date !== day).length > 0 && (
-        <div className="mt-3">
-          <span className={MICRO_LABEL}>Missed</span>
-          {rows(missed.filter(p => p.date !== day), p => fmtDate(p.date), true)}
+      {/* Missed plans are not listed here (RFC 0114): each missed day is a
+          chip that opens it, where its plans can be rescheduled or removed. */}
+      {missedDays.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          <span className="text-[11px] text-ink-2 mr-0.5">Missed</span>
+          {missedDays.map(d => (
+            <button key={d} className={ACT_CHIP} onClick={() => pick(d)}>{fmtDate(d, { weekday: true, relative: false, year: 'never' })}</button>
+          ))}
         </div>
       )}
       {/* A plan's day is today or later: from a past day, the door plans today. */}
