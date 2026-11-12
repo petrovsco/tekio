@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 // RFC 0114: the week of plans, every kind of seven days, read from the same
 // plans the cards list.
 
-import { weekItems, weekDays, weekRange, moveTargets, openLiftsAhead, sessionPlanLogged } from '../lib/week'
+import { weekItems, weekDays, weekRange, moveTargets, openLiftsAhead, sessionPlanLogged, dayMark } from '../lib/week'
 import type { CardioEntry, PlannedExercise, PlannedSession } from '../types'
 
 const lift = (id: string, date: string, extra: Partial<PlannedExercise> = {}): PlannedExercise => ({
@@ -49,5 +49,15 @@ describe('the week (RFC 0114)', () => {
     const days = weekDays('2026-11-09')
     const plans = [lift('past', '2026-11-09'), lift('done', '2026-11-12', { loggedAs: 'e' }), lift('ahead', '2026-11-13'), lift('next', '2026-11-16')]
     expect(openLiftsAhead(plans, days, '2026-11-11').map(p => [p.id, p.date])).toEqual([['ahead', '2026-11-11']])
+  })
+
+  it('marks a day by this tab first: planned, logged, missed, or another tab', () => {
+    const items = weekItems(
+      [lift('a', '2026-11-09', { loggedAs: 'e' }), lift('b', '2026-11-11'), lift('c', '2026-11-13')],
+      [{ ...run, date: '2026-11-14' }], none,
+    )
+    const t = '2026-11-12'
+    expect(['2026-11-09', '2026-11-11', '2026-11-13', '2026-11-14', '2026-11-15'].map(d => dayMark(items, d, ['lifts'], t)))
+      .toEqual(['logged', 'missed', 'planned', 'other', 'none'])
   })
 })

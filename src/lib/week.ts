@@ -98,3 +98,15 @@ export function openLiftsAhead(plans: PlannedExercise[], days: string[], today: 
     .filter(p => !p.loggedAs && p.date >= today && p.date >= days[0] && p.date <= last)
     .map(p => ({ ...p, date: today }))
 }
+
+export type DayMark = 'planned' | 'logged' | 'missed' | 'other' | 'none'
+
+/** One day's mark on the strip: this tab's plans first; a day with only
+ *  another tab's plans gets the grey dot. */
+export function dayMark(items: WeekItem[], date: string, kinds: WeekKind[], t: string): DayMark {
+  const mine = items.filter(i => i.date === date && kinds.includes(i.kind))
+  if (mine.length === 0) return items.some(i => i.date === date) ? 'other' : 'none'
+  const open = mine.some(i => !i.logged)
+  if (!open) return 'logged'
+  return date < t ? 'missed' : 'planned'
+}

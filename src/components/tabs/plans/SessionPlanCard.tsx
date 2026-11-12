@@ -47,7 +47,8 @@ export function SessionPlanCard({ kinds, onLog, onEdit, onAdd }: {
       onLog={onLog}
       onEdit={onEdit}
       onRemove={p => withToast(() => removeSessionPlan(p.id), 'Plan removed')}
-      onAdd={() => onAdd()}
+      onAdd={d => onAdd(d)}
+      kinds={kinds}
       weekAdds={kinds.map(k => ({ label: KIND_LABEL[k], onAdd: (d: string) => onAdd(d, k) }))}
     />
   )
