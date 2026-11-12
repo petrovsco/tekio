@@ -349,7 +349,7 @@ export function WeightsTab() {
     const rest = x.lifts.filter(y => y.id !== id)
     return rest.length
       ? { ...x, lifts: rest, active: Math.min(x.active, rest.length - 1) }
-      : { ...x, lifts: [emptyLift()], active: 0 }
+      : { date: today(), lifts: [emptyLift()], active: 0 }
   })
 
   /** Rows typed but not ticked, on a form where ticking has started: Finish
@@ -434,10 +434,23 @@ export function WeightsTab() {
     }
   }
   const ticked = savedOf(lift).filter(Boolean).length
-  /** An unplanned lift with nothing in the log yet: dropping it only loses
-   *  what was typed. A planned one goes back to plan from its strip; a
-   *  logged one is finished. */
-  const droppable = lifts.length > 1 && !fromPlan && !ticked && !entryOf(lift)
+  /** Remove: any lift can leave the form from its chip, after a question.
+   *  Its ticked sets stay in the log, as Finish with Only ticked keeps them;
+   *  what is typed and not ticked is dropped, and an untouched plan waits on
+   *  the Planned card again. Ticks still on their way land first. */
+  const unticked = lift.sets.slice(0, lift.revealed)
+    .filter((s, i) => rowFilled(s, timed) && !savedOf(lift)[i]).length
+  const removeLift = async (id: string) => {
+    if (finishing.current) return
+    finishing.current = true
+    try {
+      await enqueue(async () => {})
+      setLogged(id)
+      dropLift(id)
+    } finally {
+      finishing.current = false
+    }
+  }
 
   const liftFromPlan = (p: PlannedExercise, inGroup = false): DraftLift => ({
     id: crypto.randomUUID(),
@@ -533,12 +546,12 @@ export function WeightsTab() {
               <div className="flex flex-wrap gap-1">
                 {lifts.map((l, i) => {
                   const chip = (
-                    <Chip key={l.id} small active={i === active} className={`inline-flex items-center gap-0.5 ${i === active && droppable ? 'rounded-r-none border-r-0' : ''}`} onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
+                    <Chip key={l.id} small active={i === active} className={`inline-flex items-center gap-0.5 ${i === active ? 'rounded-r-none border-r-0' : ''}`} onClick={() => { setDraft(x => ({ ...x, active: i })); if (l.ex) setSelEx(l.ex) }}>
                       {savedOf(l).some(Boolean) && <Icon name="check" size={10} />}
                       {l.ex.trim() || 'New exercise'}
                     </Chip>
                   )
-                  if (i !== active || !droppable) return chip
+                  if (i !== active) return chip
                   // The × sits on the chip it removes, and asks first.
                   return (
                     <span key={l.id} className="inline-flex">
@@ -680,18 +693,22 @@ export function WeightsTab() {
           )}
 
           <Modal
-            open={askDrop === lift.id && droppable}
+            open={askDrop === lift.id}
             onClose={() => setAskDrop(null)}
             title={`Remove ${ex.trim() || 'this exercise'}?`}
             footer={(
               <div className="flex gap-2">
                 <Btn variant="secondary" onClick={() => setAskDrop(null)} className="flex-1">Cancel</Btn>
-                <Btn variant="danger" onClick={() => { setAskDrop(null); dropLift(lift.id) }} className="flex-1">Remove</Btn>
+                <Btn variant="danger" onClick={() => { setAskDrop(null); void removeLift(lift.id) }} className="flex-1">Remove</Btn>
               </div>
             )}
           >
             <p className="text-[13px] text-ink leading-snug">
-              It comes off the form, with what you typed for it. Nothing in your log changes.
+              {ticked
+                ? `${ticked === 1 ? 'Its logged set stays' : `Its ${ticked} logged sets stay`} in your log, dated ${fmtDate(date, { midSentence: true })}.${unticked ? ` ${unticked === 1 ? 'The unticked set is' : `The ${unticked} unticked sets are`} dropped.` : ''}`
+                : fromPlan
+                  ? 'It goes back to your Planned card. Nothing in your log changes.'
+                  : 'It comes off the form, with what you typed for it. Nothing in your log changes.'}
             </p>
           </Modal>
           <Modal

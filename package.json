@@ -2,7 +2,7 @@
   "name": "tekio",
   "private": true,
   "license": "Apache-2.0",
-  "version": "2.2.83",
+  "version": "2.2.84",
   "type": "module",
   "workspaces": [
     "packages/*"
