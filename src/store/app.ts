@@ -339,7 +339,7 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   bootstrap: async () => {
     set({ loading: true })
     try {
-      // A missed plan is deleted a week after its day (RFC 0104). The prune
+      // A missed plan is deleted MISSED_PLAN_KEPT_DAYS after its day (RFC 0104). The prune
       // runs beside the start rather than ahead of it, and the plans it is
       // deleting are left out as they load, so the card reads the same
       // whether it has landed yet or not; a failed one costs a stale row.
