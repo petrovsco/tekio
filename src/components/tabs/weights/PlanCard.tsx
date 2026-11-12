@@ -37,7 +37,8 @@ export function PlanCard({ onForm, onLog, onLogGroup, onEdit, onAdd }: {
       onLogGroup={onLogGroup}
       onEdit={onEdit}
       onRemove={p => withToast(() => removePlan(p.id), 'Plan removed')}
-      onAdd={() => onAdd()}
+      onAdd={onAdd}
+      kinds={['lifts']}
       weekAdds={[{ label: 'Lift', onAdd }]}
     />
   )

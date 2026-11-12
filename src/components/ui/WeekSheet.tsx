@@ -3,8 +3,9 @@ import { today } from '@tekio/core'
 import { useAppStore } from '../../store/app'
 import { usePrefs } from '../../store/prefs'
 import { fmtDate, startOfWeek, addDays } from '../../lib/utils'
-import { weekItems, weekDays, weekRange, moveTargets, openLiftsAhead, type WeekItem, type WeekKind } from '../../lib/week'
+import { weekDays, weekRange, moveTargets, openLiftsAhead, type WeekItem, type WeekKind } from '../../lib/week'
 import { planPreview } from '../../lib/planPreview'
+import { useWeekItems } from '../../hooks/useWeekItems'
 import { BottomSheet } from '../tabs/home/BottomSheet'
 import { muscleShort } from '../tabs/home/GapMap'
 import { MicroLabel, MICRO_LABEL } from './Badges'
@@ -46,10 +47,6 @@ function Chevron({ dir }: { dir: 'left' | 'right' }) {
  */
 export default function WeekSheet({ adds, onClose }: { adds: WeekAdd[]; onClose: () => void }) {
   const plans = useAppStore(s => s.plans)
-  const sessions = useAppStore(s => s.sessionPlans)
-  const cardio = useAppStore(s => s.cardio)
-  const sports = useAppStore(s => s.sports)
-  const mobility = useAppStore(s => s.mobility)
   const weights = useAppStore(s => s.weights)
   const exerciseMuscles = useAppStore(s => s.exerciseMuscles)
   const aliases = useAppStore(s => s.exerciseAliases)
@@ -66,7 +63,7 @@ export default function WeekSheet({ adds, onClose }: { adds: WeekAdd[]; onClose:
   const [moving, setMoving] = useState<string | null>(null)
   const days = weekDays(start)
 
-  const items = useMemo(() => weekItems(plans, sessions, { cardio, sports, mobility }), [plans, sessions, cardio, sports, mobility])
+  const items = useWeekItems()
   const inWeek = items.filter(i => i.date >= days[0] && i.date <= days[6])
   const byAgent = inWeek.filter(i => i.plannedBy === 'agent').length
 

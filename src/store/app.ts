@@ -40,8 +40,8 @@ import { saveMorningHrv, saveCheckIn } from '../lib/db/readiness'
 import { savePlan, updatePlan, patchPlans, markPlanLogged, deletePlan, pruneMissedPlans } from '../lib/db/plans'
 import { saveSessionPlan, updateSessionPlan, markSessionPlanLogged, deleteSessionPlan, type SessionPlanPatch } from '../lib/db/sessionPlans'
 import { usePrefs } from './prefs'
-import { daysAgo } from '@tekio/core'
-import { MISSED_PLAN_KEPT_DAYS } from '../constants/app'
+import { today } from '@tekio/core'
+import { startOfWeek } from '../lib/utils'
 import { breadcrumb, reportError, type ErrorReport } from '../lib/errorReport'
 import type { LiftSet } from '../types'
 import type { PatternKey } from '@tekio/core/catalogue'
@@ -339,14 +339,16 @@ export const useAppStore = create<AppStore>((set, get) => trailed({
   bootstrap: async () => {
     set({ loading: true })
     try {
-      // A missed plan is deleted MISSED_PLAN_KEPT_DAYS after its day (RFC 0104). The prune
-      // runs beside the start rather than ahead of it, and the plans it is
-      // deleting are left out as they load, so the card reads the same
-      // whether it has landed yet or not; a failed one costs a stale row.
-      const missedBefore = daysAgo(MISSED_PLAN_KEPT_DAYS)
+      const { profile, sections, ...start } = await loadStart()
+      // A missed plan stays through the week it was planned in, where the
+      // card's strip shows its day, and is deleted once a new week starts
+      // (RFC 0104; the week was a fixed seven days until 2.2.86). The week
+      // start is the profile's, so the prune follows the start; the plans it
+      // is deleting are left out as they load, so the card reads the same
+      // whether it has landed yet or not, and a failed one costs a stale row.
+      const missedBefore = startOfWeek(today(), profile.weekStartDay)
       const kept = (p: { date: string; loggedAs?: string }) => p.loggedAs != null || p.date >= missedBefore
       void pruneMissedPlans(missedBefore).catch(() => {})
-      const { profile, sections, ...start } = await loadStart()
       usePrefs.setState({ sections, ...profile })
       set({ ...start, plans: start.plans.filter(kept), sessionPlans: start.sessionPlans.filter(kept) })
     } finally {

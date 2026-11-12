@@ -1,7 +1,6 @@
 import { lazy, Suspense, useMemo, useState, type ReactNode } from 'react'
-import { today, daysBetween } from '@tekio/core'
+import { today } from '@tekio/core'
 import { fmtDate } from '../../lib/utils'
-import { MISSED_PLAN_KEPT_DAYS } from '../../constants/app'
 import { Card } from './Card'
 import { FIELD_LABEL } from './Input'
 import { DelBtn, ACT_CHIP } from './Button'
@@ -10,6 +9,11 @@ import { MicroLabel, MICRO_LABEL, SSBadge } from './Badges'
 import { groupRuns, groupName } from '../../lib/supersets'
 import { whileReloading } from '../../lib/staleChunk'
 import type { WeekAdd } from './WeekSheet'
+import { WeekStrip } from './WeekStrip'
+import { useWeekItems } from '../../hooks/useWeekItems'
+import type { WeekKind } from '../../lib/week'
+import { usePrefs } from '../../store/prefs'
+import { startOfWeek, addDays } from '../../lib/utils'
 
 // The week (RFC 0114) opens on intent, so its chunk and the plan preview it
 // reads stay off the tab until the door is tapped (P1).
@@ -26,6 +30,9 @@ interface Plan {
 
 /** The fold is remembered per device and per card: a blocked or empty storage
  *  just opens the card. */
+/** Where another kind's plans are logged, for the "Also that day" line. */
+const TAB_OF: Record<WeekKind, string> = { lifts: 'Weights', cardio: 'Cardio', sport: 'Cardio', mobility: 'Mobility' }
+
 const readFolded = (key: string): boolean => {
   try { return localStorage.getItem(key) === '1' } catch { return false }
 }
@@ -36,12 +43,12 @@ const writeFolded = (key: string, v: boolean) => {
 /**
  * The yellow Planned card a capture tab carries above its log form. A plan is
  * a prefill, never a log: "Log" hands it to the form, and only saving the form
- * makes it work. Later days are listed so a plan made ahead can be checked;
- * a missed plan stays a week, to be moved to another day or removed, and is
- * then deleted. Each tab supplies its plans, how one reads, and when one counts
+ * makes it work. The week strip picks the day the card lists (RFC 0114); a
+ * missed plan's day stays a chip below it until the week ends, to move
+ * the plan to another day or remove it, and is then deleted. Each tab supplies its plans, how one reads, and when one counts
  * as logged.
  */
-export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, groupOf, onLog, onLogGroup, onEdit, onRemove, onAdd, weekAdds }: {
+export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, title, details, groupOf, onLog, onLogGroup, onEdit, onRemove, onAdd, weekAdds, kinds }: {
   plans: P[]
   /** A logged plan has become work: it leaves the card, and the tab's history
    *  shows it like any other entry. */
@@ -65,13 +72,29 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
   /** Opens the plan sheet on this plan; on a missed one, that is a reschedule. */
   onEdit: (plan: P) => void
   onRemove: (plan: P) => void
-  /** Opens the plan sheet, for a new plan. */
-  onAdd: () => void
+  /** Opens the plan sheet, for a new plan; on the picked day when it is not today. */
+  onAdd: (date?: string) => void
   /** What the week's days can add from this tab (RFC 0114). */
   weekAdds: WeekAdd[]
+  /** The kinds this tab plans, for the strip's marks (RFC 0114). */
+  kinds: WeekKind[]
 }) {
-  const { todays, doneToday, formToday, later, missed } = useMemo(() => {
-    const t = today()
+  // The week strip (RFC 0114, option A): the card lists the picked day, today
+  // until another is tapped.
+  const t = today()
+  const weekStartDay = usePrefs(s => s.weekStartDay)
+  const thisWeek = startOfWeek(t, weekStartDay)
+  const [weekStart, setWeekStart] = useState(thisWeek)
+  const [day, setDay] = useState(t)
+  const items = useWeekItems()
+  const page = (by: number) => {
+    const next = addDays(weekStart, by)
+    setWeekStart(next)
+    // The week of today lands on today; another on its first day.
+    setDay(next === thisWeek ? t : next)
+  }
+
+  const { todays, doneToday, formToday, later, missed, dayOpen, dayLogged } = useMemo(() => {
     const byDay = (a: P, b: P) => a.date.localeCompare(b.date)
     const open = plans.filter(p => !isLogged(p) && !onForm?.(p))
     return {
@@ -79,9 +102,15 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
       doneToday: plans.some(p => p.date === t && isLogged(p)),
       formToday: plans.some(p => p.date === t && !isLogged(p) && onForm?.(p)),
       later: open.filter(p => p.date > t).sort(byDay),
-      missed: open.filter(p => p.date < t && daysBetween(p.date, t) <= MISSED_PLAN_KEPT_DAYS).sort(byDay),
+      missed: open.filter(p => p.date < t && p.date >= thisWeek).sort(byDay),
+      dayOpen: open.filter(p => p.date === day),
+      dayLogged: plans.some(p => p.date === day && isLogged(p)),
     }
-  }, [plans, isLogged, onForm])
+  }, [plans, isLogged, onForm, day, t, thisWeek])
+  // A missed day off the picked one, as a chip that picks it.
+  const missedDays = [...new Set(missed.map(p => p.date))].filter(d => d !== day)
+  const pick = (d: string) => { setWeekStart(startOfWeek(d, weekStartDay)); setDay(d) }
+  const elsewhere = items.filter(i => i.date === day && !kinds.includes(i.kind) && !i.logged)
 
   const [folded, setFolded] = useState(() => readFolded(foldKey))
   const toggle = () => setFolded(f => { writeFolded(foldKey, !f); return !f })
@@ -92,7 +121,7 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
     : later.length > 0 ? `${later.length} later`
     : missed.length > 0 ? `${missed.length} missed` : 'nothing planned'
 
-  const row = (p: P, when?: string, isMissed = false) => (
+  const row = (p: P, when?: string, isMissed = false, canLog = !when) => (
     <div key={p.id} className="flex items-start justify-between gap-2 py-2 border-b border-hairline last:border-0">
       <div className="min-w-0">
         <p className="text-xs font-bold flex items-center gap-1.5 flex-wrap text-ink">
@@ -103,7 +132,7 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
       </div>
       <div className="flex items-center gap-1 shrink-0">
         {when && <span className="text-[11px] text-ink-3 tabular-nums">{when}</span>}
-        {!when && (
+        {canLog && (
           <button className={ACT_CHIP} onClick={() => onLog(p)}>Log</button>
         )}
         {isMissed ? (
@@ -124,9 +153,9 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
 
   // A group is drawn where its first plan stands, its plans as rows inside.
   // Today's block can be logged whole; Log on one row overrides the plan.
-  const rows = (ps: P[], when?: (p: P) => string, isMissed = false) =>
+  const rows = (ps: P[], when?: (p: P) => string, isMissed = false, canLog = !when) =>
     groupRuns(ps, p => groupOf?.(p)).map(run => run.length === 1
-      ? row(run[0], when?.(run[0]), isMissed)
+      ? row(run[0], when?.(run[0]), isMissed, canLog)
       : (
         <div key={run[0].id} className="my-1.5 border border-planned rounded-[3px] px-2.5 pt-2">
           <div className="flex items-center justify-between gap-2">
@@ -134,11 +163,11 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
               <SSBadge />
               <span className={MICRO_LABEL}>{groupName(run.length)}</span>
             </span>
-            {!when && onLogGroup && (
+            {canLog && onLogGroup && (
               <button className={ACT_CHIP} onClick={() => onLogGroup(run)}>Log {groupName(run.length).toLowerCase()}</button>
             )}
           </div>
-          {run.map(p => row(p, when?.(p), isMissed))}
+          {run.map(p => row(p, when?.(p), isMissed, canLog))}
         </div>
       ))
 
@@ -166,25 +195,38 @@ export function PlannedCard<P extends Plan>({ plans, isLogged, onForm, foldKey, 
         </Suspense>
       )}
       {!folded && <>
-      <span className={MICRO_LABEL}>Today</span>
-      {todays.length > 0
-        ? rows(todays)
-        : <p className="text-[11px] text-ink-3 py-1">{formToday ? 'The rest of today\'s plan is on the log form.' : doneToday ? 'All of today\'s plan is logged.' : 'Nothing planned today.'}</p>}
-      {later.length > 0 && (
-        <div className="mt-3">
-          <span className={MICRO_LABEL}>Later</span>
-          {rows(later, p => fmtDate(p.date))}
+      <WeekStrip start={weekStart} thisWeek={thisWeek} selected={day} kinds={kinds} items={items} onSelect={setDay} onPage={page} />
+      <div className="border-t border-planned/40 pt-2">
+      <span className={MICRO_LABEL}>{day === t ? 'Today' : fmtDate(day, { weekday: true, relative: false })}</span>
+      {day === t
+        ? todays.length > 0
+          ? rows(todays)
+          : <p className="text-[11px] text-ink-3 py-1">{formToday ? 'The rest of today\'s plan is on the log form.' : doneToday ? 'All of today\'s plan is logged.' : 'Nothing planned today.'}</p>
+        : dayOpen.length > 0
+          ? rows(dayOpen, undefined, day < t, false)
+          : <p className="text-[11px] text-ink-3 py-1">{dayLogged ? 'All of that day\'s plan is logged.' : 'Nothing planned that day.'}</p>}
+      {elsewhere.length > 0 && (
+        <p className="text-[11px] text-ink-2 mt-1.5">
+          Also that day: {elsewhere.map((o, i) => (
+            <span key={o.id}>{i > 0 && ', '}<span className="font-semibold text-ink">{o.title}</span>{o.title !== TAB_OF[o.kind] && ` on ${TAB_OF[o.kind]}`}</span>
+          ))}
+        </p>
+      )}
+      {/* Missed plans are not listed here (RFC 0114): each missed day is a
+          chip that opens it, where its plans can be rescheduled or removed. */}
+      {missedDays.length > 0 && (
+        <div className="mt-2 flex flex-wrap items-center gap-1">
+          <span className="text-[11px] text-ink-2 mr-0.5">Missed</span>
+          {missedDays.map(d => (
+            <button key={d} className={ACT_CHIP} onClick={() => pick(d)}>{fmtDate(d, { weekday: true, relative: false, year: 'never' })}</button>
+          ))}
         </div>
       )}
-      {missed.length > 0 && (
-        <div className="mt-3">
-          <span className={MICRO_LABEL}>Missed</span>
-          {rows(missed, p => fmtDate(p.date), true)}
-        </div>
-      )}
-      <button onClick={onAdd} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">
-        + Add to plan
+      {/* A plan's day is today or later: from a past day, the door plans today. */}
+      <button onClick={() => onAdd(day > t ? day : undefined)} className="mt-2 text-[11px] font-semibold text-ink underline underline-offset-2 cursor-pointer">
+        + Add to {day > t ? fmtDate(day, { weekday: true, relative: false, year: 'never' }) : 'today'}
       </button>
+      </div>
       </>}
     </Card>
   )
